@@ -38,8 +38,9 @@ class Workmanager {
       'be.tramckrijte.workmanager/foreground_channel_work_manager');
 
   static Future<void> initialize(
-      final TaskCallbackFunction callBackFunction,
-      final bool isInDebugMode) async {
+    final TaskCallbackFunction callBackFunction, {
+    final bool isInDebugMode,
+  }) async {
     assert(callBackFunction != null);
     Workmanager._callBackFunction = callBackFunction;
     Workmanager._isInDebugMode = isInDebugMode;

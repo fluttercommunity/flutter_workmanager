@@ -15,10 +15,13 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    Workmanager.initialize((s) {
-      print("Native called for function $s to be started.");
-      return Future.value(true);
-    });
+    Workmanager.initialize(
+      (s) {
+        print("Native called for function $s to be started.");
+        return Future.value(true);
+      },
+      isInDebugMode: true,
+    );
   }
 
   @override
@@ -31,9 +34,7 @@ class _MyAppState extends State<MyApp> {
         body: Center(
           child: RaisedButton(
             child: Text("Register One off task"),
-            onPressed: () {
-
-            },
+            onPressed: () {},
           ),
         ),
       ),
