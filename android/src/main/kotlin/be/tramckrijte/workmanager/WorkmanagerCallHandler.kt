@@ -2,6 +2,7 @@ package be.tramckrijte.workmanager
 
 import android.content.Context
 import androidx.work.*
+import be.tramckrijte.workmanager.EchoingWorker.Companion.IS_IN_DEBUG_MODE
 import be.tramckrijte.workmanager.EchoingWorker.Companion.VALUE_TO_ECHO_KEY
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -43,7 +44,7 @@ private object InitializeHandler : CallHandler<WorkManagerCall.Initialize> {
 private object OneOffTaskHandler : CallHandler<WorkManagerCall.RegisterTask.OneOffTask> {
     override fun handle(context: Context, convertedCall: WorkManagerCall.RegisterTask.OneOffTask, result: MethodChannel.Result) {
         val oneOffTaskRequest = OneTimeWorkRequest.Builder(EchoingWorker::class.java)
-                .setInputData(Data.Builder().putAll(mapOf(VALUE_TO_ECHO_KEY to convertedCall.valueToReturn)).build())
+                .setInputData(Data.Builder().putAll(mapOf(VALUE_TO_ECHO_KEY to convertedCall.valueToReturn, IS_IN_DEBUG_MODE to convertedCall.isInDebugMode)).build())
                 .setInitialDelay(convertedCall.initialDelaySeconds, TimeUnit.SECONDS)
                 .setConstraints(convertedCall.constraintsConfig)
                 .setBackoffCriteria(convertedCall.backoffPolicyConfig.backoffPolicy, convertedCall.backoffPolicyConfig.backoffDelay, TimeUnit.MILLISECONDS)
@@ -57,7 +58,7 @@ private object OneOffTaskHandler : CallHandler<WorkManagerCall.RegisterTask.OneO
 private object PeriodicTaskHandler : CallHandler<WorkManagerCall.RegisterTask.PeriodicTask> {
     override fun handle(context: Context, convertedCall: WorkManagerCall.RegisterTask.PeriodicTask, result: MethodChannel.Result) {
         val periodicTaskRequest = PeriodicWorkRequest.Builder(EchoingWorker::class.java, convertedCall.frequencyInSeconds, TimeUnit.SECONDS)
-                .setInputData(Data.Builder().putAll(mapOf(VALUE_TO_ECHO_KEY to convertedCall.valueToReturn)).build())
+                .setInputData(Data.Builder().putAll(mapOf(VALUE_TO_ECHO_KEY to convertedCall.valueToReturn, IS_IN_DEBUG_MODE to convertedCall.isInDebugMode)).build())
                 .setInitialDelay(convertedCall.initialDelaySeconds, TimeUnit.SECONDS)
                 .setConstraints(convertedCall.constraintsConfig)
                 .setBackoffCriteria(convertedCall.backoffPolicyConfig.backoffPolicy, convertedCall.backoffPolicyConfig.backoffDelay, TimeUnit.MILLISECONDS)

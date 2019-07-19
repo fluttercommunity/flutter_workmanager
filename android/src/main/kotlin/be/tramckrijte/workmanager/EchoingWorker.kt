@@ -28,8 +28,10 @@ class EchoingWorker(private val ctx: Context,
     private lateinit var backgroundChannel: MethodChannel
 
     companion object {
-        const val BACKGROUND_CHANNEL_NAME = "be.tramckrijte.workmanager/background_channel_work_manager"
         const val VALUE_TO_ECHO_KEY = "be.tramckrijte.workmanager.VALUE_TO_ECHO_KEY"
+        const val IS_IN_DEBUG_MODE = "be.tramckrijte.workmanager.IS_IN_DEBUG_MODE"
+
+        const val BACKGROUND_CHANNEL_NAME = "be.tramckrijte.workmanager/background_channel_work_manager"
         const val BACKGROUND_CHANNEL_INITIALIZED = "backgroundChannelInitialized"
         const val ECHO_METHOD_NAME = "echoTaskRan"
     }
@@ -83,17 +85,8 @@ class EchoingWorker(private val ctx: Context,
 
         latch.await()
 
-        (ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).apply {
-            createNotificationChannel(NotificationChannel("id", "name", NotificationManager.IMPORTANCE_MAX))
-            notify(
-                    System.currentTimeMillis().toInt(),
-                    Notification
-                            .Builder(ctx, "id")
-                            .setContentTitle("Received at ${System.currentTimeMillis()}")
-                            .setContentText("Success: ${result is Result.Success} ${workerParams.inputData.getString(VALUE_TO_ECHO_KEY)}")
-                            .setSmallIcon(R.drawable.notify_panel_notification_icon_bg)
-                            .build()
-            )
+        if (workerParams.inputData.getBoolean(IS_IN_DEBUG_MODE, false)) {
+            DebugHelper.postTaskNotification(ctx, javaClass.simpleName, "${workerParams.inputData.getString(VALUE_TO_ECHO_KEY)}")
         }
 
         return result

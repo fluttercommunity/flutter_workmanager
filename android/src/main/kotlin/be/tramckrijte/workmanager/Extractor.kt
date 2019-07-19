@@ -16,6 +16,7 @@ import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TAS
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_EXISTING_WORK_POLICY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_UNIQUE_NAME
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_INITIAL_DELAY_SECONDS_KEY
+import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_IS_IN_DEBUG_MODE
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_NAME_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_TAG
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.PeriodicTask.KEYS.PERIODIC_TASK_FREQUENCY_SECONDS
@@ -35,6 +36,7 @@ sealed class WorkManagerCall {
     }
 
     sealed class RegisterTask : WorkManagerCall() {
+        abstract val isInDebugMode: Boolean
         abstract val uniqueName: String
         abstract val valueToReturn: String
         abstract val tag: String?
@@ -42,6 +44,7 @@ sealed class WorkManagerCall {
         abstract val constraintsConfig: Constraints?
 
         companion object KEYS {
+            const val REGISTER_TASK_IS_IN_DEBUG_MODE = "isInDebugMode"
             const val REGISTER_TASK_UNIQUE_NAME = "uniqueName"
             const val REGISTER_TASK_NAME_KEY = "valueToReturn"
             const val REGISTER_TASK_TAG = "tag"
@@ -59,7 +62,8 @@ sealed class WorkManagerCall {
             const val REGISTER_TASK_BACK_OFF_POLICY_DELAY_MILLIS = "backoffDelayInMilliseconds"
         }
 
-        data class OneOffTask(override val uniqueName: String,
+        data class OneOffTask(override val isInDebugMode: Boolean,
+                              override val uniqueName: String,
                               override val valueToReturn: String,
                               override val tag: String? = null,
                               val existingWorkPolicy: ExistingWorkPolicy,
@@ -67,7 +71,8 @@ sealed class WorkManagerCall {
                               override val constraintsConfig: Constraints,
                               val backoffPolicyConfig: BackoffPolicyTaskConfig) : RegisterTask()
 
-        data class PeriodicTask(override val uniqueName: String,
+        data class PeriodicTask(override val isInDebugMode: Boolean,
+                                override val uniqueName: String,
                                 override val valueToReturn: String,
                                 override val tag: String? = null,
                                 val existingWorkPolicy: ExistingPeriodicWorkPolicy,
@@ -132,6 +137,7 @@ object Extractor {
                 Extractor.PossibleWorkManagerCall.INITIALIZE -> WorkManagerCall.Initialize(call.argument<Long>(INITIALIZE_CALLBACK_DISPATCHER_HANDLE_KEY)!!)
                 Extractor.PossibleWorkManagerCall.REGISTER_ONE_OFF_TASK -> {
                     WorkManagerCall.RegisterTask.OneOffTask(
+                            isInDebugMode = call.argument<Boolean>(REGISTER_TASK_IS_IN_DEBUG_MODE)!!,
                             uniqueName = call.argument<String>(REGISTER_TASK_UNIQUE_NAME)!!,
                             valueToReturn = call.argument<String>(REGISTER_TASK_NAME_KEY)!!,
                             tag = call.argument<String>(REGISTER_TASK_TAG),
@@ -143,6 +149,7 @@ object Extractor {
                 }
                 Extractor.PossibleWorkManagerCall.REGISTER_PERIODIC_TASK -> {
                     WorkManagerCall.RegisterTask.PeriodicTask(
+                            isInDebugMode = call.argument<Boolean>(REGISTER_TASK_IS_IN_DEBUG_MODE)!!,
                             uniqueName = call.argument<String>(REGISTER_TASK_UNIQUE_NAME)!!,
                             valueToReturn = call.argument<String>(REGISTER_TASK_NAME_KEY)!!,
                             frequencyInSeconds = extractFrequencySecondsFromCall(call),
@@ -208,10 +215,14 @@ object Extractor {
                 }
 
         val requestedNetworkType = extractNetworkTypeFromCall(call)
-        val requiresBatteryNotLow = call.argument<Boolean>(REGISTER_TASK_CONSTRAINTS_BATTERY_NOT_LOW_KEY) ?: false
-        val requiresCharging = call.argument<Boolean>(REGISTER_TASK_CONSTRAINTS_CHARGING_KEY) ?: false
-        val requiresDeviceIdle = call.argument<Boolean>(REGISTER_TASK_CONSTRAINTS_DEVICE_IDLE_KEY) ?: false
-        val requiresStorageNotLow = call.argument<Boolean>(REGISTER_TASK_CONSTRAINTS_STORAGE_NOT_LOW_KEY) ?: false
+        val requiresBatteryNotLow = call.argument<Boolean>(REGISTER_TASK_CONSTRAINTS_BATTERY_NOT_LOW_KEY)
+                ?: false
+        val requiresCharging = call.argument<Boolean>(REGISTER_TASK_CONSTRAINTS_CHARGING_KEY)
+                ?: false
+        val requiresDeviceIdle = call.argument<Boolean>(REGISTER_TASK_CONSTRAINTS_DEVICE_IDLE_KEY)
+                ?: false
+        val requiresStorageNotLow = call.argument<Boolean>(REGISTER_TASK_CONSTRAINTS_STORAGE_NOT_LOW_KEY)
+                ?: false
         return Constraints.Builder()
                 .setRequiredNetworkType(requestedNetworkType)
                 .setRequiresBatteryNotLow(requiresBatteryNotLow)

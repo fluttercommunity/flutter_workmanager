@@ -30,6 +30,7 @@ enum BackoffPolicy { exponential, linear }
 
 class Workmanager {
   static TaskCallbackFunction _callBackFunction;
+  static bool _isInDebugMode = false;
 
   static TaskCallbackFunction get callBackFunction => _callBackFunction;
 
@@ -37,9 +38,11 @@ class Workmanager {
       'be.tramckrijte.workmanager/foreground_channel_work_manager');
 
   static Future<void> initialize(
-      final TaskCallbackFunction callBackFunction) async {
+      final TaskCallbackFunction callBackFunction,
+      final bool isInDebugMode) async {
     assert(callBackFunction != null);
     Workmanager._callBackFunction = callBackFunction;
+    Workmanager._isInDebugMode = isInDebugMode;
     final callback = PluginUtilities.getCallbackHandle(callbackDispatcher);
     await _foregroundChannel.invokeMethod(
       'initialize',
@@ -132,6 +135,7 @@ class Workmanager {
     return await _foregroundChannel.invokeMethod(
       methodName,
       {
+        "isInDebugMode": _isInDebugMode,
         "uniqueName": uniqueName,
         "valueToReturn": valueToReturn,
         "tag": tag,
