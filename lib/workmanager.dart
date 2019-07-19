@@ -11,16 +11,7 @@ class _WorkmanagerConstants {
       "be.tramckrijte.workmanager/foreground_channel_work_manager";
 }
 
-typedef TaskCallbackFunction = Future<bool> Function(String value);
-
-void callbackDispatcher() {
-  const MethodChannel _backgroundChannel =
-      MethodChannel(_WorkmanagerConstants.backgroundChannelName);
-  WidgetsFlutterBinding.ensureInitialized();
-  _backgroundChannel.setMethodCallHandler(
-      (call) => Workmanager.callBackFunction(call.arguments));
-  _backgroundChannel.invokeMethod("backgroundChannelInitialized");
-}
+typedef EchoCallbackFunction = Future<bool> Function(String value);
 
 enum ExistingWorkPolicy { append, keep, replace }
 
@@ -29,20 +20,23 @@ enum NetworkType { connected, metered, not_required, not_roaming, unmetered }
 enum BackoffPolicy { exponential, linear }
 
 class Workmanager {
-  static TaskCallbackFunction _callBackFunction;
   static bool _isInDebugMode = false;
 
-  static TaskCallbackFunction get callBackFunction => _callBackFunction;
+  static const MethodChannel _backgroundChannel =
+      const MethodChannel(_WorkmanagerConstants.backgroundChannelName);
+  static const MethodChannel _foregroundChannel =
+      const MethodChannel(_WorkmanagerConstants.foregroundChannelName);
 
-  static const MethodChannel _foregroundChannel = const MethodChannel(
-      'be.tramckrijte.workmanager/foreground_channel_work_manager');
+  static void defaultCallbackDispatcher(final EchoCallbackFunction echoFunction) {
+    WidgetsFlutterBinding.ensureInitialized();
+    _backgroundChannel.setMethodCallHandler((call) async => echoFunction(call.arguments));
+    _backgroundChannel.invokeMethod("backgroundChannelInitialized");
+  }
 
   static Future<void> initialize(
-    final TaskCallbackFunction callBackFunction, {
+    final Function callbackDispatcher, {
     final bool isInDebugMode,
   }) async {
-    assert(callBackFunction != null);
-    Workmanager._callBackFunction = callBackFunction;
     Workmanager._isInDebugMode = isInDebugMode;
     final callback = PluginUtilities.getCallbackHandle(callbackDispatcher);
     await _foregroundChannel.invokeMethod(

@@ -36,29 +36,6 @@ class EchoingWorker(private val ctx: Context,
         const val ECHO_METHOD_NAME = "echoTaskRan"
     }
 
-    override fun onMethodCall(call: MethodCall, r: MethodChannel.Result) {
-        when (call.method) {
-            BACKGROUND_CHANNEL_INITIALIZED ->
-                backgroundChannel.invokeMethod(
-                        ECHO_METHOD_NAME,
-                        workerParams.inputData.getString(VALUE_TO_ECHO_KEY),
-                        object : MethodChannel.Result {
-                            override fun notImplemented() {
-                                latch.countDown()
-                            }
-
-                            override fun error(p0: String?, p1: String?, p2: Any?) {
-                                latch.countDown()
-                            }
-
-                            override fun success(p0: Any?) {
-                                result = Result.success()
-                                latch.countDown()
-                            }
-                        })
-        }
-    }
-
     private val latch = CountDownLatch(1)
     var result: Result = Result.retry()
 
@@ -86,9 +63,32 @@ class EchoingWorker(private val ctx: Context,
         latch.await()
 
         if (workerParams.inputData.getBoolean(IS_IN_DEBUG_MODE, false)) {
-            DebugHelper.postTaskNotification(ctx, javaClass.simpleName, "${workerParams.inputData.getString(VALUE_TO_ECHO_KEY)}")
+            DebugHelper.postTaskNotification(ctx, javaClass.simpleName, "${workerParams.inputData.getString(VALUE_TO_ECHO_KEY)}", result)
         }
 
         return result
+    }
+
+    override fun onMethodCall(call: MethodCall, r: MethodChannel.Result) {
+        when (call.method) {
+            BACKGROUND_CHANNEL_INITIALIZED ->
+                backgroundChannel.invokeMethod(
+                        ECHO_METHOD_NAME,
+                        workerParams.inputData.getString(VALUE_TO_ECHO_KEY),
+                        object : MethodChannel.Result {
+                            override fun notImplemented() {
+                                latch.countDown()
+                            }
+
+                            override fun error(p0: String?, p1: String?, p2: Any?) {
+                                latch.countDown()
+                            }
+
+                            override fun success(p0: Any?) {
+                                result = Result.success()
+                                latch.countDown()
+                            }
+                        })
+        }
     }
 }

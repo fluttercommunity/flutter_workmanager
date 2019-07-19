@@ -31,12 +31,6 @@ class WorkmanagerCallHandler(private val ctx: Context) {
 private object InitializeHandler : CallHandler<WorkManagerCall.Initialize> {
     override fun handle(context: Context, convertedCall: WorkManagerCall.Initialize, result: MethodChannel.Result) {
         SharedPreferenceHelper.saveCallbackDispatcherHandleKey(context, convertedCall.callbackDispatcherHandleKey)
-        WorkManager.initialize(
-                context,
-                Configuration.Builder()
-                        .setMinimumLoggingLevel(android.util.Log.INFO)
-                        .build()
-        )
         result.success()
     }
 }
