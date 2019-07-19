@@ -1,6 +1,5 @@
 package be.tramckrijte.workmanager
 
-import android.net.Network
 import android.os.Build
 import androidx.work.*
 import androidx.work.PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS
@@ -146,9 +145,9 @@ object Extractor {
                     WorkManagerCall.RegisterTask.PeriodicTask(
                             uniqueName = call.argument<String>(REGISTER_TASK_UNIQUE_NAME)!!,
                             valueToReturn = call.argument<String>(REGISTER_TASK_NAME_KEY)!!,
+                            frequencyInSeconds = extractFrequencySecondsFromCall(call),
                             tag = call.argument<String>(REGISTER_TASK_TAG),
                             existingWorkPolicy = extractExistingPeriodicWorkPolicyFromCall(call),
-                            frequencyInSeconds = extractMinimumFrequencySecondsFromCall(call),
                             initialDelaySeconds = extractInitialDelayFromCall(call),
                             constraintsConfig = extractConstraintConfigFromCall(call),
                             backoffPolicyConfig = extractBackoffPolicyConfigFromCall(call, TaskType.PERIODIC)
@@ -164,19 +163,19 @@ object Extractor {
 
     private fun extractExistingWorkPolicyFromCall(call: MethodCall): ExistingWorkPolicy =
             try {
-                ExistingWorkPolicy.valueOf(call.argument<String>(REGISTER_TASK_EXISTING_WORK_POLICY)!!)
+                ExistingWorkPolicy.valueOf(call.argument<String>(REGISTER_TASK_EXISTING_WORK_POLICY)!!.toUpperCase())
             } catch (ignored: Exception) {
                 ExistingWorkPolicy.KEEP
             }
 
     private fun extractExistingPeriodicWorkPolicyFromCall(call: MethodCall): ExistingPeriodicWorkPolicy =
             try {
-                ExistingPeriodicWorkPolicy.valueOf(call.argument<String>(REGISTER_TASK_EXISTING_WORK_POLICY)!!)
+                ExistingPeriodicWorkPolicy.valueOf(call.argument<String>(REGISTER_TASK_EXISTING_WORK_POLICY)!!.toUpperCase())
             } catch (ignored: Exception) {
                 ExistingPeriodicWorkPolicy.KEEP
             }
 
-    private fun extractMinimumFrequencySecondsFromCall(call: MethodCall): Long =
+    private fun extractFrequencySecondsFromCall(call: MethodCall): Long =
             call.argument<Long>(PERIODIC_TASK_FREQUENCY_SECONDS) ?: MIN_PERIODIC_INTERVAL_MILLIS
 
     private fun extractInitialDelayFromCall(call: MethodCall): Long =
@@ -184,7 +183,7 @@ object Extractor {
 
     private fun extractBackoffPolicyConfigFromCall(call: MethodCall, taskType: TaskType): BackoffPolicyTaskConfig {
         val backoffPolicy = try {
-            BackoffPolicy.valueOf(call.argument<String>(REGISTER_TASK_BACK_OFF_POLICY_TYPE_KEY)!!)
+            BackoffPolicy.valueOf(call.argument<String>(REGISTER_TASK_BACK_OFF_POLICY_TYPE_KEY)!!.toUpperCase())
         } catch (ignored: Exception) {
             BackoffPolicy.EXPONENTIAL
         }
@@ -203,7 +202,7 @@ object Extractor {
     private fun extractConstraintConfigFromCall(call: MethodCall): Constraints {
         fun extractNetworkTypeFromCall(call: MethodCall) =
                 try {
-                    NetworkType.valueOf(call.argument<String>(REGISTER_TASK_CONSTRAINTS_NETWORK_TYPE_KEY)!!)
+                    NetworkType.valueOf(call.argument<String>(REGISTER_TASK_CONSTRAINTS_NETWORK_TYPE_KEY)!!.toUpperCase())
                 } catch (ignored: Exception) {
                     NetworkType.NOT_REQUIRED
                 }
