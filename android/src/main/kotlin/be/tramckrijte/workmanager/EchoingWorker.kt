@@ -1,8 +1,5 @@
 package be.tramckrijte.workmanager
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
@@ -36,11 +33,17 @@ class EchoingWorker(private val ctx: Context,
         const val ECHO_METHOD_NAME = "echoTaskRan"
     }
 
+    private val echoValue
+        get() = workerParams.inputData.getString(VALUE_TO_ECHO_KEY)
+
     private val latch = CountDownLatch(1)
     var result: Result = Result.retry()
 
     override fun doWork(): Result {
         Handler(Looper.getMainLooper()).post {
+            FlutterMain.ensureInitializationComplete(ctx, null)
+            //val appBundlePath = FlutterMain.findAppBundlePath(ctx)
+
             val callbackHandle = SharedPreferenceHelper.getCallbackHandle(ctx)
             val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle)
 
@@ -63,7 +66,7 @@ class EchoingWorker(private val ctx: Context,
         latch.await()
 
         if (workerParams.inputData.getBoolean(IS_IN_DEBUG_MODE, false)) {
-            DebugHelper.postTaskNotification(ctx, javaClass.simpleName, "${workerParams.inputData.getString(VALUE_TO_ECHO_KEY)}", result)
+            DebugHelper.postTaskNotification(ctx, javaClass.simpleName, "$echoValue", result)
         }
 
         return result
@@ -74,7 +77,7 @@ class EchoingWorker(private val ctx: Context,
             BACKGROUND_CHANNEL_INITIALIZED ->
                 backgroundChannel.invokeMethod(
                         ECHO_METHOD_NAME,
-                        workerParams.inputData.getString(VALUE_TO_ECHO_KEY),
+                        echoValue,
                         object : MethodChannel.Result {
                             override fun notImplemented() {
                                 latch.countDown()

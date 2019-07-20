@@ -34,8 +34,10 @@ class _MyAppState extends State<MyApp> {
               RaisedButton(
                   child: Text("Start the Flutter background service first"),
                   onPressed: () {
-                    Workmanager.initialize(callbackDispatcher,
-                        isInDebugMode: true);
+                    Workmanager.initialize(
+                      callbackDispatcher,
+                      isInDebugMode: true,
+                    );
                   }),
               RaisedButton(
                   child: Text("Register OneOff Task"),
@@ -45,7 +47,7 @@ class _MyAppState extends State<MyApp> {
               RaisedButton(
                   child: Text("Register Periodic Task"),
                   onPressed: () {
-                    Workmanager.registerPeriodicTask("2", "simplePeriodicTask");
+                    Workmanager.registerPeriodicTask("2", "simplePeriodicTask", initialDelaySeconds: 15);
                   })
             ],
           ),
