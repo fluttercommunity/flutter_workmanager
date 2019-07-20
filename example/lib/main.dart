@@ -40,14 +40,19 @@ class _MyAppState extends State<MyApp> {
                     );
                   }),
               RaisedButton(
+                  child: Text("Register Delayed OneOff Task"),
+                  onPressed: () {
+                    Workmanager.registerOneOffTask("1", "simpleDelayedTask", initialDelaySeconds: 10);
+                  }),
+              RaisedButton(
                   child: Text("Register OneOff Task"),
                   onPressed: () {
-                    Workmanager.registerOneOffTask("1", "simpleTask");
+                    Workmanager.registerOneOffTask("2", "simpleTask");
                   }),
               RaisedButton(
                   child: Text("Register Periodic Task"),
                   onPressed: () {
-                    Workmanager.registerPeriodicTask("2", "simplePeriodicTask", initialDelaySeconds: 15);
+                    Workmanager.registerPeriodicTask("3", "simplePeriodicTask", initialDelaySeconds: 15);
                   })
             ],
           ),
