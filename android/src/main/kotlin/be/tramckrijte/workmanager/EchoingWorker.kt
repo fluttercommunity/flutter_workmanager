@@ -34,7 +34,10 @@ class EchoingWorker(private val ctx: Context,
     }
 
     private val echoValue
-        get() = workerParams.inputData.getString(VALUE_TO_ECHO_KEY)
+        get() = workerParams.inputData.getString(VALUE_TO_ECHO_KEY)!!
+
+    private val isInDebug
+        get() = workerParams.inputData.getBoolean(IS_IN_DEBUG_MODE, false)
 
     private val latch = CountDownLatch(1)
     var result: Result = Result.retry()
@@ -42,10 +45,14 @@ class EchoingWorker(private val ctx: Context,
     override fun doWork(): Result {
         Handler(Looper.getMainLooper()).post {
             FlutterMain.ensureInitializationComplete(ctx, null)
-            //val appBundlePath = FlutterMain.findAppBundlePath(ctx)
 
             val callbackHandle = SharedPreferenceHelper.getCallbackHandle(ctx)
             val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle)
+            val dartBundlePath = FlutterMain.findAppBundlePath(ctx)
+
+            if (isInDebug) {
+                DebugHelper.postTaskStarting(ctx, echoValue, callbackHandle, callbackInfo, dartBundlePath)
+            }
 
             val backgroundFlutterView = FlutterNativeView(ctx, true)
 
@@ -59,14 +66,16 @@ class EchoingWorker(private val ctx: Context,
 
             backgroundFlutterView.runFromBundle(args)
 
+            WorkmanagerPlugin.pluginRegistryCallback.registerWith(backgroundFlutterView.pluginRegistry)
+
             backgroundChannel = MethodChannel(backgroundFlutterView, BACKGROUND_CHANNEL_NAME)
             backgroundChannel.setMethodCallHandler(this)
         }
 
         latch.await()
 
-        if (workerParams.inputData.getBoolean(IS_IN_DEBUG_MODE, false)) {
-            DebugHelper.postTaskNotification(ctx, javaClass.simpleName, "$echoValue", result)
+        if (isInDebug) {
+            DebugHelper.postTaskCompleteNotification(ctx, javaClass.simpleName, echoValue, result)
         }
 
         return result
