@@ -11,7 +11,7 @@ class _WorkmanagerConstants {
       "be.tramckrijte.workmanager/foreground_channel_work_manager";
 }
 
-typedef EchoCallbackFunction = Future<bool> Function(String value);
+typedef EchoCallbackFunction = Future<bool> Function(String echoValue);
 
 enum ExistingWorkPolicy { append, keep, replace }
 
@@ -49,7 +49,7 @@ class Workmanager {
 
   static Future<void> registerOneOffTask(
     final String uniqueName,
-    final String valueToReturn, {
+    final String echoValue, {
     final String tag,
     final ExistingWorkPolicy existingWorkPolicy,
     final double initialDelaySeconds = 0,
@@ -64,7 +64,7 @@ class Workmanager {
       await _register(
         methodName: "registerOneOffTask",
         uniqueName: uniqueName,
-        valueToReturn: valueToReturn,
+        echoValue: echoValue,
         tag: tag,
         existingWorkPolicy: existingWorkPolicy,
         initialDelaySeconds: initialDelaySeconds,
@@ -79,7 +79,7 @@ class Workmanager {
 
   static Future<void> registerPeriodicTask(
     final String uniqueName,
-    final String valueToReturn, {
+    final String echoValue, {
     final double frequencySeconds = 0,
     final String tag,
     final ExistingWorkPolicy existingWorkPolicy,
@@ -95,7 +95,7 @@ class Workmanager {
       await _register(
         methodName: "registerPeriodicTask",
         uniqueName: uniqueName,
-        valueToReturn: valueToReturn,
+        echoValue: echoValue,
         frequencySeconds: frequencySeconds,
         tag: tag,
         existingWorkPolicy: existingWorkPolicy,
@@ -112,7 +112,7 @@ class Workmanager {
   static Future<void> _register({
     final String methodName,
     final String uniqueName,
-    final String valueToReturn,
+    final String echoValue,
     final double frequencySeconds,
     final String tag,
     final ExistingWorkPolicy existingWorkPolicy,
@@ -126,13 +126,13 @@ class Workmanager {
     final double backoffPolicyDelayMillis,
   }) async {
     assert(uniqueName != null);
-    assert(valueToReturn != null);
+    assert(echoValue != null);
     return await _foregroundChannel.invokeMethod(
       methodName,
       {
         "isInDebugMode": _isInDebugMode,
         "uniqueName": uniqueName,
-        "valueToReturn": valueToReturn,
+        "echoValue": echoValue,
         "tag": tag,
         "frequency": frequencySeconds,
         "existingWorkPolicy": existingWorkPolicy,
