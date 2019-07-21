@@ -27,9 +27,11 @@ class Workmanager {
   static const MethodChannel _foregroundChannel =
       const MethodChannel(_WorkmanagerConstants.foregroundChannelName);
 
-  static void defaultCallbackDispatcher(final EchoCallbackFunction echoFunction) {
+  static void defaultCallbackDispatcher(
+      final EchoCallbackFunction echoFunction) {
     WidgetsFlutterBinding.ensureInitialized();
-    _backgroundChannel.setMethodCallHandler((call) async => echoFunction(call.arguments));
+    _backgroundChannel
+        .setMethodCallHandler((call) async => echoFunction(call.arguments));
     _backgroundChannel.invokeMethod("backgroundChannelInitialized");
   }
 
@@ -39,12 +41,7 @@ class Workmanager {
   }) async {
     Workmanager._isInDebugMode = isInDebugMode;
     final callback = PluginUtilities.getCallbackHandle(callbackDispatcher);
-    await _foregroundChannel.invokeMethod(
-      'initialize',
-      {
-        "callbackHandle": callback.toRawHandle(),
-      },
-    );
+    await _foregroundChannel.invokeMethod('initialize', callback.toRawHandle());
   }
 
   static Future<void> registerOneOffTask(

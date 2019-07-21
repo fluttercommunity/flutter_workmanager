@@ -134,7 +134,7 @@ object Extractor {
 
     fun extractWorkManagerCallFromRawMethodName(call: MethodCall): WorkManagerCall =
             when (PossibleWorkManagerCall.fromRawMethodName(call.method)) {
-                Extractor.PossibleWorkManagerCall.INITIALIZE -> WorkManagerCall.Initialize(call.argument<Double>(INITIALIZE_CALLBACK_DISPATCHER_HANDLE_KEY)!!.toLong())
+                Extractor.PossibleWorkManagerCall.INITIALIZE -> WorkManagerCall.Initialize(call.arguments() as Long)
                 Extractor.PossibleWorkManagerCall.REGISTER_ONE_OFF_TASK -> {
                     WorkManagerCall.RegisterTask.OneOffTask(
                             isInDebugMode = call.argument<Boolean>(REGISTER_TASK_IS_IN_DEBUG_MODE_KEY)!!,
@@ -183,7 +183,8 @@ object Extractor {
             }
 
     private fun extractFrequencySecondsFromCall(call: MethodCall): Long =
-            call.argument<Double>(PERIODIC_TASK_FREQUENCY_SECONDS_KEY)?.toLong() ?: MIN_PERIODIC_INTERVAL_MILLIS
+            call.argument<Double>(PERIODIC_TASK_FREQUENCY_SECONDS_KEY)?.toLong()
+                    ?: MIN_PERIODIC_INTERVAL_MILLIS
 
     private fun extractInitialDelayFromCall(call: MethodCall): Long =
             call.argument<Double>(REGISTER_TASK_INITIAL_DELAY_SECONDS_KEY)?.toLong() ?: 0L
@@ -195,7 +196,8 @@ object Extractor {
             BackoffPolicy.EXPONENTIAL
         }
 
-        val requestedBackoffDelay = call.argument<Double>(REGISTER_TASK_BACK_OFF_POLICY_DELAY_MILLIS_KEY)?.toLong() ?: 0L
+        val requestedBackoffDelay = call.argument<Double>(REGISTER_TASK_BACK_OFF_POLICY_DELAY_MILLIS_KEY)?.toLong()
+                ?: 0L
         val minimumBackOffDelay = taskType.minimumBackOffDelay
 
         return BackoffPolicyTaskConfig(

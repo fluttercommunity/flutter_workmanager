@@ -16,7 +16,7 @@ object DebugHelper {
         postNotification(ctx, "$title ${System.currentTimeMillis()}", "${result.javaClass.simpleName}: $valueToReturn")
     }
 
-    fun postTaskStarting(ctx: Context, echoValue: String, callbackHandle: Long, callbackInfo: FlutterCallbackInformation?, dartBundlePath: String) {
+    fun postTaskStarting(ctx: Context, echoValue: String, callbackHandle: Long, callbackInfo: FlutterCallbackInformation?, dartBundlePath: String?) {
         postNotification(ctx, echoValue, "" +
                 "callbackHandle: $callbackHandle;\n" +
                 "callBackName: ${callbackInfo?.callbackName};\n" +
