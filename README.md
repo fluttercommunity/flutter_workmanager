@@ -8,6 +8,25 @@ An example of where this would be handy is when you have periodic job that fetch
 >
 > `if (Platform.isAndroid) { ... }`
 
+# Installation
+
+```
+dependencies:
+  workmanager: ^0.0.3
+```
+
+Get it
+
+```
+flutter pub get
+```
+
+Import it
+
+```
+import 'package:workmanager/workmanager.dart';
+```
+
 # How to use
 
 See sample folder for a complete working example.
