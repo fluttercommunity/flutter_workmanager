@@ -16,3 +16,7 @@
 ## 0.0.2
 
 * Remove the need to register a custom Application on Android side. (Everything still works in testing)
+
+## 0.0.3
+
+* Add Dart documentation

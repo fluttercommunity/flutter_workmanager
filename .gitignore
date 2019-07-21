@@ -7,3 +7,6 @@
 build/
 .idea/
 .gradle/
+
+doc/api/*/
+!doc/api/workmanager
