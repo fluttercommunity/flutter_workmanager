@@ -12,3 +12,7 @@
     * requires device idle
     * requires storage not low
   * back off policy
+
+## 0.0.2
+
+* Remove the need to register a custom Application on Android side. (Everything still works in testing)

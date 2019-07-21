@@ -66,7 +66,7 @@ class EchoingWorker(private val ctx: Context,
 
             backgroundFlutterView.runFromBundle(args)
 
-            WorkmanagerPlugin.pluginRegistryCallback.registerWith(backgroundFlutterView.pluginRegistry)
+            //WorkmanagerPlugin.pluginRegistryCallback.registerWith(backgroundFlutterView.pluginRegistry)
 
             backgroundChannel = MethodChannel(backgroundFlutterView, BACKGROUND_CHANNEL_NAME)
             backgroundChannel.setMethodCallHandler(this)

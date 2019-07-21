@@ -6,9 +6,30 @@ import 'package:workmanager/workmanager.dart';
 
 void main() => runApp(MyApp());
 
+const simpleTaskKey = "simpleTask";
+const simpleDelayedTask = "simpleDelayedTask";
+const simplePeriodicTask = "simplePeriodicTask";
+const simplePeriodic1HourTask = "simplePeriodic1HourTask";
+
 void callbackDispatcher() {
   Workmanager.defaultCallbackDispatcher((echoValue) {
     print("Native echoed: $echoValue");
+
+    switch (echoValue) {
+      case simpleTaskKey:
+        print("$simpleTaskKey was executed");
+        break;
+      case simpleDelayedTask:
+        print("$simpleDelayedTask was executed");
+        break;
+      case simplePeriodicTask:
+        print("$simplePeriodicTask was executed");
+        break;
+      case simplePeriodic1HourTask:
+        print("$simplePeriodic1HourTask was executed");
+        break;
+    }
+
     return Future.value(true);
   });
 }
@@ -51,7 +72,7 @@ class _MyAppState extends State<MyApp> {
                   onPressed: () {
                     Workmanager.registerOneOffTask(
                       "1",
-                      "simpleTask",
+                      simpleTaskKey,
                     );
                   }),
               //This job runs once
@@ -61,7 +82,7 @@ class _MyAppState extends State<MyApp> {
                   onPressed: () {
                     Workmanager.registerOneOffTask(
                       "2",
-                      "simpleDelayedTask",
+                      simpleDelayedTask,
                       initialDelay: Duration(seconds: 10),
                     );
                   }),
@@ -76,7 +97,7 @@ class _MyAppState extends State<MyApp> {
                   onPressed: () {
                     Workmanager.registerPeriodicTask(
                       "3",
-                      "simplePeriodicTask",
+                      simplePeriodicTask,
                       initialDelay: Duration(seconds: 10),
                     );
                   }),
@@ -87,7 +108,7 @@ class _MyAppState extends State<MyApp> {
                   onPressed: () {
                     Workmanager.registerPeriodicTask(
                       "5",
-                      "simplePeriodic1HourTask",
+                      simplePeriodic1HourTask,
                       frequency: Duration(hours: 1),
                     );
                   }),

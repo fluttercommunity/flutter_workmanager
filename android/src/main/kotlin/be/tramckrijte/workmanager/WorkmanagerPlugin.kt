@@ -10,6 +10,7 @@ import io.flutter.plugin.common.PluginRegistry.Registrar
 class WorkmanagerPlugin(private val workmanagerCallHandler: WorkmanagerCallHandler) : MethodCallHandler {
 
     companion object {
+        //Currently unused; Not sure whether this is really needed
         lateinit var pluginRegistryCallback: PluginRegistry.PluginRegistrantCallback
 
         @JvmStatic
