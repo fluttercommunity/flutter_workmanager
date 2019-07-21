@@ -70,7 +70,7 @@ class Workmanager {
     final Duration initialDelay = _noDuration,
     final WorkManagerConstraintConfig constraints,
     final BackoffPolicy backoffPolicy,
-    final Duration backoffPolicyDelayMillis = _noDuration,
+    final Duration backoffPolicyDelay = _noDuration,
   }) async =>
       await _register(
         methodName: "registerOneOffTask",
@@ -81,7 +81,7 @@ class Workmanager {
         initialDelay: initialDelay,
         constraints: constraints,
         backoffPolicy: backoffPolicy,
-        backoffPolicyDelay: backoffPolicyDelayMillis,
+        backoffPolicyDelay: backoffPolicyDelay,
       );
 
   static Future<void> registerPeriodicTask(
