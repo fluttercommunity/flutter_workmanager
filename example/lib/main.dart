@@ -31,6 +31,8 @@ class _MyAppState extends State<MyApp> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
+              Text("Initialize the plugin first",
+                  style: Theme.of(context).textTheme.headline),
               RaisedButton(
                   child: Text("Start the Flutter background service first"),
                   onPressed: () {
@@ -39,21 +41,56 @@ class _MyAppState extends State<MyApp> {
                       isInDebugMode: true,
                     );
                   }),
-              RaisedButton(
-                  child: Text("Register Delayed OneOff Task"),
-                  onPressed: () {
-                    Workmanager.registerOneOffTask("1", "simpleDelayedTask", initialDelaySeconds: 10);
-                  }),
+
+              Text("One Off Tasks",
+                  style: Theme.of(context).textTheme.headline),
+              //This job runs once.
+              //Most likely this will trigger immediately
               RaisedButton(
                   child: Text("Register OneOff Task"),
                   onPressed: () {
-                    Workmanager.registerOneOffTask("2", "simpleTask");
+                    Workmanager.registerOneOffTask(
+                      "1",
+                      "simpleTask",
+                    );
                   }),
+              //This job runs once
+              //This wait at least 10 seconds before running
+              RaisedButton(
+                  child: Text("Register Delayed OneOff Task"),
+                  onPressed: () {
+                    Workmanager.registerOneOffTask(
+                      "2",
+                      "simpleDelayedTask",
+                      initialDelay: Duration(seconds: 10),
+                    );
+                  }),
+
+              Text("Periodic Tasks",
+                  style: Theme.of(context).textTheme.headline),
+              //This job runs periodically
+              //It will wait at least 10 seconds before its first launch
+              //Since we have not provided a frequency it will be the default 15 minutes
               RaisedButton(
                   child: Text("Register Periodic Task"),
                   onPressed: () {
-                    Workmanager.registerPeriodicTask("3", "simplePeriodicTask", initialDelaySeconds: 15);
-                  })
+                    Workmanager.registerPeriodicTask(
+                      "3",
+                      "simplePeriodicTask",
+                      initialDelay: Duration(seconds: 10),
+                    );
+                  }),
+              //This job runs periodically
+              //It will run about every hour
+              RaisedButton(
+                  child: Text("Register 1 hour Periodic Task"),
+                  onPressed: () {
+                    Workmanager.registerPeriodicTask(
+                      "5",
+                      "simplePeriodic1HourTask",
+                      frequency: Duration(hours: 1),
+                    );
+                  }),
             ],
           ),
         ),

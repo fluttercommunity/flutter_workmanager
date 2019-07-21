@@ -11,6 +11,24 @@ class _WorkmanagerConstants {
       "be.tramckrijte.workmanager/foreground_channel_work_manager";
 }
 
+class WorkManagerConstraintConfig {
+  final NetworkType networkType;
+  final bool requiresBatteryNotLow;
+  final bool requiresCharging;
+  final bool requiresDeviceIdle;
+  final bool requiresStorageNotLow;
+
+  WorkManagerConstraintConfig({
+    this.networkType,
+    this.requiresBatteryNotLow,
+    this.requiresCharging,
+    this.requiresDeviceIdle,
+    this.requiresStorageNotLow,
+  });
+}
+
+const _noDuration = const Duration(seconds: 0);
+
 typedef EchoCallbackFunction = Future<bool> Function(String echoValue);
 
 enum ExistingWorkPolicy { append, keep, replace }
@@ -49,14 +67,10 @@ class Workmanager {
     final String echoValue, {
     final String tag,
     final ExistingWorkPolicy existingWorkPolicy,
-    final double initialDelaySeconds = 0,
-    final NetworkType networkType,
-    final bool requiresBatteryNotLow,
-    final bool requiresCharging,
-    final bool requiresDeviceIdle,
-    final bool requiresStorageNotLow,
+    final Duration initialDelay = _noDuration,
+    final WorkManagerConstraintConfig constraints,
     final BackoffPolicy backoffPolicy,
-    final double backoffPolicyDelayMillis = 0,
+    final Duration backoffPolicyDelayMillis = _noDuration,
   }) async =>
       await _register(
         methodName: "registerOneOffTask",
@@ -64,63 +78,47 @@ class Workmanager {
         echoValue: echoValue,
         tag: tag,
         existingWorkPolicy: existingWorkPolicy,
-        initialDelaySeconds: initialDelaySeconds,
-        networkType: networkType,
-        requiresBatteryNotLow: requiresBatteryNotLow,
-        requiresCharging: requiresCharging,
-        requiresDeviceIdle: requiresDeviceIdle,
-        requiresStorageNotLow: requiresStorageNotLow,
+        initialDelay: initialDelay,
+        constraints: constraints,
         backoffPolicy: backoffPolicy,
-        backoffPolicyDelayMillis: backoffPolicyDelayMillis,
+        backoffPolicyDelay: backoffPolicyDelayMillis,
       );
 
   static Future<void> registerPeriodicTask(
     final String uniqueName,
     final String echoValue, {
-    final double frequencySeconds = 0,
+    final Duration frequency = _noDuration,
     final String tag,
     final ExistingWorkPolicy existingWorkPolicy,
-    final double initialDelaySeconds = 0,
-    final NetworkType networkType,
-    final bool requiresBatteryNotLow,
-    final bool requiresCharging,
-    final bool requiresDeviceIdle,
-    final bool requiresStorageNotLow,
+    final Duration initialDelay = _noDuration,
+    final WorkManagerConstraintConfig constraints,
     final BackoffPolicy backoffPolicy,
-    final double backoffPolicyDelayMillis = 0,
+    final Duration backoffPolicyDelay = _noDuration,
   }) async =>
       await _register(
         methodName: "registerPeriodicTask",
         uniqueName: uniqueName,
         echoValue: echoValue,
-        frequencySeconds: frequencySeconds,
+        frequency: frequency,
         tag: tag,
         existingWorkPolicy: existingWorkPolicy,
-        initialDelaySeconds: initialDelaySeconds,
-        networkType: networkType,
-        requiresBatteryNotLow: requiresBatteryNotLow,
-        requiresCharging: requiresCharging,
-        requiresDeviceIdle: requiresDeviceIdle,
-        requiresStorageNotLow: requiresStorageNotLow,
+        initialDelay: initialDelay,
+        constraints: constraints,
         backoffPolicy: backoffPolicy,
-        backoffPolicyDelayMillis: backoffPolicyDelayMillis,
+        backoffPolicyDelay: backoffPolicyDelay,
       );
 
   static Future<void> _register({
     final String methodName,
     final String uniqueName,
     final String echoValue,
-    final double frequencySeconds,
+    final Duration frequency,
     final String tag,
     final ExistingWorkPolicy existingWorkPolicy,
-    final double initialDelaySeconds,
-    final NetworkType networkType,
-    final bool requiresBatteryNotLow,
-    final bool requiresCharging,
-    final bool requiresDeviceIdle,
-    final bool requiresStorageNotLow,
+    final Duration initialDelay,
+    final WorkManagerConstraintConfig constraints,
     final BackoffPolicy backoffPolicy,
-    final double backoffPolicyDelayMillis,
+    final Duration backoffPolicyDelay,
   }) async {
     assert(uniqueName != null);
     assert(echoValue != null);
@@ -131,16 +129,16 @@ class Workmanager {
         "uniqueName": uniqueName,
         "echoValue": echoValue,
         "tag": tag,
-        "frequency": frequencySeconds,
+        "frequency": frequency?.inSeconds,
         "existingWorkPolicy": existingWorkPolicy,
-        "initialDelaySeconds": initialDelaySeconds,
-        "networkType": networkType,
-        "requiresBatteryNotLow": requiresBatteryNotLow,
-        "requiresCharging": requiresCharging,
-        "requiresDeviceIdle": requiresDeviceIdle,
-        "requiresStorageNotLow": requiresStorageNotLow,
+        "initialDelaySeconds": initialDelay.inSeconds,
+        "networkType": constraints?.networkType,
+        "requiresBatteryNotLow": constraints?.requiresBatteryNotLow,
+        "requiresCharging": constraints?.requiresCharging,
+        "requiresDeviceIdle": constraints?.requiresDeviceIdle,
+        "requiresStorageNotLow": constraints?.requiresStorageNotLow,
         "backoffPolicyType": backoffPolicy,
-        "backoffDelayInMilliseconds": backoffPolicyDelayMillis,
+        "backoffDelayInMilliseconds": backoffPolicyDelay.inMilliseconds,
       },
     );
   }

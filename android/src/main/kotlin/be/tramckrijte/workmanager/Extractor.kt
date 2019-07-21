@@ -5,7 +5,6 @@ import androidx.work.*
 import androidx.work.PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS
 import be.tramckrijte.workmanager.WorkManagerCall.CancelTask.ByTag.KEYS.UNREGISTER_TASK_TAG_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.CancelTask.ByUniqueName.KEYS.UNREGISTER_TASK_UNIQUE_NAME_KEY
-import be.tramckrijte.workmanager.WorkManagerCall.Initialize.KEYS.INITIALIZE_CALLBACK_DISPATCHER_HANDLE_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_BACK_OFF_POLICY_DELAY_MILLIS_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_BACK_OFF_POLICY_TYPE_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_CONSTRAINTS_BATTERY_NOT_LOW_KEY
@@ -13,12 +12,12 @@ import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TAS
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_CONSTRAINTS_DEVICE_IDLE_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_CONSTRAINTS_NETWORK_TYPE_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_CONSTRAINTS_STORAGE_NOT_LOW_KEY
+import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_ECHO_VALUE_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_EXISTING_WORK_POLICY_KEY
-import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_UNIQUE_NAME_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_INITIAL_DELAY_SECONDS_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_IS_IN_DEBUG_MODE_KEY
-import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_ECHO_VALUE_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_TAG_KEY
+import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_UNIQUE_NAME_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.PeriodicTask.KEYS.PERIODIC_TASK_FREQUENCY_SECONDS_KEY
 import io.flutter.plugin.common.MethodCall
 import kotlin.math.max
@@ -29,11 +28,7 @@ data class BackoffPolicyTaskConfig(val backoffPolicy: BackoffPolicy,
                                    val backoffDelay: Long = max(minBackoffInMillis, requestedBackoffDelay))
 
 sealed class WorkManagerCall {
-    data class Initialize(val callbackDispatcherHandleKey: Long) : WorkManagerCall() {
-        companion object KEYS {
-            const val INITIALIZE_CALLBACK_DISPATCHER_HANDLE_KEY = "callbackHandle"
-        }
-    }
+    data class Initialize(val callbackDispatcherHandleKey: Long) : WorkManagerCall()
 
     sealed class RegisterTask : WorkManagerCall() {
         abstract val isInDebugMode: Boolean
@@ -183,11 +178,11 @@ object Extractor {
             }
 
     private fun extractFrequencySecondsFromCall(call: MethodCall): Long =
-            call.argument<Double>(PERIODIC_TASK_FREQUENCY_SECONDS_KEY)?.toLong()
+            call.argument<Int>(PERIODIC_TASK_FREQUENCY_SECONDS_KEY)?.toLong()
                     ?: MIN_PERIODIC_INTERVAL_MILLIS
 
     private fun extractInitialDelayFromCall(call: MethodCall): Long =
-            call.argument<Double>(REGISTER_TASK_INITIAL_DELAY_SECONDS_KEY)?.toLong() ?: 0L
+            call.argument<Int>(REGISTER_TASK_INITIAL_DELAY_SECONDS_KEY)?.toLong() ?: 0L
 
     private fun extractBackoffPolicyConfigFromCall(call: MethodCall, taskType: TaskType): BackoffPolicyTaskConfig {
         val backoffPolicy = try {
@@ -196,7 +191,7 @@ object Extractor {
             BackoffPolicy.EXPONENTIAL
         }
 
-        val requestedBackoffDelay = call.argument<Double>(REGISTER_TASK_BACK_OFF_POLICY_DELAY_MILLIS_KEY)?.toLong()
+        val requestedBackoffDelay = call.argument<Int>(REGISTER_TASK_BACK_OFF_POLICY_DELAY_MILLIS_KEY)?.toLong()
                 ?: 0L
         val minimumBackOffDelay = taskType.minimumBackOffDelay
 

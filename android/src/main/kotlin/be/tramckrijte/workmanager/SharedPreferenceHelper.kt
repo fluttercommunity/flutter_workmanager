@@ -1,7 +1,6 @@
 package be.tramckrijte.workmanager
 
 import android.content.Context
-import java.lang.IllegalStateException
 
 object SharedPreferenceHelper {
 
@@ -17,11 +16,9 @@ object SharedPreferenceHelper {
     }
 
     fun getCallbackHandle(ctx: Context): Long {
-        if (!hasCallbackHandle(ctx)) {
-            throw IllegalStateException("You have not properly initialized the Flutter WorkManager Package. You should ensure you have called the 'initialize' function first before registering any work.")
-        }
+
         return ctx.prefs().getLong(CALLBACK_DISPATCHER_HANDLE_KEY, -1L)
     }
 
-    private fun hasCallbackHandle(ctx: Context) = ctx.prefs().contains(CALLBACK_DISPATCHER_HANDLE_KEY)
+    fun hasCallbackHandle(ctx: Context) = ctx.prefs().contains(CALLBACK_DISPATCHER_HANDLE_KEY)
 }

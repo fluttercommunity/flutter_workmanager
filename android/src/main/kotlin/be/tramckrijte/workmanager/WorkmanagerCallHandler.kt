@@ -21,8 +21,7 @@ class WorkmanagerCallHandler(private val ctx: Context) {
     fun handle(call: MethodCall, result: MethodChannel.Result) =
             when (val extractedCall = Extractor.extractWorkManagerCallFromRawMethodName(call)) {
                 is WorkManagerCall.Initialize -> InitializeHandler.handle(ctx, extractedCall, result)
-                is WorkManagerCall.RegisterTask.OneOffTask -> OneOffTaskHandler.handle(ctx, extractedCall, result)
-                is WorkManagerCall.RegisterTask.PeriodicTask -> PeriodicTaskHandler.handle(ctx, extractedCall, result)
+                is WorkManagerCall.RegisterTask -> RegisterTaskHandler.handle(ctx, extractedCall, result)
                 is WorkManagerCall.CancelTask -> UnregisterTaskHandler.handle(ctx, extractedCall, result)
                 is WorkManagerCall.Unknown -> UnknownTaskHandler.handle(ctx, extractedCall, result)
             }
@@ -35,22 +34,34 @@ private object InitializeHandler : CallHandler<WorkManagerCall.Initialize> {
     }
 }
 
-private object OneOffTaskHandler : CallHandler<WorkManagerCall.RegisterTask.OneOffTask> {
-    override fun handle(context: Context, convertedCall: WorkManagerCall.RegisterTask.OneOffTask, result: MethodChannel.Result) {
-        val oneOffTaskRequest = OneTimeWorkRequest.Builder(EchoingWorker::class.java)
-                .setInputData(Data.Builder().putAll(mapOf(VALUE_TO_ECHO_KEY to convertedCall.valueToReturn, IS_IN_DEBUG_MODE to convertedCall.isInDebugMode)).build())
-                .setInitialDelay(convertedCall.initialDelaySeconds, TimeUnit.SECONDS)
-                .setConstraints(convertedCall.constraintsConfig)
-                .setBackoffCriteria(convertedCall.backoffPolicyConfig.backoffPolicy, convertedCall.backoffPolicyConfig.backoffDelay, TimeUnit.MILLISECONDS)
-                .apply { convertedCall.tag?.let(::addTag) }
-                .build()
-        context.workManager().enqueueUniqueWork(convertedCall.uniqueName, convertedCall.existingWorkPolicy, oneOffTaskRequest)
+private object RegisterTaskHandler : CallHandler<WorkManagerCall.RegisterTask> {
+    override fun handle(context: Context, convertedCall: WorkManagerCall.RegisterTask, result: MethodChannel.Result) {
+        if (!SharedPreferenceHelper.hasCallbackHandle(context)) {
+            result.error(
+                    "1",
+                    "You have not properly initialized the Flutter WorkManager Package. " +
+                            "You should ensure you have called the 'initialize' function first! " +
+                            "Example: \n" +
+                            "\n" +
+                            "`Workmanager.initialize(\n" +
+                            "  callbackDispatcher,\n" +
+                            " )`" +
+                            "\n" +
+                            "\n" +
+                            "The `callbackDispatcher` is a top level function. See example in repository.",
+                    null
+            )
+            return
+        }
+
+        when (convertedCall) {
+            is WorkManagerCall.RegisterTask.OneOffTask -> enqueueOneOffTask(context, convertedCall)
+            is WorkManagerCall.RegisterTask.PeriodicTask -> enqueuePeriodicTask(context, convertedCall)
+        }
         result.success()
     }
-}
 
-private object PeriodicTaskHandler : CallHandler<WorkManagerCall.RegisterTask.PeriodicTask> {
-    override fun handle(context: Context, convertedCall: WorkManagerCall.RegisterTask.PeriodicTask, result: MethodChannel.Result) {
+    private fun enqueuePeriodicTask(context: Context, convertedCall: WorkManagerCall.RegisterTask.PeriodicTask) {
         val periodicTaskRequest = PeriodicWorkRequest.Builder(EchoingWorker::class.java, convertedCall.frequencyInSeconds, TimeUnit.SECONDS)
                 .setInputData(Data.Builder().putAll(mapOf(VALUE_TO_ECHO_KEY to convertedCall.valueToReturn, IS_IN_DEBUG_MODE to convertedCall.isInDebugMode)).build())
                 .setInitialDelay(convertedCall.initialDelaySeconds, TimeUnit.SECONDS)
@@ -59,7 +70,17 @@ private object PeriodicTaskHandler : CallHandler<WorkManagerCall.RegisterTask.Pe
                 .apply { convertedCall.tag?.let(::addTag) }
                 .build()
         context.workManager().enqueueUniquePeriodicWork(convertedCall.uniqueName, convertedCall.existingWorkPolicy, periodicTaskRequest)
-        result.success()
+    }
+
+    private fun enqueueOneOffTask(context: Context, convertedCall: WorkManagerCall.RegisterTask.OneOffTask) {
+        val oneOffTaskRequest = OneTimeWorkRequest.Builder(EchoingWorker::class.java)
+                .setInputData(Data.Builder().putAll(mapOf(VALUE_TO_ECHO_KEY to convertedCall.valueToReturn, IS_IN_DEBUG_MODE to convertedCall.isInDebugMode)).build())
+                .setInitialDelay(convertedCall.initialDelaySeconds, TimeUnit.SECONDS)
+                .setConstraints(convertedCall.constraintsConfig)
+                .setBackoffCriteria(convertedCall.backoffPolicyConfig.backoffPolicy, convertedCall.backoffPolicyConfig.backoffDelay, TimeUnit.MILLISECONDS)
+                .apply { convertedCall.tag?.let(::addTag) }
+                .build()
+        context.workManager().enqueueUniqueWork(convertedCall.uniqueName, convertedCall.existingWorkPolicy, oneOffTaskRequest)
     }
 }
 
