@@ -20,3 +20,7 @@
 ## 0.0.3
 
 * Add Dart documentation
+
+# 0.0.4
+
+* Provide a better description so package scores higher on Pub

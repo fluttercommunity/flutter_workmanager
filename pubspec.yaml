@@ -1,6 +1,6 @@
 name: workmanager
 description: Flutter Android Workmanager. This plugin allows you to schedule background work on Android with the Android WorkManager API. You will be given the chance to run some headless Dart code, handy for background synching mechanism. iOS is curently not supported since the API is vastly different.
-version: 0.0.3
+version: 0.0.4
 author: Tim Rijckaert <tim.rijckaert@gmail.com>
 homepage: https://github.com/timrijckaert/flutter_workmanager
 
