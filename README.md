@@ -1,5 +1,5 @@
 # Flutter Workmanager
-[![pub package](https://img.shields.io/pub/v/workmanager.svg)](https://pub.dev/packages/workmanager)
+[![pub package](https://img.shields.io/pub/v/workmanager.svg)](https://pub.dartlang.org/packages/workmanager)
 
 Flutter WorkManager is a wrapper around [Android's WorkManager](https://developer.android.com/topic/libraries/architecture/workmanager).  
 It allows for headless background work to be processed in Dart.  
