@@ -6,7 +6,6 @@ import be.tramckrijte.workmanager.EchoingWorker.Companion.IS_IN_DEBUG_MODE
 import be.tramckrijte.workmanager.EchoingWorker.Companion.VALUE_TO_ECHO_KEY
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
-import java.lang.reflect.Method
 import java.util.concurrent.TimeUnit
 
 private fun Context.workManager() = WorkManager.getInstance(this)
@@ -19,12 +18,12 @@ private interface CallHandler<T : WorkManagerCall> {
 class WorkmanagerCallHandler(private val ctx: Context) {
 
     fun handle(call: MethodCall, result: MethodChannel.Result) =
-            when (val extractedCall = Extractor.extractWorkManagerCallFromRawMethodName(call)) {
-                is WorkManagerCall.Initialize -> InitializeHandler.handle(ctx, extractedCall, result)
-                is WorkManagerCall.RegisterTask -> RegisterTaskHandler.handle(ctx, extractedCall, result)
-                is WorkManagerCall.CancelTask -> UnregisterTaskHandler.handle(ctx, extractedCall, result)
-                is WorkManagerCall.Unknown -> UnknownTaskHandler.handle(ctx, extractedCall, result)
-            }
+        when (val extractedCall = Extractor.extractWorkManagerCallFromRawMethodName(call)) {
+            is WorkManagerCall.Initialize -> InitializeHandler.handle(ctx, extractedCall, result)
+            is WorkManagerCall.RegisterTask -> RegisterTaskHandler.handle(ctx, extractedCall, result)
+            is WorkManagerCall.CancelTask -> UnregisterTaskHandler.handle(ctx, extractedCall, result)
+            is WorkManagerCall.Unknown -> UnknownTaskHandler.handle(ctx, extractedCall, result)
+        }
 }
 
 private object InitializeHandler : CallHandler<WorkManagerCall.Initialize> {
@@ -38,18 +37,18 @@ private object RegisterTaskHandler : CallHandler<WorkManagerCall.RegisterTask> {
     override fun handle(context: Context, convertedCall: WorkManagerCall.RegisterTask, result: MethodChannel.Result) {
         if (!SharedPreferenceHelper.hasCallbackHandle(context)) {
             result.error(
-                    "1",
-                    "You have not properly initialized the Flutter WorkManager Package. " +
-                            "You should ensure you have called the 'initialize' function first! " +
-                            "Example: \n" +
-                            "\n" +
-                            "`Workmanager.initialize(\n" +
-                            "  callbackDispatcher,\n" +
-                            " )`" +
-                            "\n" +
-                            "\n" +
-                            "The `callbackDispatcher` is a top level function. See example in repository.",
-                    null
+                "1",
+                "You have not properly initialized the Flutter WorkManager Package. " +
+                        "You should ensure you have called the 'initialize' function first! " +
+                        "Example: \n" +
+                        "\n" +
+                        "`Workmanager.initialize(\n" +
+                        "  callbackDispatcher,\n" +
+                        " )`" +
+                        "\n" +
+                        "\n" +
+                        "The `callbackDispatcher` is a top level function. See example in repository.",
+                null
             )
             return
         }
@@ -62,25 +61,41 @@ private object RegisterTaskHandler : CallHandler<WorkManagerCall.RegisterTask> {
     }
 
     private fun enqueuePeriodicTask(context: Context, convertedCall: WorkManagerCall.RegisterTask.PeriodicTask) {
-        val periodicTaskRequest = PeriodicWorkRequest.Builder(EchoingWorker::class.java, convertedCall.frequencyInSeconds, TimeUnit.SECONDS)
-                .setInputData(Data.Builder().putAll(mapOf(VALUE_TO_ECHO_KEY to convertedCall.valueToReturn, IS_IN_DEBUG_MODE to convertedCall.isInDebugMode)).build())
+        val periodicTaskRequest =
+            PeriodicWorkRequest.Builder(EchoingWorker::class.java, convertedCall.frequencyInSeconds, TimeUnit.SECONDS)
+                .setInputData(
+                    Data.Builder().putAll(
+                        mapOf(
+                            VALUE_TO_ECHO_KEY to convertedCall.valueToReturn,
+                            IS_IN_DEBUG_MODE to convertedCall.isInDebugMode
+                        )
+                    ).build()
+                )
                 .setInitialDelay(convertedCall.initialDelaySeconds, TimeUnit.SECONDS)
                 .setConstraints(convertedCall.constraintsConfig)
-                .setBackoffCriteria(convertedCall.backoffPolicyConfig.backoffPolicy, convertedCall.backoffPolicyConfig.backoffDelay, TimeUnit.MILLISECONDS)
+                .setBackoffCriteria(
+                    convertedCall.backoffPolicyConfig.backoffPolicy,
+                    convertedCall.backoffPolicyConfig.backoffDelay,
+                    TimeUnit.MILLISECONDS
+                )
                 .apply { convertedCall.tag?.let(::addTag) }
                 .build()
-        context.workManager().enqueueUniquePeriodicWork(convertedCall.uniqueName, convertedCall.existingWorkPolicy, periodicTaskRequest)
+        context.workManager()
+            .enqueueUniquePeriodicWork(convertedCall.uniqueName, convertedCall.existingWorkPolicy, periodicTaskRequest)
     }
 
     private fun enqueueOneOffTask(context: Context, convertedCall: WorkManagerCall.RegisterTask.OneOffTask) {
-        val oneOffTaskRequest = OneTimeWorkRequest.Builder(EchoingWorker::class.java)
-                .setInputData(Data.Builder().putAll(mapOf(VALUE_TO_ECHO_KEY to convertedCall.valueToReturn, IS_IN_DEBUG_MODE to convertedCall.isInDebugMode)).build())
-                .setInitialDelay(convertedCall.initialDelaySeconds, TimeUnit.SECONDS)
-                .setConstraints(convertedCall.constraintsConfig)
-                .setBackoffCriteria(convertedCall.backoffPolicyConfig.backoffPolicy, convertedCall.backoffPolicyConfig.backoffDelay, TimeUnit.MILLISECONDS)
-                .apply { convertedCall.tag?.let(::addTag) }
-                .build()
-        context.workManager().enqueueUniqueWork(convertedCall.uniqueName, convertedCall.existingWorkPolicy, oneOffTaskRequest)
+        WorkManagerHelper.enqueueOneOffTask(
+            context,
+            convertedCall.isInDebugMode,
+            convertedCall.uniqueName,
+            convertedCall.valueToReturn,
+            convertedCall.tag,
+            convertedCall.existingWorkPolicy,
+            convertedCall.initialDelaySeconds,
+            convertedCall.constraintsConfig,
+            convertedCall.backoffPolicyConfig
+        )
     }
 }
 
@@ -98,5 +113,41 @@ private object UnregisterTaskHandler : CallHandler<WorkManagerCall.CancelTask> {
 private object UnknownTaskHandler : CallHandler<WorkManagerCall.Unknown> {
     override fun handle(context: Context, convertedCall: WorkManagerCall.Unknown, result: MethodChannel.Result) {
         result.notImplemented()
+    }
+}
+
+object WorkManagerHelper {
+    fun enqueueOneOffTask(
+        context: Context,
+        isInDebugMode: Boolean,
+        uniqueName: String,
+        echoValue: String,
+        tag: String?,
+        existingWorkPolicy: ExistingWorkPolicy = ExistingWorkPolicy.KEEP,
+        initialDelaySeconds: Long = 0L,
+        constraintsConfig: Constraints = Constraints.NONE,
+        backoffPolicyConfig: BackoffPolicyTaskConfig = BackoffPolicyTaskConfig(
+        )
+    ) {
+        val oneOffTaskRequest = OneTimeWorkRequest.Builder(EchoingWorker::class.java)
+            .setInputData(
+                Data.Builder().putAll(
+                    mapOf(
+                        VALUE_TO_ECHO_KEY to echoValue,
+                        IS_IN_DEBUG_MODE to isInDebugMode
+                    )
+                ).build()
+            )
+            .setInitialDelay(initialDelaySeconds, TimeUnit.SECONDS)
+            .setConstraints(constraintsConfig)
+            .setBackoffCriteria(
+                backoffPolicyConfig.backoffPolicy,
+                backoffPolicyConfig.backoffDelay,
+                TimeUnit.MILLISECONDS
+            )
+            .apply { tag?.let(::addTag) }
+            .build()
+        context.workManager()
+            .enqueueUniqueWork(uniqueName, existingWorkPolicy, oneOffTaskRequest)
     }
 }
