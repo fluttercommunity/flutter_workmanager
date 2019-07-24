@@ -62,7 +62,7 @@ private object RegisterTaskHandler : CallHandler<WorkManagerCall.RegisterTask> {
     }
 
     private fun enqueuePeriodicTask(context: Context, convertedCall: WorkManagerCall.RegisterTask.PeriodicTask) {
-        WorkManagerWrapper.enqueuePeriodicTask(context = context,
+        WM.enqueuePeriodicTask(context = context,
                 uniqueName = convertedCall.uniqueName,
                 echoValue = convertedCall.echoValue,
                 tag = convertedCall.tag,
@@ -76,7 +76,7 @@ private object RegisterTaskHandler : CallHandler<WorkManagerCall.RegisterTask> {
     }
 
     private fun enqueueOneOffTask(context: Context, convertedCall: WorkManagerCall.RegisterTask.OneOffTask) {
-        WorkManagerWrapper.enqueueOneOffTask(
+        WM.enqueueOneOffTask(
                 context = context,
                 uniqueName = convertedCall.uniqueName,
                 echoValue = convertedCall.echoValue,
@@ -93,9 +93,9 @@ private object RegisterTaskHandler : CallHandler<WorkManagerCall.RegisterTask> {
 private object UnregisterTaskHandler : CallHandler<WorkManagerCall.CancelTask> {
     override fun handle(context: Context, convertedCall: WorkManagerCall.CancelTask, result: MethodChannel.Result) {
         when (convertedCall) {
-            is WorkManagerCall.CancelTask.ByUniqueName -> WorkManagerWrapper.cancelByUniqueName(context, convertedCall.uniqueName)
-            is WorkManagerCall.CancelTask.ByTag -> WorkManagerWrapper.cancelByTag(context, convertedCall.tag)
-            WorkManagerCall.CancelTask.All -> WorkManagerWrapper.cancelAll(context)
+            is WorkManagerCall.CancelTask.ByUniqueName -> WM.cancelByUniqueName(context, convertedCall.uniqueName)
+            is WorkManagerCall.CancelTask.ByTag -> WM.cancelByTag(context, convertedCall.tag)
+            WorkManagerCall.CancelTask.All -> WM.cancelAll(context)
         }
         result.success()
     }
@@ -107,7 +107,7 @@ private object UnknownTaskHandler : CallHandler<WorkManagerCall.Unknown> {
     }
 }
 
-object WorkManagerWrapper {
+object WM {
     fun enqueueOneOffTask(context: Context,
                           uniqueName: String,
                           echoValue: String,
