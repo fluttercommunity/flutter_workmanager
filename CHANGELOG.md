@@ -26,3 +26,10 @@
 * Provide a better description so package scores higher on Pub
 
 # 0.0.5
+
+* The description was too big so you lose points for that too...
+
+# 0.0.6
+
+* Expose a WorkManagerHelper to the native.
+  * This makes it easier if you also have some native code that wants to schedule the Echo Worker

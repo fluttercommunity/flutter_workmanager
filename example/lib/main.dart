@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-import 'package:flutter/services.dart';
 import 'package:workmanager/workmanager.dart';
 
 void main() => runApp(MyApp());
