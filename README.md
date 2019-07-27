@@ -34,7 +34,7 @@ See sample folder for a complete working example.
 
 # Initialization
 In your `main.dart` file define a top level function called `callbackDispatcher`.  
-This function will be called by Android and will return the value you provided when you registered the task.  
+This function will be called once a background job completes and will return the value you provided when you registered the task.  
 
 Use the `WorkManager` helper function `WorkManager.defaultCallbackDispatcher` to register a callback.   
 Your sole responsibility is to either `true` of `false`;   
