@@ -14,7 +14,7 @@ An example of where this would be handy is when you have periodic job that fetch
 
 ```
 dependencies:
-  workmanager: ^0.0.6
+  workmanager: ^0.0.7
 ```
 
 Get it
@@ -30,30 +30,24 @@ import 'package:workmanager/workmanager.dart';
 ```
 
 # How to use
-
 See sample folder for a complete working example.
 
-Before you can register any jobs you need to initialize the plugin.
+# Initialization
+In your `main.dart` file define a top level function called `callbackDispatcher`.  
+This function will be called by Android and will return the value you provided when you registered the task.  
+
+Use the `WorkManager` helper function `WorkManager.defaultCallbackDispatcher` to register a callback.   
+Your sole responsibility is to either `true` of `false`;   
+Whether the background job failed or not. 
 
 ```
-//Provide a top level function or static function.
-//This function will be called by Android and will return the value you provided when you registered the task.
-//See below
 void callbackDispatcher() {
   Workmanager.defaultCallbackDispatcher((echoValue) {
-    print("Native echoed: $echoValue");
+    print("hello from the default callbackDispatcher");
     return Future.value(true);
   });
 }
-
-Workmanager.initialize(
-    callbackDispatcher, //the top level function.
-    isInDebugMode: true //If enabled it will post a notificiation whenever the job is running. Handy for debugging jobs
-)
-```
-
-> The `callbackDispatcher` needs to be either a static function or a top level function for it to work.
-> You should return a boolean value whether the job was successful or not. 
+``` 
 
 Now you can register two different kinds of background work:
 - **One off task**: These run once
@@ -80,6 +74,27 @@ You can use this `String` to identify which work needs to be done.
 
 ## Customisation
 Not every `WorkManager` feature is ported.
+
+### Custom callbackDispatcher function
+If for one reason you don't want the `callbackDispatcher` in your `main.dart` file or you don't want it to be called `callbackDispatcher`, you can set a custom one.
+
+Define a top level function or static function anywhere inside your project, name it anything you want.  
+```
+void myCustomCallbackDispatcher() {
+  Workmanager.defaultCallbackDispatcher((echoValue) {
+    print("Native echoed: $echoValue");
+    return Future.value(true);
+  });
+}
+
+Workmanager.initialize(
+    myCustomCallbackDispatcher, //the top level function.
+    isInDebugMode: true //If enabled it will post a notificiation whenever the job is running. Handy for debugging jobs
+)
+```
+
+> The `callbackDispatcher` needs to be either a static function or a top level function for it to work.
+> You should return a boolean value whether the job was successful or not. 
 
 ### Tagging
 

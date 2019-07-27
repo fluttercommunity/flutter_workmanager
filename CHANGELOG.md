@@ -33,3 +33,8 @@
 
 * Expose a WorkManagerHelper to the native.
   * This makes it easier if you also have some native code that wants to schedule the Echo Worker
+  
+# 0.0.7
+
+* If no `callbackDispatcher` is provided it will look for method with the name `callbackDispatcher` in the `main.dart` file.
+  You can still provide your own.  

@@ -43,11 +43,11 @@ data class BackoffPolicyTaskConfig(val backoffPolicy: BackoffPolicy,
                 )
 
         val defaultOneOffBackoffTaskConfig =
-                 BackoffPolicyTaskConfig(
-                         defaultBackOffPolicy,
-                         defaultRequestedBackoffDelay,
-                         defaultRequestedBackoffDelay
-                 )
+                BackoffPolicyTaskConfig(
+                        defaultBackOffPolicy,
+                        defaultRequestedBackoffDelay,
+                        defaultRequestedBackoffDelay
+                )
     }
 }
 
@@ -153,7 +153,7 @@ object Extractor {
 
     fun extractWorkManagerCallFromRawMethodName(call: MethodCall): WorkManagerCall =
             when (PossibleWorkManagerCall.fromRawMethodName(call.method)) {
-                Extractor.PossibleWorkManagerCall.INITIALIZE -> WorkManagerCall.Initialize(call.arguments() as Long)
+                Extractor.PossibleWorkManagerCall.INITIALIZE -> WorkManagerCall.Initialize(extractCallbackHandleFromCall(call))
                 Extractor.PossibleWorkManagerCall.REGISTER_ONE_OFF_TASK -> {
                     WorkManagerCall.RegisterTask.OneOffTask(
                             isInDebugMode = call.argument<Boolean>(REGISTER_TASK_IS_IN_DEBUG_MODE_KEY)!!,
@@ -185,6 +185,13 @@ object Extractor {
                 Extractor.PossibleWorkManagerCall.CANCEL_ALL -> WorkManagerCall.CancelTask.All
 
                 Extractor.PossibleWorkManagerCall.UNKNOWN -> WorkManagerCall.Unknown
+            }
+
+    private fun extractCallbackHandleFromCall(call: MethodCall) =
+            try {
+                call.arguments() as Long
+            } catch (ignored: Exception) {
+                -1L
             }
 
     private fun extractExistingWorkPolicyFromCall(call: MethodCall): ExistingWorkPolicy =

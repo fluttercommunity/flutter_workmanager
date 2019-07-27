@@ -103,16 +103,16 @@ class Workmanager {
     _backgroundChannel.invokeMethod("backgroundChannelInitialized");
   }
 
-  /// This call is required if you wish to use the WorkManager plugin.
-  /// callbackDispatcher is a top level function which will be invoked by Android
-  /// isInDebugMode true will post debug notifications with information about when a job should have run
-  static Future<void> initialize(
-    final Function callbackDispatcher, {
+  /// Optional initializer of the WorkManager plugin.
+  /// callbackDispatcher is a top level function which will be invoked. Default the plugin will look for a top level method inside your main file called callbackDispatcher. If you wish to override this behaviour you can pass in your own.
+  /// isInDebugMode true will post debug notifications (on Android) with information about when a job should have run
+  static Future<void> initialize({
+    final Function callbackDispatcher,
     final bool isInDebugMode,
   }) async {
     Workmanager._isInDebugMode = isInDebugMode;
-    final callback = PluginUtilities.getCallbackHandle(callbackDispatcher);
-    await _foregroundChannel.invokeMethod('initialize', callback.toRawHandle());
+    final callbackHandle = callbackDispatcher != null ? PluginUtilities.getCallbackHandle(callbackDispatcher).toRawHandle() : -1;
+    await _foregroundChannel.invokeMethod('initialize', callbackHandle);
   }
 
   /// Schedule a one off task

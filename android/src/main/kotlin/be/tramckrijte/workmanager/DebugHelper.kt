@@ -6,7 +6,6 @@ import android.content.Context
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.work.ListenableWorker
-import io.flutter.view.FlutterCallbackInformation
 
 object DebugHelper {
     private const val debugChannelId = "WorkmanagerDebugChannelId"
@@ -16,7 +15,7 @@ object DebugHelper {
         postNotification(ctx, "$title ${System.currentTimeMillis()}", "${result.javaClass.simpleName}: $echoValue")
     }
 
-    fun postTaskStarting(ctx: Context, echoValue: String, callbackHandle: Long, callbackInfo: FlutterCallbackInformation?, dartBundlePath: String?) {
+    fun postTaskStarting(ctx: Context, echoValue: String, callbackHandle: Long, callbackInfo: FlutterCallbackInformationWrapper?, dartBundlePath: String?) {
         postNotification(ctx, echoValue, "" +
                 "callbackHandle: $callbackHandle;\n" +
                 "callBackName: ${callbackInfo?.callbackName};\n" +

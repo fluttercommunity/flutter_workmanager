@@ -1,34 +1,17 @@
-import 'package:flutter/material.dart';
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:workmanager/workmanager.dart';
+
+import 'constants.dart';
+import 'my_custom_callback_dispatcher.dart';
 
 void main() => runApp(MyApp());
 
-const simpleTaskKey = "simpleTask";
-const simpleDelayedTask = "simpleDelayedTask";
-const simplePeriodicTask = "simplePeriodicTask";
-const simplePeriodic1HourTask = "simplePeriodic1HourTask";
-
+//If you don't provide a customCallbackDispatcher this one will be called for you
 void callbackDispatcher() {
   Workmanager.defaultCallbackDispatcher((echoValue) {
-    print("Native echoed: $echoValue");
-
-    switch (echoValue) {
-      case simpleTaskKey:
-        print("$simpleTaskKey was executed");
-        break;
-      case simpleDelayedTask:
-        print("$simpleDelayedTask was executed");
-        break;
-      case simplePeriodicTask:
-        print("$simplePeriodicTask was executed");
-        break;
-      case simplePeriodic1HourTask:
-        print("$simplePeriodic1HourTask was executed");
-        break;
-    }
-
+    print("hello from the default callbackDispatcher");
     return Future.value(true);
   });
 }
@@ -54,14 +37,19 @@ class _MyAppState extends State<MyApp> {
               Text("Initialize the plugin first",
                   style: Theme.of(context).textTheme.headline),
               RaisedButton(
-                  child: Text("Start the Flutter background service first"),
+                  child: Text("Initialize the plugin in debug mode."),
+                  onPressed: () {
+                    Workmanager.initialize(isInDebugMode: true);
+                  }),
+              RaisedButton(
+                  child: Text(
+                      "Initialize the plugin with a custom `callbackDispatcher`."),
                   onPressed: () {
                     Workmanager.initialize(
-                      callbackDispatcher,
                       isInDebugMode: true,
+                      callbackDispatcher: customCallbackDispatcher,
                     );
                   }),
-
               Text("One Off Tasks",
                   style: Theme.of(context).textTheme.headline),
               //This job runs once.

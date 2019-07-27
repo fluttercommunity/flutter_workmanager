@@ -31,6 +31,8 @@ class EchoingWorker(private val ctx: Context,
         const val BACKGROUND_CHANNEL_NAME = "be.tramckrijte.workmanager/background_channel_work_manager"
         const val BACKGROUND_CHANNEL_INITIALIZED = "backgroundChannelInitialized"
         const val ECHO_METHOD_NAME = "echoTaskRan"
+
+        const val DEFAULT_CALLBACK_DISPATCHER_NAME = "callbackDispatcher"
     }
 
     private val echoValue
@@ -42,12 +44,23 @@ class EchoingWorker(private val ctx: Context,
     private val latch = CountDownLatch(1)
     var result: Result = Result.retry()
 
+    private fun getCallbackInfoFromCallbackHandle(callbackHandle: Long): FlutterCallbackInformationWrapper =
+            if (callbackHandle != -1L) {
+                FlutterCallbackInformationWrapper.fromCallbackInformationWrapper(FlutterCallbackInformation.lookupCallbackInformation(callbackHandle))
+            } else {
+                FlutterCallbackInformationWrapper(
+                        callbackName = DEFAULT_CALLBACK_DISPATCHER_NAME,
+                        callbackClassName = null,
+                        callbackLibraryPath = null
+                )
+            }
+
     override fun doWork(): Result {
         Handler(Looper.getMainLooper()).post {
             FlutterMain.ensureInitializationComplete(ctx, null)
 
             val callbackHandle = SharedPreferenceHelper.getCallbackHandle(ctx)
-            val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle)
+            val callbackInfo = getCallbackInfoFromCallbackHandle(callbackHandle)
             val dartBundlePath = FlutterMain.findAppBundlePath(ctx)
 
             if (isInDebug) {
@@ -102,5 +115,18 @@ class EchoingWorker(private val ctx: Context,
                             }
                         })
         }
+    }
+}
+
+data class FlutterCallbackInformationWrapper(val callbackName: String?,
+                                             val callbackClassName: String?,
+                                             val callbackLibraryPath: String?) {
+    companion object {
+        fun fromCallbackInformationWrapper(callback: FlutterCallbackInformation) =
+                FlutterCallbackInformationWrapper(
+                        callbackName = callback.callbackName,
+                        callbackClassName = callback.callbackClassName,
+                        callbackLibraryPath = callback.callbackLibraryPath
+                )
     }
 }
