@@ -88,24 +88,24 @@
     <section class="multi-line-signature">
       <span class="returntype"><a href="dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
             <span class="name ">initialize</span>
-(<wbr><span class="parameter" id="initialize-param-callbackDispatcher"><span class="type-annotation"><a href="dart-core/Function-class.html">Function</a></span> <span class="parameter-name">callbackDispatcher</span>, {</span> <span class="parameter" id="initialize-param-isInDebugMode"><span class="type-annotation"><a href="dart-core/bool-class.html">bool</a></span> <span class="parameter-name">isInDebugMode</span></span> })
+(<wbr>{<span class="parameter" id="initialize-param-callbackDispatcher"><span class="type-annotation"><a href="dart-core/Function-class.html">Function</a></span> <span class="parameter-name">callbackDispatcher</span>, </span> <span class="parameter" id="initialize-param-isInDebugMode"><span class="type-annotation"><a href="dart-core/bool-class.html">bool</a></span> <span class="parameter-name">isInDebugMode</span></span> })
       
     </section>
     <section class="desc markdown">
-      <p>This call is required if you wish to use the WorkManager plugin.
-callbackDispatcher is a top level function which will be invoked by Android
-isInDebugMode true will post debug notifications with information about when a job should have run</p>
+      <p>Optional initializer of the WorkManager plugin.
+callbackDispatcher is a top level function which will be invoked. Default the plugin will look for a top level method inside your main file called callbackDispatcher. If you wish to override this behaviour you can pass in your own.
+isInDebugMode true will post debug notifications (on Android) with information about when a job should have run</p>
     </section>
     
     <section class="summary source-code" id="source">
       <h2><span>Implementation</span></h2>
-      <pre class="language-dart"><code class="language-dart">static Future&lt;void&gt; initialize(
-  final Function callbackDispatcher, {
+      <pre class="language-dart"><code class="language-dart">static Future&lt;void&gt; initialize({
+  final Function callbackDispatcher,
   final bool isInDebugMode,
 }) async {
   Workmanager._isInDebugMode = isInDebugMode;
-  final callback = PluginUtilities.getCallbackHandle(callbackDispatcher);
-  await _foregroundChannel.invokeMethod(&#39;initialize&#39;, callback.toRawHandle());
+  final callbackHandle = callbackDispatcher != null ? PluginUtilities.getCallbackHandle(callbackDispatcher).toRawHandle() : -1;
+  await _foregroundChannel.invokeMethod(&#39;initialize&#39;, callbackHandle);
 }</code></pre>
     </section>
 
@@ -118,7 +118,7 @@ isInDebugMode true will post debug notifications with information about when a j
 
 <footer>
   <span class="no-break">
-    workmanager 0.0.2
+    workmanager 0.0.7
   </span>
 
   

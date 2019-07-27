@@ -191,14 +191,14 @@
                   
 </dd>
         <dt id="initialize" class="callable">
-          <span class="name"><a href="workmanager/Workmanager/initialize.html">initialize</a></span><span class="signature">(<wbr><span class="parameter" id="initialize-param-callbackDispatcher"><span class="type-annotation"><a href="dart-core/Function-class.html">Function</a></span> <span class="parameter-name">callbackDispatcher</span>, {</span> <span class="parameter" id="initialize-param-isInDebugMode"><span class="type-annotation"><a href="dart-core/bool-class.html">bool</a></span> <span class="parameter-name">isInDebugMode</span></span> })
+          <span class="name"><a href="workmanager/Workmanager/initialize.html">initialize</a></span><span class="signature">(<wbr>{<span class="parameter" id="initialize-param-callbackDispatcher"><span class="type-annotation"><a href="dart-core/Function-class.html">Function</a></span> <span class="parameter-name">callbackDispatcher</span>, </span> <span class="parameter" id="initialize-param-isInDebugMode"><span class="type-annotation"><a href="dart-core/bool-class.html">bool</a></span> <span class="parameter-name">isInDebugMode</span></span> })
             <span class="returntype parameter">&#8594; <a href="dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
           </span>
                   </dt>
         <dd>
-          This call is required if you wish to use the WorkManager plugin.
-callbackDispatcher is a top level function which will be invoked by Android
-isInDebugMode true will post debug notifications with information about when a job should have run
+          Optional initializer of the WorkManager plugin.
+callbackDispatcher is a top level function which will be invoked. Default the plugin will look for a top level method inside your main file called callbackDispatcher. If you wish to override this behaviour you can pass in your own.
+isInDebugMode true will post debug notifications (on Android) with information about when a job should have run
                   
 </dd>
         <dt id="registerOneOffTask" class="callable">
@@ -265,7 +265,7 @@ a frequency is not required and will be defaulted to 15 minutes if not provided.
 
 <footer>
   <span class="no-break">
-    workmanager 0.0.2
+    workmanager 0.0.7
   </span>
 
   

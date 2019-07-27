@@ -36,8 +36,8 @@ See sample folder for a complete working example.
 In your `main.dart` file define a top level function called `callbackDispatcher`.  
 This function will be called once a background job completes and will return the value you provided when you registered the task.  
 
-Use the `WorkManager` helper function `WorkManager.defaultCallbackDispatcher` to register a callback.   
-Your sole responsibility is to either `true` of `false`;   
+Use the `WorkManager` helper function `WorkManager#defaultCallbackDispatcher` to register a callback.   
+Your sole responsibility is to either return `true` of `false`;   
 Whether the background job failed or not. 
 
 ```
@@ -76,9 +76,10 @@ You can use this `String` to identify which work needs to be done.
 Not every `WorkManager` feature is ported.
 
 ### Custom callbackDispatcher function
-If for one reason you don't want the `callbackDispatcher` in your `main.dart` file or you don't want it to be called `callbackDispatcher`, you can set a custom one.
+If for one reason you don't want the `callbackDispatcher` in your `main.dart` file or you don't want it to be called `callbackDispatcher`, you can set your custom one.
 
 Define a top level function or static function anywhere inside your project, name it anything you want.  
+Pass it to the `initialize` function before registering any jobs.  
 ```
 void myCustomCallbackDispatcher() {
   Workmanager.defaultCallbackDispatcher((echoValue) {

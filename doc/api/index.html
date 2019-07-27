@@ -67,33 +67,38 @@
   <div id="dartdoc-main-content" class="col-xs-12 col-sm-9 col-md-8 main-content">
       <section class="desc markdown">
         <h1 id="flutter-workmanager">Flutter Workmanager</h1>
+<p><a href="https://pub.dartlang.org/packages/workmanager"><img src="https://img.shields.io/pub/v/workmanager.svg" alt="pub package"></a></p>
 <p>Flutter WorkManager is a wrapper around <a href="https://developer.android.com/topic/libraries/architecture/workmanager">Android's WorkManager</a>.<br>
 It allows for headless background work to be processed in Dart.  </p>
 <p>An example of where this would be handy is when you have periodic job that fetches the latest articles every hour.  </p>
 <blockquote>
 <p>Note that this library only contains the necessary code to let this work on Android. Since iOS has a vastly different approach you should therefore wrap every call:  </p>
 <p><code>if (Platform.isAndroid) { ... }</code></p></blockquote>
+<h1 id="installation">Installation</h1>
+<pre class="language-dart"><code>dependencies:
+  workmanager: ^0.0.7
+</code></pre>
+<p>Get it</p>
+<pre class="language-dart"><code>flutter pub get
+</code></pre>
+<p>Import it</p>
+<pre class="language-dart"><code>import 'package:workmanager/workmanager.dart';
+</code></pre>
 <h1 id="how-to-use">How to use</h1>
 <p>See sample folder for a complete working example.</p>
-<p>Before you can register any jobs you need to initialize the plugin.</p>
-<pre class="language-dart"><code>//Provide a top level function or static function.
-//This function will be called by Android and will return the value you provided when you registered the task.
-//See below
-void callbackDispatcher() {
+<h1 id="initialization">Initialization</h1>
+<p>In your <code>main.dart</code> file define a top level function called <code>callbackDispatcher</code>.<br>
+This function will be called once a background job completes and will return the value you provided when you registered the task.  </p>
+<p>Use the <code>WorkManager</code> helper function <code>WorkManager#defaultCallbackDispatcher</code> to register a callback.<br>
+Your sole responsibility is to either return <code>true</code> of <code>false</code>;<br>
+Whether the background job failed or not. </p>
+<pre class="language-dart"><code>void callbackDispatcher() {
   Workmanager.defaultCallbackDispatcher((echoValue) {
-    print("Native echoed: $echoValue");
+    print("hello from the default callbackDispatcher");
     return Future.value(true);
   });
 }
-
-Workmanager.initialize(
-    callbackDispatcher, //the top level function.
-    isInDebugMode: true //If enabled it will post a notificiation whenever the job is running. Handy for debugging jobs
-)
 </code></pre>
-<blockquote>
-<p>The <code>callbackDispatcher</code> needs to be either a static function or a top level function for it to work.
-You should return a boolean value whether the job was successful or not. </p></blockquote>
 <p>Now you can register two different kinds of background work:</p><ul><li><strong>One off task</strong>: These run once</li><li><strong>Periodic tasks</strong>: These run indefinitely with a defined fixed rate</li></ul>
 <pre class="language-dart"><code>// One off task registration
 Workmanager.registerOneOffTask(
@@ -113,6 +118,25 @@ The second parameter is the <code>String</code> that will be returned to your <c
 You can use this <code>String</code> to identify which work needs to be done.  </p>
 <h2 id="customisation">Customisation</h2>
 <p>Not every <code>WorkManager</code> feature is ported.</p>
+<h3 id="custom-callbackdispatcher-function">Custom callbackDispatcher function</h3>
+<p>If for one reason you don't want the <code>callbackDispatcher</code> in your <code>main.dart</code> file or you don't want it to be called <code>callbackDispatcher</code>, you can set your custom one.</p>
+<p>Define a top level function or static function anywhere inside your project, name it anything you want.<br>
+Pass it to the <code>initialize</code> function before registering any jobs.  </p>
+<pre class="language-dart"><code>void myCustomCallbackDispatcher() {
+  Workmanager.defaultCallbackDispatcher((echoValue) {
+    print("Native echoed: $echoValue");
+    return Future.value(true);
+  });
+}
+
+Workmanager.initialize(
+    myCustomCallbackDispatcher, //the top level function.
+    isInDebugMode: true //If enabled it will post a notificiation whenever the job is running. Handy for debugging jobs
+)
+</code></pre>
+<blockquote>
+<p>The <code>callbackDispatcher</code> needs to be either a static function or a top level function for it to work.
+You should return a boolean value whether the job was successful or not. </p></blockquote>
 <h3 id="tagging">Tagging</h3>
 <p>You can set the optional <code>tag</code> property.<br>
 Handy for cancellation by <code>tag</code>.<br>
@@ -247,7 +271,7 @@ communicating only via messages. <a href="dart-isolate/dart-isolate-library.html
 
 <footer>
   <span class="no-break">
-    workmanager 0.0.2
+    workmanager 0.0.7
   </span>
 
   
