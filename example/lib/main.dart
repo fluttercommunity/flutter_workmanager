@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -11,8 +13,10 @@ const simplePeriodicTask = "simplePeriodicTask";
 const simplePeriodic1HourTask = "simplePeriodic1HourTask";
 
 void callbackDispatcher() {
+  stderr.writeln('Debug - presumably performing a network request');
+
   Workmanager.defaultCallbackDispatcher((echoValue) {
-    print("Native echoed: $echoValue");
+    stderr.writeln('Debug - Native echoed: $echoValue');
 
     switch (echoValue) {
       case simpleTaskKey:
@@ -110,6 +114,13 @@ class _MyAppState extends State<MyApp> {
                       simplePeriodic1HourTask,
                       frequency: Duration(hours: 1),
                     );
+                  }),
+              Text("iOS", style: Theme.of(context).textTheme.headline),
+              //Triggers iOS' performFetchWithCompletionHandler: callback
+              RaisedButton(
+                  child: Text("Trigger iOS performFetch"),
+                  onPressed: () {
+                    Workmanager.onIOSPerformFetch();
                   }),
             ],
           ),

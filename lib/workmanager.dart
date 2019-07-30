@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/services.dart';
@@ -98,9 +99,11 @@ class Workmanager {
   static void defaultCallbackDispatcher(
       final EchoCallbackFunction echoFunction) {
     WidgetsFlutterBinding.ensureInitialized();
-    _backgroundChannel
-        .setMethodCallHandler((call) async => echoFunction(call.arguments));
-    _backgroundChannel.invokeMethod("backgroundChannelInitialized");
+    _backgroundChannel.setMethodCallHandler((call) async {
+      stderr.writeln('DEBUG');
+      return echoFunction(call.arguments);
+    });
+    _backgroundChannel.invokeMethod("backgroundJobDidComplete", 0); //TODO: 0 temporarily hardcoded here
   }
 
   /// This call is required if you wish to use the WorkManager plugin.
@@ -112,7 +115,8 @@ class Workmanager {
   }) async {
     Workmanager._isInDebugMode = isInDebugMode;
     final callback = PluginUtilities.getCallbackHandle(callbackDispatcher);
-    await _foregroundChannel.invokeMethod('initialize', callback.toRawHandle());
+    final callbackHandle = callback.toRawHandle();
+    await _foregroundChannel.invokeMethod('initialize', callbackHandle);
   }
 
   /// Schedule a one off task
@@ -215,4 +219,9 @@ class Workmanager {
   /// Cancels all jobs
   static Future<void> cancelAll() async =>
       await _foregroundChannel.invokeMethod("cancelAll");
+
+  static Future<void> onIOSPerformFetch() async {
+    print("Debug - WorkManager - onIOSPerformFetch");
+    _foregroundChannel.invokeMethod("performSampleFetch", 0);
+  }
 }

@@ -102,7 +102,7 @@
   WidgetsFlutterBinding.ensureInitialized();
   _backgroundChannel
       .setMethodCallHandler((call) async =&gt; echoFunction(call.arguments));
-  _backgroundChannel.invokeMethod(&quot;backgroundChannelInitialized&quot;);
+  _backgroundChannel.invokeMethod(&quot;backgroundJobDidComplete&quot;);
 }</code></pre>
     </section>
 
