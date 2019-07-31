@@ -99,9 +99,8 @@ class Workmanager {
   static void defaultCallbackDispatcher(
       final EchoCallbackFunction echoFunction) {
     WidgetsFlutterBinding.ensureInitialized();
-    _backgroundChannel.setMethodCallHandler((call) async {
-      return echoFunction(call.arguments);
-    });
+    _backgroundChannel
+        .setMethodCallHandler((call) async => echoFunction(call.arguments));
     _backgroundChannel.invokeMethod("backgroundChannelInitialized");
   }
 

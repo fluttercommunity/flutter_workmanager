@@ -160,7 +160,7 @@ Background taks on iOS are very different. Before anything, make sure you've add
 
 Set your desired *minimumBackgroundFetchInterval* in your app's delegate's `didFinishLaunchingWithOptions` :
 
-`UIApplication.shared.setMinimumBackgroundFetchInterval(TimeInterval(60 * 15)) // E.g. max every 15 minutes`
+`UIApplication.shared.setMinimumBackgroundFetchInterval(TimeInterval(60 * 15)) // E.g. min every 15 minutes`
 > Note : this time interval is a minimum ; there's no guarantee about how ofteh this will be called. 
 
 #### Adding the plugin as an AppDelegate
