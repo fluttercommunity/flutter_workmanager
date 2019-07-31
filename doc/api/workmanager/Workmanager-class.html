@@ -77,39 +77,31 @@
       <p>Workmanager plugin.
 This is the entry point.</p>
 <p>See README for complete example.</p><ol><li>Initialize the plugin first</li></ol>
-<p>``
-void callbackDispatcher() {
+<pre class="language-dart"><code>void callbackDispatcher() {
   Workmanager.executeTask((echoValue) {
     print("Native echoed: $echoValue");
     return Future.value(true);
   });
-}</p>
-<p>Workmanager.initialize(
+}
+
+Workmanager.initialize(
     callbackDispatcher,
     isInDebugMode: true
-)</p>
-<pre class="language-dart"><code>
-on iOS you have to make sure to enable Background Fetch.
-After this jobs will run periodically on iOS.
-
-Add following key to the `Info.plist`
-
+)
 </code></pre>
-<p><key>UIBackgroundModes</key>
-  <array>
-    <string>fetch</string>
-  </array>
-</p>
-<pre class="language-dart"><code>
-`UIApplication.shared.setMinimumBackgroundFetchInterval(TimeInterval(60 * 15))`
-
-on Android
-You have the possibility to schedule either:
-- OneOff tasks
-- Periodic tasks
-
+<p>on iOS you have to make sure to enable Background Fetch.
+After this jobs will run periodically on iOS.</p>
+<p>Add following key to the <code>Info.plist</code></p>
+<pre class="language-dart"><code>&lt;key&gt;UIBackgroundModes&lt;/key&gt;
+  &lt;array&gt;
+    &lt;string&gt;fetch&lt;/string&gt;
+  &lt;/array&gt;
+&lt;/key&gt;
 </code></pre>
-<p>Workmanager.registerOneOffTask(
+<p><code>UIApplication.shared.setMinimumBackgroundFetchInterval(TimeInterval(60 * 15))</code></p>
+<p>on Android
+You have the possibility to schedule either:</p><ul><li>OneOff tasks</li><li>Periodic tasks</li></ul>
+<pre class="language-dart"><code>Workmanager.registerOneOffTask(
     "1",
     "simpleTask",
     constraints: WorkManagerConstraintConfig(
@@ -119,8 +111,8 @@ You have the possibility to schedule either:
         requiresDeviceIdle: true,
         requiresStorageNotLow: true
     )
-);</p>
-<pre class="language-dart"><code></code></pre>
+);
+</code></pre>
     </section>
     
 

@@ -93,7 +93,7 @@ enum BackoffPolicy {
 ///
 /// 1. Initialize the plugin first
 ///
-/// ``
+/// ```
 /// void callbackDispatcher() {
 ///   Workmanager.executeTask((echoValue) {
 ///     print("Native echoed: $echoValue");
