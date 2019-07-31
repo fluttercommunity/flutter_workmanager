@@ -40,10 +40,8 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
         
         switch call.method {
         case ForegroundMethodChannel.methods.initialize.rawValue:
-            guard let callbackHandle: Int64 = call.arguments as? Int64 else {
-                result(WMPError.unexpectedMethodArguments(call.arguments.debugDescription))
-                return
-            }
+            // Note from JV : I'd rather optional cast / guard-let this conversion, but as discussed, the call.arguments should never be something else than an Int. Meh.
+            let callbackHandle = call.arguments as! Int64
             store(callbackHandle)
             result(true)
         default:
