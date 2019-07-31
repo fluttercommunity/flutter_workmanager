@@ -91,7 +91,7 @@ enum BackoffPolicy {
 ///
 /// See README for complete example.
 ///
-/// 1. Initialize the plugin first
+/// Initialize the plugin first
 ///
 /// ```
 /// void callbackDispatcher() {

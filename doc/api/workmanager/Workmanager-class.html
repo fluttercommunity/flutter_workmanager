@@ -76,7 +76,8 @@
     <section class="desc markdown">
       <p>Workmanager plugin.
 This is the entry point.</p>
-<p>See README for complete example.</p><ol><li>Initialize the plugin first</li></ol>
+        <p>See README for complete example.</p>
+        <p>Initialize the plugin first</p>
 <pre class="language-dart"><code>void callbackDispatcher() {
   Workmanager.executeTask((echoValue) {
     print("Native echoed: $echoValue");
@@ -90,7 +91,7 @@ Workmanager.initialize(
 )
 </code></pre>
 <p>on iOS you have to make sure to enable Background Fetch.
-After this jobs will run periodically on iOS.</p>
+    After this jobs will run periodically on iOS. </p>
 <p>Add following key to the <code>Info.plist</code></p>
 <pre class="language-dart"><code>&lt;key&gt;UIBackgroundModes&lt;/key&gt;
   &lt;array&gt;
