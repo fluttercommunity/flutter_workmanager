@@ -14,7 +14,7 @@ An example of where this would be handy is when you have periodic job that fetch
 
 ```
 dependencies:
-  workmanager: ^0.0.6
+  workmanager: ^0.0.6+1
 ```
 
 Get it
