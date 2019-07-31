@@ -3,7 +3,7 @@
 
 Flutter WorkManager is a wrapper around [Android's WorkManager](https://developer.android.com/topic/libraries/architecture/workmanager), with support for [iOS' performFetchWithCompletionHandler](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1623125-application), effectively enabling headless execution of Dart code without the need of a running app (i.e. in background).
 
-This is especially useful to run periodic jobs, such as fetching remote data on a regular basis.
+This is especially useful to run periodic taks, such as fetching remote data on a regular basis.
 
 # Installation
 
@@ -22,14 +22,14 @@ import 'package:workmanager/workmanager.dart';
 
 See sample folder for a complete working example.
 
-Before registering any jobs, the WorkManager plugin must be initialized.
+Before registering any task, the WorkManager plugin must be initialized.
 
 ```
 //Provide a top level function or static function.
 //This function will be called by Android and will return the value you provided when you registered the task.
 //See below
 void callbackDispatcher() {
-  Workmanager.defaultCallbackDispatcher((echoValue) {
+  Workmanager.executeTask((echoValue) {
     print("Native echoed: $echoValue");
     return Future.value(true);
   });
@@ -37,7 +37,7 @@ void callbackDispatcher() {
 
 Workmanager.initialize(
     callbackDispatcher, // The top level function, aka Flutter entry point
-    isInDebugMode: true // If enabled it will post a notificiation whenever the job is running. Handy for debugging jobs
+    isInDebugMode: true // If enabled it will post a notificiation whenever the task is running. Handy for debugging tasks
 )
 ```
 
@@ -45,7 +45,7 @@ Workmanager.initialize(
 
 ## Android usage
 
-Two kinds of background jobs can be registered :
+Two kinds of background tasks can be registered :
 - **One off task** : runs only once
 - **Periodic tasks** : runs indefinitely on a regular basis
 
@@ -74,7 +74,7 @@ Not every `Android WorkManager` feature is ported.
 
 You can set the optional `tag` property.  
 Handy for cancellation by `tag`.  
-This is different from the unique name in that you can group multiple jobs under one tag.  
+This is different from the unique name in that you can group multiple tasks under one tag.  
 
 ```
 Workmanager.registerOneOffTask("1", "simpleTask", tag: "tag");

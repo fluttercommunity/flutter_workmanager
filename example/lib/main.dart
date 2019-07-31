@@ -14,7 +14,7 @@ const simplePeriodicTask = "simplePeriodicTask";
 const simplePeriodic1HourTask = "simplePeriodic1HourTask";
 
 void callbackDispatcher() {
-  Workmanager.defaultCallbackDispatcher((echoValue) {
+  Workmanager.executeTask((echoValue) {
     switch (echoValue) {
       case simpleTaskKey:
         stderr.writeln("$simpleTaskKey was executed");
@@ -81,7 +81,7 @@ class _MyAppState extends State<MyApp> {
               SizedBox(height: 16),
               Text("One Off Tasks (Android only)",
                   style: Theme.of(context).textTheme.headline),
-              //This job runs once.
+              //This task runs once.
               //Most likely this will trigger immediately
               PlatformEnabledButton(
                   platform: _Platform.android,
@@ -92,7 +92,7 @@ class _MyAppState extends State<MyApp> {
                       simpleTaskKey,
                     );
                   }),
-              //This job runs once
+              //This task runs once
               //This wait at least 10 seconds before running
               PlatformEnabledButton(
                   platform: _Platform.android,
@@ -107,7 +107,7 @@ class _MyAppState extends State<MyApp> {
               SizedBox(height: 8),
               Text("Periodic Tasks (Android only)",
                   style: Theme.of(context).textTheme.headline),
-              //This job runs periodically
+              //This task runs periodically
               //It will wait at least 10 seconds before its first launch
               //Since we have not provided a frequency it will be the default 15 minutes
               PlatformEnabledButton(
@@ -120,7 +120,7 @@ class _MyAppState extends State<MyApp> {
                       initialDelay: Duration(seconds: 10),
                     );
                   }),
-              //This job runs periodically
+              //This task runs periodically
               //It will run about every hour
               PlatformEnabledButton(
                   platform: _Platform.android,
