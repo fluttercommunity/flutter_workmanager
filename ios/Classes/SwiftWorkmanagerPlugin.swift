@@ -45,7 +45,7 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
                 return
             }
             store(callbackHandle)
-            result(nil)
+            result(true)
         default:
             result(WMPError.unhandledMethod(call.method).asFlutterError)
             return
@@ -63,6 +63,12 @@ extension SwiftWorkmanagerPlugin {
         
         // First, let's retreive our callBack handle
         guard let callbackHandle: Int64 = getStoredCallbackHandle() else {
+            let errorMessage = "[\(#file)] Could not start the Flutter engine : no stored callback handle."
+            if #available(iOS 10.0, *) {
+                os_log("%@", errorMessage)
+            } else {
+                NSLog(errorMessage)
+            }
             completionHandler(.failed)
             return false
         }
@@ -89,7 +95,7 @@ extension SwiftWorkmanagerPlugin {
                             return
                     }
                     
-                    result(nil)
+                    result(true)
                     completionHandler(backgroundFetchResult)
                 })
             default:
@@ -103,20 +109,29 @@ extension SwiftWorkmanagerPlugin {
     
 }
 
-//MARK: - Private
+//MARK: - Storage
+
+public extension SwiftWorkmanagerPlugin {
+    
+    static func clearStorage() {
+        UserDefaults.standard.removeObject(forKey: callbackHandleStorageKey)
+    }
+    
+}
 
 private extension SwiftWorkmanagerPlugin {
     
-    var callbackHandleStorageKey: String {
+    static var callbackHandleStorageKey: String {
         return "callBackHandleStorageKey"
     }
     
+    
     func store(_ callbackHandle: Int64) {
-        UserDefaults.standard.set(callbackHandle, forKey: callbackHandleStorageKey)
+        UserDefaults.standard.set(callbackHandle, forKey: type(of: self).callbackHandleStorageKey)
     }
     
     func getStoredCallbackHandle() -> Int64? {
-        return UserDefaults.standard.value(forKey: callbackHandleStorageKey) as? Int64
+        return UserDefaults.standard.value(forKey: type(of: self).callbackHandleStorageKey) as? Int64
     }
     
 }

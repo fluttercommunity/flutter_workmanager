@@ -39,6 +39,22 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
+enum _Platform { android, ios }
+
+class PlatformEnabledButton extends RaisedButton {
+  final _Platform platform;
+
+  PlatformEnabledButton(
+      {this.platform, @required Widget child, @required VoidCallback onPressed})
+      : assert(child != null, onPressed != null),
+        super(
+            child: child,
+            onPressed: (Platform.isAndroid && platform == _Platform.android ||
+                    Platform.isIOS && platform == _Platform.ios)
+                ? onPressed
+                : null);
+}
+
 class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
@@ -52,22 +68,23 @@ class _MyAppState extends State<MyApp> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              Text("Initialize the plugin first",
+              Text("Plugin initialization",
                   style: Theme.of(context).textTheme.headline),
               RaisedButton(
-                  child: Text("Start the Flutter background service first"),
+                  child: Text("Start the Flutter background service"),
                   onPressed: () {
                     Workmanager.initialize(
                       callbackDispatcher,
                       isInDebugMode: true,
                     );
                   }),
-
-              Text("One Off Tasks",
+              SizedBox(height: 16),
+              Text("One Off Tasks (Android only)",
                   style: Theme.of(context).textTheme.headline),
               //This job runs once.
               //Most likely this will trigger immediately
-              RaisedButton(
+              PlatformEnabledButton(
+                  platform: _Platform.android,
                   child: Text("Register OneOff Task"),
                   onPressed: () {
                     Workmanager.registerOneOffTask(
@@ -77,7 +94,8 @@ class _MyAppState extends State<MyApp> {
                   }),
               //This job runs once
               //This wait at least 10 seconds before running
-              RaisedButton(
+              PlatformEnabledButton(
+                  platform: _Platform.android,
                   child: Text("Register Delayed OneOff Task"),
                   onPressed: () {
                     Workmanager.registerOneOffTask(
@@ -86,13 +104,14 @@ class _MyAppState extends State<MyApp> {
                       initialDelay: Duration(seconds: 10),
                     );
                   }),
-
-              Text("Periodic Tasks",
+              SizedBox(height: 8),
+              Text("Periodic Tasks (Android only)",
                   style: Theme.of(context).textTheme.headline),
               //This job runs periodically
               //It will wait at least 10 seconds before its first launch
               //Since we have not provided a frequency it will be the default 15 minutes
-              RaisedButton(
+              PlatformEnabledButton(
+                  platform: _Platform.android,
                   child: Text("Register Periodic Task"),
                   onPressed: () {
                     Workmanager.registerPeriodicTask(
@@ -103,7 +122,8 @@ class _MyAppState extends State<MyApp> {
                   }),
               //This job runs periodically
               //It will run about every hour
-              RaisedButton(
+              PlatformEnabledButton(
+                  platform: _Platform.android,
                   child: Text("Register 1 hour Periodic Task"),
                   onPressed: () {
                     Workmanager.registerPeriodicTask(
@@ -112,10 +132,12 @@ class _MyAppState extends State<MyApp> {
                       frequency: Duration(hours: 1),
                     );
                   }),
-              Text("iOS", style: Theme.of(context).textTheme.headline),
+              SizedBox(height: 16),
+              Text("Background Fetch (iOS only)", style: Theme.of(context).textTheme.headline),
               //Triggers iOS' performFetchWithCompletionHandler: callback
-              RaisedButton(
-                  child: Text("Trigger iOS performFetch"),
+              PlatformEnabledButton(
+                  platform: _Platform.ios,
+                  child: Text("Simulate Background Fetch"),
                   onPressed: () {
                     final MethodChannel methodChannel =
                         MethodChannel("iOSMethodChannel");
