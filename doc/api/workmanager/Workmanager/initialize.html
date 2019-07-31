@@ -74,13 +74,13 @@
       <li><a href="workmanager/Workmanager/cancelAll.html">cancelAll</a></li>
       <li><a href="workmanager/Workmanager/cancelByTag.html">cancelByTag</a></li>
       <li><a href="workmanager/Workmanager/cancelByUniqueName.html">cancelByUniqueName</a></li>
-        <li><a href="workmanager/Workmanager/executeTask.html">executeTask</a></li>
+      <li><a href="workmanager/Workmanager/executeTask.html">executeTask</a></li>
       <li><a href="workmanager/Workmanager/initialize.html">initialize</a></li>
       <li><a href="workmanager/Workmanager/registerOneOffTask.html">registerOneOffTask</a></li>
       <li><a href="workmanager/Workmanager/registerPeriodicTask.html">registerPeriodicTask</a></li>
-
-        <li class="section-title"><a href="workmanager/Workmanager-class.html#constants">Constants</a></li>
-        <li><a href="workmanager/Workmanager/iOSBackgroundTask-constant.html">iOSBackgroundTask</a></li>
+    
+      <li class="section-title"><a href="workmanager/Workmanager-class.html#constants">Constants</a></li>
+      <li><a href="workmanager/Workmanager/iOSBackgroundTask-constant.html">iOSBackgroundTask</a></li>
     </ol>
   </div><!--/.sidebar-offcanvas-->
 
@@ -94,14 +94,14 @@
       
     </section>
     <section class="desc markdown">
-      <p>This call is required if you wish to use the WorkManager plugin.
-callbackDispatcher is a top level function which will be invoked by Android
-          isInDebugMode true will post debug notifications with information about when a task should have run</p>
+      <p>This call is required if you wish to use the <code>WorkManager</code> plugin.
+<code>callbackDispatcher</code> is a top level function which will be invoked by Android
+<code>isInDebugMode</code> true will post debug notifications with information about when a task should have run</p>
     </section>
     
     <section class="summary source-code" id="source">
       <h2><span>Implementation</span></h2>
-        <pre class="language-dart"><code class="language-dart">static Future&lt;void&gt; initialize(final Function callbackDispatcher, {
+      <pre class="language-dart"><code class="language-dart">static Future&lt;void&gt; initialize(final Function callbackDispatcher, {
   final bool isInDebugMode,
 }) async {
   Workmanager._isInDebugMode = isInDebugMode;

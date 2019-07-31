@@ -65,7 +65,7 @@
       <li><a href="workmanager/NetworkType-class.html">NetworkType</a></li>
     
       <li class="section-title"><a href="workmanager/workmanager-library.html#typedefs">Typedefs</a></li>
-        <li><a href="workmanager/BackgroundTask.html">BackgroundTask</a></li>
+      <li><a href="workmanager/BackgroundTask.html">BackgroundTask</a></li>
     
     </ol>
   </div>
@@ -73,6 +73,55 @@
   <div id="dartdoc-main-content" class="col-xs-12 col-sm-9 col-md-8 main-content">
       <div><h1><span class="kind-class">Workmanager</span> class </h1></div>
 
+    <section class="desc markdown">
+      <p>Workmanager plugin.
+This is the entry point.</p>
+<p>See README for complete example.</p><ol><li>Initialize the plugin first</li></ol>
+<p>``
+void callbackDispatcher() {
+  Workmanager.executeTask((echoValue) {
+    print("Native echoed: $echoValue");
+    return Future.value(true);
+  });
+}</p>
+<p>Workmanager.initialize(
+    callbackDispatcher,
+    isInDebugMode: true
+)</p>
+<pre class="language-dart"><code>
+on iOS you have to make sure to enable Background Fetch.
+After this jobs will run periodically on iOS.
+
+Add following key to the `Info.plist`
+
+</code></pre>
+<p><key>UIBackgroundModes</key>
+  <array>
+    <string>fetch</string>
+  </array>
+</p>
+<pre class="language-dart"><code>
+`UIApplication.shared.setMinimumBackgroundFetchInterval(TimeInterval(60 * 15))`
+
+on Android
+You have the possibility to schedule either:
+- OneOff tasks
+- Periodic tasks
+
+</code></pre>
+<p>Workmanager.registerOneOffTask(
+    "1",
+    "simpleTask",
+    constraints: WorkManagerConstraintConfig(
+        networkType: NetworkType.connected,
+        requiresBatteryNotLow: true,
+        requiresCharging: true,
+        requiresDeviceIdle: true,
+        requiresStorageNotLow: true
+    )
+);</p>
+<pre class="language-dart"><code></code></pre>
+    </section>
     
 
     <section class="summary offset-anchor" id="constructors">
@@ -160,7 +209,7 @@
           </span>
                   </dt>
         <dd>
-            Cancels all tasks
+          Cancels all tasks
                   
 </dd>
         <dt id="cancelByTag" class="callable">
@@ -169,7 +218,7 @@
           </span>
                   </dt>
         <dd>
-            Cancels a task by its tag
+          Cancels a task by its <code>tag</code>
                   
 </dd>
         <dt id="cancelByUniqueName" class="callable">
@@ -178,19 +227,16 @@
           </span>
                   </dt>
         <dd>
-            Cancels a task by its unique name
+          Cancels a task by its <code>uniqueName</code>
                   
 </dd>
-          <dt id="executeTask" class="callable">
-              <span class="name"><a href="workmanager/Workmanager/executeTask.html">executeTask</a></span><span class="signature">(<wbr><span
-                  class="parameter" id="executeTask-param-backgroundTask"><span class="type-annotation"><a
-                  href="workmanager/BackgroundTask.html">BackgroundTask</a></span> <span
-                  class="parameter-name">backgroundTask</span></span>)
+        <dt id="executeTask" class="callable">
+          <span class="name"><a href="workmanager/Workmanager/executeTask.html">executeTask</a></span><span class="signature">(<wbr><span class="parameter" id="executeTask-param-backgroundTask"><span class="type-annotation"><a href="workmanager/BackgroundTask.html">BackgroundTask</a></span> <span class="parameter-name">backgroundTask</span></span>)
             <span class="returntype parameter">&#8594; void</span>
           </span>
                   </dt>
         <dd>
-            A helper function so you only need to implement a <a href="workmanager/BackgroundTask.html">BackgroundTask</a>
+          A helper function so you only need to implement a <a href="workmanager/BackgroundTask.html">BackgroundTask</a>
                   
 </dd>
         <dt id="initialize" class="callable">
@@ -199,20 +245,20 @@
           </span>
                   </dt>
         <dd>
-          This call is required if you wish to use the WorkManager plugin.
-callbackDispatcher is a top level function which will be invoked by Android
-            isInDebugMode true will post debug notifications with information about when a task should have run
+          This call is required if you wish to use the <code>WorkManager</code> plugin.
+<code>callbackDispatcher</code> is a top level function which will be invoked by Android
+<code>isInDebugMode</code> true will post debug notifications with information about when a task should have run
                   
 </dd>
         <dt id="registerOneOffTask" class="callable">
-          <span class="name"><a href="workmanager/Workmanager/registerOneOffTask.html">registerOneOffTask</a></span><span class="signature">(<wbr><span class="parameter" id="registerOneOffTask-param-uniqueName"><span class="type-annotation"><a href="dart-core/String-class.html">String</a></span> <span class="parameter-name">uniqueName</span>, </span> <span class="parameter" id="registerOneOffTask-param-echoValue"><span class="type-annotation"><a href="dart-core/String-class.html">String</a></span> <span class="parameter-name">echoValue</span>, {</span> <span class="parameter" id="registerOneOffTask-param-tag"><span class="type-annotation"><a href="dart-core/String-class.html">String</a></span> <span class="parameter-name">tag</span>, </span> <span class="parameter" id="registerOneOffTask-param-existingWorkPolicy"><span class="type-annotation"><a href="workmanager/ExistingWorkPolicy-class.html">ExistingWorkPolicy</a></span> <span class="parameter-name">existingWorkPolicy</span>, </span> <span class="parameter" id="registerOneOffTask-param-initialDelay"><span class="type-annotation"><a href="dart-core/Duration-class.html">Duration</a></span> <span class="parameter-name">initialDelay</span>: <span class="default-value">_noDuration</span>, </span> <span class="parameter" id="registerOneOffTask-param-constraints"><span class="type-annotation"><a href="workmanager/WorkManagerConstraintConfig-class.html">WorkManagerConstraintConfig</a></span> <span class="parameter-name">constraints</span>, </span> <span class="parameter" id="registerOneOffTask-param-backoffPolicy"><span class="type-annotation"><a href="workmanager/BackoffPolicy-class.html">BackoffPolicy</a></span> <span class="parameter-name">backoffPolicy</span>, </span> <span class="parameter" id="registerOneOffTask-param-backoffPolicyDelay"><span class="type-annotation"><a href="dart-core/Duration-class.html">Duration</a></span> <span class="parameter-name">backoffPolicyDelay</span>: <span class="default-value">_noDuration</span></span> })
+          <span class="name"><a href="workmanager/Workmanager/registerOneOffTask.html">registerOneOffTask</a></span><span class="signature">(<wbr><span class="parameter" id="registerOneOffTask-param-uniqueName"><span class="type-annotation"><a href="dart-core/String-class.html">String</a></span> <span class="parameter-name">uniqueName</span>, </span> <span class="parameter" id="registerOneOffTask-param-valueToReturn"><span class="type-annotation"><a href="dart-core/String-class.html">String</a></span> <span class="parameter-name">valueToReturn</span>, {</span> <span class="parameter" id="registerOneOffTask-param-tag"><span class="type-annotation"><a href="dart-core/String-class.html">String</a></span> <span class="parameter-name">tag</span>, </span> <span class="parameter" id="registerOneOffTask-param-existingWorkPolicy"><span class="type-annotation"><a href="workmanager/ExistingWorkPolicy-class.html">ExistingWorkPolicy</a></span> <span class="parameter-name">existingWorkPolicy</span>, </span> <span class="parameter" id="registerOneOffTask-param-initialDelay"><span class="type-annotation"><a href="dart-core/Duration-class.html">Duration</a></span> <span class="parameter-name">initialDelay</span>: <span class="default-value">_noDuration</span>, </span> <span class="parameter" id="registerOneOffTask-param-constraints"><span class="type-annotation"><a href="workmanager/WorkManagerConstraintConfig-class.html">WorkManagerConstraintConfig</a></span> <span class="parameter-name">constraints</span>, </span> <span class="parameter" id="registerOneOffTask-param-backoffPolicy"><span class="type-annotation"><a href="workmanager/BackoffPolicy-class.html">BackoffPolicy</a></span> <span class="parameter-name">backoffPolicy</span>, </span> <span class="parameter" id="registerOneOffTask-param-backoffPolicyDelay"><span class="type-annotation"><a href="dart-core/Duration-class.html">Duration</a></span> <span class="parameter-name">backoffPolicyDelay</span>: <span class="default-value">_noDuration</span></span> })
             <span class="returntype parameter">&#8594; <a href="dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
           </span>
                   </dt>
         <dd>
           Schedule a one off task
-            A unique name is required so only one task can be registered.
-            The echoValue is the value that will be returned in the <a href="workmanager/BackgroundTask.html">BackgroundTask</a>
+A <code>uniqueName</code> is required so only one task can be registered.
+The <code>valueToReturn</code> is the value that will be returned in the <a href="workmanager/BackgroundTask.html">BackgroundTask</a>
                   
 </dd>
         <dt id="registerPeriodicTask" class="callable">
@@ -222,32 +268,31 @@ callbackDispatcher is a top level function which will be invoked by Android
                   </dt>
         <dd>
           Schedules a periodic task that will run every provided <code>frequency</code>.
-            A unique name is required so only one task can be registered.
-            The echoValue is the value that will be returned in the <a href="workmanager/BackgroundTask.html">BackgroundTask</a>
-a frequency is not required and will be defaulted to 15 minutes if not provided.
+A <code>uniqueName</code> is required so only one task can be registered.
+The <code>echoValue</code> is the value that will be returned in the <a href="workmanager/BackgroundTask.html">BackgroundTask</a>
+a <code>frequency</code> is not required and will be defaulted to 15 minutes if not provided.
                   
 </dd>
       </dl>
     </section>
 
-      <section class="summary offset-anchor" id="constants">
-          <h2>Constants</h2>
+    <section class="summary offset-anchor" id="constants">
+      <h2>Constants</h2>
 
-          <dl class="properties">
-              <dt id="iOSBackgroundTask" class="constant">
-                  <span class="name "><a
-                          href="workmanager/Workmanager/iOSBackgroundTask-constant.html">iOSBackgroundTask</a></span>
-                  <span class="signature">&#8594; const <a href="dart-core/String-class.html">String</a></span>
-              </dt>
-              <dd>
-                  Use this constant inside your callbackDispatcher to identify when an iOS Background Fetch occurred.
-
-                  <div>
-                      <span class="signature"><code>&quot;iOSPerformFetch&quot;</code></span>
-                  </div>
-              </dd>
-          </dl>
-      </section>
+      <dl class="properties">
+        <dt id="iOSBackgroundTask" class="constant">
+          <span class="name "><a href="workmanager/Workmanager/iOSBackgroundTask-constant.html">iOSBackgroundTask</a></span>
+          <span class="signature">&#8594; const <a href="dart-core/String-class.html">String</a></span>
+                  </dt>
+        <dd>
+          Use this constant inside your callbackDispatcher to identify when an iOS Background Fetch occurred.
+                  
+  <div>
+            <span class="signature"><code>&quot;iOSPerformFetch&quot;</code></span>
+          </div>
+        </dd>
+      </dl>
+    </section>
 
   </div> <!-- /.main-content -->
 
@@ -274,13 +319,13 @@ a frequency is not required and will be defaulted to 15 minutes if not provided.
       <li><a href="workmanager/Workmanager/cancelAll.html">cancelAll</a></li>
       <li><a href="workmanager/Workmanager/cancelByTag.html">cancelByTag</a></li>
       <li><a href="workmanager/Workmanager/cancelByUniqueName.html">cancelByUniqueName</a></li>
-        <li><a href="workmanager/Workmanager/executeTask.html">executeTask</a></li>
+      <li><a href="workmanager/Workmanager/executeTask.html">executeTask</a></li>
       <li><a href="workmanager/Workmanager/initialize.html">initialize</a></li>
       <li><a href="workmanager/Workmanager/registerOneOffTask.html">registerOneOffTask</a></li>
       <li><a href="workmanager/Workmanager/registerPeriodicTask.html">registerPeriodicTask</a></li>
-
-        <li class="section-title"><a href="workmanager/Workmanager-class.html#constants">Constants</a></li>
-        <li><a href="workmanager/Workmanager/iOSBackgroundTask-constant.html">iOSBackgroundTask</a></li>
+    
+      <li class="section-title"><a href="workmanager/Workmanager-class.html#constants">Constants</a></li>
+      <li><a href="workmanager/Workmanager/iOSBackgroundTask-constant.html">iOSBackgroundTask</a></li>
     </ol>
   </div><!--/.sidebar-offcanvas-->
 

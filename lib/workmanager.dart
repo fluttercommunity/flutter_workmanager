@@ -42,7 +42,7 @@ class WorkManagerConstraintConfig {
 
 const _noDuration = const Duration(seconds: 0);
 
-/// Returns the echo value provided when registering the task.
+/// Returns the value you provided when registering the task. iOS will always return [Workmanager.iOSBackgroundTask]
 typedef BackgroundTask = Future<bool> Function(String echoValue);
 
 ///An enumeration of the conflict resolution policies in case of a collision.
@@ -86,6 +86,61 @@ enum BackoffPolicy {
   linear
 }
 
+/// Workmanager plugin.
+/// This is the entry point.
+///
+/// See README for complete example.
+///
+/// 1. Initialize the plugin first
+///
+/// ``
+/// void callbackDispatcher() {
+///   Workmanager.executeTask((echoValue) {
+///     print("Native echoed: $echoValue");
+///     return Future.value(true);
+///   });
+/// }
+///
+/// Workmanager.initialize(
+///     callbackDispatcher,
+///     isInDebugMode: true
+/// )
+/// ```
+///
+/// on iOS you have to make sure to enable Background Fetch.
+/// After this jobs will run periodically on iOS.
+///
+/// Add following key to the `Info.plist`
+///
+/// ```
+/// <key>UIBackgroundModes</key>
+///   <array>
+///     <string>fetch</string>
+///   </array>
+/// </key>
+/// ```
+///
+/// `UIApplication.shared.setMinimumBackgroundFetchInterval(TimeInterval(60 * 15))`
+///
+/// on Android
+/// You have the possibility to schedule either:
+/// - OneOff tasks
+/// - Periodic tasks
+///
+/// ```
+/// Workmanager.registerOneOffTask(
+///     "1",
+///     "simpleTask",
+///     constraints: WorkManagerConstraintConfig(
+///         networkType: NetworkType.connected,
+///         requiresBatteryNotLow: true,
+///         requiresCharging: true,
+///         requiresDeviceIdle: true,
+///         requiresStorageNotLow: true
+///     )
+/// );
+/// ```
+///
 class Workmanager {
   /// Use this constant inside your callbackDispatcher to identify when an iOS Background Fetch occurred.
   static const String iOSBackgroundTask = "iOSPerformFetch";
@@ -104,9 +159,9 @@ class Workmanager {
     _backgroundChannel.invokeMethod("backgroundChannelInitialized");
   }
 
-  /// This call is required if you wish to use the WorkManager plugin.
-  /// callbackDispatcher is a top level function which will be invoked by Android
-  /// isInDebugMode true will post debug notifications with information about when a task should have run
+  /// This call is required if you wish to use the [WorkManager] plugin.
+  /// [callbackDispatcher] is a top level function which will be invoked by Android
+  /// [isInDebugMode] true will post debug notifications with information about when a task should have run
   static Future<void> initialize(final Function callbackDispatcher, {
     final bool isInDebugMode,
   }) async {
@@ -116,10 +171,10 @@ class Workmanager {
   }
 
   /// Schedule a one off task
-  /// A unique name is required so only one task can be registered.
-  /// The echoValue is the value that will be returned in the [BackgroundTask]
+  /// A [uniqueName] is required so only one task can be registered.
+  /// The [valueToReturn] is the value that will be returned in the [BackgroundTask]
   static Future<void> registerOneOffTask(final String uniqueName,
-      final String echoValue, {
+      final String valueToReturn, {
         final String tag,
         final ExistingWorkPolicy existingWorkPolicy,
         final Duration initialDelay = _noDuration,
@@ -130,7 +185,7 @@ class Workmanager {
       await _register(
         methodName: "registerOneOffTask",
         uniqueName: uniqueName,
-        echoValue: echoValue,
+        echoValue: valueToReturn,
         tag: tag,
         existingWorkPolicy: existingWorkPolicy,
         initialDelay: initialDelay,
@@ -140,9 +195,9 @@ class Workmanager {
       );
 
   /// Schedules a periodic task that will run every provided [frequency].
-  /// A unique name is required so only one task can be registered.
-  /// The echoValue is the value that will be returned in the [BackgroundTask]
-  /// a frequency is not required and will be defaulted to 15 minutes if not provided.
+  /// A [uniqueName] is required so only one task can be registered.
+  /// The [echoValue] is the value that will be returned in the [BackgroundTask]
+  /// a [frequency] is not required and will be defaulted to 15 minutes if not provided.
   static Future<void> registerPeriodicTask(final String uniqueName,
       final String echoValue, {
         final Duration frequency,
@@ -201,12 +256,12 @@ class Workmanager {
     );
   }
 
-  /// Cancels a task by its unique name
+  /// Cancels a task by its [uniqueName]
   static Future<void> cancelByUniqueName(final String uniqueName) async =>
       await _foregroundChannel
           .invokeMethod("cancelTaskByUniqueName", {"uniqueName": uniqueName});
 
-  /// Cancels a task by its tag
+  /// Cancels a task by its [tag]
   static Future<void> cancelByTag(final String tag) async =>
       await _foregroundChannel.invokeMethod("cancelTaskByTag", {"tag": tag});
 

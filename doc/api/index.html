@@ -23,7 +23,7 @@
 <header id="title">
   <button id="sidenav-left-toggle" type="button">&nbsp;</button>
   <ol class="breadcrumbs gt-separated dark hidden-xs">
-      <li><a href="https://github.com/vrtdev/flutter_workmanager">workmanager package</a></li>
+    <li><a href="https://github.com/vrtdev/flutter_workmanager">workmanager package</a></li>
   </ol>
   <div class="self-name">workmanager</div>
   <form class="search navbar-right" role="search">
@@ -41,7 +41,7 @@
     </header>
     
     <ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
-        <li><a href="https://github.com/vrtdev/flutter_workmanager">workmanager package</a></li>
+      <li><a href="https://github.com/vrtdev/flutter_workmanager">workmanager package</a></li>
     </ol>
     
     <h5 class="hidden-xs"><span class="package-name">workmanager</span> <span class="package-kind">package</span></h5>
@@ -67,25 +67,20 @@
   <div id="dartdoc-main-content" class="col-xs-12 col-sm-9 col-md-8 main-content">
       <section class="desc markdown">
         <h1 id="flutter-workmanager">Flutter Workmanager</h1>
-          <p><a href="https://pub.dartlang.org/packages/workmanager"><img src="https://img.shields.io/pub/v/workmanager.svg"
-                                                                          alt="pub package"></a></p>
-          <p>Flutter WorkManager is a wrapper around <a
-                  href="https://developer.android.com/topic/libraries/architecture/workmanager">Android's WorkManager</a>, with
-              support for <a href="https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1623125-application">iOS'
-                  performFetchWithCompletionHandler</a>, effectively enabling headless execution of Dart code without the need of
-              a running app (i.e. in background).</p>
-          <p>This is especially useful to run periodic tasks, such as fetching remote data on a regular basis.</p>
-          <h1 id="installation">Installation</h1>
-          <pre class="language-dart"><code>dependencies:
+<p><a href="https://pub.dartlang.org/packages/workmanager"><img src="https://img.shields.io/pub/v/workmanager.svg" alt="pub package"></a></p>
+<p>Flutter WorkManager is a wrapper around <a href="https://developer.android.com/topic/libraries/architecture/workmanager">Android's WorkManager</a>, with support for <a href="https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1623125-application">iOS' performFetchWithCompletionHandler</a>, effectively enabling headless execution of Dart code without the need of a running app (i.e. in background).</p>
+<p>This is especially useful to run periodic tasks, such as fetching remote data on a regular basis.</p>
+<h1 id="installation">Installation</h1>
+<pre class="language-dart"><code>dependencies:
   workmanager: ^0.0.6
 </code></pre>
-          <pre class="language-dart"><code>flutter pub get
+<pre class="language-dart"><code>flutter pub get
 </code></pre>
-          <pre class="language-dart"><code>import 'package:workmanager/workmanager.dart';
+<pre class="language-dart"><code>import 'package:workmanager/workmanager.dart';
 </code></pre>
-          <h1 id="user-guide">User guide</h1>
+<h1 id="user-guide">User guide</h1>
 <p>See sample folder for a complete working example.</p>
-          <p>Before registering any task, the WorkManager plugin must be initialized.</p>
+<p>Before registering any task, the WorkManager plugin must be initialized.</p>
 <pre class="language-dart"><code>//Provide a top level function or static function.
 //This function will be called by Android and will return the value you provided when you registered the task.
 //See below
@@ -102,14 +97,9 @@ Workmanager.initialize(
 )
 </code></pre>
 <blockquote>
-    <p>The <code>callbackDispatcher</code> needs to be either a static function or a top level function to be accessible as a
-        Flutter entry point. </p></blockquote>
-          <h2 id="android-usage">Android usage</h2>
-          <p>Two kinds of background tasks can be registered :</p>
-          <ul>
-              <li><strong>One off task</strong> : runs only once</li>
-              <li><strong>Periodic tasks</strong> : runs indefinitely on a regular basis</li>
-          </ul>
+<p>The <code>callbackDispatcher</code> needs to be either a static function or a top level function to be accessible as a Flutter entry point. </p></blockquote>
+<h2 id="android-usage">Android usage</h2>
+<p>Two kinds of background tasks can be registered :</p><ul><li><strong>One off task</strong> : runs only once</li><li><strong>Periodic tasks</strong> : runs indefinitely on a regular basis</li></ul>
 <pre class="language-dart"><code>// One off task registration
 Workmanager.registerOneOffTask(
     "1", 
@@ -123,27 +113,26 @@ Workmanager.registerPeriodicTask(
     frequency: Duration(hours: 1), //When no frequency is provided the default 15 minutes is set.
 )
 </code></pre>
-          <p>Each task must have a <strong>unique name</strong> ; this allows cancellation of a started task.<br>
-              The second parameter is the <code>String</code> that will be sent to your <code>callbackDispatcher</code> function,
-              indicating the task's <em>type</em>. </p>
-          <h3 id="customisation">Customisation</h3>
-          <p>Not every <code>Android WorkManager</code> feature is ported.</p>
-          <h4 id="tagging">Tagging</h4>
+<p>Each task must have a <strong>unique name</strong> ; this allows cancellation of a started task.<br>
+The second parameter is the <code>String</code> that will be sent to your <code>callbackDispatcher</code> function, indicating the task's <em>type</em>.  </p>
+<h3 id="customisation">Customisation</h3>
+<p>Not every <code>Android WorkManager</code> feature is ported.</p>
+<h4 id="tagging">Tagging</h4>
 <p>You can set the optional <code>tag</code> property.<br>
 Handy for cancellation by <code>tag</code>.<br>
-    This is different from the unique name in that you can group multiple tasks under one tag. </p>
+This is different from the unique name in that you can group multiple tasks under one tag.  </p>
 <pre class="language-dart"><code>Workmanager.registerOneOffTask("1", "simpleTask", tag: "tag");
 </code></pre>
-          <h4 id="existing-work-policy">Existing Work Policy</h4>
-          <p>Indicates the desired behaviour when the same task is scheduled more than once.<br>
+<h4 id="existing-work-policy">Existing Work Policy</h4>
+<p>Indicates the desired behaviour when the same task is scheduled more than once.<br>
 The default is <code>KEEP</code></p>
 <pre class="language-dart"><code>Workmanager.registerOneOffTask("1", "simpleTask", existingWorkPolicy: ExistingWorkPolicy.append);
 </code></pre>
-          <h4 id="initial-delay">Initial Delay</h4>
-          <p>Indicates how along a task should waitbefore its first run.</p>
+<h4 id="initial-delay">Initial Delay</h4>
+<p>Indicates how along a task should waitbefore its first run.</p>
 <pre class="language-dart"><code>Workmanager.registerOneOffTask("1", "simpleTask", initialDelay: Duration(seconds: 10));
 </code></pre>
-          <h4 id="constraints">Constraints</h4>
+<h4 id="constraints">Constraints</h4>
 <blockquote>
 <p>Not all constraints are mapped.</p></blockquote>
 <pre class="language-dart"><code>Workmanager.registerOneOffTask(
@@ -158,59 +147,44 @@ The default is <code>KEEP</code></p>
     )
 );
 </code></pre>
-          <h4 id="backoffpolicy">BackoffPolicy</h4>
-          <p>Indicates the waiting strategy upon task failure.<br>
+<h4 id="backoffpolicy">BackoffPolicy</h4>
+<p>Indicates the waiting strategy upon task failure.<br>
 The default is <code>BackoffPolicy.exponential</code>.<br>
-              You can also specify the delay. </p>
+You can also specify the delay. </p>
 <pre class="language-dart"><code>Workmanager.registerOneOffTask("1", "simpleTask", backoffPolicy: BackoffPolicy.exponential, backoffPolicyDelay: Duration(seconds: 10));
 </code></pre>
-          <h3 id="cancellation">Cancellation</h3>
-          <p>A task can be cancelled in different ways : </p>
-          <ul>
-              <li>
-                  <h4 id="by-tag">by Tag</h4></li>
-          </ul>
-          <p>Cancels the task that was previously registered using this <strong>Tag</strong>, if any. </p>
+<h3 id="cancellation">Cancellation</h3>
+<p>A task can be cancelled in different ways :  </p><ul><li>
+<h4 id="by-tag">by Tag</h4></li></ul>
+<p>Cancels the task that was previously registered using this <strong>Tag</strong>, if any.  </p>
 <pre class="language-dart"><code>Workmanager.cancelByTag("tag");
+</code></pre><ul><li>
+<h4 id="by-unique-name">by Unique Name</h4></li></ul>
+<pre class="language-dart"><code>Workmanager.cancelByUniqueName("&lt;MyTask&gt;");
+</code></pre><ul><li>
+<h4 id="cancel-all-registered-tasks">cancel all registered tasks</h4></li></ul>
+<pre class="language-dart"><code>Workmanager.cancelAll();
 </code></pre>
-          <ul>
-              <li>
-                  <h4 id="by-unique-name">by Unique Name</h4></li>
-          </ul>
-          <pre class="language-dart"><code>Workmanager.cancelByUniqueName("&lt;MyTask&gt;");
-</code></pre>
-          <ul>
-              <li>
-                  <h4 id="cancel-all-registered-tasks">cancel all registered tasks</h4></li>
-          </ul>
-          <pre class="language-dart"><code>Workmanager.cancelAll();
-</code></pre>
-          <h2 id="ios-usage">iOS usage</h2>
-          <p>Background task on iOS are very different. Before anything, make sure you've added the following key to your
-              project's `Info.plist :</p>
-          <pre class="language-dart"><code>&lt;key&gt;UIBackgroundModes&lt;/key&gt;
+<h2 id="ios-usage">iOS usage</h2>
+<p>Background task on iOS are very different. Before anything, make sure you've added the following key to your project's `Info.plist :</p>
+<pre class="language-dart"><code>&lt;key&gt;UIBackgroundModes&lt;/key&gt;
   &lt;array&gt;
     &lt;string&gt;fetch&lt;/string&gt;
   &lt;/array&gt;
 &lt;/key&gt;
 </code></pre>
-          <h3 id="set-the-applications-minimumbackgroundfetchinterval">Set the application's minimumBackgroundFetchInterval</h3>
-          <p>Set your desired <em>minimumBackgroundFetchInterval</em> in your app's delegate's
-              <code>didFinishLaunchingWithOptions</code> :</p>
-          <p><code>UIApplication.shared.setMinimumBackgroundFetchInterval(TimeInterval(60 * 15))</code> every 15 minutes. </p>
-          <blockquote>
-              <p>Note : this time interval is a minimum ; there's no guarantee about how often this will be called. </p>
-          </blockquote>
-          <h3 id="waiting-for-ios-to-trigger-performfetchwithcompletionhandler">Waiting for iOS to trigger <code>performFetchWithCompletionHandler</code>
-          </h3>
-          <p>We don't have any control on how often iOS will allow our app to fetch data in the background. Xcode's Debug &gt;
-              Simulate Background Fetch.</p>
-          <blockquote>
-              <p>Currently broken in the latest XCode vX.X.X </p></blockquote>
-          <h3 id="add-an-extra-case">Add an extra case</h3>
-          <p>In order to know when <code>Background Fetch</code> was triggered you should add the <code>Workmanager.iOSBackgroundTask</code>
-              case. </p>
-          <pre class="language-dart"><code>void callbackDispatcher() {
+<h3 id="set-the-applications-minimumbackgroundfetchinterval">Set the application's minimumBackgroundFetchInterval</h3>
+<p>Set your desired <em>minimumBackgroundFetchInterval</em> in your app's delegate's <code>didFinishLaunchingWithOptions</code> :</p>
+<p><code>UIApplication.shared.setMinimumBackgroundFetchInterval(TimeInterval(60 * 15))</code> every 15 minutes.  </p>
+<blockquote>
+<p>Note : this time interval is a minimum ; there's no guarantee about how often this will be called. </p></blockquote>
+<h3 id="waiting-for-ios-to-trigger-performfetchwithcompletionhandler">Waiting for iOS to trigger <code>performFetchWithCompletionHandler</code></h3>
+<p>We don't have any control on how often iOS will allow our app to fetch data in the background. Xcode's Debug &gt; Simulate Background Fetch.</p>
+<blockquote>
+<p>Currently broken in the latest XCode vX.X.X </p></blockquote>
+<h3 id="add-an-extra-case">Add an extra case</h3>
+<p>In order to know when <code>Background Fetch</code> was triggered you should add the <code>Workmanager.iOSBackgroundTask</code> case.  </p>
+<pre class="language-dart"><code>void callbackDispatcher() {
   Workmanager.executeTask((task) {
     switch (task) {
       case Workmanager.iOSBackgroundTask:

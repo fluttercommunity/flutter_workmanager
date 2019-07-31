@@ -74,13 +74,13 @@
       <li><a href="workmanager/Workmanager/cancelAll.html">cancelAll</a></li>
       <li><a href="workmanager/Workmanager/cancelByTag.html">cancelByTag</a></li>
       <li><a href="workmanager/Workmanager/cancelByUniqueName.html">cancelByUniqueName</a></li>
-        <li><a href="workmanager/Workmanager/executeTask.html">executeTask</a></li>
+      <li><a href="workmanager/Workmanager/executeTask.html">executeTask</a></li>
       <li><a href="workmanager/Workmanager/initialize.html">initialize</a></li>
       <li><a href="workmanager/Workmanager/registerOneOffTask.html">registerOneOffTask</a></li>
       <li><a href="workmanager/Workmanager/registerPeriodicTask.html">registerPeriodicTask</a></li>
-
-        <li class="section-title"><a href="workmanager/Workmanager-class.html#constants">Constants</a></li>
-        <li><a href="workmanager/Workmanager/iOSBackgroundTask-constant.html">iOSBackgroundTask</a></li>
+    
+      <li class="section-title"><a href="workmanager/Workmanager-class.html#constants">Constants</a></li>
+      <li><a href="workmanager/Workmanager/iOSBackgroundTask-constant.html">iOSBackgroundTask</a></li>
     </ol>
   </div><!--/.sidebar-offcanvas-->
 
@@ -90,19 +90,19 @@
     <section class="multi-line-signature">
       <span class="returntype"><a href="dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
             <span class="name ">registerOneOffTask</span>
-(<wbr><span class="parameter" id="registerOneOffTask-param-uniqueName"><span class="type-annotation"><a href="dart-core/String-class.html">String</a></span> <span class="parameter-name">uniqueName</span>, </span> <span class="parameter" id="registerOneOffTask-param-echoValue"><span class="type-annotation"><a href="dart-core/String-class.html">String</a></span> <span class="parameter-name">echoValue</span>, {</span> <span class="parameter" id="registerOneOffTask-param-tag"><span class="type-annotation"><a href="dart-core/String-class.html">String</a></span> <span class="parameter-name">tag</span>, </span> <span class="parameter" id="registerOneOffTask-param-existingWorkPolicy"><span class="type-annotation"><a href="workmanager/ExistingWorkPolicy-class.html">ExistingWorkPolicy</a></span> <span class="parameter-name">existingWorkPolicy</span>, </span> <span class="parameter" id="registerOneOffTask-param-initialDelay"><span class="type-annotation"><a href="dart-core/Duration-class.html">Duration</a></span> <span class="parameter-name">initialDelay</span>: <span class="default-value">_noDuration</span>, </span> <span class="parameter" id="registerOneOffTask-param-constraints"><span class="type-annotation"><a href="workmanager/WorkManagerConstraintConfig-class.html">WorkManagerConstraintConfig</a></span> <span class="parameter-name">constraints</span>, </span> <span class="parameter" id="registerOneOffTask-param-backoffPolicy"><span class="type-annotation"><a href="workmanager/BackoffPolicy-class.html">BackoffPolicy</a></span> <span class="parameter-name">backoffPolicy</span>, </span> <span class="parameter" id="registerOneOffTask-param-backoffPolicyDelay"><span class="type-annotation"><a href="dart-core/Duration-class.html">Duration</a></span> <span class="parameter-name">backoffPolicyDelay</span>: <span class="default-value">_noDuration</span></span> })
+(<wbr><span class="parameter" id="registerOneOffTask-param-uniqueName"><span class="type-annotation"><a href="dart-core/String-class.html">String</a></span> <span class="parameter-name">uniqueName</span>, </span> <span class="parameter" id="registerOneOffTask-param-valueToReturn"><span class="type-annotation"><a href="dart-core/String-class.html">String</a></span> <span class="parameter-name">valueToReturn</span>, {</span> <span class="parameter" id="registerOneOffTask-param-tag"><span class="type-annotation"><a href="dart-core/String-class.html">String</a></span> <span class="parameter-name">tag</span>, </span> <span class="parameter" id="registerOneOffTask-param-existingWorkPolicy"><span class="type-annotation"><a href="workmanager/ExistingWorkPolicy-class.html">ExistingWorkPolicy</a></span> <span class="parameter-name">existingWorkPolicy</span>, </span> <span class="parameter" id="registerOneOffTask-param-initialDelay"><span class="type-annotation"><a href="dart-core/Duration-class.html">Duration</a></span> <span class="parameter-name">initialDelay</span>: <span class="default-value">_noDuration</span>, </span> <span class="parameter" id="registerOneOffTask-param-constraints"><span class="type-annotation"><a href="workmanager/WorkManagerConstraintConfig-class.html">WorkManagerConstraintConfig</a></span> <span class="parameter-name">constraints</span>, </span> <span class="parameter" id="registerOneOffTask-param-backoffPolicy"><span class="type-annotation"><a href="workmanager/BackoffPolicy-class.html">BackoffPolicy</a></span> <span class="parameter-name">backoffPolicy</span>, </span> <span class="parameter" id="registerOneOffTask-param-backoffPolicyDelay"><span class="type-annotation"><a href="dart-core/Duration-class.html">Duration</a></span> <span class="parameter-name">backoffPolicyDelay</span>: <span class="default-value">_noDuration</span></span> })
       
     </section>
     <section class="desc markdown">
       <p>Schedule a one off task
-          A unique name is required so only one task can be registered.
-          The echoValue is the value that will be returned in the <a href="workmanager/BackgroundTask.html">BackgroundTask</a></p>
+A <code>uniqueName</code> is required so only one task can be registered.
+The <code>valueToReturn</code> is the value that will be returned in the <a href="workmanager/BackgroundTask.html">BackgroundTask</a></p>
     </section>
     
     <section class="summary source-code" id="source">
       <h2><span>Implementation</span></h2>
-        <pre class="language-dart"><code class="language-dart">static Future&lt;void&gt; registerOneOffTask(final String uniqueName,
-    final String echoValue, {
+      <pre class="language-dart"><code class="language-dart">static Future&lt;void&gt; registerOneOffTask(final String uniqueName,
+    final String valueToReturn, {
       final String tag,
       final ExistingWorkPolicy existingWorkPolicy,
       final Duration initialDelay = _noDuration,
@@ -113,7 +113,7 @@
     await _register(
       methodName: &quot;registerOneOffTask&quot;,
       uniqueName: uniqueName,
-      echoValue: echoValue,
+      echoValue: valueToReturn,
       tag: tag,
       existingWorkPolicy: existingWorkPolicy,
       initialDelay: initialDelay,
