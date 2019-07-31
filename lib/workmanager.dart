@@ -108,7 +108,7 @@ class Workmanager {
   /// isInDebugMode true will post debug notifications with information about when a job should have run
   static Future<void> initialize(
     final Function callbackDispatcher, {
-    final bool isInDebugMode,
+        final bool isInDebugMode = false,
   }) async {
     Workmanager._isInDebugMode = isInDebugMode;
     final callback = PluginUtilities.getCallbackHandle(callbackDispatcher);
