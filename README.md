@@ -163,10 +163,6 @@ Set your desired *minimumBackgroundFetchInterval* in your app's delegate's `didF
 `UIApplication.shared.setMinimumBackgroundFetchInterval(TimeInterval(60 * 15)) // E.g. min every 15 minutes`
 > Note : this time interval is a minimum ; there's no guarantee about how ofteh this will be called. 
 
-#### Adding the plugin as an AppDelegate
-
-This is done automatically by the SwiftWorkManagerPlugin at registration time, by calling [addApplicationDelegate](https://api.flutter.dev/objcdoc/Protocols/FlutterPluginRegistrar.html#/c:objc(pl)FlutterPluginRegistrar(im)addApplicationDelegate:) on the Flutter registrar.
-
 #### Waiting for iOS to trigger `performFetchWithCompletionHandler`
 
 We don't have any control on how often iOS will allow our app to fetch data in the background. The Example Flutter project allows to simulate this event, by pressing the 'Simulate Background Fetch' button (since Xcode's Debug > Simulate Background Fetch doesn't). 

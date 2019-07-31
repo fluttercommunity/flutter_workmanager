@@ -132,17 +132,6 @@ class _MyAppState extends State<MyApp> {
                       frequency: Duration(hours: 1),
                     );
                   }),
-              SizedBox(height: 16),
-              Text("Background Fetch (iOS only)", style: Theme.of(context).textTheme.headline),
-              //Triggers iOS' performFetchWithCompletionHandler: callback
-              PlatformEnabledButton(
-                  platform: _Platform.ios,
-                  child: Text("Simulate Background Fetch"),
-                  onPressed: () {
-                    final MethodChannel methodChannel =
-                        MethodChannel("iOSMethodChannel");
-                    methodChannel.invokeMethod("iOSPerformFetch");
-                  }),
             ],
           ),
         ),
