@@ -3,7 +3,7 @@
 
 Flutter WorkManager is a wrapper around [Android's WorkManager](https://developer.android.com/topic/libraries/architecture/workmanager), with support for [iOS' performFetchWithCompletionHandler](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1623125-application), effectively enabling headless execution of Dart code without the need of a running app (i.e. in background).
 
-This is especially useful to run periodic taks, such as fetching remote data on a regular basis.
+This is especially useful to run periodic tasks, such as fetching remote data on a regular basis.
 
 # Installation
 
@@ -125,7 +125,7 @@ Workmanager.registerOneOffTask("1", "simpleTask", backoffPolicy: BackoffPolicy.e
 
 ## Cancellation
 
-A taks can be cancelled in different ways :  
+A task can be cancelled in different ways :  
 - ##### by Tag
 
 Cancels the task that was previously registered using this **Tag**, if any.  
@@ -147,7 +147,7 @@ Workmanager.cancelAll();
 
 ## iOS usage
 
-Background taks on iOS are very different. Before anything, make sure you've added the following key to your project's `Info.plist :
+Background task on iOS are very different. Before anything, make sure you've added the following key to your project's `Info.plist :
 ```
 <key>UIBackgroundModes</key>
   <array>
@@ -160,9 +160,12 @@ Background taks on iOS are very different. Before anything, make sure you've add
 
 Set your desired *minimumBackgroundFetchInterval* in your app's delegate's `didFinishLaunchingWithOptions` :
 
-`UIApplication.shared.setMinimumBackgroundFetchInterval(TimeInterval(60 * 15)) // E.g. min every 15 minutes`
-> Note : this time interval is a minimum ; there's no guarantee about how ofteh this will be called. 
+`UIApplication.shared.setMinimumBackgroundFetchInterval(TimeInterval(60 * 15))` every 15 minutes.  
+
+> Note : this time interval is a minimum ; there's no guarantee about how often this will be called. 
 
 #### Waiting for iOS to trigger `performFetchWithCompletionHandler`
 
-We don't have any control on how often iOS will allow our app to fetch data in the background. The Example Flutter project allows to simulate this event, by pressing the 'Simulate Background Fetch' button (since Xcode's Debug > Simulate Background Fetch doesn't). 
+We don't have any control on how often iOS will allow our app to fetch data in the background. Xcode's Debug > Simulate Background Fetch.
+
+> Currently broken in the latest XCode vX.X.X 

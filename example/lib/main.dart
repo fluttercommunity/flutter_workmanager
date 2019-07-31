@@ -1,9 +1,7 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'dart:async';
-
 import 'package:workmanager/workmanager.dart';
 
 void main() => runApp(MyApp());
@@ -28,6 +26,9 @@ void callbackDispatcher() {
       case simplePeriodic1HourTask:
         stderr.writeln("$simplePeriodic1HourTask was executed");
         break;
+      case Workmanager.iOSBackgroundTask:
+        stderr.writeln("The iOS background fetch was triggered");
+        break;
     }
 
     return Future.value(true);
@@ -44,15 +45,14 @@ enum _Platform { android, ios }
 class PlatformEnabledButton extends RaisedButton {
   final _Platform platform;
 
-  PlatformEnabledButton(
-      {this.platform, @required Widget child, @required VoidCallback onPressed})
+  PlatformEnabledButton({this.platform, @required Widget child, @required VoidCallback onPressed})
       : assert(child != null, onPressed != null),
         super(
-            child: child,
-            onPressed: (Platform.isAndroid && platform == _Platform.android ||
-                    Platform.isIOS && platform == _Platform.ios)
-                ? onPressed
-                : null);
+          child: child,
+          onPressed: (Platform.isAndroid && platform == _Platform.android ||
+              Platform.isIOS && platform == _Platform.ios)
+              ? onPressed
+              : null);
 }
 
 class _MyAppState extends State<MyApp> {

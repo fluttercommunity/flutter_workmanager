@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/services.dart';
@@ -88,12 +87,13 @@ enum BackoffPolicy {
 }
 
 class Workmanager {
+  static const String iOSBackgroundTask = "iOSPerformFetch";
   static bool _isInDebugMode = false;
 
   static const MethodChannel _backgroundChannel =
-      const MethodChannel(_WorkmanagerConstants.backgroundChannelName);
+  const MethodChannel(_WorkmanagerConstants.backgroundChannelName);
   static const MethodChannel _foregroundChannel =
-      const MethodChannel(_WorkmanagerConstants.foregroundChannelName);
+  const MethodChannel(_WorkmanagerConstants.foregroundChannelName);
 
   /// A helper function so you only need to implement a [BackgroundTask]
   static void executeTask(final BackgroundTask backgroundTask) {
@@ -106,8 +106,7 @@ class Workmanager {
   /// This call is required if you wish to use the WorkManager plugin.
   /// callbackDispatcher is a top level function which will be invoked by Android
   /// isInDebugMode true will post debug notifications with information about when a task should have run
-  static Future<void> initialize(
-    final Function callbackDispatcher, {
+  static Future<void> initialize(final Function callbackDispatcher, {
     final bool isInDebugMode,
   }) async {
     Workmanager._isInDebugMode = isInDebugMode;
@@ -118,16 +117,15 @@ class Workmanager {
   /// Schedule a one off task
   /// A unique name is required so only one task can be registered.
   /// The echoValue is the value that will be returned in the [BackgroundTask]
-  static Future<void> registerOneOffTask(
-    final String uniqueName,
-    final String echoValue, {
-    final String tag,
-    final ExistingWorkPolicy existingWorkPolicy,
-    final Duration initialDelay = _noDuration,
-    final WorkManagerConstraintConfig constraints,
-    final BackoffPolicy backoffPolicy,
-    final Duration backoffPolicyDelay = _noDuration,
-  }) async =>
+  static Future<void> registerOneOffTask(final String uniqueName,
+      final String echoValue, {
+        final String tag,
+        final ExistingWorkPolicy existingWorkPolicy,
+        final Duration initialDelay = _noDuration,
+        final WorkManagerConstraintConfig constraints,
+        final BackoffPolicy backoffPolicy,
+        final Duration backoffPolicyDelay = _noDuration,
+      }) async =>
       await _register(
         methodName: "registerOneOffTask",
         uniqueName: uniqueName,
@@ -144,17 +142,16 @@ class Workmanager {
   /// A unique name is required so only one task can be registered.
   /// The echoValue is the value that will be returned in the [BackgroundTask]
   /// a frequency is not required and will be defaulted to 15 minutes if not provided.
-  static Future<void> registerPeriodicTask(
-    final String uniqueName,
-    final String echoValue, {
-    final Duration frequency,
-    final String tag,
-    final ExistingWorkPolicy existingWorkPolicy,
-    final Duration initialDelay = _noDuration,
-    final WorkManagerConstraintConfig constraints,
-    final BackoffPolicy backoffPolicy,
-    final Duration backoffPolicyDelay = _noDuration,
-  }) async =>
+  static Future<void> registerPeriodicTask(final String uniqueName,
+      final String echoValue, {
+        final Duration frequency,
+        final String tag,
+        final ExistingWorkPolicy existingWorkPolicy,
+        final Duration initialDelay = _noDuration,
+        final WorkManagerConstraintConfig constraints,
+        final BackoffPolicy backoffPolicy,
+        final Duration backoffPolicyDelay = _noDuration,
+      }) async =>
       await _register(
         methodName: "registerPeriodicTask",
         uniqueName: uniqueName,
