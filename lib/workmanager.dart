@@ -96,13 +96,10 @@ class Workmanager {
       const MethodChannel(_WorkmanagerConstants.foregroundChannelName);
 
   /// A helper function so you only need to implement a [BackgroundTask]
-  static void executeTask(
-      final BackgroundTask backgroundTask) {
+  static void executeTask(final BackgroundTask backgroundTask) {
     WidgetsFlutterBinding.ensureInitialized();
     _backgroundChannel
-        .setMethodCallHandler((call) async {
-          return backgroundTask(call.arguments);
-        });
+        .setMethodCallHandler((call) async => backgroundTask(call.arguments));
     _backgroundChannel.invokeMethod("backgroundChannelInitialized");
   }
 
