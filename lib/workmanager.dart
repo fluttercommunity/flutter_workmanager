@@ -163,7 +163,7 @@ class Workmanager {
   /// [callbackDispatcher] is a top level function which will be invoked by Android
   /// [isInDebugMode] true will post debug notifications with information about when a task should have run
   static Future<void> initialize(final Function callbackDispatcher, {
-    final bool isInDebugMode,
+        final bool isInDebugMode = false,
   }) async {
     Workmanager._isInDebugMode = isInDebugMode;
     final callback = PluginUtilities.getCallbackHandle(callbackDispatcher);

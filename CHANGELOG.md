@@ -34,6 +34,10 @@
 * Expose a WorkManagerHelper to the native.
   * This makes it easier if you also have some native code that wants to schedule the Echo Worker
   
+# 0.0.6+1
+
+* Fixes a bug when initializing without setting the `isInDebugMode`.
+
 # 0.0.7
 
 * This version is the first version to support iOS with the help of the Background Fetch API.  

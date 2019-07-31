@@ -9,7 +9,7 @@ This is especially useful to run periodic tasks, such as fetching remote data on
 
 ```
 dependencies:
-  workmanager: ^0.0.6
+  workmanager: ^0.0.6+1
 ```
 ```
 flutter pub get
