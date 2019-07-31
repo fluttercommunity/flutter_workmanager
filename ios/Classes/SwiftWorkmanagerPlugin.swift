@@ -8,14 +8,14 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
         static let channelName = "be.tramckrijte.workmanager/foreground_channel_work_manager"
         enum methods: String {
             case initialize
-            case performSampleFetch
         }
     }
     
     private struct BackgroundMethodChannel {
         static let channelName = "be.tramckrijte.workmanager/background_channel_work_manager"
         enum methods: String {
-            case backgroundJobDidComplete
+            case backgroundChannelInitialized
+            case iOSPerformFetch
         }
     }
     
@@ -28,10 +28,12 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
 extension SwiftWorkmanagerPlugin: FlutterPlugin {
     
     public static func register(with registrar: FlutterPluginRegistrar) {
+        
         let foregroundMethodChannel = FlutterMethodChannel(name: ForegroundMethodChannel.channelName, binaryMessenger: registrar.messenger())
         let instance = SwiftWorkmanagerPlugin()
         registrar.addMethodCallDelegate(instance, channel: foregroundMethodChannel)
         registrar.addApplicationDelegate(instance)
+        
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -39,16 +41,13 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
         switch call.method {
         case ForegroundMethodChannel.methods.initialize.rawValue:
             guard let callbackHandle: Int64 = call.arguments as? Int64 else {
-                result(WMPError.unexpectedMethodArguments(argumentsDescription: call.arguments.debugDescription))
+                result(WMPError.unexpectedMethodArguments(call.arguments.debugDescription))
                 return
             }
             store(callbackHandle)
             result(nil)
-        case ForegroundMethodChannel.methods.performSampleFetch.rawValue:
-            triggerSampleBackgroundFetch()
-            result(nil)
         default:
-            result(WMPError.unhandledMethod(methodName: call.method).asFlutterError)
+            result(WMPError.unhandledMethod(call.method).asFlutterError)
             return
         }
         
@@ -76,17 +75,27 @@ extension SwiftWorkmanagerPlugin {
         // Since we're now running a specific Flutter engine, no MethodChannel exists ; let's create one for WorkManager's BackgroundMethodChannel
         let backgroundMethodChannel = FlutterMethodChannel(name: BackgroundMethodChannel.channelName, binaryMessenger: flutterEngine)
         backgroundMethodChannel.setMethodCallHandler { (call, result) in
-            guard
-                call.method == BackgroundMethodChannel.methods.backgroundJobDidComplete.rawValue,
-                let argument: UInt = call.arguments as? UInt,
-                let backgroundFetchResult = UIBackgroundFetchResult.init(rawValue: argument)
-                else {
-                    result(WMPError.unexpectedMethodArguments(argumentsDescription: call.arguments.debugDescription))
-                    return
+            switch call.method {
+            case BackgroundMethodChannel.methods.backgroundChannelInitialized.rawValue:
+                // BackgroundChannel is now available ; let's send the "iOSPerformFetch" method through it, and wait for the result
+                backgroundMethodChannel.invokeMethod(BackgroundMethodChannel.methods.iOSPerformFetch.rawValue, arguments: nil, result: { flutterResult in
+                    // We got a backgroundFetch result ; let's ensure we can convert it to a native UIBackgroundFetchResult
+                    guard
+                        let fetchResult: Int = flutterResult as? Int,
+                        let backgroundFetchResult = UIBackgroundFetchResult.init(rawValue: UInt(fetchResult))
+                        else {
+                            result(WMPError.unexpectedMethodArguments(flutterResult.debugDescription))
+                            completionHandler(.failed)
+                            return
+                    }
+                    
+                    result(nil)
+                    completionHandler(backgroundFetchResult)
+                })
+            default:
+                result(WMPError.unhandledMethod(call.method).asFlutterError)
+                completionHandler(UIBackgroundFetchResult.failed)
             }
-            // Method name and arguments match the expected values ; call the native completionHandler
-            result(nil)
-            completionHandler(backgroundFetchResult)
         }
         
         return true
@@ -108,28 +117,6 @@ private extension SwiftWorkmanagerPlugin {
     
     func getStoredCallbackHandle() -> Int64? {
         return UserDefaults.standard.value(forKey: callbackHandleStorageKey) as? Int64
-    }
-    
-}
-
-private extension SwiftWorkmanagerPlugin {
-    
-    /// Debug purposes : triggers the native application(_ application: performFetchWithCompletionHandler:) callback (similar to Debug > Simulate Background Fetch)
-    func triggerSampleBackgroundFetch() {
-        if #available(iOS 10.0, *) {
-            os_log("%@", "Debug - handling sample perform fetch")
-            let application = UIApplication.shared
-            application.delegate?.application?(application, performFetchWithCompletionHandler: { backgroundFetchResult in
-                var resultDescription: String {
-                    switch backgroundFetchResult {
-                    case .newData: return "newData"
-                    case .noData: return "noData"
-                    case .failed: return "failed"
-                    }
-                }
-                os_log("%@", "Debug - performFetchWithCompletionHandler complete ; result : \(resultDescription)")
-            })
-        }
     }
     
 }

@@ -100,10 +100,9 @@ class Workmanager {
       final EchoCallbackFunction echoFunction) {
     WidgetsFlutterBinding.ensureInitialized();
     _backgroundChannel.setMethodCallHandler((call) async {
-      stderr.writeln('DEBUG');
       return echoFunction(call.arguments);
     });
-    _backgroundChannel.invokeMethod("backgroundJobDidComplete", 0); //TODO: 0 temporarily hardcoded here
+    _backgroundChannel.invokeMethod("backgroundChannelInitialized");
   }
 
   /// This call is required if you wish to use the WorkManager plugin.
@@ -219,9 +218,4 @@ class Workmanager {
   /// Cancels all jobs
   static Future<void> cancelAll() async =>
       await _foregroundChannel.invokeMethod("cancelAll");
-
-  static Future<void> onIOSPerformFetch() async {
-    print("Debug - WorkManager - onIOSPerformFetch");
-    _foregroundChannel.invokeMethod("performSampleFetch", 0);
-  }
 }

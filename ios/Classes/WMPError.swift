@@ -9,8 +9,8 @@ import Foundation
 
 enum WMPError: Error {
     case methodChannelNotSet
-    case unhandledMethod(methodName: String)
-    case unexpectedMethodArguments(argumentsDescription: String)
+    case unhandledMethod(_ methodName: String)
+    case unexpectedMethodArguments(_ argumentsDescription: String)
     
     var code: String {
         return "\(self) error"

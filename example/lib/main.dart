@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:async';
 
 import 'package:workmanager/workmanager.dart';
@@ -13,23 +14,19 @@ const simplePeriodicTask = "simplePeriodicTask";
 const simplePeriodic1HourTask = "simplePeriodic1HourTask";
 
 void callbackDispatcher() {
-  stderr.writeln('Debug - presumably performing a network request');
-
   Workmanager.defaultCallbackDispatcher((echoValue) {
-    stderr.writeln('Debug - Native echoed: $echoValue');
-
     switch (echoValue) {
       case simpleTaskKey:
-        print("$simpleTaskKey was executed");
+        stderr.writeln("$simpleTaskKey was executed");
         break;
       case simpleDelayedTask:
-        print("$simpleDelayedTask was executed");
+        stderr.writeln("$simpleDelayedTask was executed");
         break;
       case simplePeriodicTask:
-        print("$simplePeriodicTask was executed");
+        stderr.writeln("$simplePeriodicTask was executed");
         break;
       case simplePeriodic1HourTask:
-        print("$simplePeriodic1HourTask was executed");
+        stderr.writeln("$simplePeriodic1HourTask was executed");
         break;
     }
 
@@ -120,7 +117,9 @@ class _MyAppState extends State<MyApp> {
               RaisedButton(
                   child: Text("Trigger iOS performFetch"),
                   onPressed: () {
-                    Workmanager.onIOSPerformFetch();
+                    final MethodChannel methodChannel =
+                        MethodChannel("iOSMethodChannel");
+                    methodChannel.invokeMethod("iOSPerformFetch");
                   }),
             ],
           ),

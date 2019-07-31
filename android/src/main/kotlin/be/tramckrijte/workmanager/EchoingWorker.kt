@@ -29,7 +29,7 @@ class EchoingWorker(private val ctx: Context,
         const val IS_IN_DEBUG_MODE = "be.tramckrijte.workmanager.IS_IN_DEBUG_MODE"
 
         const val BACKGROUND_CHANNEL_NAME = "be.tramckrijte.workmanager/background_channel_work_manager"
-        const val BACKGROUND_CHANNEL_INITIALIZED = "backgroundJobDidComplete"
+        const val BACKGROUND_CHANNEL_INITIALIZED = "backgroundChannelInitialized"
         const val ECHO_METHOD_NAME = "echoTaskRan"
     }
 
