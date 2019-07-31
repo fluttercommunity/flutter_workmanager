@@ -67,10 +67,10 @@ Workmanager.registerPeriodicTask(
 Each task must have a **unique name** ; this allows cancellation of a started task.  
 The second parameter is the `String` that will be sent to your `callbackDispatcher` function, indicating the task's *type*.  
 
-## Customisation
+### Customisation
 Not every `Android WorkManager` feature is ported.
 
-### Tagging
+#### Tagging
 
 You can set the optional `tag` property.  
 Handy for cancellation by `tag`.  
@@ -80,7 +80,7 @@ This is different from the unique name in that you can group multiple tasks unde
 Workmanager.registerOneOffTask("1", "simpleTask", tag: "tag");
 ```
 
-### Existing Work Policy
+#### Existing Work Policy
 
 Indicates the desired behaviour when the same task is scheduled more than once.  
 The default is `KEEP`
@@ -89,7 +89,7 @@ The default is `KEEP`
 Workmanager.registerOneOffTask("1", "simpleTask", existingWorkPolicy: ExistingWorkPolicy.append);
 ```
 
-### Initial Delay
+#### Initial Delay
 
 Indicates how along a task should waitbefore its first run.
 
@@ -97,7 +97,7 @@ Indicates how along a task should waitbefore its first run.
 Workmanager.registerOneOffTask("1", "simpleTask", initialDelay: Duration(seconds: 10));
 ```
 
-### Constraints
+#### Constraints
 > Not all constraints are mapped.
 
 ```
@@ -114,7 +114,7 @@ Workmanager.registerOneOffTask(
 );
 ```
 
-### BackoffPolicy
+#### BackoffPolicy
 Indicates the waiting strategy upon task failure.  
 The default is `BackoffPolicy.exponential`.    
 You can also specify the delay. 
@@ -123,10 +123,10 @@ You can also specify the delay.
 Workmanager.registerOneOffTask("1", "simpleTask", backoffPolicy: BackoffPolicy.exponential, backoffPolicyDelay: Duration(seconds: 10));
 ```
 
-## Cancellation
+### Cancellation
 
 A task can be cancelled in different ways :  
-- ##### by Tag
+- #### by Tag
 
 Cancels the task that was previously registered using this **Tag**, if any.  
 
@@ -134,12 +134,12 @@ Cancels the task that was previously registered using this **Tag**, if any.
 Workmanager.cancelByTag("tag");
 ```
 
-- ##### by Unique Name
+- #### by Unique Name
 ```
 Workmanager.cancelByUniqueName("<MyTask>");
 ```
 
-- ##### cancel all registered tasks
+- #### cancel all registered tasks
 
 ```
 Workmanager.cancelAll();
@@ -156,7 +156,7 @@ Background task on iOS are very different. Before anything, make sure you've add
 </key>
 ```
 
-#### Set the application's minimumBackgroundFetchInterval
+### Set the application's minimumBackgroundFetchInterval
 
 Set your desired *minimumBackgroundFetchInterval* in your app's delegate's `didFinishLaunchingWithOptions` :
 
@@ -164,8 +164,26 @@ Set your desired *minimumBackgroundFetchInterval* in your app's delegate's `didF
 
 > Note : this time interval is a minimum ; there's no guarantee about how often this will be called. 
 
-#### Waiting for iOS to trigger `performFetchWithCompletionHandler`
+### Waiting for iOS to trigger `performFetchWithCompletionHandler`
 
 We don't have any control on how often iOS will allow our app to fetch data in the background. Xcode's Debug > Simulate Background Fetch.
 
 > Currently broken in the latest XCode vX.X.X 
+
+### Add an extra case
+
+In order to know when `Background Fetch` was triggered you should add the `Workmanager.iOSBackgroundTask` case.  
+
+```
+void callbackDispatcher() {
+  Workmanager.executeTask((task) {
+    switch (task) {
+      case Workmanager.iOSBackgroundTask:
+        stderr.writeln("The iOS background fetch was triggered");
+        break;
+    }
+
+    return Future.value(true);
+  });
+}
+```

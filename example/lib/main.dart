@@ -12,8 +12,8 @@ const simplePeriodicTask = "simplePeriodicTask";
 const simplePeriodic1HourTask = "simplePeriodic1HourTask";
 
 void callbackDispatcher() {
-  Workmanager.executeTask((echoValue) {
-    switch (echoValue) {
+  Workmanager.executeTask((task) {
+    switch (task) {
       case simpleTaskKey:
         stderr.writeln("$simpleTaskKey was executed");
         break;

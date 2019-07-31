@@ -87,6 +87,7 @@ enum BackoffPolicy {
 }
 
 class Workmanager {
+  /// Use this constant inside your callbackDispatcher to identify when an iOS Background Fetch occurred.
   static const String iOSBackgroundTask = "iOSPerformFetch";
   static bool _isInDebugMode = false;
 

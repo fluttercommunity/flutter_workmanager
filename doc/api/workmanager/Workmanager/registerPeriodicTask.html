@@ -74,11 +74,13 @@
       <li><a href="workmanager/Workmanager/cancelAll.html">cancelAll</a></li>
       <li><a href="workmanager/Workmanager/cancelByTag.html">cancelByTag</a></li>
       <li><a href="workmanager/Workmanager/cancelByUniqueName.html">cancelByUniqueName</a></li>
-      <li><a href="workmanager/Workmanager/defaultCallbackDispatcher.html">defaultCallbackDispatcher</a></li>
+        <li><a href="workmanager/Workmanager/executeTask.html">executeTask</a></li>
       <li><a href="workmanager/Workmanager/initialize.html">initialize</a></li>
       <li><a href="workmanager/Workmanager/registerOneOffTask.html">registerOneOffTask</a></li>
       <li><a href="workmanager/Workmanager/registerPeriodicTask.html">registerPeriodicTask</a></li>
-    
+
+        <li class="section-title"><a href="workmanager/Workmanager-class.html#constants">Constants</a></li>
+        <li><a href="workmanager/Workmanager/iOSBackgroundTask-constant.html">iOSBackgroundTask</a></li>
     </ol>
   </div><!--/.sidebar-offcanvas-->
 
@@ -93,24 +95,23 @@
     </section>
     <section class="desc markdown">
       <p>Schedules a periodic task that will run every provided <code>frequency</code>.
-A unique name is required so only one job can be registered.
-The echoValue is the value that will be returned in the <a href="workmanager/EchoCallbackFunction.html">EchoCallbackFunction</a>
+          A unique name is required so only one task can be registered.
+          The echoValue is the value that will be returned in the <a href="workmanager/BackgroundTask.html">BackgroundTask</a>
 a frequency is not required and will be defaulted to 15 minutes if not provided.</p>
     </section>
     
     <section class="summary source-code" id="source">
       <h2><span>Implementation</span></h2>
-      <pre class="language-dart"><code class="language-dart">static Future&lt;void&gt; registerPeriodicTask(
-  final String uniqueName,
-  final String echoValue, {
-  final Duration frequency,
-  final String tag,
-  final ExistingWorkPolicy existingWorkPolicy,
-  final Duration initialDelay = _noDuration,
-  final WorkManagerConstraintConfig constraints,
-  final BackoffPolicy backoffPolicy,
-  final Duration backoffPolicyDelay = _noDuration,
-}) async =&gt;
+        <pre class="language-dart"><code class="language-dart">static Future&lt;void&gt; registerPeriodicTask(final String uniqueName,
+    final String echoValue, {
+      final Duration frequency,
+      final String tag,
+      final ExistingWorkPolicy existingWorkPolicy,
+      final Duration initialDelay = _noDuration,
+      final WorkManagerConstraintConfig constraints,
+      final BackoffPolicy backoffPolicy,
+      final Duration backoffPolicyDelay = _noDuration,
+    }) async =&gt;
     await _register(
       methodName: &quot;registerPeriodicTask&quot;,
       uniqueName: uniqueName,
@@ -134,7 +135,7 @@ a frequency is not required and will be defaulted to 15 minutes if not provided.
 
 <footer>
   <span class="no-break">
-    workmanager 0.0.2
+    workmanager 0.0.7
   </span>
 
   
