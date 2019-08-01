@@ -1,80 +1,37 @@
 # Flutter Workmanager
 [![pub package](https://img.shields.io/pub/v/workmanager.svg)](https://pub.dartlang.org/packages/workmanager)
 
-Flutter WorkManager is a wrapper around [Android's WorkManager](https://developer.android.com/topic/libraries/architecture/workmanager), with support for [iOS' performFetchWithCompletionHandler](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1623125-application), effectively enabling headless execution of Dart code without the need of a running app (i.e. in background).
+Flutter WorkManager is a wrapper around [Android's WorkManager](https://developer.android.com/topic/libraries/architecture/workmanager) and [iOS' performFetchWithCompletionHandler](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1623125-application), effectively enabling headless execution of Dart code in the background.
 
 This is especially useful to run periodic tasks, such as fetching remote data on a regular basis.
 
 # Installation
 
-```
+```yaml
 dependencies:
   workmanager: ^0.0.6+2
 ```
-```
+```shell script
 flutter pub get
 ```
-```
+```dart
 import 'package:workmanager/workmanager.dart';
 ```
 
 # Setup
+In order for background work to be scheduled correctly you should follow the Android and iOS setup first.  
 
-## Android
+- [Android Setup](ANDROID_SETUP.md)
+- [iOS Setup](IOS_SETUP.md)
 
-In order for this plugin to work properly on Android, you will need to make a custom `Application`.      
-Inside your `android` folder make a new class.  
-
-```kotlin
-package replace.me.with.your.package.name
-
-import be.tramckrijte.workmanager.WorkmanagerPlugin
-import io.flutter.app.FlutterApplication
-import io.flutter.plugin.common.PluginRegistry
-import io.flutter.plugins.GeneratedPluginRegistrant
-
-class App : FlutterApplication(), PluginRegistry.PluginRegistrantCallback {
-    override fun onCreate() {
-        super.onCreate()
-        WorkmanagerPlugin.setPluginRegistrantCallback(this)
-    }
-
-    override fun registerWith(reg: PluginRegistry?) {
-        GeneratedPluginRegistrant.registerWith(reg)
-    }
-}
-```
-
-You will then need to register this `Application` in the `AndroidManifest.xml`.
-
-```xml
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
-        package="replace.me.with.your.package.name">
-    
-        <application
-            android:name=".App" //replace io.flutter.app.FlutterApplication to .App
-            android:icon="@mipmap/ic_launcher"
-            android:label="workmanager_example"
-            tools:replace="android:name">
-            <!-- ... -->
-        </application>
-    </manifest>
-```
-
-# How to use
-See sample folder for a complete working example.
-
-## Flutter
+# How to use the package?
+See sample folder for a complete working example.  
 Before registering any task, the WorkManager plugin must be initialized.
 
-```
-//Provide a top level function or static function.
-//This function will be called by Android and will return the value you provided when you registered the task.
-//See below
+```dart
 void callbackDispatcher() {
-  Workmanager.executeTask((echoValue) {
-    print("Native echoed: $echoValue");
+  Workmanager.executeTask((backgroundTask) {
+    print("Native called background task: $backgroundTask"); //simpleTask will be emitted here.
     return Future.value(true);
   });
 }
@@ -82,15 +39,18 @@ void callbackDispatcher() {
 void main() {
   Workmanager.initialize(
     callbackDispatcher, // The top level function, aka Flutter entry point
-    isInDebugMode: true // If enabled it will post a notificiation whenever the task is running. Handy for debugging tasks
-  )
+    isInDebugMode: true // If enabled it will post a notification whenever the task is running. Handy for debugging tasks
+  );
+  Workmanager.registerOneOffTask("1", "simpleTask");
   runApp(MyApp());
 }
 ```
 
-> The `callbackDispatcher` needs to be either a static function or a top level function to be accessible as a Flutter entry point. 
+> The `callbackDispatcher` needs to be either a static function or a top level function to be accessible as a Flutter entry point.
 
-## Android usage
+--- 
+
+# Customisation (Android only!) 
 
 Two kinds of background tasks can be registered :
 - **One off task** : runs only once
@@ -174,7 +134,8 @@ Workmanager.registerOneOffTask("1", "simpleTask", backoffPolicy: BackoffPolicy.e
 ### Cancellation
 
 A task can be cancelled in different ways :  
-- #### by Tag
+
+#### By Tag
 
 Cancels the task that was previously registered using this **Tag**, if any.  
 
@@ -182,56 +143,13 @@ Cancels the task that was previously registered using this **Tag**, if any.
 Workmanager.cancelByTag("tag");
 ```
 
-- #### by Unique Name
+#### By Unique Name
 ```
 Workmanager.cancelByUniqueName("<MyTask>");
 ```
 
-- #### cancel all registered tasks
+#### All
 
 ```
 Workmanager.cancelAll();
-```
-
-## iOS usage
-
-Background task on iOS are very different. Before anything, make sure you've added the following key to your project's `Info.plist :
-```
-<key>UIBackgroundModes</key>
-  <array>
-    <string>fetch</string>
-  </array>
-</key>
-```
-
-### Set the application's minimumBackgroundFetchInterval
-
-Set your desired *minimumBackgroundFetchInterval* in your app's delegate's `didFinishLaunchingWithOptions` :
-
-`UIApplication.shared.setMinimumBackgroundFetchInterval(TimeInterval(60 * 15))` every 15 minutes.  
-
-> Note : this time interval is a minimum ; there's no guarantee about how often this will be called. 
-
-### Waiting for iOS to trigger `performFetchWithCompletionHandler`
-
-We don't have any control on how often iOS will allow our app to fetch data in the background. Xcode's Debug > Simulate Background Fetch.
-
-> Currently broken in the latest XCode vX.X.X 
-
-### Add an extra case
-
-In order to know when `Background Fetch` was triggered you should add the `Workmanager.iOSBackgroundTask` case.  
-
-```
-void callbackDispatcher() {
-  Workmanager.executeTask((task) {
-    switch (task) {
-      case Workmanager.iOSBackgroundTask:
-        stderr.writeln("The iOS background fetch was triggered");
-        break;
-    }
-
-    return Future.value(true);
-  });
-}
 ```

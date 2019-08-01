@@ -67,7 +67,7 @@
              additional functionality it is fine to subclass or reimplement
              FlutterApplication and put your custom class here. -->
         <application
-            android:name=".App"
+            android:name=".App" <!-- Replace io.flutter.app.FlutterApplication with .App -->
             android:icon="@mipmap/ic_launcher"
             android:label="workmanager_example"
             tools:replace="android:name">
