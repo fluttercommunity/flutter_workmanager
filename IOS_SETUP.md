@@ -25,6 +25,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
  
+ }
 ```
 
 This ensures that the task is ran at most every 15 minutes.
