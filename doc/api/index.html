@@ -67,14 +67,61 @@
   <div id="dartdoc-main-content" class="col-xs-12 col-sm-9 col-md-8 main-content">
       <section class="desc markdown">
         <h1 id="flutter-workmanager">Flutter Workmanager</h1>
+<p><a href="https://pub.dartlang.org/packages/workmanager"><img src="https://img.shields.io/pub/v/workmanager.svg" alt="pub package"></a></p>
 <p>Flutter WorkManager is a wrapper around <a href="https://developer.android.com/topic/libraries/architecture/workmanager">Android's WorkManager</a>.<br>
 It allows for headless background work to be processed in Dart.  </p>
 <p>An example of where this would be handy is when you have periodic job that fetches the latest articles every hour.  </p>
 <blockquote>
 <p>Note that this library only contains the necessary code to let this work on Android. Since iOS has a vastly different approach you should therefore wrap every call:  </p>
 <p><code>if (Platform.isAndroid) { ... }</code></p></blockquote>
+<h1 id="installation">Installation</h1>
+<pre class="language-dart"><code>dependencies:
+  workmanager: ^0.0.6+2
+</code></pre>
+<p>Get it</p>
+<pre class="language-dart"><code>flutter pub get
+</code></pre>
+<p>Import it</p>
+<pre class="language-dart"><code>import 'package:workmanager/workmanager.dart';
+</code></pre>
 <h1 id="how-to-use">How to use</h1>
 <p>See sample folder for a complete working example.</p>
+<h2 id="android">Android</h2>
+<p>In order for this plugin to work properly on Android, you will need to make a custom <code>Application</code>.<br>
+Inside your <code>android</code> folder make a new class.  </p>
+<pre class="language-dart"><code>package replace.me.with.your.package.name
+
+import be.tramckrijte.workmanager.WorkmanagerPlugin
+import io.flutter.app.FlutterApplication
+import io.flutter.plugin.common.PluginRegistry
+import io.flutter.plugins.GeneratedPluginRegistrant
+
+class App : FlutterApplication(), PluginRegistry.PluginRegistrantCallback {
+    override fun onCreate() {
+        super.onCreate()
+        WorkmanagerPlugin.setPluginRegistrantCallback(this)
+    }
+
+    override fun registerWith(reg: PluginRegistry?) {
+        GeneratedPluginRegistrant.registerWith(reg)
+    }
+}
+</code></pre>
+<p>You will then need to register this <code>Application</code> in the <code>AndroidManifest.xml</code>.</p>
+<pre class="language-dart"><code>&lt;manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        package="replace.me.with.your.package.name"&gt;
+    
+        &lt;application
+            android:name=".App" //replace io.flutter.app.FlutterApplication to .App
+            android:icon="@mipmap/ic_launcher"
+            android:label="workmanager_example"
+            tools:replace="android:name"&gt;
+            &lt;!-- ... --&gt;
+        &lt;/application&gt;
+    &lt;/manifest&gt;
+</code></pre>
+<h2 id="flutter">Flutter</h2>
 <p>Before you can register any jobs you need to initialize the plugin.</p>
 <pre class="language-dart"><code>//Provide a top level function or static function.
 //This function will be called by Android and will return the value you provided when you registered the task.
@@ -86,10 +133,13 @@ void callbackDispatcher() {
   });
 }
 
-Workmanager.initialize(
+void main() {
+  Workmanager.initialize(
     callbackDispatcher, //the top level function.
     isInDebugMode: true //If enabled it will post a notificiation whenever the job is running. Handy for debugging jobs
-)
+  )
+  runApp(MyApp());
+}
 </code></pre>
 <blockquote>
 <p>The <code>callbackDispatcher</code> needs to be either a static function or a top level function for it to work.
@@ -247,7 +297,7 @@ communicating only via messages. <a href="dart-isolate/dart-isolate-library.html
 
 <footer>
   <span class="no-break">
-    workmanager 0.0.2
+    workmanager 0.0.6+2
   </span>
 
   
