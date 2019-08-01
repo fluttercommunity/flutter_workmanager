@@ -25,7 +25,7 @@ import 'package:workmanager/workmanager.dart';
 In order for this plugin to work properly on Android, you will need to make a custom `Application`.      
 Inside your `android` folder make a new class.  
 
-```
+```kotlin
 package replace.me.with.your.package.name
 
 import be.tramckrijte.workmanager.WorkmanagerPlugin
@@ -47,7 +47,7 @@ class App : FlutterApplication(), PluginRegistry.PluginRegistrantCallback {
 
 You will then need to register this `Application` in the `AndroidManifest.xml`.
 
-```
+```xml
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         package="replace.me.with.your.package.name">

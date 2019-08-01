@@ -3,9 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
-import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:workmanager/workmanager.dart';
 
   void main() => runApp(MyApp());
@@ -16,13 +14,13 @@ const simplePeriodicTask = "simplePeriodicTask";
 const simplePeriodic1HourTask = "simplePeriodic1HourTask";
 
 void callbackDispatcher() {
-  Workmanager.executeTask((task) {
+  Workmanager.executeTask((task) async {
     switch (task) {
       case simpleTaskKey:
         stderr.writeln("$simpleTaskKey was executed");
         Directory tempDir = await getTemporaryDirectory();
         String tempPath = tempDir.path;
-        print("i have a temp dir: $tempDir");
+        print("You can access other plugins in the background: $tempPath");
         break;
       case simpleDelayedTask:
         stderr.writeln("$simpleDelayedTask was executed");
