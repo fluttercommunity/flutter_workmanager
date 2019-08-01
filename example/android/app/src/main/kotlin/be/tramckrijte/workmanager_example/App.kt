@@ -14,5 +14,4 @@ class App : FlutterApplication(), PluginRegistry.PluginRegistrantCallback {
     override fun registerWith(reg: PluginRegistry?) {
         GeneratedPluginRegistrant.registerWith(reg)
     }
-
 }

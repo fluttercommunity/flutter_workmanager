@@ -14,7 +14,7 @@ An example of where this would be handy is when you have periodic job that fetch
 
 ```
 dependencies:
-  workmanager: ^0.0.6+1
+  workmanager: ^0.0.6+2
 ```
 
 Get it
@@ -30,9 +30,51 @@ import 'package:workmanager/workmanager.dart';
 ```
 
 # How to use
-
 See sample folder for a complete working example.
 
+## Android
+
+In order for this plugin to work properly on Android, you will need to make a custom `Application`.      
+Inside your `android` folder make a new class.  
+
+```
+package replace.me.with.your.package.name
+
+import be.tramckrijte.workmanager.WorkmanagerPlugin
+import io.flutter.app.FlutterApplication
+import io.flutter.plugin.common.PluginRegistry
+import io.flutter.plugins.GeneratedPluginRegistrant
+
+class App : FlutterApplication(), PluginRegistry.PluginRegistrantCallback {
+    override fun onCreate() {
+        super.onCreate()
+        WorkmanagerPlugin.setPluginRegistrantCallback(this)
+    }
+
+    override fun registerWith(reg: PluginRegistry?) {
+        GeneratedPluginRegistrant.registerWith(reg)
+    }
+}
+```
+
+You will then need to register this `Application` in the `AndroidManifest.xml`.
+
+```
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        package="replace.me.with.your.package.name">
+    
+        <application
+            android:name=".App" //replace io.flutter.app.FlutterApplication to .App
+            android:icon="@mipmap/ic_launcher"
+            android:label="workmanager_example"
+            tools:replace="android:name">
+            <!-- ... -->
+        </application>
+    </manifest>
+```
+
+## Flutter
 Before you can register any jobs you need to initialize the plugin.
 
 ```
@@ -46,10 +88,13 @@ void callbackDispatcher() {
   });
 }
 
-Workmanager.initialize(
+void main() {
+  Workmanager.initialize(
     callbackDispatcher, //the top level function.
     isInDebugMode: true //If enabled it will post a notificiation whenever the job is running. Handy for debugging jobs
-)
+  )
+  runApp(MyApp());
+}
 ```
 
 > The `callbackDispatcher` needs to be either a static function or a top level function for it to work.
