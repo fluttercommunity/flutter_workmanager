@@ -17,7 +17,7 @@ Inside your app's delegate `didFinishLaunchingWithOptions` set your desired _min
 UIApplication.shared.setMinimumBackgroundFetchInterval(TimeInterval(60 * 15))  
 ```
 
-This will ask iOS schedule it every 15 minutes.
+This will ask iOS to schedule the task every 15 minutes.
 
 > 📝 Note: this time interval is a minimum; There's no guarantee about how often this will be called! iOS decides.   
 
