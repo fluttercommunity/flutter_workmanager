@@ -51,6 +51,7 @@ void main() {
 --- 
 
 # Customisation (Android only!) 
+Not every `Android WorkManager` feature is ported.
 
 Two kinds of background tasks can be registered :
 - **One off task** : runs only once
@@ -75,10 +76,7 @@ Each task must have an **unique name**;
 This allows cancellation of a started task.  
 The second parameter is the `String` that will be send to your `callbackDispatcher` function, indicating the task's *type*.  
 
-### Customisation
-Not every `Android WorkManager` feature is ported.
-
-#### Tagging
+## Tagging
 
 You can set the optional `tag` property.  
 Handy for cancellation by `tag`.  
@@ -88,7 +86,7 @@ This is different from the unique name in that you can group multiple tasks unde
 Workmanager.registerOneOffTask("1", "simpleTask", tag: "tag");
 ```
 
-#### Existing Work Policy
+## Existing Work Policy
 
 Indicates the desired behaviour when the same task is scheduled more than once.  
 The default is `KEEP`
@@ -97,7 +95,7 @@ The default is `KEEP`
 Workmanager.registerOneOffTask("1", "simpleTask", existingWorkPolicy: ExistingWorkPolicy.append);
 ```
 
-#### Initial Delay
+## Initial Delay
 
 Indicates how along a task should waitbefore its first run.
 
@@ -105,7 +103,7 @@ Indicates how along a task should waitbefore its first run.
 Workmanager.registerOneOffTask("1", "simpleTask", initialDelay: Duration(seconds: 10));
 ```
 
-#### Constraints
+## Constraints
 
 > Not all constraints are mapped.
 
@@ -123,7 +121,7 @@ Workmanager.registerOneOffTask(
 );
 ```
 
-#### BackoffPolicy
+## BackoffPolicy
 Indicates the waiting strategy upon task failure.  
 The default is `BackoffPolicy.exponential`.    
 You can also specify the delay. 
@@ -132,11 +130,11 @@ You can also specify the delay.
 Workmanager.registerOneOffTask("1", "simpleTask", backoffPolicy: BackoffPolicy.exponential, backoffPolicyDelay: Duration(seconds: 10));
 ```
 
-### Cancellation
+## Cancellation
 
 A task can be cancelled in different ways :  
 
-#### By Tag
+### By Tag
 
 Cancels the task that was previously registered using this **Tag**, if any.  
 
@@ -144,12 +142,12 @@ Cancels the task that was previously registered using this **Tag**, if any.
 Workmanager.cancelByTag("tag");
 ```
 
-#### By Unique Name
+### By Unique Name
 ```
 Workmanager.cancelByUniqueName("<MyTask>");
 ```
 
-#### All
+### All
 
 ```
 Workmanager.cancelAll();
