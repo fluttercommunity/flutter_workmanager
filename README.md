@@ -18,7 +18,7 @@ flutter pub get
 import 'package:workmanager/workmanager.dart';
 ```
 
-# Setup
+# Platform Setup
 In order for background work to be scheduled correctly you should follow the Android and iOS setup first.  
 
 - [Android Setup](ANDROID_SETUP.md)
