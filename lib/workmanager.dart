@@ -86,10 +86,9 @@ enum BackoffPolicy {
   linear
 }
 
-/// Workmanager plugin.
-/// This is the entry point.
+/// Workmanager plugin entrypoint
 ///
-/// See README for complete example.
+/// Make sure you followed the setup steps first before trying to register any task.
 ///
 /// Initialize the plugin first
 ///
@@ -106,43 +105,22 @@ enum BackoffPolicy {
 ///     isInDebugMode: true
 /// )
 /// ```
-///
-/// on iOS you have to make sure to enable Background Fetch.
-/// After this jobs will run periodically on iOS.
-///
-/// Add following key to the `Info.plist`
-///
-/// ```
-/// <key>UIBackgroundModes</key>
-///   <array>
-///     <string>fetch</string>
-///   </array>
-/// </key>
-/// ```
-///
-/// `UIApplication.shared.setMinimumBackgroundFetchInterval(TimeInterval(60 * 15))`
-///
-/// on Android
-/// You have the possibility to schedule either:
-/// - OneOff tasks
-/// - Periodic tasks
-///
-/// ```
-/// Workmanager.registerOneOffTask(
-///     "1",
-///     "simpleTask",
-///     constraints: WorkManagerConstraintConfig(
-///         networkType: NetworkType.connected,
-///         requiresBatteryNotLow: true,
-///         requiresCharging: true,
-///         requiresDeviceIdle: true,
-///         requiresStorageNotLow: true
-///     )
-/// );
-/// ```
-///
 class Workmanager {
   /// Use this constant inside your callbackDispatcher to identify when an iOS Background Fetch occurred.
+  ///
+  /// ```
+  /// void callbackDispatcher() {
+  ///  Workmanager.executeTask((task) async {
+  ///      switch (task) {
+  ///        case Workmanager.iOSBackgroundTask:
+  ///          stderr.writeln("The iOS background fetch was triggered");
+  ///          break;
+  ///      }
+  ///
+  ///      return Future.value(true);
+  ///  });
+  /// }
+  /// ```
   static const String iOSBackgroundTask = "iOSPerformFetch";
   static bool _isInDebugMode = false;
 
