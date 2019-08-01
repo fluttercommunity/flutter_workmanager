@@ -1,10 +1,14 @@
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:workmanager/workmanager.dart';
 
-void main() => runApp(MyApp());
+  void main() => runApp(MyApp());
 
 const simpleTaskKey = "simpleTask";
 const simpleDelayedTask = "simpleDelayedTask";
@@ -16,6 +20,9 @@ void callbackDispatcher() {
     switch (task) {
       case simpleTaskKey:
         stderr.writeln("$simpleTaskKey was executed");
+        Directory tempDir = await getTemporaryDirectory();
+        String tempPath = tempDir.path;
+        print("i have a temp dir: $tempDir");
         break;
       case simpleDelayedTask:
         stderr.writeln("$simpleDelayedTask was executed");

@@ -9,7 +9,7 @@ This is especially useful to run periodic tasks, such as fetching remote data on
 
 ```
 dependencies:
-  workmanager: ^0.0.6+1
+  workmanager: ^0.0.6+2
 ```
 ```
 flutter pub get
@@ -18,10 +18,54 @@ flutter pub get
 import 'package:workmanager/workmanager.dart';
 ```
 
-# User guide
+# Setup
 
+## Android
+
+In order for this plugin to work properly on Android, you will need to make a custom `Application`.      
+Inside your `android` folder make a new class.  
+
+```
+package replace.me.with.your.package.name
+
+import be.tramckrijte.workmanager.WorkmanagerPlugin
+import io.flutter.app.FlutterApplication
+import io.flutter.plugin.common.PluginRegistry
+import io.flutter.plugins.GeneratedPluginRegistrant
+
+class App : FlutterApplication(), PluginRegistry.PluginRegistrantCallback {
+    override fun onCreate() {
+        super.onCreate()
+        WorkmanagerPlugin.setPluginRegistrantCallback(this)
+    }
+
+    override fun registerWith(reg: PluginRegistry?) {
+        GeneratedPluginRegistrant.registerWith(reg)
+    }
+}
+```
+
+You will then need to register this `Application` in the `AndroidManifest.xml`.
+
+```
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        package="replace.me.with.your.package.name">
+    
+        <application
+            android:name=".App" //replace io.flutter.app.FlutterApplication to .App
+            android:icon="@mipmap/ic_launcher"
+            android:label="workmanager_example"
+            tools:replace="android:name">
+            <!-- ... -->
+        </application>
+    </manifest>
+```
+
+# How to use
 See sample folder for a complete working example.
 
+## Flutter
 Before registering any task, the WorkManager plugin must be initialized.
 
 ```
@@ -35,10 +79,13 @@ void callbackDispatcher() {
   });
 }
 
-Workmanager.initialize(
+void main() {
+  Workmanager.initialize(
     callbackDispatcher, // The top level function, aka Flutter entry point
     isInDebugMode: true // If enabled it will post a notificiation whenever the task is running. Handy for debugging tasks
-)
+  )
+  runApp(MyApp());
+}
 ```
 
 > The `callbackDispatcher` needs to be either a static function or a top level function to be accessible as a Flutter entry point. 
