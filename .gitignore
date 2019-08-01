@@ -9,4 +9,3 @@ build/
 .gradle/
 
 doc/api/*/
-!doc/api/workmanager

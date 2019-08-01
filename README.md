@@ -29,8 +29,7 @@ Import it
 import 'package:workmanager/workmanager.dart';
 ```
 
-# How to use
-See sample folder for a complete working example.
+# Setup
 
 ## Android
 
@@ -73,6 +72,9 @@ You will then need to register this `Application` in the `AndroidManifest.xml`.
         </application>
     </manifest>
 ```
+
+# How to use
+See sample folder for a complete working example.
 
 ## Flutter
 Before you can register any jobs you need to initialize the plugin.
