@@ -71,8 +71,9 @@ Workmanager.registerPeriodicTask(
 )
 ```
 
-Each task must have a **unique name** ; this allows cancellation of a started task.  
-The second parameter is the `String` that will be sent to your `callbackDispatcher` function, indicating the task's *type*.  
+Each task must have an **unique name**;  
+This allows cancellation of a started task.  
+The second parameter is the `String` that will be send to your `callbackDispatcher` function, indicating the task's *type*.  
 
 ### Customisation
 Not every `Android WorkManager` feature is ported.

@@ -1,6 +1,6 @@
 # iOS Installation
 
-Background task on iOS work very different than on Android.  
+Background tasks on iOS work very differently than on Android.  
 Before anything, make sure you've added the following key to your project's `Info.plist`:
 ```
 <key>UIBackgroundModes</key>
@@ -10,10 +10,9 @@ Before anything, make sure you've added the following key to your project's `Inf
 </key>
 ```
 
-Set the application's minimumBackgroundFetchInterval
+Inside your app's delegate `didFinishLaunchingWithOptions` set your desired _minimumBackgroundFetchInterval_ in your app's delegate's:
 
-Set your desired *minimumBackgroundFetchInterval* in your app's delegate's `didFinishLaunchingWithOptions` :
-
+//TODO: provide a complete class
 ```swift
 UIApplication.shared.setMinimumBackgroundFetchInterval(TimeInterval(60 * 15))  
 ```
@@ -27,7 +26,7 @@ This will ask iOS schedule it every 15 minutes.
 Wait for iOS to trigger `performFetchWithCompletionHandler`
 
 We don't have any control on how often iOS will allow our app to fetch data in the background.  
-However you can trigger it in XCode Debug menu: 
+However you can trigger it in XCode Debug menu:   
 `Xcode's Debug` > `Simulate Background Fetch`  
 
 > Currently broken in the latest XCode vX.X.X 
