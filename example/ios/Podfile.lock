@@ -1,20 +1,26 @@
 PODS:
   - Flutter (1.0.0)
+  - path_provider (0.0.1):
+    - Flutter
   - workmanager (0.0.1):
     - Flutter
 
 DEPENDENCIES:
   - Flutter (from `.symlinks/flutter/ios`)
+  - path_provider (from `.symlinks/plugins/path_provider/ios`)
   - workmanager (from `.symlinks/plugins/workmanager/ios`)
 
 EXTERNAL SOURCES:
   Flutter:
     :path: ".symlinks/flutter/ios"
+  path_provider:
+    :path: ".symlinks/plugins/path_provider/ios"
   workmanager:
     :path: ".symlinks/plugins/workmanager/ios"
 
 SPEC CHECKSUMS:
   Flutter: 58dd7d1b27887414a370fcccb9e645c08ffd7a6a
+  path_provider: f96fff6166a8867510d2c25fdcc346327cc4b259
   workmanager: 22ad2f1e4e83a0a8b6237351c95ecdb6b43566d3
 
 PODFILE CHECKSUM: 097b64e1c00903a097fa4231dd174c10dfb3b629

@@ -107,14 +107,6 @@ extension SwiftWorkmanagerPlugin {
 
 //MARK: - Storage
 
-public extension SwiftWorkmanagerPlugin {
-    
-    static func clearStorage() {
-        UserDefaults.standard.removeObject(forKey: callbackHandleStorageKey)
-    }
-    
-}
-
 private extension SwiftWorkmanagerPlugin {
     
     static var callbackHandleStorageKey: String {

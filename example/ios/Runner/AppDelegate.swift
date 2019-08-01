@@ -8,10 +8,9 @@ import workmanager
     
     override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         
-        SwiftWorkmanagerPlugin.clearStorage()
-        
         GeneratedPluginRegistrant.register(with: self)
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+        
     }
     
 }
