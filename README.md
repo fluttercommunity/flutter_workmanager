@@ -1,110 +1,61 @@
 # Flutter Workmanager
 [![pub package](https://img.shields.io/pub/v/workmanager.svg)](https://pub.dartlang.org/packages/workmanager)
 
-Flutter WorkManager is a wrapper around [Android's WorkManager](https://developer.android.com/topic/libraries/architecture/workmanager).  
-It allows for headless background work to be processed in Dart.  
+Flutter WorkManager is a wrapper around [Android's WorkManager](https://developer.android.com/topic/libraries/architecture/workmanager) and [iOS' performFetchWithCompletionHandler](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1623125-application), effectively enabling headless execution of Dart code in the background.
 
-An example of where this would be handy is when you have periodic job that fetches the latest articles every hour.  
-
-> Note that this library only contains the necessary code to let this work on Android. Since iOS has a vastly different approach you should therefore wrap every call:  
->
-> `if (Platform.isAndroid) { ... }`
+This is especially useful to run periodic tasks, such as fetching remote data on a regular basis.
 
 # Installation
 
-```
+```yaml
 dependencies:
   workmanager: ^0.0.6+2
 ```
-
-Get it
-
-```
+```shell script
 flutter pub get
 ```
-
-Import it
-
-```
+```dart
 import 'package:workmanager/workmanager.dart';
 ```
 
-# Setup
+# Platform Setup
+In order for background work to be scheduled correctly you should follow the Android and iOS setup first.  
 
-## Android
+- [Android Setup](ANDROID_SETUP.md)
+- [iOS Setup](IOS_SETUP.md)
 
-In order for this plugin to work properly on Android, you will need to make a custom `Application`.      
-Inside your `android` folder make a new class.  
+# How to use the package?
+See sample folder for a complete working example.  
+Before registering any task, the WorkManager plugin must be initialized.
 
-```
-package replace.me.with.your.package.name
-
-import be.tramckrijte.workmanager.WorkmanagerPlugin
-import io.flutter.app.FlutterApplication
-import io.flutter.plugin.common.PluginRegistry
-import io.flutter.plugins.GeneratedPluginRegistrant
-
-class App : FlutterApplication(), PluginRegistry.PluginRegistrantCallback {
-    override fun onCreate() {
-        super.onCreate()
-        WorkmanagerPlugin.setPluginRegistrantCallback(this)
-    }
-
-    override fun registerWith(reg: PluginRegistry?) {
-        GeneratedPluginRegistrant.registerWith(reg)
-    }
-}
-```
-
-You will then need to register this `Application` in the `AndroidManifest.xml`.
-
-```
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
-        package="replace.me.with.your.package.name">
-    
-        <application
-            android:name=".App" //replace io.flutter.app.FlutterApplication to .App
-            android:icon="@mipmap/ic_launcher"
-            android:label="workmanager_example"
-            tools:replace="android:name">
-            <!-- ... -->
-        </application>
-    </manifest>
-```
-
-# How to use
-See sample folder for a complete working example.
-
-## Flutter
-Before you can register any jobs you need to initialize the plugin.
-
-```
-//Provide a top level function or static function.
-//This function will be called by Android and will return the value you provided when you registered the task.
-//See below
+```dart
 void callbackDispatcher() {
-  Workmanager.defaultCallbackDispatcher((echoValue) {
-    print("Native echoed: $echoValue");
+  Workmanager.executeTask((backgroundTask) {
+    print("Native called background task: $backgroundTask"); //simpleTask will be emitted here.
     return Future.value(true);
   });
 }
 
 void main() {
   Workmanager.initialize(
-    callbackDispatcher, //the top level function.
-    isInDebugMode: true //If enabled it will post a notificiation whenever the job is running. Handy for debugging jobs
-  )
+    callbackDispatcher, // The top level function, aka Flutter entry point
+    isInDebugMode: true // If enabled it will post a notification whenever the task is running. Handy for debugging tasks
+  );
+  Workmanager.registerOneOffTask("1", "simpleTask");
   runApp(MyApp());
 }
 ```
 
-> The `callbackDispatcher` needs to be either a static function or a top level function for it to work.
-> You should return a boolean value whether the job was successful or not. 
+> The `callbackDispatcher` needs to be either a static function or a top level function to be accessible as a Flutter entry point.
 
-Now you can register two different kinds of background work:
-- **One off task**: These run once
-- **Periodic tasks**: These run indefinitely with a defined fixed rate
+--- 
+
+# Customisation (Android only!) 
+Not every `Android WorkManager` feature is ported.
+
+Two kinds of background tasks can be registered :
+- **One off task** : runs only once
+- **Periodic tasks** : runs indefinitely on a regular basis
 
 ```
 // One off task registration
@@ -121,41 +72,39 @@ Workmanager.registerPeriodicTask(
 )
 ```
 
-You will need to provide a unique name; this comes in handy when you want to cancel this task later on.  
-The second parameter is the `String` that will be returned to your `callbackDispatcher` function.  
-You can use this `String` to identify which work needs to be done.  
+Each task must have an **unique name**;  
+This allows cancellation of a started task.  
+The second parameter is the `String` that will be send to your `callbackDispatcher` function, indicating the task's *type*.  
 
-## Customisation
-Not every `WorkManager` feature is ported.
-
-### Tagging
+## Tagging
 
 You can set the optional `tag` property.  
 Handy for cancellation by `tag`.  
-This is different from the unique name in that you can group multiple jobs under one tag.  
+This is different from the unique name in that you can group multiple tasks under one tag.  
 
 ```
 Workmanager.registerOneOffTask("1", "simpleTask", tag: "tag");
 ```
 
-### Existing Work Policy
+## Existing Work Policy
 
-What should happen when you schedule the same job twice?  
+Indicates the desired behaviour when the same task is scheduled more than once.  
 The default is `KEEP`
 
 ```
 Workmanager.registerOneOffTask("1", "simpleTask", existingWorkPolicy: ExistingWorkPolicy.append);
 ```
 
-### Initial Delay
+## Initial Delay
 
-The minimum amount a job should wait before its first run.
+Indicates how along a task should waitbefore its first run.
 
 ```
 Workmanager.registerOneOffTask("1", "simpleTask", initialDelay: Duration(seconds: 10));
 ```
 
-### Constraints
+## Constraints
+
 > Not all constraints are mapped.
 
 ```
@@ -172,10 +121,10 @@ Workmanager.registerOneOffTask(
 );
 ```
 
-### BackoffPolicy
-When a job should fail this specifies the waiting strategy it should use.  
+## BackoffPolicy
+Indicates the waiting strategy upon task failure.  
 The default is `BackoffPolicy.exponential`.    
-You can also specify the delay.  
+You can also specify the delay. 
 
 ```
 Workmanager.registerOneOffTask("1", "simpleTask", backoffPolicy: BackoffPolicy.exponential, backoffPolicyDelay: Duration(seconds: 10));
@@ -183,10 +132,11 @@ Workmanager.registerOneOffTask("1", "simpleTask", backoffPolicy: BackoffPolicy.e
 
 ## Cancellation
 
-You can cancel jobs in different ways.  
+A task can be cancelled in different ways :  
+
 ### By Tag
 
-If you have provided job with a tag, you can cancel it that way too.  
+Cancels the task that was previously registered using this **Tag**, if any.  
 
 ```
 Workmanager.cancelByTag("tag");
@@ -194,7 +144,7 @@ Workmanager.cancelByTag("tag");
 
 ### By Unique Name
 ```
-Workmanager.cancelByUniqueName("tag");
+Workmanager.cancelByUniqueName("<MyTask>");
 ```
 
 ### All

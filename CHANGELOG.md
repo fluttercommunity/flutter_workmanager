@@ -41,9 +41,9 @@
 # 0.0.6+2
 
 * Fixes a bug in which you could not use other plugins inside a `EchoCallbackFunction`.
-  * A user should extend a custom `Application` and register it in its `AndroidManifest.xml`
+  * [‼️ BREAKING change] A user should extend a custom `Application` and register it in its `AndroidManifest.xml`
  
-    ```
+    ```kotlin
     class App : FlutterApplication(), PluginRegistry.PluginRegistrantCallback {
         override fun onCreate() {
             super.onCreate()
@@ -67,7 +67,7 @@
              additional functionality it is fine to subclass or reimplement
              FlutterApplication and put your custom class here. -->
         <application
-            android:name=".App"
+            android:name=".App" <!-- Replace io.flutter.app.FlutterApplication with .App -->
             android:icon="@mipmap/ic_launcher"
             android:label="workmanager_example"
             tools:replace="android:name">
@@ -93,3 +93,11 @@
         </application>
     </manifest>
     ```  
+
+# 0.0.7
+
+* This version is the first version to support iOS with the help of the Background Fetch API.  
+  * Only recurring tasks can be scheduled by iOS.
+  * If you want to respond to iOS background triggers you should add the extra case `Workmanager.iOSBackgroundTask` to your switch case.
+* [‼️ BREAKING change]
+  * `Workmanager.defaultCallbackDispatcher` becomes `Workmanager.executeTask` 

@@ -14,24 +14,25 @@ const simplePeriodicTask = "simplePeriodicTask";
 const simplePeriodic1HourTask = "simplePeriodic1HourTask";
 
 void callbackDispatcher() {
-  Workmanager.defaultCallbackDispatcher((echoValue) async {
-    print("Native echoed: $echoValue");
-
-    switch (echoValue) {
+  Workmanager.executeTask((task) async {
+    switch (task) {
       case simpleTaskKey:
-        print("$simpleTaskKey was executed");
+        stderr.writeln("$simpleTaskKey was executed");
         Directory tempDir = await getTemporaryDirectory();
         String tempPath = tempDir.path;
-        print("i have a temp dir: $tempDir");
+        print("You can access other plugins in the background: $tempPath");
         break;
       case simpleDelayedTask:
-        print("$simpleDelayedTask was executed");
+        stderr.writeln("$simpleDelayedTask was executed");
         break;
       case simplePeriodicTask:
-        print("$simplePeriodicTask was executed");
+        stderr.writeln("$simplePeriodicTask was executed");
         break;
       case simplePeriodic1HourTask:
-        print("$simplePeriodic1HourTask was executed");
+        stderr.writeln("$simplePeriodic1HourTask was executed");
+        break;
+      case Workmanager.iOSBackgroundTask:
+        stderr.writeln("The iOS background fetch was triggered");
         break;
     }
 
@@ -42,6 +43,21 @@ void callbackDispatcher() {
 class MyApp extends StatefulWidget {
   @override
   _MyAppState createState() => _MyAppState();
+}
+
+enum _Platform { android, ios }
+
+class PlatformEnabledButton extends RaisedButton {
+  final _Platform platform;
+
+  PlatformEnabledButton({this.platform, @required Widget child, @required VoidCallback onPressed})
+      : assert(child != null, onPressed != null),
+        super(
+          child: child,
+          onPressed: (Platform.isAndroid && platform == _Platform.android ||
+              Platform.isIOS && platform == _Platform.ios)
+              ? onPressed
+              : null);
 }
 
 class _MyAppState extends State<MyApp> {
@@ -57,22 +73,23 @@ class _MyAppState extends State<MyApp> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              Text("Initialize the plugin first",
+              Text("Plugin initialization",
                   style: Theme.of(context).textTheme.headline),
               RaisedButton(
-                  child: Text("Start the Flutter background service first"),
+                  child: Text("Start the Flutter background service"),
                   onPressed: () {
                     Workmanager.initialize(
                       callbackDispatcher,
                       isInDebugMode: true,
                     );
                   }),
-
-              Text("One Off Tasks",
+              SizedBox(height: 16),
+              Text("One Off Tasks (Android only)",
                   style: Theme.of(context).textTheme.headline),
-              //This job runs once.
+              //This task runs once.
               //Most likely this will trigger immediately
-              RaisedButton(
+              PlatformEnabledButton(
+                  platform: _Platform.android,
                   child: Text("Register OneOff Task"),
                   onPressed: () {
                     Workmanager.registerOneOffTask(
@@ -80,9 +97,10 @@ class _MyAppState extends State<MyApp> {
                       simpleTaskKey,
                     );
                   }),
-              //This job runs once
+              //This task runs once
               //This wait at least 10 seconds before running
-              RaisedButton(
+              PlatformEnabledButton(
+                  platform: _Platform.android,
                   child: Text("Register Delayed OneOff Task"),
                   onPressed: () {
                     Workmanager.registerOneOffTask(
@@ -91,13 +109,14 @@ class _MyAppState extends State<MyApp> {
                       initialDelay: Duration(seconds: 10),
                     );
                   }),
-
-              Text("Periodic Tasks",
+              SizedBox(height: 8),
+              Text("Periodic Tasks (Android only)",
                   style: Theme.of(context).textTheme.headline),
-              //This job runs periodically
+              //This task runs periodically
               //It will wait at least 10 seconds before its first launch
               //Since we have not provided a frequency it will be the default 15 minutes
-              RaisedButton(
+              PlatformEnabledButton(
+                  platform: _Platform.android,
                   child: Text("Register Periodic Task"),
                   onPressed: () {
                     Workmanager.registerPeriodicTask(
@@ -106,9 +125,10 @@ class _MyAppState extends State<MyApp> {
                       initialDelay: Duration(seconds: 10),
                     );
                   }),
-              //This job runs periodically
+              //This task runs periodically
               //It will run about every hour
-              RaisedButton(
+              PlatformEnabledButton(
+                  platform: _Platform.android,
                   child: Text("Register 1 hour Periodic Task"),
                   onPressed: () {
                     Workmanager.registerPeriodicTask(
