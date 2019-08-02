@@ -1,43 +1,21 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 
 import 'package:workmanager/workmanager.dart';
 
-  void main() => runApp(MyApp());
+void main() => runApp(MyApp());
 
 const simpleTaskKey = "simpleTask";
 const simpleDelayedTask = "simpleDelayedTask";
 const simplePeriodicTask = "simplePeriodicTask";
 const simplePeriodic1HourTask = "simplePeriodic1HourTask";
 
-void callbackDispatcher() {
-  Workmanager.executeTask((task) async {
-    switch (task) {
-      case simpleTaskKey:
-        stderr.writeln("$simpleTaskKey was executed");
-        Directory tempDir = await getTemporaryDirectory();
-        String tempPath = tempDir.path;
-        print("You can access other plugins in the background: $tempPath");
-        break;
-      case simpleDelayedTask:
-        stderr.writeln("$simpleDelayedTask was executed");
-        break;
-      case simplePeriodicTask:
-        stderr.writeln("$simplePeriodicTask was executed");
-        break;
-      case simplePeriodic1HourTask:
-        stderr.writeln("$simplePeriodic1HourTask was executed");
-        break;
-      case Workmanager.iOSBackgroundTask:
-        stderr.writeln("The iOS background fetch was triggered");
-        break;
-    }
-
-    return Future.value(true);
-  });
+void myAwesomeBackgroundTask() {
+  print("My awesome task");
 }
 
 class MyApp extends StatefulWidget {
@@ -50,14 +28,15 @@ enum _Platform { android, ios }
 class PlatformEnabledButton extends RaisedButton {
   final _Platform platform;
 
-  PlatformEnabledButton({this.platform, @required Widget child, @required VoidCallback onPressed})
+  PlatformEnabledButton(
+      {this.platform, @required Widget child, @required VoidCallback onPressed})
       : assert(child != null, onPressed != null),
         super(
-          child: child,
-          onPressed: (Platform.isAndroid && platform == _Platform.android ||
-              Platform.isIOS && platform == _Platform.ios)
-              ? onPressed
-              : null);
+            child: child,
+            onPressed: (Platform.isAndroid && platform == _Platform.android ||
+                    Platform.isIOS && platform == _Platform.ios)
+                ? onPressed
+                : null);
 }
 
 class _MyAppState extends State<MyApp> {
@@ -78,10 +57,8 @@ class _MyAppState extends State<MyApp> {
               RaisedButton(
                   child: Text("Start the Flutter background service"),
                   onPressed: () {
-                    Workmanager.initialize(
-                      callbackDispatcher,
-                      isInDebugMode: true,
-                    );
+                    Workmanager.register(
+                        task: myAwesomeBackgroundTask, isInDebugMode: true);
                   }),
               SizedBox(height: 16),
               Text("One Off Tasks (Android only)",

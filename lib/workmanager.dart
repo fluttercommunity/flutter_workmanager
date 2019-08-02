@@ -5,10 +5,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 class _WorkmanagerConstants {
-  static const backgroundChannelName =
-      "be.tramckrijte.workmanager/background_channel_work_manager";
-  static const foregroundChannelName =
-      "be.tramckrijte.workmanager/foreground_channel_work_manager";
+  static const registrationChannelName =
+      "be.tramckrijte.workmanager/registration";
+  static const executionChannelName = "be.tramckrijte.workmanager/execution";
+  static const didRegisterMethodName = "didRegister";
 }
 
 ///A specification of the requirements that need to be met before a WorkRequest can run.
@@ -124,42 +124,46 @@ class Workmanager {
   static const String iOSBackgroundTask = "iOSPerformFetch";
   static bool _isInDebugMode = false;
 
-  static const MethodChannel _backgroundChannel =
-  const MethodChannel(_WorkmanagerConstants.backgroundChannelName);
-  static const MethodChannel _foregroundChannel =
-  const MethodChannel(_WorkmanagerConstants.foregroundChannelName);
+  static const MethodChannel _registrationChannel =
+      const MethodChannel(_WorkmanagerConstants.registrationChannelName);
+  static const MethodChannel _executionChannel =
+      const MethodChannel(_WorkmanagerConstants.executionChannelName);
 
   /// A helper function so you only need to implement a [BackgroundTask]
   static void executeTask(final BackgroundTask backgroundTask) {
     WidgetsFlutterBinding.ensureInitialized();
-    _backgroundChannel
-        .setMethodCallHandler((call) async => backgroundTask(call.arguments));
-    _backgroundChannel.invokeMethod("backgroundChannelInitialized");
+    _executionChannel.setMethodCallHandler((call) async => print(
+        "execution channel did receive call $call")); // TODO: backgroundTask(call.arguments));
+    // TODO: _executionChannel.invokeMethod("backgroundChannelInitialized");
   }
 
   /// This call is required if you wish to use the [WorkManager] plugin.
-  /// [callbackDispatcher] is a top level function which will be invoked by Android
+  /// [task] is a top level function
   /// [isInDebugMode] true will post debug notifications with information about when a task should have run
-  static Future<void> initialize(final Function callbackDispatcher, {
-        final bool isInDebugMode = false,
+  static Future<void> register({
+    @required final Function task,
+    final bool isInDebugMode = false,
   }) async {
     Workmanager._isInDebugMode = isInDebugMode;
-    final callback = PluginUtilities.getCallbackHandle(callbackDispatcher);
-    await _foregroundChannel.invokeMethod('initialize', callback.toRawHandle());
+    final callbackHandle = PluginUtilities.getCallbackHandle(task);
+    await _registrationChannel.invokeMethod(
+        _WorkmanagerConstants.didRegisterMethodName,
+        callbackHandle.toRawHandle());
   }
 
   /// Schedule a one off task
   /// A [uniqueName] is required so only one task can be registered.
   /// The [valueToReturn] is the value that will be returned in the [BackgroundTask]
-  static Future<void> registerOneOffTask(final String uniqueName,
-      final String valueToReturn, {
-        final String tag,
-        final ExistingWorkPolicy existingWorkPolicy,
-        final Duration initialDelay = _noDuration,
-        final WorkManagerConstraintConfig constraints,
-        final BackoffPolicy backoffPolicy,
-        final Duration backoffPolicyDelay = _noDuration,
-      }) async =>
+  static Future<void> registerOneOffTask(
+    final String uniqueName,
+    final String valueToReturn, {
+    final String tag,
+    final ExistingWorkPolicy existingWorkPolicy,
+    final Duration initialDelay = _noDuration,
+    final WorkManagerConstraintConfig constraints,
+    final BackoffPolicy backoffPolicy,
+    final Duration backoffPolicyDelay = _noDuration,
+  }) async =>
       await _register(
         methodName: "registerOneOffTask",
         uniqueName: uniqueName,
@@ -176,16 +180,17 @@ class Workmanager {
   /// A [uniqueName] is required so only one task can be registered.
   /// The [echoValue] is the value that will be returned in the [BackgroundTask]
   /// a [frequency] is not required and will be defaulted to 15 minutes if not provided.
-  static Future<void> registerPeriodicTask(final String uniqueName,
-      final String echoValue, {
-        final Duration frequency,
-        final String tag,
-        final ExistingWorkPolicy existingWorkPolicy,
-        final Duration initialDelay = _noDuration,
-        final WorkManagerConstraintConfig constraints,
-        final BackoffPolicy backoffPolicy,
-        final Duration backoffPolicyDelay = _noDuration,
-      }) async =>
+  static Future<void> registerPeriodicTask(
+    final String uniqueName,
+    final String echoValue, {
+    final Duration frequency,
+    final String tag,
+    final ExistingWorkPolicy existingWorkPolicy,
+    final Duration initialDelay = _noDuration,
+    final WorkManagerConstraintConfig constraints,
+    final BackoffPolicy backoffPolicy,
+    final Duration backoffPolicyDelay = _noDuration,
+  }) async =>
       await _register(
         methodName: "registerPeriodicTask",
         uniqueName: uniqueName,
@@ -213,7 +218,7 @@ class Workmanager {
   }) async {
     assert(uniqueName != null);
     assert(echoValue != null);
-    return await _foregroundChannel.invokeMethod(
+    return await _registrationChannel.invokeMethod(
       methodName,
       {
         "isInDebugMode": _isInDebugMode,
@@ -236,14 +241,14 @@ class Workmanager {
 
   /// Cancels a task by its [uniqueName]
   static Future<void> cancelByUniqueName(final String uniqueName) async =>
-      await _foregroundChannel
+      await _registrationChannel
           .invokeMethod("cancelTaskByUniqueName", {"uniqueName": uniqueName});
 
   /// Cancels a task by its [tag]
   static Future<void> cancelByTag(final String tag) async =>
-      await _foregroundChannel.invokeMethod("cancelTaskByTag", {"tag": tag});
+      await _registrationChannel.invokeMethod("cancelTaskByTag", {"tag": tag});
 
   /// Cancels all tasks
   static Future<void> cancelAll() async =>
-      await _foregroundChannel.invokeMethod("cancelAll");
+      await _registrationChannel.invokeMethod("cancelAll");
 }
