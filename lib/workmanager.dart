@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/services.dart';
@@ -140,9 +141,8 @@ class Workmanager {
   /// This call is required if you wish to use the [WorkManager] plugin.
   /// [callbackDispatcher] is a top level function which will be invoked by Android
   /// [isInDebugMode] true will post debug notifications with information about when a task should have run
-  static Future<void> initialize(final Function callbackDispatcher, {
-        final bool isInDebugMode = false,
-  }) async {
+  static Future<void> initialize(final Function callbackDispatcher,
+      {final bool isInDebugMode = false}) async {
     Workmanager._isInDebugMode = isInDebugMode;
     final callback = PluginUtilities.getCallbackHandle(callbackDispatcher);
     await _foregroundChannel.invokeMethod('initialize', callback.toRawHandle());
@@ -213,6 +213,7 @@ class Workmanager {
   }) async {
     assert(uniqueName != null);
     assert(echoValue != null);
+    _assertNotIOS();
     return await _foregroundChannel.invokeMethod(
       methodName,
       {
@@ -235,15 +236,28 @@ class Workmanager {
   }
 
   /// Cancels a task by its [uniqueName]
-  static Future<void> cancelByUniqueName(final String uniqueName) async =>
-      await _foregroundChannel
-          .invokeMethod("cancelTaskByUniqueName", {"uniqueName": uniqueName});
+  static Future<void> cancelByUniqueName(final String uniqueName) async {
+    _assertNotIOS();
+    await _foregroundChannel
+        .invokeMethod("cancelTaskByUniqueName", {"uniqueName": uniqueName});
+  }
 
   /// Cancels a task by its [tag]
-  static Future<void> cancelByTag(final String tag) async =>
-      await _foregroundChannel.invokeMethod("cancelTaskByTag", {"tag": tag});
+  static Future<void> cancelByTag(final String tag) async {
+    _assertNotIOS();
+    await _foregroundChannel.invokeMethod("cancelTaskByTag", {"tag": tag});
+  }
 
   /// Cancels all tasks
-  static Future<void> cancelAll() async =>
-      await _foregroundChannel.invokeMethod("cancelAll");
+  static Future<void> cancelAll() async {
+    _assertNotIOS();
+    await _foregroundChannel.invokeMethod("cancelAll");
+  }
+
+  static void _assertNotIOS() {
+    if (Platform.isIOS) {
+      throw UnsupportedError(
+          "You can not call this method on iOS. A periodic task is automatically scheduled. In order to identify this task in your callbackDispatcher use the Workmanager.iOSBackgroundTask constant.");
+    }
+  }
 }
