@@ -106,4 +106,8 @@
   
 # 0.0.8
 
-* A bugfix were parsing of the `ExistingWorkPolicy` and `BackoffPolicy` went rogue.  Addresses [#9](https://github.com/vrtdev/flutter_workmanager/issues/9) 
+* A bugfix were parsing of the `ExistingWorkPolicy` and `BackoffPolicy` went rogue.  Addresses [#9](https://github.com/vrtdev/flutter_workmanager/issues/9)
+
+# 0.0.9
+
+* A bugfix were parsing the `BackOffPolicy` was still wrong. 
