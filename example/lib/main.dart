@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 
@@ -33,6 +34,7 @@ void callbackDispatcher() {
         break;
       case Workmanager.iOSBackgroundTask:
         stderr.writeln("The iOS background fetch was triggered");
+        // TODO: send backgroundFetch result as Int back through the Execution channel
         break;
     }
 
@@ -137,6 +139,19 @@ class _MyAppState extends State<MyApp> {
                       simplePeriodic1HourTask,
                       frequency: Duration(hours: 1),
                     );
+                  }),
+              SizedBox(height: 8),
+              Text("Simulate background fetch (iOS only)",
+                  style: Theme.of(context).textTheme.headline),
+              //This task runs periodically
+              //It will wait at least 10 seconds before its first launch
+              //Since we have not provided a frequency it will be the default 15 minutes
+              PlatformEnabledButton(
+                  platform: _Platform.ios,
+                  child: Text("Simulate background fetch"),
+                  onPressed: () {
+                    MethodChannel("Debug")
+                        .invokeMethod("simulateIOSBackgroundFetch");
                   }),
             ],
           ),

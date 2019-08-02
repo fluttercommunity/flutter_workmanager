@@ -122,6 +122,8 @@ class Workmanager {
   /// }
   /// ```
   static const String iOSBackgroundTask = "iOSPerformFetch";
+  static const String getTaskNameMethod = "getTaskName";
+
   static bool _isInDebugMode = false;
 
   static const MethodChannel _registrationChannel =
@@ -137,7 +139,7 @@ class Workmanager {
       stderr.writeln("Debug - Task name to execute : $taskName");
       return taskNameHandler(taskName);
     });
-    _executionChannel.invokeMethod("flutterReadyForTaskExecution");
+    _executionChannel.invokeMethod(getTaskNameMethod);
   }
 
   /// This call is required if you wish to use the [WorkManager] plugin.

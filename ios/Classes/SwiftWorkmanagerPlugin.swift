@@ -13,9 +13,12 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     
     private struct ExecutionMethodChannel {
         static let channelName = "be.tramckrijte.workmanager/execution"
-        enum methods: String {
+        enum incomingMethods: String {
             case flutterReadyForTaskExecution
-            case iOSPerformFetch
+            case getTaskName
+        }
+        enum outgoingMethods: String {
+            case execute
         }
     }
     
@@ -79,10 +82,9 @@ extension SwiftWorkmanagerPlugin {
         let executionMethodChannel = FlutterMethodChannel(name: ExecutionMethodChannel.channelName, binaryMessenger: flutterEngine)
         executionMethodChannel.setMethodCallHandler { (call, result) in
             switch call.method {
-            case ExecutionMethodChannel.methods.flutterReadyForTaskExecution.rawValue:
+            case ExecutionMethodChannel.incomingMethods.getTaskName.rawValue:
                 result(true)    // Agree to Flutter's method invocation
-                // BackgroundChannel is now available ; let's send the "iOSPerformFetch" method through it, and wait for the result
-                executionMethodChannel.invokeMethod(ExecutionMethodChannel.methods.iOSPerformFetch.rawValue, arguments: nil, result: { flutterResult in
+                executionMethodChannel.invokeMethod(ExecutionMethodChannel.outgoingMethods.execute.rawValue, arguments: "iOSPerformFetch", result: { flutterResult in
                     // We got a backgroundFetch result ; let's ensure we can convert it to a native UIBackgroundFetchResult
                     guard
                         let fetchResult: Int = flutterResult as? Int,
