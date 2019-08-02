@@ -111,3 +111,8 @@
 # 0.0.9
 
 * A bugfix were parsing the `BackOffPolicy` was still wrong. 
+
+# 0.0.10
+
+* I should test a little better before publishing to pub.dev.
+  * Fixes all enum parsing issues with `ExistingWorkPolicy` and `BackoffPolicy`
