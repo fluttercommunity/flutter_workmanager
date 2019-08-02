@@ -43,11 +43,11 @@ data class BackoffPolicyTaskConfig(val backoffPolicy: BackoffPolicy,
                 )
 
         val defaultOneOffBackoffTaskConfig =
-                 BackoffPolicyTaskConfig(
-                         defaultBackOffPolicy,
-                         defaultRequestedBackoffDelay,
-                         defaultRequestedBackoffDelay
-                 )
+                BackoffPolicyTaskConfig(
+                        defaultBackOffPolicy,
+                        defaultRequestedBackoffDelay,
+                        defaultRequestedBackoffDelay
+                )
     }
 }
 
@@ -188,18 +188,10 @@ object Extractor {
             }
 
     private fun extractExistingWorkPolicyFromCall(call: MethodCall): ExistingWorkPolicy =
-            try {
-                ExistingWorkPolicy.valueOf(call.argument<String>(REGISTER_TASK_EXISTING_WORK_POLICY_KEY)!!.toUpperCase())
-            } catch (ignored: Exception) {
-                defaultOneOffExistingWorkPolicy
-            }
+            ExistingWorkPolicy.valueOf(call.argument<String>(REGISTER_TASK_EXISTING_WORK_POLICY_KEY)!!.toUpperCase())
 
     private fun extractExistingPeriodicWorkPolicyFromCall(call: MethodCall): ExistingPeriodicWorkPolicy =
-            try {
-                ExistingPeriodicWorkPolicy.valueOf(call.argument<String>(REGISTER_TASK_EXISTING_WORK_POLICY_KEY)!!.toUpperCase())
-            } catch (ignored: Exception) {
-                defaultPeriodExistingWorkPolicy
-            }
+            ExistingPeriodicWorkPolicy.valueOf(call.argument<String>(REGISTER_TASK_EXISTING_WORK_POLICY_KEY)!!.toUpperCase())
 
     private fun extractFrequencySecondsFromCall(call: MethodCall): Long =
             call.argument<Int>(PERIODIC_TASK_FREQUENCY_SECONDS_KEY)?.toLong()
@@ -210,11 +202,8 @@ object Extractor {
                     ?: defaultInitialDelaySeconds
 
     private fun extractBackoffPolicyConfigFromCall(call: MethodCall, taskType: TaskType): BackoffPolicyTaskConfig {
-        val backoffPolicy = try {
-            BackoffPolicy.valueOf(call.argument<String>(REGISTER_TASK_BACK_OFF_POLICY_TYPE_KEY)!!.toUpperCase())
-        } catch (ignored: Exception) {
-            defaultBackOffPolicy
-        }
+        val backoffPolicy =
+                BackoffPolicy.valueOf(call.argument<String>(REGISTER_TASK_BACK_OFF_POLICY_TYPE_KEY)!!.toUpperCase())
 
         val requestedBackoffDelay = call.argument<Int>(REGISTER_TASK_BACK_OFF_POLICY_DELAY_MILLIS_KEY)?.toLong()
                 ?: defaultRequestedBackoffDelay

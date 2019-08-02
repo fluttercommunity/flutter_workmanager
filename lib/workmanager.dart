@@ -221,18 +221,24 @@ class Workmanager {
         "echoValue": echoValue,
         "tag": tag,
         "frequency": frequency?.inSeconds,
-        "existingWorkPolicy": existingWorkPolicy,
+        "existingWorkPolicy": _enumToStringToKotlinString(existingWorkPolicy),
         "initialDelaySeconds": initialDelay.inSeconds,
         "networkType": constraints?.networkType,
         "requiresBatteryNotLow": constraints?.requiresBatteryNotLow,
         "requiresCharging": constraints?.requiresCharging,
         "requiresDeviceIdle": constraints?.requiresDeviceIdle,
         "requiresStorageNotLow": constraints?.requiresStorageNotLow,
-        "backoffPolicyType": backoffPolicy,
+        "backoffPolicyType": _enumToStringToKotlinString(backoffPolicy),
         "backoffDelayInMilliseconds": backoffPolicyDelay.inMilliseconds,
       },
     );
   }
+
+  static String _enumToStringToKotlinString(final dynamic enumeration) =>
+      enumeration
+          ?.toString()
+          ?.split('.')
+          ?.last;
 
   /// Cancels a task by its [uniqueName]
   static Future<void> cancelByUniqueName(final String uniqueName) async =>
