@@ -64,7 +64,7 @@ private object RegisterTaskHandler : CallHandler<WorkManagerCall.RegisterTask> {
     private fun enqueuePeriodicTask(context: Context, convertedCall: WorkManagerCall.RegisterTask.PeriodicTask) {
         WM.enqueuePeriodicTask(context = context,
                 uniqueName = convertedCall.uniqueName,
-                echoValue = convertedCall.echoValue,
+                echoValue = convertedCall.taskName,
                 tag = convertedCall.tag,
                 frequencyInSeconds = convertedCall.frequencyInSeconds,
                 isInDebugMode = convertedCall.isInDebugMode,
@@ -79,7 +79,7 @@ private object RegisterTaskHandler : CallHandler<WorkManagerCall.RegisterTask> {
         WM.enqueueOneOffTask(
                 context = context,
                 uniqueName = convertedCall.uniqueName,
-                echoValue = convertedCall.echoValue,
+                echoValue = convertedCall.taskName,
                 tag = convertedCall.tag,
                 isInDebugMode = convertedCall.isInDebugMode,
                 existingWorkPolicy = convertedCall.existingWorkPolicy,

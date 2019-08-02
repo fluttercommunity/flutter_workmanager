@@ -11,10 +11,10 @@ import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TAS
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_CONSTRAINTS_DEVICE_IDLE_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_CONSTRAINTS_NETWORK_TYPE_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_CONSTRAINTS_STORAGE_NOT_LOW_KEY
-import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_ECHO_VALUE_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_EXISTING_WORK_POLICY_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_INITIAL_DELAY_SECONDS_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_IS_IN_DEBUG_MODE_KEY
+import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_NAME_VALUE_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_TAG_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_UNIQUE_NAME_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.PeriodicTask.KEYS.PERIODIC_TASK_FREQUENCY_SECONDS_KEY
@@ -57,7 +57,7 @@ sealed class WorkManagerCall {
     sealed class RegisterTask : WorkManagerCall() {
         abstract val isInDebugMode: Boolean
         abstract val uniqueName: String
-        abstract val echoValue: String
+        abstract val taskName: String
         abstract val tag: String?
         abstract val initialDelaySeconds: Long
         abstract val constraintsConfig: Constraints?
@@ -65,7 +65,7 @@ sealed class WorkManagerCall {
         companion object KEYS {
             const val REGISTER_TASK_IS_IN_DEBUG_MODE_KEY = "isInDebugMode"
             const val REGISTER_TASK_UNIQUE_NAME_KEY = "uniqueName"
-            const val REGISTER_TASK_ECHO_VALUE_KEY = "echoValue"
+            const val REGISTER_TASK_NAME_VALUE_KEY = "taskName"
             const val REGISTER_TASK_TAG_KEY = "tag"
             const val REGISTER_TASK_EXISTING_WORK_POLICY_KEY = "existingWorkPolicy"
 
@@ -83,7 +83,7 @@ sealed class WorkManagerCall {
 
         data class OneOffTask(override val isInDebugMode: Boolean,
                               override val uniqueName: String,
-                              override val echoValue: String,
+                              override val taskName: String,
                               override val tag: String? = null,
                               val existingWorkPolicy: ExistingWorkPolicy,
                               override val initialDelaySeconds: Long,
@@ -92,7 +92,7 @@ sealed class WorkManagerCall {
 
         data class PeriodicTask(override val isInDebugMode: Boolean,
                                 override val uniqueName: String,
-                                override val echoValue: String,
+                                override val taskName: String,
                                 override val tag: String? = null,
                                 val existingWorkPolicy: ExistingPeriodicWorkPolicy,
                                 val frequencyInSeconds: Long,
@@ -158,7 +158,7 @@ object Extractor {
                     WorkManagerCall.RegisterTask.OneOffTask(
                             isInDebugMode = call.argument<Boolean>(REGISTER_TASK_IS_IN_DEBUG_MODE_KEY)!!,
                             uniqueName = call.argument<String>(REGISTER_TASK_UNIQUE_NAME_KEY)!!,
-                            echoValue = call.argument<String>(REGISTER_TASK_ECHO_VALUE_KEY)!!,
+                            taskName = call.argument<String>(REGISTER_TASK_NAME_VALUE_KEY)!!,
                             tag = call.argument<String>(REGISTER_TASK_TAG_KEY),
                             existingWorkPolicy = extractExistingWorkPolicyFromCall(call),
                             initialDelaySeconds = extractInitialDelayFromCall(call),
@@ -170,7 +170,7 @@ object Extractor {
                     WorkManagerCall.RegisterTask.PeriodicTask(
                             isInDebugMode = call.argument<Boolean>(REGISTER_TASK_IS_IN_DEBUG_MODE_KEY)!!,
                             uniqueName = call.argument<String>(REGISTER_TASK_UNIQUE_NAME_KEY)!!,
-                            echoValue = call.argument<String>(REGISTER_TASK_ECHO_VALUE_KEY)!!,
+                            taskName = call.argument<String>(REGISTER_TASK_NAME_VALUE_KEY)!!,
                             frequencyInSeconds = extractFrequencySecondsFromCall(call),
                             tag = call.argument<String>(REGISTER_TASK_TAG_KEY),
                             existingWorkPolicy = extractExistingPeriodicWorkPolicyFromCall(call),

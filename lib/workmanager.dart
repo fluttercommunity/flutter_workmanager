@@ -227,7 +227,7 @@ class Workmanager {
       {
         "isInDebugMode": _isInDebugMode,
         "uniqueName": uniqueName,
-        "echoValue": taskName,
+        "taskName": taskName,
         "tag": tag,
         "frequency": frequency?.inSeconds,
         "existingWorkPolicy": existingWorkPolicy,
