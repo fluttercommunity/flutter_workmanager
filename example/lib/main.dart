@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 
@@ -14,8 +13,31 @@ const simpleDelayedTask = "simpleDelayedTask";
 const simplePeriodicTask = "simplePeriodicTask";
 const simplePeriodic1HourTask = "simplePeriodic1HourTask";
 
-void myAwesomeBackgroundTask() {
-  print("My awesome task");
+void callbackDispatcher() {
+  Workmanager.askForTaskName((task) async {
+    switch (task) {
+      case simpleTaskKey:
+        stderr.writeln("$simpleTaskKey was executed");
+        Directory tempDir = await getTemporaryDirectory();
+        String tempPath = tempDir.path;
+        print("You can access other plugins in the background: $tempPath");
+        break;
+      case simpleDelayedTask:
+        stderr.writeln("$simpleDelayedTask was executed");
+        break;
+      case simplePeriodicTask:
+        stderr.writeln("$simplePeriodicTask was executed");
+        break;
+      case simplePeriodic1HourTask:
+        stderr.writeln("$simplePeriodic1HourTask was executed");
+        break;
+      case Workmanager.iOSBackgroundTask:
+        stderr.writeln("The iOS background fetch was triggered");
+        break;
+    }
+
+    return Future.value(true);
+  });
 }
 
 class MyApp extends StatefulWidget {
@@ -57,8 +79,10 @@ class _MyAppState extends State<MyApp> {
               RaisedButton(
                   child: Text("Start the Flutter background service"),
                   onPressed: () {
-                    Workmanager.register(
-                        task: myAwesomeBackgroundTask, isInDebugMode: true);
+                    Workmanager.initialize(
+                      entryPoint: callbackDispatcher,
+                      isInDebugMode: true,
+                    );
                   }),
               SizedBox(height: 16),
               Text("One Off Tasks (Android only)",

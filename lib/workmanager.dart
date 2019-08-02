@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/services.dart';
@@ -8,7 +9,6 @@ class _WorkmanagerConstants {
   static const registrationChannelName =
       "be.tramckrijte.workmanager/registration";
   static const executionChannelName = "be.tramckrijte.workmanager/execution";
-  static const didRegisterMethodName = "didRegister";
 }
 
 ///A specification of the requirements that need to be met before a WorkRequest can run.
@@ -43,7 +43,7 @@ class WorkManagerConstraintConfig {
 const _noDuration = const Duration(seconds: 0);
 
 /// Returns the value you provided when registering the task. iOS will always return [Workmanager.iOSBackgroundTask]
-typedef BackgroundTask = Future<bool> Function(String echoValue);
+typedef TaskNameHandler = Future<bool> Function(String taskName);
 
 ///An enumeration of the conflict resolution policies in case of a collision.
 enum ExistingWorkPolicy {
@@ -129,31 +129,35 @@ class Workmanager {
   static const MethodChannel _executionChannel =
       const MethodChannel(_WorkmanagerConstants.executionChannelName);
 
-  /// A helper function so you only need to implement a [BackgroundTask]
-  static void executeTask(final BackgroundTask backgroundTask) {
+  /// A helper function so you only need to implement a [TaskNameHandler]
+  static void askForTaskName(final TaskNameHandler taskNameHandler) {
     WidgetsFlutterBinding.ensureInitialized();
-    _executionChannel.setMethodCallHandler((call) async => print(
-        "execution channel did receive call $call")); // TODO: backgroundTask(call.arguments));
-    // TODO: _executionChannel.invokeMethod("backgroundChannelInitialized");
+    _executionChannel.setMethodCallHandler((call) async {
+      final String taskName = call.arguments;
+      stderr.writeln("Debug - Task name to execute : $taskName");
+      return taskNameHandler(taskName);
+    });
+    _executionChannel.invokeMethod("flutterReadyForTaskExecution");
   }
 
   /// This call is required if you wish to use the [WorkManager] plugin.
-  /// [task] is a top level function
+  /// [entryPoint] is a top level function which will be invoked by Android
   /// [isInDebugMode] true will post debug notifications with information about when a task should have run
-  static Future<void> register({
-    @required final Function task,
+  static Future<void> initialize({
+    final Function entryPoint,
     final bool isInDebugMode = false,
   }) async {
     Workmanager._isInDebugMode = isInDebugMode;
-    final callbackHandle = PluginUtilities.getCallbackHandle(task);
+    final callback = PluginUtilities.getCallbackHandle(entryPoint);
     await _registrationChannel.invokeMethod(
-        _WorkmanagerConstants.didRegisterMethodName,
-        callbackHandle.toRawHandle());
+        'initialize', callback.toRawHandle());
+    print("Debug - registration channel successfully initialized.");
+    stderr.writeln("Debug - registration channel successfully initialized.");
   }
 
   /// Schedule a one off task
   /// A [uniqueName] is required so only one task can be registered.
-  /// The [valueToReturn] is the value that will be returned in the [BackgroundTask]
+  /// The [valueToReturn] is the value that will be returned in the [TaskNameHandler]
   static Future<void> registerOneOffTask(
     final String uniqueName,
     final String valueToReturn, {
@@ -178,7 +182,7 @@ class Workmanager {
 
   /// Schedules a periodic task that will run every provided [frequency].
   /// A [uniqueName] is required so only one task can be registered.
-  /// The [echoValue] is the value that will be returned in the [BackgroundTask]
+  /// The [echoValue] is the value that will be returned in the [TaskNameHandler]
   /// a [frequency] is not required and will be defaulted to 15 minutes if not provided.
   static Future<void> registerPeriodicTask(
     final String uniqueName,

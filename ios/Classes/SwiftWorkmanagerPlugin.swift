@@ -4,17 +4,17 @@ import os
 
 public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     
-    private struct ForegroundMethodChannel {
-        static let channelName = "be.tramckrijte.workmanager/foreground_channel_work_manager"
+    private struct RegistrationMethodChannel {
+        static let channelName = "be.tramckrijte.workmanager/registration"
         enum methods: String {
             case initialize
         }
     }
     
-    private struct BackgroundMethodChannel {
-        static let channelName = "be.tramckrijte.workmanager/background_channel_work_manager"
+    private struct ExecutionMethodChannel {
+        static let channelName = "be.tramckrijte.workmanager/execution"
         enum methods: String {
-            case backgroundChannelInitialized
+            case flutterReadyForTaskExecution
             case iOSPerformFetch
         }
     }
@@ -29,9 +29,9 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
     
     public static func register(with registrar: FlutterPluginRegistrar) {
         
-        let foregroundMethodChannel = FlutterMethodChannel(name: ForegroundMethodChannel.channelName, binaryMessenger: registrar.messenger())
+        let registrationMethodChannel = FlutterMethodChannel(name: RegistrationMethodChannel.channelName, binaryMessenger: registrar.messenger())
         let instance = SwiftWorkmanagerPlugin()
-        registrar.addMethodCallDelegate(instance, channel: foregroundMethodChannel)
+        registrar.addMethodCallDelegate(instance, channel: registrationMethodChannel)
         registrar.addApplicationDelegate(instance)
         
     }
@@ -39,8 +39,7 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         
         switch call.method {
-        case ForegroundMethodChannel.methods.initialize.rawValue:
-            // Note from JV : I'd rather optional cast / guard-let this conversion, but as discussed, the call.arguments should never be something else than an Int. Meh.
+        case RegistrationMethodChannel.methods.initialize.rawValue:
             let callbackHandle = call.arguments as! Int64
             store(callbackHandle)
             result(true)
@@ -77,13 +76,13 @@ extension SwiftWorkmanagerPlugin {
         flutterEngine.run(withEntrypoint: flutterCallbackInformation.callbackName, libraryURI: flutterCallbackInformation.callbackLibraryPath)
         
         // Since we're now running a specific Flutter engine, no MethodChannel exists ; let's create one for WorkManager's BackgroundMethodChannel
-        let backgroundMethodChannel = FlutterMethodChannel(name: BackgroundMethodChannel.channelName, binaryMessenger: flutterEngine)
-        backgroundMethodChannel.setMethodCallHandler { (call, result) in
+        let executionMethodChannel = FlutterMethodChannel(name: ExecutionMethodChannel.channelName, binaryMessenger: flutterEngine)
+        executionMethodChannel.setMethodCallHandler { (call, result) in
             switch call.method {
-            case BackgroundMethodChannel.methods.backgroundChannelInitialized.rawValue:
+            case ExecutionMethodChannel.methods.flutterReadyForTaskExecution.rawValue:
                 result(true)    // Agree to Flutter's method invocation
                 // BackgroundChannel is now available ; let's send the "iOSPerformFetch" method through it, and wait for the result
-                backgroundMethodChannel.invokeMethod(BackgroundMethodChannel.methods.iOSPerformFetch.rawValue, arguments: nil, result: { flutterResult in
+                executionMethodChannel.invokeMethod(ExecutionMethodChannel.methods.iOSPerformFetch.rawValue, arguments: nil, result: { flutterResult in
                     // We got a backgroundFetch result ; let's ensure we can convert it to a native UIBackgroundFetchResult
                     guard
                         let fetchResult: Int = flutterResult as? Int,
