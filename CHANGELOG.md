@@ -41,6 +41,8 @@
 # 0.0.6+2
 
 * Fixes a bug in which you could not use other plugins inside a `EchoCallbackFunction`.
+  * Fixes [#6](https://github.com/vrtdev/flutter_workmanager/issues/6)
+  * Fixes [#4](https://github.com/vrtdev/flutter_workmanager/issues/4)
   * [‼️ BREAKING change] A user should extend a custom `Application` and register it in its `AndroidManifest.xml`
  
     ```kotlin
@@ -101,3 +103,7 @@
   * If you want to respond to iOS background triggers you should add the extra case `Workmanager.iOSBackgroundTask` to your switch case.
 * [‼️ BREAKING change]
   * `Workmanager.defaultCallbackDispatcher` becomes `Workmanager.executeTask` 
+  
+# 0.0.8
+
+* A bugfix were parsing of the `ExistingWorkPolicy` and `BackoffPolicy` went rogue.  Addresses [#9](https://github.com/vrtdev/flutter_workmanager/issues/9) 
