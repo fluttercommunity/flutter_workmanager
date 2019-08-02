@@ -202,8 +202,11 @@ object Extractor {
                     ?: defaultInitialDelaySeconds
 
     private fun extractBackoffPolicyConfigFromCall(call: MethodCall, taskType: TaskType): BackoffPolicyTaskConfig {
-        val backoffPolicy =
-                BackoffPolicy.valueOf(call.argument<String>(REGISTER_TASK_BACK_OFF_POLICY_TYPE_KEY)!!.toUpperCase())
+        val backoffPolicy = try {
+            BackoffPolicy.valueOf(call.argument<String>(REGISTER_TASK_BACK_OFF_POLICY_TYPE_KEY)!!.toUpperCase())
+        } catch (ignored: Exception) {
+            defaultBackOffPolicy
+        }
 
         val requestedBackoffDelay = call.argument<Int>(REGISTER_TASK_BACK_OFF_POLICY_DELAY_MILLIS_KEY)?.toLong()
                 ?: defaultRequestedBackoffDelay
