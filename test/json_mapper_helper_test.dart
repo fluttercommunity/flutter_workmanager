@@ -18,7 +18,7 @@ void main() {
         () => JsonMapperHelper.toJson(
           true,
           uniqueName: "uniqueName",
-          echoValue: "taskName",
+          taskName: "taskName",
           initialDelay: null,
         ),
         throwsNoSuchMethodError,
@@ -29,7 +29,7 @@ void main() {
       expect(
           () => JsonMapperHelper.toJson(true,
               uniqueName: "uniqueName",
-              echoValue: "taskName",
+              taskName: "taskName",
               initialDelay: Duration(seconds: 1),
               backoffPolicyDelay: null),
           throwsNoSuchMethodError);
@@ -42,14 +42,14 @@ void main() {
           JsonMapperHelper.toJson(
             true,
             uniqueName: "uniqueName",
-            echoValue: "taskName",
+            taskName: "taskName",
             initialDelay: Duration(seconds: 1),
             backoffPolicyDelay: Duration(seconds: 1),
           ),
           {
             'isInDebugMode': true,
             'uniqueName': 'uniqueName',
-            'echoValue': 'taskName',
+            'taskName': 'taskName',
             'tag': null,
             'frequency': null,
             'existingWorkPolicy': null,
@@ -69,7 +69,7 @@ void main() {
           JsonMapperHelper.toJson(
             true,
             uniqueName: "uniqueName",
-            echoValue: "taskName",
+            taskName: "taskName",
             frequency: Duration(seconds: 1),
             tag: "tag",
             existingWorkPolicy: ExistingWorkPolicy.replace,
@@ -87,7 +87,7 @@ void main() {
           {
             'isInDebugMode': true,
             'uniqueName': 'uniqueName',
-            'echoValue': 'taskName',
+            'taskName': 'taskName',
             'tag': 'tag',
             'frequency': 1,
             'existingWorkPolicy': 'replace',
@@ -116,7 +116,7 @@ void main() {
         {
           'isInDebugMode': true,
           'uniqueName': 'uniqueName',
-          'echoValue': 'taskName',
+          'taskName': 'taskName',
           'tag': null,
           'frequency': null,
           'existingWorkPolicy': null,
@@ -141,7 +141,7 @@ void main() {
         {
           'isInDebugMode': true,
           'uniqueName': 'uniqueName',
-          'echoValue': 'taskName',
+          'taskName': 'taskName',
           'tag': null,
           'frequency': null,
           'existingWorkPolicy': null,
@@ -160,7 +160,7 @@ void main() {
         {
           'isInDebugMode': true,
           'uniqueName': 'uniqueName',
-          'echoValue': 'taskName',
+          'taskName': 'taskName',
           'tag': null,
           'frequency': null,
           'existingWorkPolicy': null,
@@ -185,7 +185,7 @@ void main() {
         {
           'isInDebugMode': true,
           'uniqueName': 'uniqueName',
-          'echoValue': 'taskName',
+          'taskName': 'taskName',
           'tag': null,
           'frequency': null,
           'existingWorkPolicy': null,
@@ -210,7 +210,7 @@ void main() {
         {
           'isInDebugMode': true,
           'uniqueName': 'uniqueName',
-          'echoValue': 'taskName',
+          'taskName': 'taskName',
           'tag': null,
           'frequency': null,
           'existingWorkPolicy': null,
@@ -230,7 +230,7 @@ void main() {
           JsonMapperHelper.toJson(
             true,
             uniqueName: "uniqueName",
-            echoValue: "taskName",
+            taskName: "taskName",
             initialDelay: Duration(seconds: 1),
             backoffPolicyDelay: Duration(seconds: 1),
             constraints: constraintTuple.first,
@@ -251,14 +251,14 @@ void main() {
         expect(
           JsonMapperHelper.toJson(true,
               uniqueName: "uniqueName",
-              echoValue: "taskName",
+              taskName: "taskName",
               initialDelay: Duration(seconds: 1),
               backoffPolicyDelay: Duration(seconds: 1),
               existingWorkPolicy: existingWorkPolicy.first),
           {
             'isInDebugMode': true,
             'uniqueName': 'uniqueName',
-            'echoValue': 'taskName',
+            'taskName': 'taskName',
             'tag': null,
             'frequency': null,
             'existingWorkPolicy': existingWorkPolicy[1],
@@ -283,14 +283,14 @@ void main() {
         expect(
           JsonMapperHelper.toJson(true,
               uniqueName: "uniqueName",
-              echoValue: "taskName",
+              taskName: "taskName",
               initialDelay: Duration(seconds: 1),
               backoffPolicyDelay: Duration(seconds: 1),
               backoffPolicy: backOffPolicy.first),
           {
             'isInDebugMode': true,
             'uniqueName': 'uniqueName',
-            'echoValue': 'taskName',
+            'taskName': 'taskName',
             'tag': null,
             'frequency': null,
             'existingWorkPolicy': null,

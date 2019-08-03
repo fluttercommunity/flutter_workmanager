@@ -8,28 +8,44 @@ import 'options.dart';
 
 const _noDuration = const Duration(seconds: 0);
 
-/// Returns the value you provided when registering the task. iOS will always return [Workmanager.iOSBackgroundTask]
-typedef BackgroundTask = Future<bool> Function(String echoValue);
-
-/// Workmanager plugin
+/// Function that executes your background work.
+/// You should return whether the task ran successfully or not.
 ///
-/// Make sure you followed the setup steps first before trying to register any task.
+/// [taskName] Returns the value you provided when registering the task.
+/// iOS will always return [Workmanager.iOSBackgroundTask]
+typedef BackgroundTaskHandler = Future<bool> Function(String taskName);
+
+/// Make sure you followed the platform setup steps first before trying to register any task.
+/// Android:
+/// - Custom Application class
+/// iOS:
+/// - Enabled the Background Fetch API
+///
+/// Inside your Dart code
 ///
 /// Initialize the plugin first
 ///
 /// ```
 /// void callbackDispatcher() {
-///   Workmanager.executeTask((echoValue) {
-///     print("Native echoed: $echoValue");
+///   Workmanager.executeTask((taskName) {
+///     switch(taskName) {
+///       case "":
+///         print("Replace this print statement with your code that should be executed in the background here");
+///         break;
+///     }
 ///     return Future.value(true);
 ///   });
 /// }
 ///
-/// Workmanager.initialize(
-///     callbackDispatcher,
-///     isInDebugMode: true
-/// )
+/// void main() {
+///   Workmanager.initialize(callbackDispatcher);
+/// }
 /// ```
+///
+/// You can now schedule Android tasks using:
+/// - `Workmanager#registerOneOffTask()` or `Workmanager#registerPeriodicTask`
+///
+/// iOS periodic task is automatically scheduled if you setup the plugin properly.
 class Workmanager {
   /// Use this constant inside your callbackDispatcher to identify when an iOS Background Fetch occurred.
   ///
@@ -54,8 +70,8 @@ class Workmanager {
   static const MethodChannel _foregroundChannel = const MethodChannel(
       "be.tramckrijte.workmanager/foreground_channel_work_manager");
 
-  /// A helper function so you only need to implement a [BackgroundTask]
-  static void executeTask(final BackgroundTask backgroundTask) {
+  /// A helper function so you only need to implement a [BackgroundTaskHandler]
+  static void executeTask(final BackgroundTaskHandler backgroundTask) {
     WidgetsFlutterBinding.ensureInitialized();
     _backgroundChannel
         .setMethodCallHandler((call) async => backgroundTask(call.arguments));
@@ -76,10 +92,10 @@ class Workmanager {
 
   /// Schedule a one off task
   /// A [uniqueName] is required so only one task can be registered.
-  /// The [valueToReturn] is the value that will be returned in the [BackgroundTask]
+  /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler]
   static Future<void> registerOneOffTask(
     final String uniqueName,
-    final String valueToReturn, {
+      final String taskName, {
     final String tag,
     final ExistingWorkPolicy existingWorkPolicy,
     final Duration initialDelay = _noDuration,
@@ -92,7 +108,7 @@ class Workmanager {
         JsonMapperHelper.toJson(
           _isInDebugMode,
           uniqueName: uniqueName,
-          echoValue: valueToReturn,
+          taskName: taskName,
           tag: tag,
           existingWorkPolicy: existingWorkPolicy,
           initialDelay: initialDelay,
@@ -104,11 +120,11 @@ class Workmanager {
 
   /// Schedules a periodic task that will run every provided [frequency].
   /// A [uniqueName] is required so only one task can be registered.
-  /// The [echoValue] is the value that will be returned in the [BackgroundTask]
+  /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler]
   /// a [frequency] is not required and will be defaulted to 15 minutes if not provided.
   static Future<void> registerPeriodicTask(
     final String uniqueName,
-    final String echoValue, {
+      final String taskName, {
     final Duration frequency,
     final String tag,
     final ExistingWorkPolicy existingWorkPolicy,
@@ -122,7 +138,7 @@ class Workmanager {
         JsonMapperHelper.toJson(
           _isInDebugMode,
           uniqueName: uniqueName,
-          echoValue: echoValue,
+          taskName: taskName,
           frequency: frequency,
           tag: tag,
           existingWorkPolicy: existingWorkPolicy,
@@ -152,7 +168,7 @@ class JsonMapperHelper {
   static Map<String, Object> toJson(
     final bool _isInDebugMode, {
     final String uniqueName,
-    final String echoValue,
+        final String taskName,
     final Duration frequency,
     final String tag,
     final ExistingWorkPolicy existingWorkPolicy,
@@ -162,11 +178,11 @@ class JsonMapperHelper {
     final Duration backoffPolicyDelay,
   }) {
     assert(uniqueName != null);
-    assert(echoValue != null);
+    assert(taskName != null);
     return {
       "isInDebugMode": _isInDebugMode,
       "uniqueName": uniqueName,
-      "echoValue": echoValue,
+      "taskName": taskName,
       "tag": tag,
       "frequency": frequency?.inSeconds,
       "existingWorkPolicy": _enumToStringToKotlinString(existingWorkPolicy),
