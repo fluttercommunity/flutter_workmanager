@@ -11,7 +11,7 @@ This is especially useful to run periodic tasks, such as fetching remote data on
 
 ```yaml
 dependencies:
-  workmanager: ^0.0.10
+  workmanager: ^0.0.11
 ```
 ```shell script
 flutter pub get
@@ -59,7 +59,7 @@ Two kinds of background tasks can be registered :
 - **One off task** : runs only once
 - **Periodic tasks** : runs indefinitely on a regular basis
 
-```
+```dart
 // One off task registration
 Workmanager.registerOneOffTask(
     "1", 
@@ -84,7 +84,7 @@ You can set the optional `tag` property.
 Handy for cancellation by `tag`.  
 This is different from the unique name in that you can group multiple tasks under one tag.  
 
-```
+```dart
 Workmanager.registerOneOffTask("1", "simpleTask", tag: "tag");
 ```
 
@@ -93,7 +93,7 @@ Workmanager.registerOneOffTask("1", "simpleTask", tag: "tag");
 Indicates the desired behaviour when the same task is scheduled more than once.  
 The default is `KEEP`
 
-```
+```dart
 Workmanager.registerOneOffTask("1", "simpleTask", existingWorkPolicy: ExistingWorkPolicy.append);
 ```
 
@@ -101,7 +101,7 @@ Workmanager.registerOneOffTask("1", "simpleTask", existingWorkPolicy: ExistingWo
 
 Indicates how along a task should waitbefore its first run.
 
-```
+```dart
 Workmanager.registerOneOffTask("1", "simpleTask", initialDelay: Duration(seconds: 10));
 ```
 
@@ -109,7 +109,7 @@ Workmanager.registerOneOffTask("1", "simpleTask", initialDelay: Duration(seconds
 
 > Not all constraints are mapped.
 
-```
+```dart
 Workmanager.registerOneOffTask(
     "1", 
     "simpleTask", 
@@ -128,7 +128,7 @@ Indicates the waiting strategy upon task failure.
 The default is `BackoffPolicy.exponential`.    
 You can also specify the delay. 
 
-```
+```dart
 Workmanager.registerOneOffTask("1", "simpleTask", backoffPolicy: BackoffPolicy.exponential, backoffPolicyDelay: Duration(seconds: 10));
 ```
 
@@ -140,17 +140,18 @@ A task can be cancelled in different ways :
 
 Cancels the task that was previously registered using this **Tag**, if any.  
 
-```
+```dart
 Workmanager.cancelByTag("tag");
 ```
 
 ### By Unique Name
-```
+
+```dart
 Workmanager.cancelByUniqueName("<MyTask>");
 ```
 
 ### All
 
-```
+```dart
 Workmanager.cancelAll();
 ```
