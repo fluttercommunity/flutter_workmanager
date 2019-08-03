@@ -43,11 +43,11 @@ data class BackoffPolicyTaskConfig(val backoffPolicy: BackoffPolicy,
                 )
 
         val defaultOneOffBackoffTaskConfig =
-                 BackoffPolicyTaskConfig(
-                         defaultBackOffPolicy,
-                         defaultRequestedBackoffDelay,
-                         defaultRequestedBackoffDelay
-                 )
+                BackoffPolicyTaskConfig(
+                        defaultBackOffPolicy,
+                        defaultRequestedBackoffDelay,
+                        defaultRequestedBackoffDelay
+                )
     }
 }
 

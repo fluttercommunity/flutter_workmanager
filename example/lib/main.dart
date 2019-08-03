@@ -1,12 +1,11 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-import 'dart:async';
-
 import 'package:workmanager/workmanager.dart';
 
-  void main() => runApp(MyApp());
+void main() => runApp(MyApp());
 
 const simpleTaskKey = "simpleTask";
 const simpleDelayedTask = "simpleDelayedTask";
