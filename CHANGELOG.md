@@ -5,6 +5,7 @@
   * Some typo's 
   * Link to [Medium blog](https://medium.com/vrt-digital-studio/flutter-workmanager-81e0cfbd6f6e) post
 * Adds unit tests to the project since the many issues with enum parsing
+  * Fixes an issue with the parsing of the `NetworkType`
 * Project restructure to a `src` folder 
 
 # 0.0.10
