@@ -3,7 +3,7 @@ import 'package:workmanager/src/options.dart';
 import 'package:workmanager/src/workmanager.dart';
 
 void main() {
-  group("Json Mapper invalid inputs", () {
+  group("invalid inputs", () {
     test("no unique name", () {
       expect(() => JsonMapperHelper.toJson(true), throwsAssertionError);
     });
