@@ -5,6 +5,8 @@ Flutter WorkManager is a wrapper around [Android's WorkManager](https://develope
 
 This is especially useful to run periodic tasks, such as fetching remote data on a regular basis.
 
+> This plugin was featured in this [Medium blogpost](https://medium.com/vrt-digital-studio/flutter-workmanager-81e0cfbd6f6e)
+
 # Installation
 
 ```yaml
@@ -38,7 +40,7 @@ void callbackDispatcher() {
 
 void main() {
   Workmanager.initialize(
-    callbackDispatcher, // The top level function, aka Flutter entry point
+    callbackDispatcher, // The top level function, aka callbackDispatcher
     isInDebugMode: true // If enabled it will post a notification whenever the task is running. Handy for debugging tasks
   );
   Workmanager.registerOneOffTask("1", "simpleTask");
