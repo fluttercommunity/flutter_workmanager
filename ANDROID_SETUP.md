@@ -27,7 +27,7 @@ You will then need to register this `Application` in the `AndroidManifest.xml`.
 ```xml
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="be.tramckrijte.workmanager_example">
+    package="replace.me.with.your.package.name">
 
     <!-- io.flutter.app.FlutterApplication is an android.app.Application that
          calls FlutterMain.startInitialization(this); in its onCreate method.

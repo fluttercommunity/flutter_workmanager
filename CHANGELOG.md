@@ -1,43 +1,25 @@
-## 0.0.1
+# 0.0.10
 
-* Initial Release:
-  * Schedule One off task
-  * Schedule Periodic task
-    * Fixed delay
-  * Initial delay
-  * Constraints
-    * Support for 1 network type
-    * requires battery not low
-    * requires charging
-    * requires device idle
-    * requires storage not low
-  * back off policy
+* I should test a little better before publishing to pub.dev.
+  * Fixes all enum parsing issues with `ExistingWorkPolicy` and `BackoffPolicy`
 
-## 0.0.2
+# 0.0.9
 
-* Remove the need to register a custom Application on Android side. (Everything still works in testing)
+* A bugfix were parsing the `BackOffPolicy` was still wrong. 
 
-## 0.0.3
+# 0.0.8
 
-* Add Dart documentation
+* A bugfix were parsing of the `ExistingWorkPolicy` and `BackoffPolicy` went rogue.  Addresses [#9](https://github.com/vrtdev/flutter_workmanager/issues/9)
 
-# 0.0.4
+# 0.0.7
 
-* Provide a better description so package scores higher on Pub
-
-# 0.0.5
-
-* The description was too big so you lose points for that too...
-
-# 0.0.6
-
-* Expose a WorkManagerHelper to the native.
-  * This makes it easier if you also have some native code that wants to schedule the Echo Worker
+* This version is the first version to support iOS with the help of the Background Fetch API.  
+  * Only recurring tasks can be scheduled by iOS.
+  * If you want to respond to iOS background triggers you should add the extra case `Workmanager.iOSBackgroundTask` to your switch case.
+* [‼️ BREAKING change]
+  * `Workmanager.defaultCallbackDispatcher` becomes `Workmanager.executeTask` 
+* This version was used as referenced in the [Medium blogpost](https://medium.com/vrt-digital-studio/flutter-workmanager-81e0cfbd6f6e)
   
-# 0.0.6+1
-
-* Fixes a bug when initializing without setting the `isInDebugMode`.
-
 # 0.0.6+2
 
 * Fixes a bug in which you could not use other plugins inside a `EchoCallbackFunction`.
@@ -95,24 +77,48 @@
         </application>
     </manifest>
     ```  
-
-# 0.0.7
+    
+# 0.0.6+1
 
 * This version is the first version to support iOS with the help of the Background Fetch API.  
   * Only recurring tasks can be scheduled by iOS.
   * If you want to respond to iOS background triggers you should add the extra case `Workmanager.iOSBackgroundTask` to your switch case.
 * [‼️ BREAKING change]
-  * `Workmanager.defaultCallbackDispatcher` becomes `Workmanager.executeTask` 
+  * `Workmanager.defaultCallbackDispatcher` becomes `Workmanager.executeTask`
   
-# 0.0.8
+# 0.0.6
 
-* A bugfix were parsing of the `ExistingWorkPolicy` and `BackoffPolicy` went rogue.  Addresses [#9](https://github.com/vrtdev/flutter_workmanager/issues/9)
+* Expose a WorkManagerHelper to the native.
+  * This makes it easier if you also have some native code that wants to schedule the Echo Worker
+  
+# 0.0.5
 
-# 0.0.9
+* The description was too big so you lose points for that too...
 
-* A bugfix were parsing the `BackOffPolicy` was still wrong. 
+# 0.0.4
 
-# 0.0.10
+* Provide a better description so package scores higher on Pub
 
-* I should test a little better before publishing to pub.dev.
-  * Fixes all enum parsing issues with `ExistingWorkPolicy` and `BackoffPolicy`
+# 0.0.3
+
+* Add Dart documentation
+
+# 0.0.2
+
+* Remove the need to register a custom Application on Android side. (Everything still works in testing)
+
+# 0.0.1
+
+* Initial Release:
+  * Schedule One off task
+  * Schedule Periodic task
+    * Fixed delay
+  * Initial delay
+  * Constraints
+    * Support for 1 network type
+    * requires battery not low
+    * requires charging
+    * requires device idle
+    * requires storage not low
+  * back off policy
+ 
