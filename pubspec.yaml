@@ -5,13 +5,14 @@ author: Tim Rijckaert <tim.rijckaert@gmail.com>, Jeremie Vincke <jeremie@movify.
 homepage: https://github.com/vrtdev/flutter_workmanager
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">=2.2.0 <3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
 
 dev_dependencies:
+  test: 1.6.3
   flutter_test:
     sdk: flutter
 
