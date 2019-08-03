@@ -80,15 +80,15 @@
 
 * Provide a better description so package scores higher on Pub
 
-## 0.0.3
+# 0.0.3
 
 * Add Dart documentation
 
-## 0.0.2
+# 0.0.2
 
 * Remove the need to register a custom Application on Android side. (Everything still works in testing)
 
-## 0.0.1
+# 0.0.1
 
 * Initial Release:
   * Schedule One off task
