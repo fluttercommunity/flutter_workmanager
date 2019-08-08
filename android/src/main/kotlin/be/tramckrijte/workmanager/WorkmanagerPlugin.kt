@@ -2,9 +2,9 @@ package be.tramckrijte.workmanager
 
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
-import io.flutter.plugin.common.PluginRegistry
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import io.flutter.plugin.common.PluginRegistry
 import io.flutter.plugin.common.PluginRegistry.Registrar
 
 class WorkmanagerPlugin(private val workmanagerCallHandler: WorkmanagerCallHandler) : MethodCallHandler {
@@ -18,6 +18,7 @@ class WorkmanagerPlugin(private val workmanagerCallHandler: WorkmanagerCallHandl
             channel.setMethodCallHandler(WorkmanagerPlugin(WorkmanagerCallHandler(registrar.activeContext())))
         }
 
+        @JvmStatic
         fun setPluginRegistrantCallback(pluginRegistryCallback: PluginRegistry.PluginRegistrantCallback) {
             WorkmanagerPlugin.pluginRegistryCallback = pluginRegistryCallback
         }
