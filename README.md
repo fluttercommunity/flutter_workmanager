@@ -71,7 +71,7 @@ Workmanager.registerPeriodicTask(
     "2", 
     "simplePeriodicTask", \
     // When no frequency is provided the default 15 minutes is set.
-    // Minimum frequency is 15 min. Android will automatically change your frequency to 15 min you have configured a lower frequency.
+    // Minimum frequency is 15 min. Android will automatically change your frequency to 15 min if you have configured a lower frequency.
     frequency: Duration(hours: 1),
 )
 ```
