@@ -81,15 +81,14 @@ extension SwiftWorkmanagerPlugin {
                 result(true)    // Agree to Flutter's method invocation
                 
                 backgroundMethodChannel.invokeMethod(BackgroundMethodChannel.methods.iOSPerformFetch.rawValue, arguments: nil, result: { flutterResult in
-                    // We got a backgroundFetch result ; let's ensure we can convert it to a native UIBackgroundFetchResult
-                    guard
-                        let fetchResult: Int = flutterResult as? Int,
-                        let backgroundFetchResult = UIBackgroundFetchResult(rawValue: UInt(fetchResult))
-                        else {
-                            completionHandler(.failed)
-                            return
+                    switch flutterResult as? Bool {
+                    case true:
+                        completionHandler(.newData)
+                    case false:
+                        completionHandler(.noData)
+                    default:
+                        completionHandler(.failed)
                     }
-                    completionHandler(backgroundFetchResult)
                 })
             default:
                 result(WMPError.unhandledMethod(call.method).asFlutterError)
