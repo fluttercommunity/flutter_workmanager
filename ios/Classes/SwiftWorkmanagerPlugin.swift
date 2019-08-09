@@ -4,22 +4,27 @@ import os
 
 public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     
+    private struct Plugin {
+        static let identifier = "be.tramckrijte.workmanager"
+        static let userDefaults = UserDefaults(suiteName: "\(Plugin.identifier).userDefaults")!
+    }
+    
     private struct ForegroundMethodChannel {
-        static let channelName = "be.tramckrijte.workmanager/foreground_channel_work_manager"
+        static let channelName = "\(Plugin.identifier)/foreground_channel_work_manager"
         enum methods: String {
             case initialize
         }
     }
     
     private struct BackgroundMethodChannel {
-        static let channelName = "be.tramckrijte.workmanager/background_channel_work_manager"
+        static let channelName = "\(Plugin.identifier)/background_channel_work_manager"
         enum methods: String {
             case backgroundChannelInitialized
             case iOSPerformFetch
         }
     }
     
-    private let flutterThreadLabelPrefix = "BackgroundFetch"
+    private let flutterThreadLabelPrefix = "\(Plugin.identifier).BackgroundFetch"
     
 }
 
@@ -40,7 +45,6 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
         
         switch call.method {
         case ForegroundMethodChannel.methods.initialize.rawValue:
-            // Note from JV : I'd rather optional cast / guard-let this conversion, but as discussed, the call.arguments should never be something else than an Int. Meh.
             let callbackHandle = call.arguments as! Int64
             store(callbackHandle)
             result(true)
@@ -72,8 +76,8 @@ extension SwiftWorkmanagerPlugin {
         }
         
         // Then, run the Flutter engine with the retrieved callback's name and libraryPath
-        let flutterCallbackInformation: FlutterCallbackInformation = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)
-        let flutterEngine = FlutterEngine.init(name: flutterThreadLabelPrefix, project: nil, allowHeadlessExecution: true)!
+        let flutterCallbackInformation = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)!
+        let flutterEngine = FlutterEngine(name: flutterThreadLabelPrefix, project: nil, allowHeadlessExecution: true)!
         flutterEngine.run(withEntrypoint: flutterCallbackInformation.callbackName, libraryURI: flutterCallbackInformation.callbackLibraryPath)
         
         // Since we're now running a specific Flutter engine, no MethodChannel exists ; let's create one for WorkManager's BackgroundMethodChannel
@@ -87,7 +91,7 @@ extension SwiftWorkmanagerPlugin {
                     // We got a backgroundFetch result ; let's ensure we can convert it to a native UIBackgroundFetchResult
                     guard
                         let fetchResult: Int = flutterResult as? Int,
-                        let backgroundFetchResult = UIBackgroundFetchResult.init(rawValue: UInt(fetchResult))
+                        let backgroundFetchResult = UIBackgroundFetchResult(rawValue: UInt(fetchResult))
                         else {
                             completionHandler(.failed)
                             return
@@ -109,17 +113,17 @@ extension SwiftWorkmanagerPlugin {
 
 private extension SwiftWorkmanagerPlugin {
     
-    static var callbackHandleStorageKey: String {
-        return "callBackHandleStorageKey"
+    private var callbackHandleStorageKey: String {
+        return "\(Plugin.identifier).callBackHandleStorageKey"
     }
     
     
     func store(_ callbackHandle: Int64) {
-        UserDefaults.standard.set(callbackHandle, forKey: type(of: self).callbackHandleStorageKey)
+        Plugin.userDefaults.set(callbackHandle, forKey: callbackHandleStorageKey)
     }
     
     func getStoredCallbackHandle() -> Int64? {
-        return UserDefaults.standard.value(forKey: type(of: self).callbackHandleStorageKey) as? Int64
+        return Plugin.userDefaults.value(forKey: callbackHandleStorageKey) as? Int64
     }
     
 }
