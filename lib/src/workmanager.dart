@@ -160,7 +160,7 @@ class Workmanager {
 
   /// Cancels all tasks
   static Future<void> cancelAll() async =>
-      await _foregroundChannel.invokeMethod("cancelAll");
+      await _foregroundChannel.invokeMethod("cancelAllTasks");
 }
 
 /// A helper object to convert the selected options to JSON format. Mainly for testability.
