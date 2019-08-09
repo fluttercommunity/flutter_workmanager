@@ -63,19 +63,12 @@ extension SwiftWorkmanagerPlugin {
     
     override public func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) -> Bool {
         
-        // First, let's retrieve our callBack handle
         guard let callbackHandle: Int64 = getStoredCallbackHandle() else {
-            let errorMessage = "[\(#file)] Could not start the Flutter engine : no stored callback handle."
-            if #available(iOS 10.0, *) {
-                os_log("%@", errorMessage)
-            } else {
-                NSLog(errorMessage)
-            }
+            logError("[\(#file)] Could not start the Flutter engine : no stored callback handle.")
             completionHandler(.failed)
             return false
         }
         
-        // Then, run the Flutter engine with the retrieved callback's name and libraryPath
         let flutterCallbackInformation = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)!
         let flutterEngine = FlutterEngine(name: flutterThreadLabelPrefix, project: nil, allowHeadlessExecution: true)!
         flutterEngine.run(withEntrypoint: flutterCallbackInformation.callbackName, libraryURI: flutterCallbackInformation.callbackLibraryPath)
@@ -86,7 +79,7 @@ extension SwiftWorkmanagerPlugin {
             switch call.method {
             case BackgroundMethodChannel.methods.backgroundChannelInitialized.rawValue:
                 result(true)    // Agree to Flutter's method invocation
-                // BackgroundChannel is now available ; let's send the "iOSPerformFetch" method through it, and wait for the result
+                
                 backgroundMethodChannel.invokeMethod(BackgroundMethodChannel.methods.iOSPerformFetch.rawValue, arguments: nil, result: { flutterResult in
                     // We got a backgroundFetch result ; let's ensure we can convert it to a native UIBackgroundFetchResult
                     guard
