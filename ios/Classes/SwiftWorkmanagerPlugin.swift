@@ -4,22 +4,27 @@ import os
 
 public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     
+    private struct Plugin {
+        static let identifier = "be.tramckrijte.workmanager"
+        static let userDefaults = UserDefaults(suiteName: "\(Plugin.identifier).userDefaults")!
+    }
+    
     private struct ForegroundMethodChannel {
-        static let channelName = "be.tramckrijte.workmanager/foreground_channel_work_manager"
+        static let channelName = "\(Plugin.identifier)/foreground_channel_work_manager"
         enum methods: String {
             case initialize
         }
     }
     
     private struct BackgroundMethodChannel {
-        static let channelName = "be.tramckrijte.workmanager/background_channel_work_manager"
+        static let channelName = "\(Plugin.identifier)/background_channel_work_manager"
         enum methods: String {
             case backgroundChannelInitialized
             case iOSPerformFetch
         }
     }
     
-    private let flutterThreadLabelPrefix = "BackgroundFetch"
+    private let flutterThreadLabelPrefix = "\(Plugin.identifier).BackgroundFetch"
     
 }
 
@@ -110,16 +115,16 @@ extension SwiftWorkmanagerPlugin {
 private extension SwiftWorkmanagerPlugin {
     
     static var callbackHandleStorageKey: String {
-        return "callBackHandleStorageKey"
+        return "\(Plugin.identifier).callBackHandleStorageKey"
     }
     
     
     func store(_ callbackHandle: Int64) {
-        UserDefaults.standard.set(callbackHandle, forKey: type(of: self).callbackHandleStorageKey)
+        Plugin.userDefaults.set(callbackHandle, forKey: SwiftWorkmanagerPlugin.callbackHandleStorageKey)
     }
     
     func getStoredCallbackHandle() -> Int64? {
-        return UserDefaults.standard.value(forKey: type(of: self).callbackHandleStorageKey) as? Int64
+        return Plugin.userDefaults.value(forKey: SwiftWorkmanagerPlugin.callbackHandleStorageKey) as? Int64
     }
     
 }
