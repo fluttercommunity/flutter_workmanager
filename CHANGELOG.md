@@ -1,3 +1,7 @@
+# 0.0.12
+
+* expose `setPluginRegistrantCallback` to the old rusty Java people 
+
 # 0.0.11
 
 * Better README and docs
