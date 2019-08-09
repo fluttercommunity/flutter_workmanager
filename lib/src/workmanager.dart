@@ -122,6 +122,7 @@ class Workmanager {
   /// A [uniqueName] is required so only one task can be registered.
   /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler]
   /// a [frequency] is not required and will be defaulted to 15 minutes if not provided.
+  /// a [frequency] has a minimum of 15 min. Android will automatically change your frequency to 15 min if you have configured a lower frequency.
   static Future<void> registerPeriodicTask(
     final String uniqueName,
       final String taskName, {
