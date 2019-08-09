@@ -45,7 +45,6 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
         
         switch call.method {
         case ForegroundMethodChannel.methods.initialize.rawValue:
-            // Note from JV : I'd rather optional cast / guard-let this conversion, but as discussed, the call.arguments should never be something else than an Int. Meh.
             let callbackHandle = call.arguments as! Int64
             store(callbackHandle)
             result(true)
@@ -78,7 +77,7 @@ extension SwiftWorkmanagerPlugin {
         
         // Then, run the Flutter engine with the retrieved callback's name and libraryPath
         let flutterCallbackInformation: FlutterCallbackInformation = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)
-        let flutterEngine = FlutterEngine.init(name: flutterThreadLabelPrefix, project: nil, allowHeadlessExecution: true)!
+        let flutterEngine = FlutterEngine(name: flutterThreadLabelPrefix, project: nil, allowHeadlessExecution: true)!
         flutterEngine.run(withEntrypoint: flutterCallbackInformation.callbackName, libraryURI: flutterCallbackInformation.callbackLibraryPath)
         
         // Since we're now running a specific Flutter engine, no MethodChannel exists ; let's create one for WorkManager's BackgroundMethodChannel
@@ -92,7 +91,7 @@ extension SwiftWorkmanagerPlugin {
                     // We got a backgroundFetch result ; let's ensure we can convert it to a native UIBackgroundFetchResult
                     guard
                         let fetchResult: Int = flutterResult as? Int,
-                        let backgroundFetchResult = UIBackgroundFetchResult.init(rawValue: UInt(fetchResult))
+                        let backgroundFetchResult = UIBackgroundFetchResult(rawValue: UInt(fetchResult))
                         else {
                             completionHandler(.failed)
                             return
