@@ -76,7 +76,7 @@ extension SwiftWorkmanagerPlugin {
         }
         
         // Then, run the Flutter engine with the retrieved callback's name and libraryPath
-        let flutterCallbackInformation: FlutterCallbackInformation = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)
+        let flutterCallbackInformation = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)!
         let flutterEngine = FlutterEngine(name: flutterThreadLabelPrefix, project: nil, allowHeadlessExecution: true)!
         flutterEngine.run(withEntrypoint: flutterCallbackInformation.callbackName, libraryURI: flutterCallbackInformation.callbackLibraryPath)
         
