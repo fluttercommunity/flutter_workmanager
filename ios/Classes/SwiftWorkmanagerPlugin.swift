@@ -113,17 +113,17 @@ extension SwiftWorkmanagerPlugin {
 
 private extension SwiftWorkmanagerPlugin {
     
-    static var callbackHandleStorageKey: String {
+    private var callbackHandleStorageKey: String {
         return "\(Plugin.identifier).callBackHandleStorageKey"
     }
     
     
     func store(_ callbackHandle: Int64) {
-        Plugin.userDefaults.set(callbackHandle, forKey: SwiftWorkmanagerPlugin.callbackHandleStorageKey)
+        Plugin.userDefaults.set(callbackHandle, forKey: callbackHandleStorageKey)
     }
     
     func getStoredCallbackHandle() -> Int64? {
-        return Plugin.userDefaults.value(forKey: SwiftWorkmanagerPlugin.callbackHandleStorageKey) as? Int64
+        return Plugin.userDefaults.value(forKey: callbackHandleStorageKey) as? Int64
     }
     
 }
