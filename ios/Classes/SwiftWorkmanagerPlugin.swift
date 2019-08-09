@@ -64,7 +64,7 @@ extension SwiftWorkmanagerPlugin {
     override public func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) -> Bool {
         
         guard let callbackHandle: Int64 = getStoredCallbackHandle() else {
-            logError("[\(#file)] Could not start the Flutter engine : no stored callback handle.")
+            logError("[\(String(describing: self))] Could not start the Flutter engine : no stored callback handle.")
             completionHandler(.failed)
             return false
         }
@@ -81,12 +81,16 @@ extension SwiftWorkmanagerPlugin {
                 result(true)    // Agree to Flutter's method invocation
                 
                 backgroundMethodChannel.invokeMethod(BackgroundMethodChannel.methods.iOSPerformFetch.rawValue, arguments: nil, result: { flutterResult in
+                    let logPrefix = "[\(String(describing: self))] \(#function) -> UIBackgroundFetchResult"
                     switch flutterResult as? Bool {
                     case true:
+                        logInfo("\(logPrefix).newData")
                         completionHandler(.newData)
                     case false:
+                        logInfo("\(logPrefix).noData")
                         completionHandler(.noData)
                     default:
+                        logInfo("\(logPrefix).failed")
                         completionHandler(.failed)
                     }
                 })
