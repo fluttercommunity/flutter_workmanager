@@ -74,7 +74,7 @@ class BackgroundWorker(private val ctx: Context,
         latch.await()
 
         if (isInDebug) {
-            DebugHelper.postTaskCompleteNotification(ctx, javaClass.simpleName, dartTask, result)
+            DebugHelper.postTaskCompleteNotification(ctx, dartTask, result)
         }
 
         return result
