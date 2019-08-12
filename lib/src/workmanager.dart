@@ -87,7 +87,8 @@ class Workmanager {
   }) async {
     Workmanager._isInDebugMode = isInDebugMode;
     final callback = PluginUtilities.getCallbackHandle(callbackDispatcher);
-    await _foregroundChannel.invokeMethod('initialize', callback.toRawHandle());
+    final int callbackHandle = callback.toRawHandle();
+    await _foregroundChannel.invokeMethod('initialize', callbackHandle);
   }
 
   /// Schedule a one off task
