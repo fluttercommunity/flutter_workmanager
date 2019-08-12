@@ -7,17 +7,26 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.work.ListenableWorker
 import io.flutter.view.FlutterCallbackInformation
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 object DebugHelper {
     private const val debugChannelId = "WorkmanagerDebugChannelId"
     private const val debugChannelName = "A helper channel to debug your background tasks."
+    private val debugDateFormatter = SimpleDateFormat("dd-MM-yyyy HH:mm:ss.ZZZZ")
 
-    fun postTaskCompleteNotification(ctx: Context, title: String, echoValue: String, result: ListenableWorker.Result) {
-        postNotification(ctx, "$title ${System.currentTimeMillis()}", "${result.javaClass.simpleName}: $echoValue")
+    private val currentTime get() = debugDateFormatter.format(Date())
+
+    fun postTaskCompleteNotification(ctx: Context, dartTask: String, result: ListenableWorker.Result) {
+        postNotification(ctx, dartTask.hashCode(), currentTime, "Your work for $dartTask returned result: ${result.javaClass.simpleName}")
     }
 
-    fun postTaskStarting(ctx: Context, echoValue: String, callbackHandle: Long, callbackInfo: FlutterCallbackInformation?, dartBundlePath: String?) {
-        postNotification(ctx, echoValue, "" +
+    fun postTaskStarting(ctx: Context, dartTask: String, callbackHandle: Long, callbackInfo: FlutterCallbackInformation?, dartBundlePath: String?) {
+        postNotification(ctx, dartTask.hashCode(), currentTime, "" +
+                "Trying to start Dart/Flutter with following params: \n" +
+                "dartTask: $dartTask;\n" +
                 "callbackHandle: $callbackHandle;\n" +
                 "callBackName: ${callbackInfo?.callbackName};\n" +
                 "callbackClassName: ${callbackInfo?.callbackClassName};\n" +
@@ -26,12 +35,12 @@ object DebugHelper {
         )
     }
 
-    private fun postNotification(ctx: Context, title: String, contentText: String) {
+    private fun postNotification(ctx: Context, messageId: Int, title: String, contentText: String) {
         (ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).apply {
             createNotificationChannel()
 
             notify(
-                    System.currentTimeMillis().toInt(),
+                    messageId,
                     NotificationCompat.Builder(ctx, debugChannelId)
                             .setContentTitle(title)
                             .setContentText(contentText)
@@ -39,7 +48,7 @@ object DebugHelper {
                                     NotificationCompat.BigTextStyle()
                                             .bigText(contentText)
                             )
-                            .setSmallIcon(R.drawable.notify_panel_notification_icon_bg)
+                            .setSmallIcon(android.R.drawable.stat_notify_sync)
                             .build()
             )
         }

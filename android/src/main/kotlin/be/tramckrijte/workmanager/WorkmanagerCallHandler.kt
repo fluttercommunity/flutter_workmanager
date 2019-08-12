@@ -4,8 +4,8 @@ import android.content.Context
 import androidx.work.*
 import be.tramckrijte.workmanager.BackoffPolicyTaskConfig.Companion.defaultOneOffBackoffTaskConfig
 import be.tramckrijte.workmanager.BackoffPolicyTaskConfig.Companion.defaultPeriodicBackoffTaskConfig
-import be.tramckrijte.workmanager.EchoingWorker.Companion.IS_IN_DEBUG_MODE
-import be.tramckrijte.workmanager.EchoingWorker.Companion.VALUE_TO_ECHO_KEY
+import be.tramckrijte.workmanager.BackgroundWorker.Companion.IS_IN_DEBUG_MODE
+import be.tramckrijte.workmanager.BackgroundWorker.Companion.DART_TASK_KEY
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import java.util.concurrent.TimeUnit
@@ -64,7 +64,7 @@ private object RegisterTaskHandler : CallHandler<WorkManagerCall.RegisterTask> {
     private fun enqueuePeriodicTask(context: Context, convertedCall: WorkManagerCall.RegisterTask.PeriodicTask) {
         WM.enqueuePeriodicTask(context = context,
                 uniqueName = convertedCall.uniqueName,
-                echoValue = convertedCall.taskName,
+                dartTask = convertedCall.taskName,
                 tag = convertedCall.tag,
                 frequencyInSeconds = convertedCall.frequencyInSeconds,
                 isInDebugMode = convertedCall.isInDebugMode,
@@ -79,7 +79,7 @@ private object RegisterTaskHandler : CallHandler<WorkManagerCall.RegisterTask> {
         WM.enqueueOneOffTask(
                 context = context,
                 uniqueName = convertedCall.uniqueName,
-                echoValue = convertedCall.taskName,
+                dartTask = convertedCall.taskName,
                 tag = convertedCall.tag,
                 isInDebugMode = convertedCall.isInDebugMode,
                 existingWorkPolicy = convertedCall.existingWorkPolicy,
@@ -110,7 +110,7 @@ private object UnknownTaskHandler : CallHandler<WorkManagerCall.Unknown> {
 object WM {
     fun enqueueOneOffTask(context: Context,
                           uniqueName: String,
-                          echoValue: String,
+                          dartTask: String,
                           tag: String? = null,
                           isInDebugMode: Boolean = false,
                           existingWorkPolicy: ExistingWorkPolicy = defaultOneOffExistingWorkPolicy,
@@ -118,11 +118,11 @@ object WM {
                           constraintsConfig: Constraints = defaultConstraints,
                           backoffPolicyConfig: BackoffPolicyTaskConfig = defaultOneOffBackoffTaskConfig
     ) {
-        val oneOffTaskRequest = OneTimeWorkRequest.Builder(EchoingWorker::class.java)
+        val oneOffTaskRequest = OneTimeWorkRequest.Builder(BackgroundWorker::class.java)
                 .setInputData(
                         Data.Builder().putAll(
                                 mapOf(
-                                        VALUE_TO_ECHO_KEY to echoValue,
+                                        DART_TASK_KEY to dartTask,
                                         IS_IN_DEBUG_MODE to isInDebugMode
                                 )
                         ).build()
@@ -142,7 +142,7 @@ object WM {
 
     fun enqueuePeriodicTask(context: Context,
                             uniqueName: String,
-                            echoValue: String,
+                            dartTask: String,
                             tag: String? = null,
                             frequencyInSeconds: Long = defaultPeriodicRefreshFrequencyInSeconds,
                             isInDebugMode: Boolean = false,
@@ -151,11 +151,11 @@ object WM {
                             constraintsConfig: Constraints = defaultConstraints,
                             backoffPolicyConfig: BackoffPolicyTaskConfig = defaultPeriodicBackoffTaskConfig) {
         val periodicTaskRequest =
-                PeriodicWorkRequest.Builder(EchoingWorker::class.java, frequencyInSeconds, TimeUnit.SECONDS)
+                PeriodicWorkRequest.Builder(BackgroundWorker::class.java, frequencyInSeconds, TimeUnit.SECONDS)
                         .setInputData(
                                 Data.Builder().putAll(
                                         mapOf(
-                                                VALUE_TO_ECHO_KEY to echoValue,
+                                                DART_TASK_KEY to dartTask,
                                                 IS_IN_DEBUG_MODE to isInDebugMode
                                         )
                                 ).build()

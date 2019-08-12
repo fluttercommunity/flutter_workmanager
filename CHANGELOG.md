@@ -1,3 +1,7 @@
+# 0.0.13
+* [‼️ BREAKING change]
+  You will need to clear the preferences or re-install the App if you had registered jobs already on Android.
+
 # 0.0.12
 
 * expose `setPluginRegistrantCallback` to the old rusty Java people 
