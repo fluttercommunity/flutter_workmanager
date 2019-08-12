@@ -12,12 +12,12 @@ object DebugHelper {
     private const val debugChannelId = "WorkmanagerDebugChannelId"
     private const val debugChannelName = "A helper channel to debug your background tasks."
 
-    fun postTaskCompleteNotification(ctx: Context, title: String, echoValue: String, result: ListenableWorker.Result) {
-        postNotification(ctx, "$title ${System.currentTimeMillis()}", "${result.javaClass.simpleName}: $echoValue")
+    fun postTaskCompleteNotification(ctx: Context, title: String, dartTask: String, result: ListenableWorker.Result) {
+        postNotification(ctx, "$title ${System.currentTimeMillis()}", "${result.javaClass.simpleName}: $dartTask")
     }
 
-    fun postTaskStarting(ctx: Context, echoValue: String, callbackHandle: Long, callbackInfo: FlutterCallbackInformation?, dartBundlePath: String?) {
-        postNotification(ctx, echoValue, "" +
+    fun postTaskStarting(ctx: Context, dartTask: String, callbackHandle: Long, callbackInfo: FlutterCallbackInformation?, dartBundlePath: String?) {
+        postNotification(ctx, dartTask, "" +
                 "callbackHandle: $callbackHandle;\n" +
                 "callBackName: ${callbackInfo?.callbackName};\n" +
                 "callbackClassName: ${callbackInfo?.callbackClassName};\n" +
