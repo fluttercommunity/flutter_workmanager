@@ -71,17 +71,17 @@ extension SwiftWorkmanagerPlugin {
             return false
         }
         
-        let flutterEngine = FlutterEngine(name: flutterThreadLabelPrefix, project: nil, allowHeadlessExecution: true)!
-        flutterEngine.run(withEntrypoint: flutterCallbackInformation.callbackName, libraryURI: flutterCallbackInformation.callbackLibraryPath)
+        var flutterEngine: FlutterEngine? = FlutterEngine(name: flutterThreadLabelPrefix, project: nil, allowHeadlessExecution: true)!
+        flutterEngine!.run(withEntrypoint: flutterCallbackInformation.callbackName, libraryURI: flutterCallbackInformation.callbackLibraryPath)
         
-        // Since we're now running a specific Flutter engine, no MethodChannel exists ; let's create one for WorkManager's BackgroundMethodChannel
-        let backgroundMethodChannel = FlutterMethodChannel(name: BackgroundMethodChannel.channelName, binaryMessenger: flutterEngine)
-        backgroundMethodChannel.setMethodCallHandler { (call, result) in
+//         Since we're now running a specific Flutter engine, no MethodChannel exists ; let's create one for WorkManager's BackgroundMethodChannel
+        var backgroundMethodChannel: FlutterMethodChannel? = FlutterMethodChannel(name: BackgroundMethodChannel.channelName, binaryMessenger: flutterEngine!)
+        backgroundMethodChannel?.setMethodCallHandler { (call, result) in
             switch call.method {
             case BackgroundMethodChannel.methods.backgroundChannelInitialized.rawValue:
                 result(true)    // Agree to Flutter's method invocation
                 
-                backgroundMethodChannel.invokeMethod(BackgroundMethodChannel.methods.iOSPerformFetch.rawValue, arguments: nil, result: { flutterResult in
+                backgroundMethodChannel?.invokeMethod(BackgroundMethodChannel.methods.iOSPerformFetch.rawValue, arguments: nil, result: { flutterResult in
                     let logPrefix = "[\(String(describing: self))] \(#function) -> UIBackgroundFetchResult"
                     switch flutterResult as! Bool {
                     case true:
@@ -96,6 +96,10 @@ extension SwiftWorkmanagerPlugin {
                 result(WMPError.unhandledMethod(call.method).asFlutterError)
                 completionHandler(UIBackgroundFetchResult.failed)
             }
+            
+            flutterEngine?.destroyContext()
+            backgroundMethodChannel = nil
+            flutterEngine = nil
         }
         
         return true
