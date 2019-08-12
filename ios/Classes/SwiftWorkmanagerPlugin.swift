@@ -63,13 +63,14 @@ extension SwiftWorkmanagerPlugin {
     
     override public func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) -> Bool {
         
-        guard let callbackHandle: Int64 = getStoredCallbackHandle() else {
-            logError("[\(String(describing: self))] Could not start the Flutter engine : no stored callback handle.")
+        guard let callbackHandle: Int64 = getStoredCallbackHandle(),
+              let flutterCallbackInformation = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)
+        else {
+            logError("[\(String(describing: self))] \(WMPError.workmanagerNotInitialized.message)")
             completionHandler(.failed)
             return false
         }
         
-        let flutterCallbackInformation = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)!
         let flutterEngine = FlutterEngine(name: flutterThreadLabelPrefix, project: nil, allowHeadlessExecution: true)!
         flutterEngine.run(withEntrypoint: flutterCallbackInformation.callbackName, libraryURI: flutterCallbackInformation.callbackLibraryPath)
         
