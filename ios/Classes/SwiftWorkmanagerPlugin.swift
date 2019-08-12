@@ -83,14 +83,11 @@ extension SwiftWorkmanagerPlugin {
                 
                 backgroundMethodChannel.invokeMethod(BackgroundMethodChannel.methods.iOSPerformFetch.rawValue, arguments: nil, result: { flutterResult in
                     let logPrefix = "[\(String(describing: self))] \(#function) -> UIBackgroundFetchResult"
-                    switch flutterResult as? Bool {
+                    switch flutterResult as! Bool {
                     case true:
                         logInfo("\(logPrefix).newData")
                         completionHandler(.newData)
                     case false:
-                        logInfo("\(logPrefix).noData")
-                        completionHandler(.noData)
-                    default:
                         logInfo("\(logPrefix).failed")
                         completionHandler(.failed)
                     }
