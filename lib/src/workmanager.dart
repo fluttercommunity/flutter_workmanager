@@ -95,7 +95,7 @@ class Workmanager {
   /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler]
   static Future<void> registerOneOffTask(
     final String uniqueName,
-      final String taskName, {
+    final String taskName, {
     final String tag,
     final ExistingWorkPolicy existingWorkPolicy,
     final Duration initialDelay = _noDuration,
@@ -125,7 +125,7 @@ class Workmanager {
   /// a [frequency] has a minimum of 15 min. Android will automatically change your frequency to 15 min if you have configured a lower frequency.
   static Future<void> registerPeriodicTask(
     final String uniqueName,
-      final String taskName, {
+    final String taskName, {
     final Duration frequency,
     final String tag,
     final ExistingWorkPolicy existingWorkPolicy,
@@ -169,7 +169,7 @@ class JsonMapperHelper {
   static Map<String, Object> toJson(
     final bool _isInDebugMode, {
     final String uniqueName,
-        final String taskName,
+    final String taskName,
     final Duration frequency,
     final String tag,
     final ExistingWorkPolicy existingWorkPolicy,
