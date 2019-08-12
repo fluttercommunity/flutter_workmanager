@@ -11,6 +11,7 @@ enum WMPError: Error {
     case methodChannelNotSet
     case unhandledMethod(_ methodName: String)
     case unexpectedMethodArguments(_ argumentsDescription: String)
+    case workmanagerNotInitialized
     
     var code: String {
         return "\(self) error"
@@ -24,6 +25,16 @@ enum WMPError: Error {
             return "Unhandled method \(methodName)"
         case .unexpectedMethodArguments(let argumentsDescription):
             return "Unexpected call arguments \(argumentsDescription)"
+        case .workmanagerNotInitialized:
+            return  """
+            You should ensure you have called the 'initialize' function first!
+            Example:
+            `Workmanager.initialize(
+              callbackDispatcher,
+             )`
+            
+            The `callbackDispatcher` is a top level function. See example in repository.
+            """
         }
     }
     

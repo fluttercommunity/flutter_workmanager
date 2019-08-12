@@ -136,6 +136,14 @@ class _MyAppState extends State<MyApp> {
                       frequency: Duration(hours: 1),
                     );
                   }),
+              PlatformEnabledButton(
+                platform: _Platform.android,
+                child: Text("Cancel All"),
+                onPressed: () async {
+                  await Workmanager.cancelAll();
+                  print('Cancel all tasks completed');
+                },
+              ),
             ],
           ),
         ),

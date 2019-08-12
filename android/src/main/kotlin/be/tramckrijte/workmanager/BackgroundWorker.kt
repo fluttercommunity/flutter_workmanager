@@ -19,22 +19,21 @@ import java.util.concurrent.CountDownLatch
  * It will block the background thread until a value of either true or false is received back from Flutter code.
  *
  */
-class EchoingWorker(private val ctx: Context,
-                    private val workerParams: WorkerParameters) : Worker(ctx, workerParams), MethodChannel.MethodCallHandler {
+class BackgroundWorker(private val ctx: Context,
+                       private val workerParams: WorkerParameters) : Worker(ctx, workerParams), MethodChannel.MethodCallHandler {
 
     private lateinit var backgroundChannel: MethodChannel
 
     companion object {
-        const val VALUE_TO_ECHO_KEY = "be.tramckrijte.workmanager.VALUE_TO_ECHO_KEY"
+        const val DART_TASK_KEY = "be.tramckrijte.workmanager.DART_TASK"
         const val IS_IN_DEBUG_MODE = "be.tramckrijte.workmanager.IS_IN_DEBUG_MODE"
 
         const val BACKGROUND_CHANNEL_NAME = "be.tramckrijte.workmanager/background_channel_work_manager"
         const val BACKGROUND_CHANNEL_INITIALIZED = "backgroundChannelInitialized"
-        const val ECHO_METHOD_NAME = "echoTaskRan"
     }
 
-    private val echoValue
-        get() = workerParams.inputData.getString(VALUE_TO_ECHO_KEY)!!
+    private val dartTask
+        get() = workerParams.inputData.getString(DART_TASK_KEY)!!
 
     private val isInDebug
         get() = workerParams.inputData.getBoolean(IS_IN_DEBUG_MODE, false)
@@ -51,7 +50,7 @@ class EchoingWorker(private val ctx: Context,
             val dartBundlePath = FlutterMain.findAppBundlePath(ctx)
 
             if (isInDebug) {
-                DebugHelper.postTaskStarting(ctx, echoValue, callbackHandle, callbackInfo, dartBundlePath)
+                DebugHelper.postTaskStarting(ctx, dartTask, callbackHandle, callbackInfo, dartBundlePath)
             }
 
             val backgroundFlutterView = FlutterNativeView(ctx, true)
@@ -75,7 +74,7 @@ class EchoingWorker(private val ctx: Context,
         latch.await()
 
         if (isInDebug) {
-            DebugHelper.postTaskCompleteNotification(ctx, javaClass.simpleName, echoValue, result)
+            DebugHelper.postTaskCompleteNotification(ctx, dartTask, result)
         }
 
         return result
@@ -85,8 +84,8 @@ class EchoingWorker(private val ctx: Context,
         when (call.method) {
             BACKGROUND_CHANNEL_INITIALIZED ->
                 backgroundChannel.invokeMethod(
-                        ECHO_METHOD_NAME,
-                        echoValue,
+                        "onResultSend",
+                        dartTask,
                         object : MethodChannel.Result {
                             override fun notImplemented() {
                                 latch.countDown()

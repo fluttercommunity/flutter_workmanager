@@ -87,7 +87,8 @@ class Workmanager {
   }) async {
     Workmanager._isInDebugMode = isInDebugMode;
     final callback = PluginUtilities.getCallbackHandle(callbackDispatcher);
-    await _foregroundChannel.invokeMethod('initialize', callback.toRawHandle());
+    final int callbackHandle = callback.toRawHandle();
+    await _foregroundChannel.invokeMethod('initialize', callbackHandle);
   }
 
   /// Schedule a one off task
@@ -95,7 +96,7 @@ class Workmanager {
   /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler]
   static Future<void> registerOneOffTask(
     final String uniqueName,
-      final String taskName, {
+    final String taskName, {
     final String tag,
     final ExistingWorkPolicy existingWorkPolicy,
     final Duration initialDelay = _noDuration,
@@ -122,9 +123,10 @@ class Workmanager {
   /// A [uniqueName] is required so only one task can be registered.
   /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler]
   /// a [frequency] is not required and will be defaulted to 15 minutes if not provided.
+  /// a [frequency] has a minimum of 15 min. Android will automatically change your frequency to 15 min if you have configured a lower frequency.
   static Future<void> registerPeriodicTask(
     final String uniqueName,
-      final String taskName, {
+    final String taskName, {
     final Duration frequency,
     final String tag,
     final ExistingWorkPolicy existingWorkPolicy,
@@ -160,7 +162,7 @@ class Workmanager {
 
   /// Cancels all tasks
   static Future<void> cancelAll() async =>
-      await _foregroundChannel.invokeMethod("cancelAll");
+      await _foregroundChannel.invokeMethod("cancelAllTasks");
 }
 
 /// A helper object to convert the selected options to JSON format. Mainly for testability.
@@ -168,7 +170,7 @@ class JsonMapperHelper {
   static Map<String, Object> toJson(
     final bool _isInDebugMode, {
     final String uniqueName,
-        final String taskName,
+    final String taskName,
     final Duration frequency,
     final String tag,
     final ExistingWorkPolicy existingWorkPolicy,
