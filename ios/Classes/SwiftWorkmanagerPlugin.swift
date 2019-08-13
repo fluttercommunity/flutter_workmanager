@@ -5,7 +5,7 @@ import os
 public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
 
     static let identifier = "be.tramckrijte.workmanager"
-    static let userDefaults = UserDefaults(suiteName: "\(SwiftWorkmanagerPlugin.identifier).userDefaults")!
+    
     
     private struct ForegroundMethodChannel {
         static let channelName = "\(SwiftWorkmanagerPlugin.identifier)/foreground_channel_work_manager"
@@ -51,9 +51,10 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
         
         switch (call.method, call.arguments as? [AnyHashable: Any]) {
         case (ForegroundMethodChannel.methods.initialize.name, let .some(arguments)):
-            let isInDebug = arguments[ForegroundMethodChannel.methods.initialize.arguments.isInDebugMode.rawValue] as! Bool // TODO: store and read later
-            let callbackHandle = arguments[ForegroundMethodChannel.methods.initialize.arguments.callbackHandle.rawValue] as! Int64
-            store(callbackHandle)
+            let isInDebug = arguments[ForegroundMethodChannel.methods.initialize.arguments.isInDebugMode.rawValue] as! Bool
+            let handle = arguments[ForegroundMethodChannel.methods.initialize.arguments.callbackHandle.rawValue] as! Int64
+            UserDefaultsHelper.storeCallbackHandle(handle)
+            UserDefaultsHelper.storeIsDebug(isInDebug)
             result(true)
         default:
             result(WMPError.unhandledMethod(call.method).asFlutterError)
@@ -70,7 +71,7 @@ extension SwiftWorkmanagerPlugin {
     
     override public func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) -> Bool {
         
-        guard let callbackHandle: Int64 = getStoredCallbackHandle(),
+        guard let callbackHandle = UserDefaultsHelper.getStoredCallbackHandle(),
               let flutterCallbackInformation = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)
         else {
             logError("[\(String(describing: self))] \(WMPError.workmanagerNotInitialized.message)")
@@ -120,24 +121,6 @@ extension SwiftWorkmanagerPlugin {
         }
         
         return true
-    }
-    
-}
-
-//MARK: - Storage
-
-private extension SwiftWorkmanagerPlugin {
-    
-    private var callbackHandleStorageKey: String {
-        return "\(SwiftWorkmanagerPlugin.identifier).callBackHandleStorageKey"
-    }
-    
-    func store(_ callbackHandle: Int64) {
-        SwiftWorkmanagerPlugin.userDefaults.set(callbackHandle, forKey: callbackHandleStorageKey)
-    }
-    
-    func getStoredCallbackHandle() -> Int64? {
-        return SwiftWorkmanagerPlugin.userDefaults.value(forKey: callbackHandleStorageKey) as? Int64
     }
     
 }

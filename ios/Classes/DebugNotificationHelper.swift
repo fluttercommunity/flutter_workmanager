@@ -34,13 +34,15 @@ struct DebugNotificationHelper {
         DebugNotificationHelper.scheduleNotification(identifier: identifier.uuidString, title: completedDate.formatted(), body: message)
     }
     
+    
+    // MARK: -  Private helper functions
+    
     private static func scheduleNotification(identifier: String, title: String, body: String) {
-        // TODO: check isDebug bool AND? if Release configuration isn't active
-        guard #available(iOS 10.0, *) else {
-            logInfo("\(logPrefix): Local debug notifications are only supported on iOS 10 and higher")
+        guard UserDefaultsHelper.getIsDebug(), #available(iOS 10.0, *) else {
+            logInfo("\(logPrefix) \(#function): plugin is not running in debug mode or on iOS 9 or lower")
             return
         }
-        
+
         DebugNotificationHelper.requestAuthorization()
         let notification = UNMutableNotificationContent()
         notification.title = title
@@ -52,8 +54,12 @@ struct DebugNotificationHelper {
         UNUserNotificationCenter.current().add(notificationRequest, withCompletionHandler: nil)
     }
     
-    @available(iOS 10.0, *)
     private static func requestAuthorization() {
+        guard UserDefaultsHelper.getIsDebug(), #available(iOS 10.0, *) else {
+            logInfo("\(logPrefix) \(#function): plugin is not running in debug mode or on iOS 9 or lower")
+            return
+        }
+        
         UNUserNotificationCenter.current().requestAuthorization(options: [.sound, .alert]) { (success, error) in
             let message =
             """

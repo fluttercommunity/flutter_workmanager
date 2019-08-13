@@ -35,7 +35,7 @@ void callbackDispatcher() {
         break;
     }
 
-    return Future.value(true);
+    return Future.delayed(Duration(seconds: 5), () => true);
   });
 }
 
