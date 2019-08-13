@@ -52,7 +52,13 @@ data class BackoffPolicyTaskConfig(val backoffPolicy: BackoffPolicy,
 }
 
 sealed class WorkManagerCall {
-    data class Initialize(val callbackDispatcherHandleKey: Long) : WorkManagerCall()
+    data class Initialize(val callbackDispatcherHandleKey: Long,
+                          val isInDebugMode: Boolean) : WorkManagerCall() {
+        companion object KEYS {
+            const val INITIALIZE_TASK_IS_IN_DEBUG_MODE_KEY = "isInDebugMode"
+            const val INITIALIZE_TASK_CALL_HANDLE_KEY = "callbackHandle"
+        }
+    }
 
     sealed class RegisterTask : WorkManagerCall() {
         abstract val isInDebugMode: Boolean
@@ -153,7 +159,12 @@ object Extractor {
 
     fun extractWorkManagerCallFromRawMethodName(call: MethodCall): WorkManagerCall =
             when (PossibleWorkManagerCall.fromRawMethodName(call.method)) {
-                Extractor.PossibleWorkManagerCall.INITIALIZE -> WorkManagerCall.Initialize(call.arguments() as Long)
+                Extractor.PossibleWorkManagerCall.INITIALIZE -> {
+                    WorkManagerCall.Initialize(
+                            call.argument<Long>(WorkManagerCall.Initialize.INITIALIZE_TASK_CALL_HANDLE_KEY)!!,
+                            call.argument<Boolean>(WorkManagerCall.Initialize.INITIALIZE_TASK_IS_IN_DEBUG_MODE_KEY)!!
+                    )
+                }
                 Extractor.PossibleWorkManagerCall.REGISTER_ONE_OFF_TASK -> {
                     WorkManagerCall.RegisterTask.OneOffTask(
                             isInDebugMode = call.argument<Boolean>(REGISTER_TASK_IS_IN_DEBUG_MODE_KEY)!!,
