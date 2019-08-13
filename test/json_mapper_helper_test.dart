@@ -5,17 +5,16 @@ import 'package:workmanager/src/workmanager.dart';
 void main() {
   group("invalid inputs", () {
     test("no unique name", () {
-      expect(() => JsonMapperHelper.toJson(true), throwsAssertionError);
+      expect(() => JsonMapperHelper.toRegisterMethodArgument(true), throwsAssertionError);
     });
 
     test("no value", () {
-      expect(() => JsonMapperHelper.toJson(true, uniqueName: "uniqueName"),
-          throwsAssertionError);
+      expect(() => JsonMapperHelper.toRegisterMethodArgument(true, uniqueName: "uniqueName"), throwsAssertionError);
     });
 
     test("initial delay was null", () {
       expect(
-        () => JsonMapperHelper.toJson(
+        () => JsonMapperHelper.toRegisterMethodArgument(
           true,
           uniqueName: "uniqueName",
           taskName: "taskName",
@@ -27,19 +26,14 @@ void main() {
 
     test("backoff policy was null", () {
       expect(
-          () => JsonMapperHelper.toJson(true,
-              uniqueName: "uniqueName",
-              taskName: "taskName",
-              initialDelay: Duration(seconds: 1),
-              backoffPolicyDelay: null),
-          throwsNoSuchMethodError);
+          () => JsonMapperHelper.toRegisterMethodArgument(true, uniqueName: "uniqueName", taskName: "taskName", initialDelay: Duration(seconds: 1), backoffPolicyDelay: null), throwsNoSuchMethodError);
     });
   });
 
   group("simple assertions", () {
     test("minimum required fields", () {
       expect(
-          JsonMapperHelper.toJson(
+          JsonMapperHelper.toRegisterMethodArgument(
             true,
             uniqueName: "uniqueName",
             taskName: "taskName",
@@ -66,7 +60,7 @@ void main() {
 
     test("All fields filled in", () {
       expect(
-          JsonMapperHelper.toJson(
+          JsonMapperHelper.toRegisterMethodArgument(
             true,
             uniqueName: "uniqueName",
             taskName: "taskName",
@@ -227,7 +221,7 @@ void main() {
     ].forEach((constraintTuple) {
       test("map to JSON", () {
         expect(
-          JsonMapperHelper.toJson(
+          JsonMapperHelper.toRegisterMethodArgument(
             true,
             uniqueName: "uniqueName",
             taskName: "taskName",
@@ -249,12 +243,8 @@ void main() {
     ].forEach((existingWorkPolicy) {
       test("for workpolicy ${existingWorkPolicy.first}", () {
         expect(
-          JsonMapperHelper.toJson(true,
-              uniqueName: "uniqueName",
-              taskName: "taskName",
-              initialDelay: Duration(seconds: 1),
-              backoffPolicyDelay: Duration(seconds: 1),
-              existingWorkPolicy: existingWorkPolicy.first),
+          JsonMapperHelper.toRegisterMethodArgument(true,
+              uniqueName: "uniqueName", taskName: "taskName", initialDelay: Duration(seconds: 1), backoffPolicyDelay: Duration(seconds: 1), existingWorkPolicy: existingWorkPolicy.first),
           {
             'isInDebugMode': true,
             'uniqueName': 'uniqueName',
@@ -281,12 +271,8 @@ void main() {
     ].forEach((backOffPolicy) {
       test("for workpolicy ${backOffPolicy.first}", () {
         expect(
-          JsonMapperHelper.toJson(true,
-              uniqueName: "uniqueName",
-              taskName: "taskName",
-              initialDelay: Duration(seconds: 1),
-              backoffPolicyDelay: Duration(seconds: 1),
-              backoffPolicy: backOffPolicy.first),
+          JsonMapperHelper.toRegisterMethodArgument(true,
+              uniqueName: "uniqueName", taskName: "taskName", initialDelay: Duration(seconds: 1), backoffPolicyDelay: Duration(seconds: 1), backoffPolicy: backOffPolicy.first),
           {
             'isInDebugMode': true,
             'uniqueName': 'uniqueName',

@@ -65,16 +65,13 @@ class Workmanager {
   static const String iOSBackgroundTask = "iOSPerformFetch";
   static bool _isInDebugMode = false;
 
-  static const MethodChannel _backgroundChannel = const MethodChannel(
-      "be.tramckrijte.workmanager/background_channel_work_manager");
-  static const MethodChannel _foregroundChannel = const MethodChannel(
-      "be.tramckrijte.workmanager/foreground_channel_work_manager");
+  static const MethodChannel _backgroundChannel = const MethodChannel("be.tramckrijte.workmanager/background_channel_work_manager");
+  static const MethodChannel _foregroundChannel = const MethodChannel("be.tramckrijte.workmanager/foreground_channel_work_manager");
 
   /// A helper function so you only need to implement a [BackgroundTaskHandler]
   static void executeTask(final BackgroundTaskHandler backgroundTask) {
     WidgetsFlutterBinding.ensureInitialized();
-    _backgroundChannel
-        .setMethodCallHandler((call) async => backgroundTask(call.arguments));
+    _backgroundChannel.setMethodCallHandler((call) async => backgroundTask(call.arguments));
     _backgroundChannel.invokeMethod("backgroundChannelInitialized");
   }
 
@@ -87,8 +84,13 @@ class Workmanager {
   }) async {
     Workmanager._isInDebugMode = isInDebugMode;
     final callback = PluginUtilities.getCallbackHandle(callbackDispatcher);
-    final int callbackHandle = callback.toRawHandle();
-    await _foregroundChannel.invokeMethod('initialize', callbackHandle);
+    final int handle = callback.toRawHandle();
+    await _foregroundChannel.invokeMethod(
+        'initialize',
+        JsonMapperHelper.toInitializeMethodArgument(
+          _isInDebugMode,
+          callbackHandle: handle,
+        ));
   }
 
   /// Schedule a one off task
@@ -106,7 +108,7 @@ class Workmanager {
   }) async =>
       await _foregroundChannel.invokeMethod(
         "registerOneOffTask",
-        JsonMapperHelper.toJson(
+        JsonMapperHelper.toRegisterMethodArgument(
           _isInDebugMode,
           uniqueName: uniqueName,
           taskName: taskName,
@@ -137,7 +139,7 @@ class Workmanager {
   }) async =>
       await _foregroundChannel.invokeMethod(
         "registerPeriodicTask",
-        JsonMapperHelper.toJson(
+        JsonMapperHelper.toRegisterMethodArgument(
           _isInDebugMode,
           uniqueName: uniqueName,
           taskName: taskName,
@@ -152,22 +154,18 @@ class Workmanager {
       );
 
   /// Cancels a task by its [uniqueName]
-  static Future<void> cancelByUniqueName(final String uniqueName) async =>
-      await _foregroundChannel
-          .invokeMethod("cancelTaskByUniqueName", {"uniqueName": uniqueName});
+  static Future<void> cancelByUniqueName(final String uniqueName) async => await _foregroundChannel.invokeMethod("cancelTaskByUniqueName", {"uniqueName": uniqueName});
 
   /// Cancels a task by its [tag]
-  static Future<void> cancelByTag(final String tag) async =>
-      await _foregroundChannel.invokeMethod("cancelTaskByTag", {"tag": tag});
+  static Future<void> cancelByTag(final String tag) async => await _foregroundChannel.invokeMethod("cancelTaskByTag", {"tag": tag});
 
   /// Cancels all tasks
-  static Future<void> cancelAll() async =>
-      await _foregroundChannel.invokeMethod("cancelAllTasks");
+  static Future<void> cancelAll() async => await _foregroundChannel.invokeMethod("cancelAllTasks");
 }
 
 /// A helper object to convert the selected options to JSON format. Mainly for testability.
 class JsonMapperHelper {
-  static Map<String, Object> toJson(
+  static Map<String, Object> toRegisterMethodArgument(
     final bool _isInDebugMode, {
     final String uniqueName,
     final String taskName,
@@ -199,6 +197,16 @@ class JsonMapperHelper {
     };
   }
 
-  static String _enumToStringToKotlinString(final dynamic enumeration) =>
-      enumeration?.toString()?.split('.')?.last;
+  static Map<String, Object> toInitializeMethodArgument(
+    final bool _isInDebugMode, {
+    final int callbackHandle,
+  }) {
+    assert(callbackHandle != null);
+    return {
+      "isInDebugMode": _isInDebugMode,
+      "callbackHandle": callbackHandle,
+    };
+  }
+
+  static String _enumToStringToKotlinString(final dynamic enumeration) => enumeration?.toString()?.split('.')?.last;
 }
