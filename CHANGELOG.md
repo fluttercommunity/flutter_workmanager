@@ -10,7 +10,6 @@
         * Elapsed time
         * Collapsing notifications
     * General Internal API renames to improve readability
-    * 
 * iOS
     * ⬆️ Separate UserDefaults for the plugin
     * 🐞 Memory leak resources cleanup
