@@ -3,7 +3,7 @@ import UIKit
 import os
 
 public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
-
+    
     static let identifier = "be.tramckrijte.workmanager"
     
     
@@ -19,15 +19,14 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
                 }
             }
         }
-    
+        
     }
     
     private struct BackgroundMethodChannel {
         static let channelName = "\(SwiftWorkmanagerPlugin.identifier)/background_channel_work_manager"
-        enum methods: String {
-            case backgroundChannelInitialized
-            case iOSPerformFetch
-        }
+        static let backgroundChannelInitializedMethod = "backgroundChannelInitialized"
+        static let iOSPerformFetchMethodName = "onResultSend"
+        static let iOSPerformFetchTaskName = "iOSPerformFetch"
     }
     
     private let flutterThreadLabelPrefix = "\(SwiftWorkmanagerPlugin.identifier).BackgroundFetch"
@@ -72,11 +71,11 @@ extension SwiftWorkmanagerPlugin {
     override public func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) -> Bool {
         
         guard let callbackHandle = UserDefaultsHelper.getStoredCallbackHandle(),
-              let flutterCallbackInformation = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)
-        else {
-            logError("[\(String(describing: self))] \(WMPError.workmanagerNotInitialized.message)")
-            completionHandler(.failed)
-            return false
+            let flutterCallbackInformation = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)
+            else {
+                logError("[\(String(describing: self))] \(WMPError.workmanagerNotInitialized.message)")
+                completionHandler(.failed)
+                return false
         }
         
         let fetchSessionStart = Date()
@@ -97,10 +96,11 @@ extension SwiftWorkmanagerPlugin {
         
         backgroundMethodChannel?.setMethodCallHandler { (call, result) in
             switch call.method {
-            case BackgroundMethodChannel.methods.backgroundChannelInitialized.rawValue:
+            case BackgroundMethodChannel.backgroundChannelInitializedMethod:
                 result(true)    // Agree to Flutter's method invocation
                 
-                backgroundMethodChannel?.invokeMethod(BackgroundMethodChannel.methods.iOSPerformFetch.rawValue, arguments: nil, result: { flutterResult in
+                let taskName = BackgroundMethodChannel.iOSPerformFetchTaskName
+                backgroundMethodChannel?.invokeMethod(BackgroundMethodChannel.iOSPerformFetchMethodName, arguments: taskName, result: { flutterResult in
                     cleanupFlutterResources()
                     let fetchSessionCompleted = Date()
                     let result: UIBackgroundFetchResult = flutterResult as! Bool ? .newData : .failed
