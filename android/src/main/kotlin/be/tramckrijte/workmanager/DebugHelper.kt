@@ -30,22 +30,32 @@ object DebugHelper {
 
     private fun mapMillisToSeconds(milliseconds: Long) = "${MILLISECONDS.toSeconds(milliseconds)} seconds."
 
-    fun postTaskCompleteNotification(ctx: Context, dartTask: String, fetchDuration: Long, result: ListenableWorker.Result) {
+    fun postTaskCompleteNotification(ctx: Context,
+                                     threadIdentifier: Int,
+                                     dartTask: String,
+                                     fetchDuration: Long,
+                                     result: ListenableWorker.Result) {
         postNotification(
                 ctx,
-                dartTask.hashCode(),
+                threadIdentifier,
                 "${ThumbnailGenerator.workEmoji} $currentTime",
                 """
                     Perform fetch completed:
+                    • dartTask: $dartTask
                     • Elapsed time: ${mapMillisToSeconds(fetchDuration)}
                     • Result: ${ThumbnailGenerator.mapResultToEmoji(result)} ${result.javaClass.simpleName}
                 """.trimIndent()
         )
     }
 
-    fun postTaskStarting(ctx: Context, dartTask: String, callbackHandle: Long, callbackInfo: FlutterCallbackInformation?, dartBundlePath: String?) {
+    fun postTaskStarting(ctx: Context,
+                         threadIdentifier: Int,
+                         dartTask: String,
+                         callbackHandle: Long,
+                         callbackInfo: FlutterCallbackInformation?,
+                         dartBundlePath: String?) {
         postNotification(ctx,
-                dartTask.hashCode(),
+                threadIdentifier,
                 "${ThumbnailGenerator.workEmoji} $currentTime",
                 """
                 Starting Dart/Flutter with following params:
