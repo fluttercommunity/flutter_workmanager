@@ -32,7 +32,7 @@ internal extension Date {
 }
 
 internal extension TimeInterval {
-    func formatted() -> String {
+    func formatToSeconds() -> String {
         return "\(String(format: "%.2f", self)) seconds"
     }
 }

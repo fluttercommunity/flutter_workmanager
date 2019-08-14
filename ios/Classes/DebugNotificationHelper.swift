@@ -29,7 +29,7 @@ struct DebugNotificationHelper {
         let message =
         """
         Perform fetch completed:
-         • Elapsed time: \(elapsedTime.formatted())
+         • Elapsed time: \(elapsedTime.formatToSeconds())
          • Result: UIBackgroundFetchResult.\(result)
         """
         DebugNotificationHelper.scheduleNotification(identifier: identifier.uuidString,

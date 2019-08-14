@@ -105,7 +105,7 @@ extension SwiftWorkmanagerPlugin {
                     let fetchSessionCompleted = Date()
                     let result: UIBackgroundFetchResult = flutterResult as! Bool ? .newData : .failed
                     let fetchDuration = fetchSessionCompleted.timeIntervalSince(fetchSessionStart)
-                    let message = "[\(String(describing: self))] \(#function) -> UIBackgroundFetchResult.\(result) (finished in \(fetchDuration.formatted()))"
+                    let message = "[\(String(describing: self))] \(#function) -> UIBackgroundFetchResult.\(result) (finished in \(fetchDuration.formatToSeconds()))"
                     logInfo(message)
                     DebugNotificationHelper.showCompletedFetchNotification(identifier: fetchSessionIdentifier,
                                                                            completedDate: fetchSessionCompleted,
