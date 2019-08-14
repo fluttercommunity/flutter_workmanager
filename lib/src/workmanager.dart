@@ -201,6 +201,7 @@ class JsonMapperHelper {
     final bool _isInDebugMode, {
     final int callbackHandle,
   }) {
+    assert(_isInDebugMode != null);
     assert(callbackHandle != null);
     return {
       "isInDebugMode": _isInDebugMode,
