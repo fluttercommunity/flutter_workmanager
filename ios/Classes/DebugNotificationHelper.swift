@@ -74,7 +74,6 @@ struct DebugNotificationHelper {
         }
     }
     
-    @available(iOS 10.0, *)
     private static func createNotificationRequest(identifier: String, threadIdentifier: String, title: String, body: String, icon: ThumbnailGenerator.ThumbnailIcon) -> UNNotificationRequest {
         let notification = UNMutableNotificationContent()
         notification.title = title

@@ -100,7 +100,8 @@ extension SwiftWorkmanagerPlugin {
             case BackgroundMethodChannel.methods.backgroundChannelInitialized.rawValue:
                 result(true)    // Agree to Flutter's method invocation
                 
-                backgroundMethodChannel?.invokeMethod(BackgroundMethodChannel.methods.iOSPerformFetch.rawValue, arguments: nil, result: { flutterResult in
+                let methodName = BackgroundMethodChannel.methods.iOSPerformFetch.rawValue
+                backgroundMethodChannel?.invokeMethod(methodName, arguments: methodName, result: { flutterResult in
                     cleanupFlutterResources()
                     let fetchSessionCompleted = Date()
                     let result: UIBackgroundFetchResult = flutterResult as! Bool ? .newData : .failed

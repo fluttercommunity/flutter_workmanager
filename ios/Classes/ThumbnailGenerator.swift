@@ -26,7 +26,6 @@ struct ThumbnailGenerator {
         }
     }
     
-    @available(iOS 10.0, *)
     static func createThumbnail(with icon: ThumbnailIcon) -> UNNotificationAttachment? {
         let name = "thumbnail"
         let thumbnailFrame = CGRect(x: 0, y: 0, width: 150, height: 150)
@@ -83,7 +82,7 @@ private extension UIImage {
         let directoryURL = directory.appendingPathComponent(SwiftWorkmanagerPlugin.identifier, isDirectory: true)
         let fileURL = directoryURL.appendingPathComponent("\(fileName).png")
         try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
-        guard let imageData = UIImagePNGRepresentation(self) else {
+        guard let imageData = self.pngData() else {
             throw error.cannotRepresentAsPNG(self)
         }
         try imageData.write(to: fileURL)
