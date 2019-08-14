@@ -18,6 +18,8 @@ import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TAS
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_TAG_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_UNIQUE_NAME_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.PeriodicTask.KEYS.PERIODIC_TASK_FREQUENCY_SECONDS_KEY
+import be.tramckrijte.workmanager.WorkManagerCall.Initialize.KEYS.INITIALIZE_TASK_CALL_HANDLE_KEY
+import be.tramckrijte.workmanager.WorkManagerCall.Initialize.KEYS.INITIALIZE_TASK_IS_IN_DEBUG_MODE_KEY
 import io.flutter.plugin.common.MethodCall
 import kotlin.math.max
 
@@ -161,8 +163,8 @@ object Extractor {
             when (PossibleWorkManagerCall.fromRawMethodName(call.method)) {
                 Extractor.PossibleWorkManagerCall.INITIALIZE -> {
                     WorkManagerCall.Initialize(
-                            call.argument<Long>(WorkManagerCall.Initialize.INITIALIZE_TASK_CALL_HANDLE_KEY)!!,
-                            call.argument<Boolean>(WorkManagerCall.Initialize.INITIALIZE_TASK_IS_IN_DEBUG_MODE_KEY)!!
+                            call.argument<Long>(INITIALIZE_TASK_CALL_HANDLE_KEY)!!,
+                            call.argument<Boolean>(INITIALIZE_TASK_IS_IN_DEBUG_MODE_KEY)!!
                     )
                 }
                 Extractor.PossibleWorkManagerCall.REGISTER_ONE_OFF_TASK -> {
