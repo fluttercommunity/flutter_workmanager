@@ -14,7 +14,6 @@
     * ⬆️ Separate UserDefaults for the plugin
     * 🐞 Memory leak resources cleanup
     * 🐞 Result mapping Dart -> Swift was wrong
-    *
     * Better debug notification support:
         * Emoji's to quickly see if a task ran successful
         * Elapsed time
