@@ -87,8 +87,13 @@ class Workmanager {
   }) async {
     Workmanager._isInDebugMode = isInDebugMode;
     final callback = PluginUtilities.getCallbackHandle(callbackDispatcher);
-    final int callbackHandle = callback.toRawHandle();
-    await _foregroundChannel.invokeMethod('initialize', callbackHandle);
+    final int handle = callback.toRawHandle();
+    await _foregroundChannel.invokeMethod(
+        'initialize',
+        JsonMapperHelper.toInitializeMethodArgument(
+          isInDebugMode: _isInDebugMode,
+          callbackHandle: handle,
+        ));
   }
 
   /// Schedule a one off task
@@ -106,8 +111,8 @@ class Workmanager {
   }) async =>
       await _foregroundChannel.invokeMethod(
         "registerOneOffTask",
-        JsonMapperHelper.toJson(
-          _isInDebugMode,
+        JsonMapperHelper.toRegisterMethodArgument(
+          isInDebugMode: _isInDebugMode,
           uniqueName: uniqueName,
           taskName: taskName,
           tag: tag,
@@ -137,8 +142,8 @@ class Workmanager {
   }) async =>
       await _foregroundChannel.invokeMethod(
         "registerPeriodicTask",
-        JsonMapperHelper.toJson(
-          _isInDebugMode,
+        JsonMapperHelper.toRegisterMethodArgument(
+          isInDebugMode: _isInDebugMode,
           uniqueName: uniqueName,
           taskName: taskName,
           frequency: frequency,
@@ -153,12 +158,17 @@ class Workmanager {
 
   /// Cancels a task by its [uniqueName]
   static Future<void> cancelByUniqueName(final String uniqueName) async =>
-      await _foregroundChannel
-          .invokeMethod("cancelTaskByUniqueName", {"uniqueName": uniqueName});
+      await _foregroundChannel.invokeMethod(
+        "cancelTaskByUniqueName",
+        {"uniqueName": uniqueName},
+      );
 
   /// Cancels a task by its [tag]
   static Future<void> cancelByTag(final String tag) async =>
-      await _foregroundChannel.invokeMethod("cancelTaskByTag", {"tag": tag});
+      await _foregroundChannel.invokeMethod(
+        "cancelTaskByTag",
+        {"tag": tag},
+      );
 
   /// Cancels all tasks
   static Future<void> cancelAll() async =>
@@ -167,8 +177,8 @@ class Workmanager {
 
 /// A helper object to convert the selected options to JSON format. Mainly for testability.
 class JsonMapperHelper {
-  static Map<String, Object> toJson(
-    final bool _isInDebugMode, {
+  static Map<String, Object> toRegisterMethodArgument({
+    final bool isInDebugMode,
     final String uniqueName,
     final String taskName,
     final Duration frequency,
@@ -182,7 +192,7 @@ class JsonMapperHelper {
     assert(uniqueName != null);
     assert(taskName != null);
     return {
-      "isInDebugMode": _isInDebugMode,
+      "isInDebugMode": isInDebugMode,
       "uniqueName": uniqueName,
       "taskName": taskName,
       "tag": tag,
@@ -196,6 +206,17 @@ class JsonMapperHelper {
       "requiresStorageNotLow": constraints?.requiresStorageNotLow,
       "backoffPolicyType": _enumToStringToKotlinString(backoffPolicy),
       "backoffDelayInMilliseconds": backoffPolicyDelay.inMilliseconds,
+    };
+  }
+
+  static Map<String, Object> toInitializeMethodArgument({
+    final bool isInDebugMode,
+    final int callbackHandle,
+  }) {
+    assert(callbackHandle != null);
+    return {
+      "isInDebugMode": isInDebugMode,
+      "callbackHandle": callbackHandle,
     };
   }
 

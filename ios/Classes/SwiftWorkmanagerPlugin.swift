@@ -3,28 +3,34 @@ import UIKit
 import os
 
 public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
+
+    static let identifier = "be.tramckrijte.workmanager"
     
-    private struct Plugin {
-        static let identifier = "be.tramckrijte.workmanager"
-        static let userDefaults = UserDefaults(suiteName: "\(Plugin.identifier).userDefaults")!
-    }
     
     private struct ForegroundMethodChannel {
-        static let channelName = "\(Plugin.identifier)/foreground_channel_work_manager"
-        enum methods: String {
-            case initialize
+        static let channelName = "\(SwiftWorkmanagerPlugin.identifier)/foreground_channel_work_manager"
+        
+        struct methods {
+            struct initialize {
+                static let name = "\(initialize.self)"
+                enum arguments: String {
+                    case isInDebugMode
+                    case callbackHandle
+                }
+            }
         }
+    
     }
     
     private struct BackgroundMethodChannel {
-        static let channelName = "\(Plugin.identifier)/background_channel_work_manager"
+        static let channelName = "\(SwiftWorkmanagerPlugin.identifier)/background_channel_work_manager"
         enum methods: String {
             case backgroundChannelInitialized
             case iOSPerformFetch
         }
     }
     
-    private let flutterThreadLabelPrefix = "\(Plugin.identifier).BackgroundFetch"
+    private let flutterThreadLabelPrefix = "\(SwiftWorkmanagerPlugin.identifier).BackgroundFetch"
     
 }
 
@@ -43,10 +49,12 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         
-        switch call.method {
-        case ForegroundMethodChannel.methods.initialize.rawValue:
-            let callbackHandle = call.arguments as! Int64
-            store(callbackHandle)
+        switch (call.method, call.arguments as? [AnyHashable: Any]) {
+        case (ForegroundMethodChannel.methods.initialize.name, let .some(arguments)):
+            let isInDebug = arguments[ForegroundMethodChannel.methods.initialize.arguments.isInDebugMode.rawValue] as! Bool
+            let handle = arguments[ForegroundMethodChannel.methods.initialize.arguments.callbackHandle.rawValue] as! Int64
+            UserDefaultsHelper.storeCallbackHandle(handle)
+            UserDefaultsHelper.storeIsDebug(isInDebug)
             result(true)
         default:
             result(WMPError.unhandledMethod(call.method).asFlutterError)
@@ -63,7 +71,7 @@ extension SwiftWorkmanagerPlugin {
     
     override public func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) -> Bool {
         
-        guard let callbackHandle: Int64 = getStoredCallbackHandle(),
+        guard let callbackHandle = UserDefaultsHelper.getStoredCallbackHandle(),
               let flutterCallbackInformation = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)
         else {
             logError("[\(String(describing: self))] \(WMPError.workmanagerNotInitialized.message)")
@@ -71,57 +79,48 @@ extension SwiftWorkmanagerPlugin {
             return false
         }
         
-        var flutterEngine: FlutterEngine? = FlutterEngine(name: flutterThreadLabelPrefix, project: nil, allowHeadlessExecution: true)!
+        let fetchSessionStart = Date()
+        let fetchSessionIdentifier = UUID()
+        DebugNotificationHelper.showStartFetchNotification(identifier: fetchSessionIdentifier,
+                                                           startDate: fetchSessionStart,
+                                                           callBackHandle: callbackHandle,
+                                                           callbackInfo: flutterCallbackInformation)
+        var flutterEngine: FlutterEngine? = FlutterEngine(name: flutterThreadLabelPrefix, project: nil, allowHeadlessExecution: true)
         flutterEngine!.run(withEntrypoint: flutterCallbackInformation.callbackName, libraryURI: flutterCallbackInformation.callbackLibraryPath)
-        
-//         Since we're now running a specific Flutter engine, no MethodChannel exists ; let's create one for WorkManager's BackgroundMethodChannel
         var backgroundMethodChannel: FlutterMethodChannel? = FlutterMethodChannel(name: BackgroundMethodChannel.channelName, binaryMessenger: flutterEngine!)
+        
+        func cleanupFlutterResources() {
+            flutterEngine?.destroyContext()
+            backgroundMethodChannel = nil
+            flutterEngine = nil
+        }
+        
         backgroundMethodChannel?.setMethodCallHandler { (call, result) in
             switch call.method {
             case BackgroundMethodChannel.methods.backgroundChannelInitialized.rawValue:
                 result(true)    // Agree to Flutter's method invocation
                 
                 backgroundMethodChannel?.invokeMethod(BackgroundMethodChannel.methods.iOSPerformFetch.rawValue, arguments: nil, result: { flutterResult in
-                    let logPrefix = "[\(String(describing: self))] \(#function) -> UIBackgroundFetchResult"
-                    switch flutterResult as! Bool {
-                    case true:
-                        logInfo("\(logPrefix).newData")
-                        completionHandler(.newData)
-                    case false:
-                        logInfo("\(logPrefix).failed")
-                        completionHandler(.failed)
-                    }
+                    cleanupFlutterResources()
+                    let fetchSessionCompleted = Date()
+                    let result: UIBackgroundFetchResult = flutterResult as! Bool ? .newData : .failed
+                    let fetchDuration = fetchSessionCompleted.timeIntervalSince(fetchSessionStart)
+                    let message = "[\(String(describing: self))] \(#function) -> UIBackgroundFetchResult.\(result) (finished in \(fetchDuration.formatToSeconds()))"
+                    logInfo(message)
+                    DebugNotificationHelper.showCompletedFetchNotification(identifier: fetchSessionIdentifier,
+                                                                           completedDate: fetchSessionCompleted,
+                                                                           result: result,
+                                                                           elapsedTime: fetchDuration)
+                    completionHandler(result)
                 })
             default:
                 result(WMPError.unhandledMethod(call.method).asFlutterError)
+                cleanupFlutterResources()
                 completionHandler(UIBackgroundFetchResult.failed)
             }
-            
-            flutterEngine?.destroyContext()
-            backgroundMethodChannel = nil
-            flutterEngine = nil
         }
         
         return true
-    }
-    
-}
-
-//MARK: - Storage
-
-private extension SwiftWorkmanagerPlugin {
-    
-    private var callbackHandleStorageKey: String {
-        return "\(Plugin.identifier).callBackHandleStorageKey"
-    }
-    
-    
-    func store(_ callbackHandle: Int64) {
-        Plugin.userDefaults.set(callbackHandle, forKey: callbackHandleStorageKey)
-    }
-    
-    func getStoredCallbackHandle() -> Int64? {
-        return Plugin.userDefaults.value(forKey: callbackHandleStorageKey) as? Int64
     }
     
 }

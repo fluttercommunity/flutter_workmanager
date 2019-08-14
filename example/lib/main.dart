@@ -49,14 +49,17 @@ enum _Platform { android, ios }
 class PlatformEnabledButton extends RaisedButton {
   final _Platform platform;
 
-  PlatformEnabledButton({this.platform, @required Widget child, @required VoidCallback onPressed})
-      : assert(child != null, onPressed != null),
+  PlatformEnabledButton({
+    this.platform,
+    @required Widget child,
+    @required VoidCallback onPressed,
+  })  : assert(child != null, onPressed != null),
         super(
-          child: child,
-          onPressed: (Platform.isAndroid && platform == _Platform.android ||
-              Platform.isIOS && platform == _Platform.ios)
-              ? onPressed
-              : null);
+            child: child,
+            onPressed: (Platform.isAndroid && platform == _Platform.android ||
+                    Platform.isIOS && platform == _Platform.ios)
+                ? onPressed
+                : null);
 }
 
 class _MyAppState extends State<MyApp> {

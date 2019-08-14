@@ -4,6 +4,8 @@ import android.os.Build
 import androidx.work.*
 import be.tramckrijte.workmanager.WorkManagerCall.CancelTask.ByTag.KEYS.UNREGISTER_TASK_TAG_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.CancelTask.ByUniqueName.KEYS.UNREGISTER_TASK_UNIQUE_NAME_KEY
+import be.tramckrijte.workmanager.WorkManagerCall.Initialize.KEYS.INITIALIZE_TASK_CALL_HANDLE_KEY
+import be.tramckrijte.workmanager.WorkManagerCall.Initialize.KEYS.INITIALIZE_TASK_IS_IN_DEBUG_MODE_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_BACK_OFF_POLICY_DELAY_MILLIS_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_BACK_OFF_POLICY_TYPE_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_CONSTRAINTS_BATTERY_NOT_LOW_KEY
@@ -52,7 +54,13 @@ data class BackoffPolicyTaskConfig(val backoffPolicy: BackoffPolicy,
 }
 
 sealed class WorkManagerCall {
-    data class Initialize(val callbackDispatcherHandleKey: Long) : WorkManagerCall()
+    data class Initialize(val callbackDispatcherHandleKey: Long,
+                          val isInDebugMode: Boolean) : WorkManagerCall() {
+        companion object KEYS {
+            const val INITIALIZE_TASK_IS_IN_DEBUG_MODE_KEY = "isInDebugMode"
+            const val INITIALIZE_TASK_CALL_HANDLE_KEY = "callbackHandle"
+        }
+    }
 
     sealed class RegisterTask : WorkManagerCall() {
         abstract val isInDebugMode: Boolean
@@ -153,7 +161,12 @@ object Extractor {
 
     fun extractWorkManagerCallFromRawMethodName(call: MethodCall): WorkManagerCall =
             when (PossibleWorkManagerCall.fromRawMethodName(call.method)) {
-                Extractor.PossibleWorkManagerCall.INITIALIZE -> WorkManagerCall.Initialize(call.arguments() as Long)
+                Extractor.PossibleWorkManagerCall.INITIALIZE -> {
+                    WorkManagerCall.Initialize(
+                            call.argument<Long>(INITIALIZE_TASK_CALL_HANDLE_KEY)!!,
+                            call.argument<Boolean>(INITIALIZE_TASK_IS_IN_DEBUG_MODE_KEY)!!
+                    )
+                }
                 Extractor.PossibleWorkManagerCall.REGISTER_ONE_OFF_TASK -> {
                     WorkManagerCall.RegisterTask.OneOffTask(
                             isInDebugMode = call.argument<Boolean>(REGISTER_TASK_IS_IN_DEBUG_MODE_KEY)!!,
