@@ -62,4 +62,15 @@ You will then need to register this `Application` in the `AndroidManifest.xml`.
 </manifest>
 ```
 
-> 📝 Note: if you enable the `Workmanager.initialize(callbackDispatcher, isInDebugMode: true)` it will post a notification when the background task ran.  
+## Debug Mode
+
+Debugging a background task can be difficult, Android decides when is the best time to run.  
+There is no guaranteed way to enforce a run of a job even in debug mode.  
+
+However to facilitate debugging, the plugin provides an `isInDebugMode` flag when initializing the plugin: `Workmanager.initialize(callbackDispatcher, isInDebugMode: true)`  
+
+Once this flag is enabled you will receive a notification whenever a background task was triggered.  
+This way you can keep track whether that task ran successfully or not.  
+
+![example of android debug notification](.art/android_debug_notification.gif)
+  
