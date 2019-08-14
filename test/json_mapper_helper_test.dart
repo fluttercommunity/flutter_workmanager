@@ -13,7 +13,7 @@ void main() {
     });
 
     test("all arguments given", () {
-      expect(() => JsonMapperHelper.toInitializeMethodArgument(false, callbackHandle: 9001), {"isInDebugMode": false, "callbackHandle": 9001});
+      expect(JsonMapperHelper.toInitializeMethodArgument(false, callbackHandle: 9001), {'isInDebugMode': false, 'callbackHandle': 9001});
     });
   });
 
