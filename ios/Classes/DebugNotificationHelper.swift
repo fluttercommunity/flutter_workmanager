@@ -46,37 +46,47 @@ struct DebugNotificationHelper {
             logInfo("\(logPrefix) \(#function): plugin is not running in debug mode or on iOS 9 or lower")
             return
         }
-
-        DebugNotificationHelper.requestAuthorization()
+        
+        func scheduleLocalNotification() {
+            DispatchQueue.main.async {
+                let notificationRequest = createNotificationRequest(identifier: identifier, threadIdentifier: SwiftWorkmanagerPlugin.identifier, title: title, body: body, icon: icon)
+                UNUserNotificationCenter.current().add(notificationRequest, withCompletionHandler: nil)
+            }
+        }
+        
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            
+            switch settings.authorizationStatus {
+            case .authorized, .provisional:
+                scheduleLocalNotification()
+            case .notDetermined:
+                UNUserNotificationCenter.current().requestAuthorization(options: [.sound, .alert]) { (success, error) in
+                    guard success && (error == nil) else {
+                        logInfo("\(logPrefix) \(#function): plugin is running in debug mode but can't schedule local notifications because is not authorized")
+                        return
+                    }
+                    scheduleLocalNotification()
+                }
+            case .denied:
+                logInfo("\(logPrefix) \(#function): plugin is running in debug mode but can't schedule local notifications because is not authorized")
+                
+            }
+        }
+    }
+    
+    @available(iOS 10.0, *)
+    private static func createNotificationRequest(identifier: String, threadIdentifier: String, title: String, body: String, icon: ThumbnailGenerator.ThumbnailIcon) -> UNNotificationRequest {
         let notification = UNMutableNotificationContent()
         notification.title = title
         notification.body = body
-        notification.threadIdentifier = SwiftWorkmanagerPlugin.identifier
+        notification.threadIdentifier = threadIdentifier
         if let thumbnail = ThumbnailGenerator.createThumbnail(with: icon) {
             notification.attachments = [thumbnail]
         }
         let immediateFutureTrigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
         let notificationRequest = UNNotificationRequest(identifier: identifier, content: notification, trigger: immediateFutureTrigger)
         
-        UNUserNotificationCenter.current().add(notificationRequest, withCompletionHandler: nil)
-    }
-    
-    private static func requestAuthorization() {
-        guard UserDefaultsHelper.getIsDebug(), #available(iOS 10.0, *) else {
-            logInfo("\(logPrefix) \(#function): plugin is not running in debug mode or on iOS 9 or lower")
-            return
-        }
-        
-        UNUserNotificationCenter.current().requestAuthorization(options: [.sound, .alert]) { (success, error) in
-            let message =
-            """
-            "\(logPrefix): \(#function)
-             • Success: \(success)"
-             • Error: \(error?.localizedDescription ?? "nil")
-            """
-            
-            logInfo(message)
-        }
+        return notificationRequest
     }
     
     private static var logPrefix: String {
