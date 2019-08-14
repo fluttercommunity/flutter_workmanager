@@ -37,8 +37,6 @@ We don't have any control on how often iOS will allow our app to fetch data in t
 The `background fetch` event can however be simulated by running
 `Xcode's Debug` > `Simulate Background Fetch`  
 
-> 📝 Note: this feature is currently broken in Xcode 10.x.
-
 In order to know when `Background Fetch` was triggered you should add the `Workmanager.iOSBackgroundTask` case inside your `callbackDispatcher` function.  
 
 ```
@@ -53,3 +51,11 @@ void callbackDispatcher() {
     return Future.value(true);
   });
 }
+
+```
+
+The plugin provides an `isInDebugMode` flag when initializing the plugin: `Workmanager.initialize(callbackDispatcher, isInDebugMode: true)`  
+
+Once this flag is enabled you will receive a notification whenever a background fetch was triggered.  This way you can keep track whether that task ran successfully or not.
+
+![example of iOS debug notification](.art/ios_debug_notifications.gif)
