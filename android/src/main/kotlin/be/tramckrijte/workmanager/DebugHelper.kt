@@ -7,31 +7,66 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.work.ListenableWorker
 import io.flutter.view.FlutterCallbackInformation
-import java.text.SimpleDateFormat
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+import java.text.DateFormat
 import java.util.*
+import java.util.concurrent.TimeUnit.MILLISECONDS
+
+object ThumbnailGenerator {
+    fun mapResultToEmoji(result: ListenableWorker.Result): String =
+            when (result) {
+                is ListenableWorker.Result.Success -> "\uD83C\uDF89"
+                else -> "\uD83D\uDD25"
+            }
+
+    val workEmoji get() = listOf("\uD83D\uDC77\u200D♀️", "\uD83D\uDC77\u200D♂️").random()
+}
 
 object DebugHelper {
     private const val debugChannelId = "WorkmanagerDebugChannelId"
     private const val debugChannelName = "A helper channel to debug your background tasks."
-    private val debugDateFormatter = SimpleDateFormat("dd-MM-yyyy HH:mm:ss.ZZZZ")
+    private val debugDateFormatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM)
 
     private val currentTime get() = debugDateFormatter.format(Date())
 
-    fun postTaskCompleteNotification(ctx: Context, dartTask: String, result: ListenableWorker.Result) {
-        postNotification(ctx, dartTask.hashCode(), currentTime, "Your work for $dartTask returned result: ${result.javaClass.simpleName}")
+    private fun mapMillisToSeconds(milliseconds: Long) = "${MILLISECONDS.toSeconds(milliseconds)} seconds."
+
+    fun postTaskCompleteNotification(ctx: Context,
+                                     threadIdentifier: Int,
+                                     dartTask: String,
+                                     fetchDuration: Long,
+                                     result: ListenableWorker.Result) {
+        postNotification(
+                ctx,
+                threadIdentifier,
+                "${ThumbnailGenerator.workEmoji} $currentTime",
+                """
+                    Perform fetch completed:
+                    • dartTask: $dartTask
+                    • Elapsed time: ${mapMillisToSeconds(fetchDuration)}
+                    • Result: ${ThumbnailGenerator.mapResultToEmoji(result)} ${result.javaClass.simpleName}
+                """.trimIndent()
+        )
     }
 
-    fun postTaskStarting(ctx: Context, dartTask: String, callbackHandle: Long, callbackInfo: FlutterCallbackInformation?, dartBundlePath: String?) {
-        postNotification(ctx, dartTask.hashCode(), currentTime, "" +
-                "Trying to start Dart/Flutter with following params: \n" +
-                "dartTask: $dartTask;\n" +
-                "callbackHandle: $callbackHandle;\n" +
-                "callBackName: ${callbackInfo?.callbackName};\n" +
-                "callbackClassName: ${callbackInfo?.callbackClassName};\n" +
-                "callbackLibraryPath: ${callbackInfo?.callbackLibraryPath};\n" +
-                "dartBundlePath: $dartBundlePath;"
+    fun postTaskStarting(ctx: Context,
+                         threadIdentifier: Int,
+                         dartTask: String,
+                         callbackHandle: Long,
+                         callbackInfo: FlutterCallbackInformation?,
+                         dartBundlePath: String?) {
+        postNotification(ctx,
+                threadIdentifier,
+                "${ThumbnailGenerator.workEmoji} $currentTime",
+                """
+                Starting Dart/Flutter with following params:
+                • dartTask: $dartTask
+                • callbackHandle: $callbackHandle 
+                • callBackName: ${callbackInfo?.callbackName ?: "not found"}
+                • callbackClassName: ${callbackInfo?.callbackClassName ?: "not found"}
+                • callbackLibraryPath: ${callbackInfo?.callbackLibraryPath ?: "not found"}
+                • dartBundlePath: $dartBundlePath"
+                """.trimIndent()
+
         )
     }
 
