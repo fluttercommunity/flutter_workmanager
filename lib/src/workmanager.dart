@@ -192,7 +192,7 @@ class JsonMapperHelper {
     assert(uniqueName != null);
     assert(taskName != null);
     return {
-      "isInDebugMode": isInDebugMode,
+      "isInDebugMode": isInDebugMode ?? false,
       "uniqueName": uniqueName,
       "taskName": taskName,
       "tag": tag,
@@ -215,7 +215,7 @@ class JsonMapperHelper {
   }) {
     assert(callbackHandle != null);
     return {
-      "isInDebugMode": isInDebugMode,
+      "isInDebugMode": isInDebugMode ?? false,
       "callbackHandle": callbackHandle,
     };
   }

@@ -19,8 +19,8 @@ void main() {
     test("all arguments given", () {
       expect(
           JsonMapperHelper.toInitializeMethodArgument(
-              isInDebugMode: false, callbackHandle: 9001),
-          {'isInDebugMode': false, 'callbackHandle': 9001});
+              isInDebugMode: true, callbackHandle: 9001),
+          {'isInDebugMode': true, 'callbackHandle': 9001});
     });
   });
 
