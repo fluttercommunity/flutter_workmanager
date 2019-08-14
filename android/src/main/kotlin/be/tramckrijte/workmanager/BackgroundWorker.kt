@@ -11,7 +11,9 @@ import io.flutter.view.FlutterCallbackInformation
 import io.flutter.view.FlutterMain
 import io.flutter.view.FlutterNativeView
 import io.flutter.view.FlutterRunArguments
+import java.util.*
 import java.util.concurrent.CountDownLatch
+import kotlin.system.measureTimeMillis
 
 /***
  * A simple worker that will post your input back to your Flutter application.
@@ -39,6 +41,7 @@ class BackgroundWorker(private val ctx: Context,
         get() = workerParams.inputData.getBoolean(IS_IN_DEBUG_MODE, false)
 
     private val latch = CountDownLatch(1)
+    private val randomThreadIdentifier = Random().nextInt()
     var result: Result = Result.retry()
 
     override fun doWork(): Result {
@@ -50,7 +53,7 @@ class BackgroundWorker(private val ctx: Context,
             val dartBundlePath = FlutterMain.findAppBundlePath(ctx)
 
             if (isInDebug) {
-                DebugHelper.postTaskStarting(ctx, dartTask, callbackHandle, callbackInfo, dartBundlePath)
+                DebugHelper.postTaskStarting(ctx, randomThreadIdentifier, dartTask, callbackHandle, callbackInfo, dartBundlePath)
             }
 
             val backgroundFlutterView = FlutterNativeView(ctx, true)
@@ -71,10 +74,12 @@ class BackgroundWorker(private val ctx: Context,
             backgroundChannel.setMethodCallHandler(this)
         }
 
-        latch.await()
+        val fetchDuration = measureTimeMillis {
+            latch.await()
+        }
 
         if (isInDebug) {
-            DebugHelper.postTaskCompleteNotification(ctx, dartTask, result)
+            DebugHelper.postTaskCompleteNotification(ctx, randomThreadIdentifier, dartTask, fetchDuration, result)
         }
 
         return result
