@@ -12,6 +12,7 @@ import io.flutter.view.FlutterMain
 import io.flutter.view.FlutterNativeView
 import io.flutter.view.FlutterRunArguments
 import java.util.concurrent.CountDownLatch
+import kotlin.system.measureTimeMillis
 
 /***
  * A simple worker that will post your input back to your Flutter application.
@@ -71,10 +72,12 @@ class BackgroundWorker(private val ctx: Context,
             backgroundChannel.setMethodCallHandler(this)
         }
 
-        latch.await()
+        val fetchDuration = measureTimeMillis {
+            latch.await()
+        }
 
         if (isInDebug) {
-            DebugHelper.postTaskCompleteNotification(ctx, dartTask, result)
+            DebugHelper.postTaskCompleteNotification(ctx, dartTask, fetchDuration, result)
         }
 
         return result
