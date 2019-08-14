@@ -4,6 +4,8 @@ import android.os.Build
 import androidx.work.*
 import be.tramckrijte.workmanager.WorkManagerCall.CancelTask.ByTag.KEYS.UNREGISTER_TASK_TAG_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.CancelTask.ByUniqueName.KEYS.UNREGISTER_TASK_UNIQUE_NAME_KEY
+import be.tramckrijte.workmanager.WorkManagerCall.Initialize.KEYS.INITIALIZE_TASK_CALL_HANDLE_KEY
+import be.tramckrijte.workmanager.WorkManagerCall.Initialize.KEYS.INITIALIZE_TASK_IS_IN_DEBUG_MODE_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_BACK_OFF_POLICY_DELAY_MILLIS_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_BACK_OFF_POLICY_TYPE_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_CONSTRAINTS_BATTERY_NOT_LOW_KEY
@@ -18,8 +20,6 @@ import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TAS
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_TAG_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_UNIQUE_NAME_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.PeriodicTask.KEYS.PERIODIC_TASK_FREQUENCY_SECONDS_KEY
-import be.tramckrijte.workmanager.WorkManagerCall.Initialize.KEYS.INITIALIZE_TASK_CALL_HANDLE_KEY
-import be.tramckrijte.workmanager.WorkManagerCall.Initialize.KEYS.INITIALIZE_TASK_IS_IN_DEBUG_MODE_KEY
 import io.flutter.plugin.common.MethodCall
 import kotlin.math.max
 
