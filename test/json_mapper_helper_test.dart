@@ -11,11 +11,6 @@ void main() {
           throwsAssertionError);
     });
 
-    test("no isInDebugMode flag", () {
-      expect(JsonMapperHelper.toInitializeMethodArgument(callbackHandle: 9001),
-          {'isInDebugMode': false, 'callbackHandle': 9001});
-    });
-
     test("all arguments given", () {
       expect(
           JsonMapperHelper.toInitializeMethodArgument(
