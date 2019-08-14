@@ -1,10 +1,27 @@
 # 0.0.13
 * [‼️ BREAKING change]
   You will need to clear the preferences or re-install the App if you had registered jobs already on Android.
+* Android:
+    * Thanks to [@vanlooverenkoen](https://github.com/vanlooverenkoen) 
+        * 🐞 cancelling all task would have failed before this version
+        * 📝 Update documentation to be a bit more clear about the minimum frequency a periodic can be scheduled
+    * Better debug notification support:
+        * Emoji's to quickly see if a task ran successful
+        * Elapsed time
+        * Collapsing notifications
+    * General Internal API renames to improve readability
+* iOS
+    * ⬆️ Separate UserDefaults for the plugin
+    * 🐞 Memory leak resources cleanup
+    * 🐞 Result mapping Dart -> Swift was wrong
+    * Better debug notification support:
+        * Emoji's to quickly see if a task ran successful
+        * Elapsed time
+        * Collapsing notifications   
 
 # 0.0.12
 
-* expose `setPluginRegistrantCallback` to the old rusty Java people 
+* 🐞 expose `setPluginRegistrantCallback` to the old rusty Java people 
 
 # 0.0.11
 
