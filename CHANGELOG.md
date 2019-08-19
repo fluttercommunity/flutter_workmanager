@@ -1,3 +1,6 @@
+#0.0.15
+- iOS: specified minimim deployment target of iOS 10 (with Swift 4.2)
+
 # 0.0.14
 * iOS performBackgroundFetch now actually works.
 
