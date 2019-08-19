@@ -21,7 +21,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   Flutter: 58dd7d1b27887414a370fcccb9e645c08ffd7a6a
   path_provider: f96fff6166a8867510d2c25fdcc346327cc4b259
-  workmanager: 2fe615ab36b3f765e43b6e79dc8e6a7a84450e3f
+  workmanager: ffff78bf18495e2bc5b8c955ead94a81db340681
 
 PODFILE CHECKSUM: 57268ad4ad4314d2e0bdf5c907ae01d8abcc9294
 

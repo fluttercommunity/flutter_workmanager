@@ -42,7 +42,7 @@ struct DebugNotificationHelper {
     // MARK: -  Private helper functions
     
     private static func scheduleNotification(identifier: String, title: String, body: String, icon: ThumbnailGenerator.ThumbnailIcon) {
-        guard UserDefaultsHelper.getIsDebug(), #available(iOS 10.0, *) else {
+        guard UserDefaultsHelper.getIsDebug() else {
             logInfo("\(logPrefix) \(#function): plugin is not running in debug mode or on iOS 9 or lower")
             return
         }
