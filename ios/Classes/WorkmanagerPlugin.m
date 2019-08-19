@@ -7,4 +7,8 @@
     [SwiftWorkmanagerPlugin registerWithRegistrar:registrar];
 }
 
++ (void)setPluginRegistrantCallback:(FlutterPluginRegistrantCallback)callback {
+    [SwiftWorkmanagerPlugin setPluginRegistrantCallback:callback];
+}
+
 @end

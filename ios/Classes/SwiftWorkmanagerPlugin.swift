@@ -6,10 +6,11 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     
     static let identifier = "be.tramckrijte.workmanager"
     
-    
+    private static var flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?
+
     private struct ForegroundMethodChannel {
         static let channelName = "\(SwiftWorkmanagerPlugin.identifier)/foreground_channel_work_manager"
-        
+
         struct methods {
             struct initialize {
                 static let name = "\(initialize.self)"
@@ -19,23 +20,28 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
                 }
             }
         }
-        
+
     }
-    
+
     private struct BackgroundMethodChannel {
         static let channelName = "\(SwiftWorkmanagerPlugin.identifier)/background_channel_work_manager"
         static let backgroundChannelInitializedMethod = "backgroundChannelInitialized"
         static let iOSPerformFetchMethodName = "onResultSend"
         static let iOSPerformFetchTaskName = "iOSPerformFetch"
     }
-    
+
     private let flutterThreadLabelPrefix = "\(SwiftWorkmanagerPlugin.identifier).BackgroundFetch"
-    
+
 }
 
 //MARK: - FlutterPlugin conformance
 
 extension SwiftWorkmanagerPlugin: FlutterPlugin {
+
+    @objc
+    public static func setPluginRegistrantCallback(_ callback: @escaping FlutterPluginRegistrantCallback) {
+        flutterPluginRegistrantCallback = callback
+    }
     
     public static func register(with registrar: FlutterPluginRegistrar) {
         
@@ -84,8 +90,11 @@ extension SwiftWorkmanagerPlugin {
                                                            startDate: fetchSessionStart,
                                                            callBackHandle: callbackHandle,
                                                            callbackInfo: flutterCallbackInformation)
+        
         var flutterEngine: FlutterEngine? = FlutterEngine(name: flutterThreadLabelPrefix, project: nil, allowHeadlessExecution: true)
         flutterEngine!.run(withEntrypoint: flutterCallbackInformation.callbackName, libraryURI: flutterCallbackInformation.callbackLibraryPath)
+        SwiftWorkmanagerPlugin.flutterPluginRegistrantCallback?(flutterEngine!)
+        
         var backgroundMethodChannel: FlutterMethodChannel? = FlutterMethodChannel(name: BackgroundMethodChannel.channelName, binaryMessenger: flutterEngine!)
         
         func cleanupFlutterResources() {
