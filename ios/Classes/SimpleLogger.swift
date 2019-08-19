@@ -26,7 +26,6 @@ enum LogType: String {
     case fault = "fault"
     
     /// Returns the underlying `OSLogType`
-    @available(iOS 10.0, *)
     var osLogType: OSLogType {
         switch self {
         case .default:
