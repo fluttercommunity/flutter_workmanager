@@ -1,3 +1,6 @@
+# 0.0.14
+* iOS performBackgroundFetch now actually works.
+
 # 0.0.13
 * [‼️ BREAKING change]
   You will need to clear the preferences or re-install the App if you had registered jobs already on Android.
