@@ -4,7 +4,7 @@
 Pod::Spec.new do |s|
   s.name             = 'workmanager'
   s.version          = '0.0.1'
-  s.summary          = 'Flutter Android Workmanager'
+  s.summary          = 'Flutter Workmanager'
   s.description      = <<-DESC
 Flutter Android Workmanager
                        DESC
@@ -16,6 +16,6 @@ Flutter Android Workmanager
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
 
-  s.ios.deployment_target = '8.0'
+  s.ios.deployment_target = '10.0'
 end
 
