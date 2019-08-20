@@ -31,7 +31,7 @@ This ensures that the task is ran at most every 15 minutes.
 
 ---
 
-####Wait for iOS to trigger `performFetchWithCompletionHandler`
+#### Wait for iOS to trigger `performFetchWithCompletionHandler`
 
 There's no control on how often iOS will allow the app to fetch data in the background.  
 However, the `background fetch` event can be simulated by selecting
@@ -56,7 +56,7 @@ void callbackDispatcher() {
 }
 ```
 
-####Debug mode
+#### Debug mode
 The WorkManager plugin provides an `isInDebugMode` flag when initializing the plugin:
 
 `Workmanager.initialize(callbackDispatcher, isInDebugMode: true)`  
@@ -65,7 +65,7 @@ If `isInDebugMode` is `true`, a system notification will be displayed whenever a
 
 ![example of iOS debug notification](.art/ios_debug_notifications.gif)
 
-####Registered plugins
+#### Registered plugins
 Since the provided Flutter entry point is ran in a dedicated **Dart isolate**, the Flutter plugins which may
 have been registered AppDelegate's `didFinishLaunchingWithOptions` (or somewhere else) are unavailable,
 since they were registered on a different registry.
