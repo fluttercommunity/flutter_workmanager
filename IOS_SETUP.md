@@ -39,7 +39,7 @@ The `background fetch` event can however be simulated by running
 
 In order to know when `Background Fetch` was triggered you should add the `Workmanager.iOSBackgroundTask` case inside your `callbackDispatcher` function.  
 
-```
+```dart
 void callbackDispatcher() {
   Workmanager.executeTask((task) {
     switch (task) {
@@ -51,7 +51,6 @@ void callbackDispatcher() {
     return Future.value(true);
   });
 }
-
 ```
 
 The plugin provides an `isInDebugMode` flag when initializing the plugin: `Workmanager.initialize(callbackDispatcher, isInDebugMode: true)`  
