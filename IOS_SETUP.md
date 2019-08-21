@@ -73,9 +73,8 @@ since they were registered on a different registry.
 In order to know when the Dart isolate has started, the plugin user may make use of the
 WorkmanagerPlugin's `setPluginRegistrantCallback` function. For example :
 
-```
+```Swift
 class AppDelegate: FlutterAppDelegate {
-
     /// Registers all pubspec-referenced Flutter plugins in the given registry.  
     static func registerPlugins(with registry: FlutterPluginRegistry) {
             GeneratedPluginRegistrant.register(with: registry)
@@ -87,18 +86,13 @@ class AppDelegate: FlutterAppDelegate {
         
         AppDelegate.registerPlugins(with: self) // Register the app's plugins in the context of a normal run
         
-        WorkmanagerPlugin.setPluginRegistrantCallback { registry in
-            
+        WorkmanagerPlugin.setPluginRegistrantCallback { registry in  
             // The following code will be called upon WorkmanagerPlugin's registration.
             // Note : all of the app's plugins may not be required in this context ;
             // instead of using GeneratedPluginRegistrant.register(with: registry),
             // you may want to register only specific plugins.
-            
             AppDelegate.registerPlugins(with: registry)
-            
         }
-        
     }
-
 }
 ``` 
