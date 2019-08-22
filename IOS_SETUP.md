@@ -1,15 +1,30 @@
 # iOS Installation
 
-Background fetching is very different than from Android's Background Jobs.  
-Before anything, make sure you've added the **UIBackgroundModes** key to your project's `Info.plist`:
+Background fetching is very different compared to Android's Background Jobs.  
+In order for your app to support Background Fetch, you have to enable the *Background Modes* capability in Xcode for your app's Target:
+
+
+
+![example of iOS debug notification](.art/ios_background_mode_fetch.png)
+
+This will add the **UIBackgroundModes** key to your project's `Info.plist`:
+
 ```xml
 <key>UIBackgroundModes</key>
-  <array>
-    <string>fetch</string>
-  </array>
-</key>
+<array>
+	<string>fetch</string>
+</array>
 ```
 
+And set the correct *SystemCapabilities* for your target in the `project.pbxproj` file:
+
+```
+SystemCapabilities = {
+	com.apple.BackgroundModes = {
+		enabled = 1;
+	};
+};
+```
 
 Inside your app's delegate `didFinishLaunchingWithOptions`, set your desired **minimumBackgroundFetchInterval** :
 
@@ -37,8 +52,7 @@ There's no control on how often iOS will allow the app to fetch data in the back
 However, the `background fetch` event can be simulated by selecting
 `Debug` > `Simulate Background Fetch` in Xcode.
 
-Upon reception of the `background fetch` event, the WorkManager plugin will start a new **Dart isolate**,
-using the entrypoint provided by the `initialize` method.
+Upon reception of the `background fetch` event, the WorkManager plugin will start a new **Dart isolate**, using the entrypoint provided by the `initialize` method.
 
 Here's an example of a Flutter entrypoint called `callbackDispatcher`:
 
@@ -95,4 +109,4 @@ class AppDelegate: FlutterAppDelegate {
         }
     }
 }
-``` 
+```
