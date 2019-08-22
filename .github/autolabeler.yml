@@ -1,4 +1,4 @@
-# Configuration for probot-no-response - https://github.com/probot/autolabeler
+# Configuration for probot-auto-labeler - https://github.com/probot/autolabeler
 
 # label: file | path
 android: ["/android", "*.kt", "*.java", "*gradle*", "AndroidManifest.xml"]
