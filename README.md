@@ -115,7 +115,7 @@ Workmanager.registerOneOffTask("1", "simpleTask", initialDelay: Duration(seconds
 Workmanager.registerOneOffTask(
     "1", 
     "simpleTask", 
-    constraints: WorkManagerConstraintConfig(
+    constraints: Constraints(
         networkType: NetworkType.connected,
         requiresBatteryNotLow: true,
         requiresCharging: true,
