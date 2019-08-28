@@ -38,7 +38,7 @@ object DebugHelper {
         postNotification(
                 ctx,
                 threadIdentifier,
-                "${ThumbnailGenerator.mapResultToEmoji(result)} $currentTime",
+                "${ThumbnailGenerator.workEmoji} $currentTime",
                 """
                     • Result: ${ThumbnailGenerator.mapResultToEmoji(result)} ${result.javaClass.simpleName}
                     • dartTask: $dartTask
