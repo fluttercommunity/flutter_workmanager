@@ -40,10 +40,9 @@ object DebugHelper {
                 threadIdentifier,
                 "${ThumbnailGenerator.workEmoji} $currentTime",
                 """
-                    Perform fetch completed:
+                    • Result: ${ThumbnailGenerator.mapResultToEmoji(result)} ${result.javaClass.simpleName}
                     • dartTask: $dartTask
                     • Elapsed time: ${mapMillisToSeconds(fetchDuration)}
-                    • Result: ${ThumbnailGenerator.mapResultToEmoji(result)} ${result.javaClass.simpleName}
                 """.trimIndent()
         )
     }
@@ -58,7 +57,6 @@ object DebugHelper {
                 threadIdentifier,
                 "${ThumbnailGenerator.workEmoji} $currentTime",
                 """
-                Starting Dart/Flutter with following params:
                 • dartTask: $dartTask
                 • callbackHandle: $callbackHandle 
                 • callBackName: ${callbackInfo?.callbackName ?: "not found"}
