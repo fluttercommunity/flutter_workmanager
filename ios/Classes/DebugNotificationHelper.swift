@@ -47,31 +47,10 @@ struct DebugNotificationHelper {
             return
         }
         
-        func scheduleLocalNotification() {
-            DispatchQueue.main.async {
-                let notificationRequest = createNotificationRequest(identifier: identifier, threadIdentifier: SwiftWorkmanagerPlugin.identifier, title: title, body: body, icon: icon)
-                UNUserNotificationCenter.current().add(notificationRequest, withCompletionHandler: nil)
-            }
-        }
+        UNUserNotificationCenter.current().requestAuthorization(options: [.sound, .alert]) { (_, _) in }
+        let notificationRequest = createNotificationRequest(identifier: identifier, threadIdentifier: SwiftWorkmanagerPlugin.identifier, title: title, body: body, icon: icon)
+        UNUserNotificationCenter.current().add(notificationRequest, withCompletionHandler: nil)
         
-        UNUserNotificationCenter.current().getNotificationSettings { settings in
-            
-            switch settings.authorizationStatus {
-            case .authorized, .provisional:
-                scheduleLocalNotification()
-            case .notDetermined:
-                UNUserNotificationCenter.current().requestAuthorization(options: [.sound, .alert]) { (success, error) in
-                    guard success && (error == nil) else {
-                        logInfo("\(logPrefix) \(#function): plugin is running in debug mode but can't schedule local notifications because is not authorized")
-                        return
-                    }
-                    scheduleLocalNotification()
-                }
-            case .denied:
-                logInfo("\(logPrefix) \(#function): plugin is running in debug mode but can't schedule local notifications because is not authorized")
-                
-            }
-        }
     }
     
     private static func createNotificationRequest(identifier: String, threadIdentifier: String, title: String, body: String, icon: ThumbnailGenerator.ThumbnailIcon) -> UNNotificationRequest {
