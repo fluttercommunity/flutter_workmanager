@@ -1,3 +1,12 @@
+# 0.1.0
+* First API stable release
+* Android: 
+    * Improved debug notification with result message first
+    * Updated Installation README
+* iOS:
+    * 🐞 Improved debug notification delivery when the app is in the background.
+    * Updated Installation README 
+
 # 0.0.15
 * iOS: 🐞 Make sure all the implementers plugins are available in the background isolate by registering them first.  
   This requires the user to provide us with the generated registry in the `AppDelegate`
