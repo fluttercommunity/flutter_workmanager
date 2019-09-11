@@ -95,7 +95,7 @@ extension SwiftWorkmanagerPlugin {
         flutterEngine!.run(withEntrypoint: flutterCallbackInformation.callbackName, libraryURI: flutterCallbackInformation.callbackLibraryPath)
         SwiftWorkmanagerPlugin.flutterPluginRegistrantCallback?(flutterEngine!)
         
-        var backgroundMethodChannel: FlutterMethodChannel? = FlutterMethodChannel(name: BackgroundMethodChannel.channelName, binaryMessenger: flutterEngine!)
+        var backgroundMethodChannel: FlutterMethodChannel? = FlutterMethodChannel(name: BackgroundMethodChannel.channelName, binaryMessenger: flutterEngine!.binaryMessenger)
         
         func cleanupFlutterResources() {
             flutterEngine?.destroyContext()
