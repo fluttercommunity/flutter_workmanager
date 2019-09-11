@@ -11,7 +11,7 @@ This is especially useful to run periodic tasks, such as fetching remote data on
 
 ```yaml
 dependencies:
-  workmanager: ^0.1.0
+  workmanager: ^0.1.1
 ```
 ```shell script
 flutter pub get
