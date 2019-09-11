@@ -1,3 +1,8 @@
+# 0.1.1
+
+* iOS:
+  * Added support for Flutter 1.9.1
+
 # 0.1.0
 * First API stable release
 * Android: 
