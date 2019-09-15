@@ -32,7 +32,7 @@ object DebugHelper {
 
     fun postTaskCompleteNotification(ctx: Context,
                                      threadIdentifier: Int,
-                                     dartTask: String,
+                                     inputData: Map<String, Any>? = null,
                                      fetchDuration: Long,
                                      result: ListenableWorker.Result) {
         postNotification(
@@ -41,7 +41,8 @@ object DebugHelper {
                 "${ThumbnailGenerator.workEmoji} $currentTime",
                 """
                     • Result: ${ThumbnailGenerator.mapResultToEmoji(result)} ${result.javaClass.simpleName}
-                    • dartTask: $dartTask
+                    • dartTask: ${inputData?.get(BackgroundWorker.DART_TASK_KEY) ?: "not found"}
+                    • inputData: ${inputData ?: "not found"}
                     • Elapsed time: ${mapMillisToSeconds(fetchDuration)}
                 """.trimIndent()
         )
@@ -49,7 +50,7 @@ object DebugHelper {
 
     fun postTaskStarting(ctx: Context,
                          threadIdentifier: Int,
-                         dartTask: String,
+                         inputData: Map<String, Any>? = null,
                          callbackHandle: Long,
                          callbackInfo: FlutterCallbackInformation?,
                          dartBundlePath: String?) {
@@ -57,7 +58,8 @@ object DebugHelper {
                 threadIdentifier,
                 "${ThumbnailGenerator.workEmoji} $currentTime",
                 """
-                • dartTask: $dartTask
+                • dartTask: ${inputData?.get(BackgroundWorker.DART_TASK_KEY) ?: "not found"}
+                • inputData: ${inputData ?: "not found"}
                 • callbackHandle: $callbackHandle 
                 • callBackName: ${callbackInfo?.callbackName ?: "not found"}
                 • callbackClassName: ${callbackInfo?.callbackClassName ?: "not found"}

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -13,25 +14,26 @@ const simplePeriodicTask = "simplePeriodicTask";
 const simplePeriodic1HourTask = "simplePeriodic1HourTask";
 
 void callbackDispatcher() {
-  Workmanager.executeTask((task) async {
+  Workmanager.executeTask((task, inputData) async {
     switch (task) {
       case simpleTaskKey:
-        stderr.writeln("$simpleTaskKey was executed");
+        developer.log("$simpleTaskKey was executed. inputData = $inputData");
         Directory tempDir = await getTemporaryDirectory();
         String tempPath = tempDir.path;
-        print("You can access other plugins in the background: $tempPath");
+        developer
+            .log("You can access other plugins in the background: $tempPath");
         break;
       case simpleDelayedTask:
-        stderr.writeln("$simpleDelayedTask was executed");
+        developer.log("$simpleDelayedTask was executed");
         break;
       case simplePeriodicTask:
-        stderr.writeln("$simplePeriodicTask was executed");
+        developer.log("$simplePeriodicTask was executed");
         break;
       case simplePeriodic1HourTask:
-        stderr.writeln("$simplePeriodic1HourTask was executed");
+        developer.log("$simplePeriodic1HourTask was executed");
         break;
       case Workmanager.iOSBackgroundTask:
-        stderr.writeln("The iOS background fetch was triggered");
+        developer.log("The iOS background fetch was triggered");
         break;
     }
 
@@ -97,6 +99,13 @@ class _MyAppState extends State<MyApp> {
                     Workmanager.registerOneOffTask(
                       "1",
                       simpleTaskKey,
+                      inputData: <String, dynamic>{
+                        'int': 1,
+                        'bool': true,
+                        'dobule': 1.0,
+                        'string': 'string',
+                        'array': [1, 2, 3],
+                      },
                     );
                   }),
               //This task runs once
@@ -144,7 +153,7 @@ class _MyAppState extends State<MyApp> {
                 child: Text("Cancel All"),
                 onPressed: () async {
                   await Workmanager.cancelAll();
-                  print('Cancel all tasks completed');
+                  developer.log('Cancel all tasks completed');
                 },
               ),
             ],

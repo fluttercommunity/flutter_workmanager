@@ -1,6 +1,7 @@
 package be.tramckrijte.workmanager
 
 import android.os.Build
+import android.util.Log
 import androidx.work.*
 import be.tramckrijte.workmanager.WorkManagerCall.CancelTask.ByTag.KEYS.UNREGISTER_TASK_TAG_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.CancelTask.ByUniqueName.KEYS.UNREGISTER_TASK_UNIQUE_NAME_KEY
@@ -15,12 +16,15 @@ import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TAS
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_CONSTRAINTS_STORAGE_NOT_LOW_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_EXISTING_WORK_POLICY_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_INITIAL_DELAY_SECONDS_KEY
+import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_INPUT_DATA_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_IS_IN_DEBUG_MODE_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_NAME_VALUE_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_TAG_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_UNIQUE_NAME_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.PeriodicTask.KEYS.PERIODIC_TASK_FREQUENCY_SECONDS_KEY
 import io.flutter.plugin.common.MethodCall
+import java.util.*
+import kotlin.collections.HashMap
 import kotlin.math.max
 
 val defaultBackOffPolicy = BackoffPolicy.EXPONENTIAL
@@ -31,6 +35,7 @@ val defaultConstraints: Constraints = Constraints.NONE
 const val defaultInitialDelaySeconds = 0L
 const val defaultRequestedBackoffDelay = 0L
 const val defaultPeriodicRefreshFrequencyInSeconds = PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS / 1000
+const val logTag = "Extractor"
 
 data class BackoffPolicyTaskConfig(val backoffPolicy: BackoffPolicy,
                                    private val requestedBackoffDelay: Long,
@@ -69,6 +74,7 @@ sealed class WorkManagerCall {
         abstract val tag: String?
         abstract val initialDelaySeconds: Long
         abstract val constraintsConfig: Constraints?
+        abstract val inputData: Map<String, Any>?
 
         companion object KEYS {
             const val REGISTER_TASK_IS_IN_DEBUG_MODE_KEY = "isInDebugMode"
@@ -87,6 +93,7 @@ sealed class WorkManagerCall {
 
             const val REGISTER_TASK_BACK_OFF_POLICY_TYPE_KEY = "backoffPolicyType"
             const val REGISTER_TASK_BACK_OFF_POLICY_DELAY_MILLIS_KEY = "backoffDelayInMilliseconds"
+            const val REGISTER_TASK_INPUT_DATA_KEY = "inputData"
         }
 
         data class OneOffTask(override val isInDebugMode: Boolean,
@@ -96,7 +103,8 @@ sealed class WorkManagerCall {
                               val existingWorkPolicy: ExistingWorkPolicy,
                               override val initialDelaySeconds: Long,
                               override val constraintsConfig: Constraints,
-                              val backoffPolicyConfig: BackoffPolicyTaskConfig) : RegisterTask()
+                              val backoffPolicyConfig: BackoffPolicyTaskConfig,
+                              override val inputData: Map<String, Any>? = null) : RegisterTask()
 
         data class PeriodicTask(override val isInDebugMode: Boolean,
                                 override val uniqueName: String,
@@ -106,7 +114,8 @@ sealed class WorkManagerCall {
                                 val frequencyInSeconds: Long,
                                 override val initialDelaySeconds: Long,
                                 override val constraintsConfig: Constraints,
-                                val backoffPolicyConfig: BackoffPolicyTaskConfig) : RegisterTask() {
+                                val backoffPolicyConfig: BackoffPolicyTaskConfig,
+                                override val inputData: Map<String, Any>? = null) : RegisterTask() {
             companion object KEYS {
                 const val PERIODIC_TASK_FREQUENCY_SECONDS_KEY = "frequency"
             }
@@ -176,7 +185,8 @@ object Extractor {
                             existingWorkPolicy = extractExistingWorkPolicyFromCall(call),
                             initialDelaySeconds = extractInitialDelayFromCall(call),
                             constraintsConfig = extractConstraintConfigFromCall(call),
-                            backoffPolicyConfig = extractBackoffPolicyConfigFromCall(call, TaskType.ONE_OFF)
+                            backoffPolicyConfig = extractBackoffPolicyConfigFromCall(call, TaskType.ONE_OFF),
+                            inputData = extractInputData(call)
                     )
                 }
                 Extractor.PossibleWorkManagerCall.REGISTER_PERIODIC_TASK -> {
@@ -189,7 +199,8 @@ object Extractor {
                             existingWorkPolicy = extractExistingPeriodicWorkPolicyFromCall(call),
                             initialDelaySeconds = extractInitialDelayFromCall(call),
                             constraintsConfig = extractConstraintConfigFromCall(call),
-                            backoffPolicyConfig = extractBackoffPolicyConfigFromCall(call, TaskType.PERIODIC)
+                            backoffPolicyConfig = extractBackoffPolicyConfigFromCall(call, TaskType.PERIODIC),
+                            inputData = extractInputData(call)
                     )
                 }
 
@@ -268,5 +279,65 @@ object Extractor {
                     }
                 }
                 .build()
+    }
+
+    private fun extractInputData(call: MethodCall): Map<String, Any>? {
+        var map: Map<String, Any>? = null
+        try {
+            map = call.argument<Map<String, Any>>(REGISTER_TASK_INPUT_DATA_KEY)
+        } catch (ex: Exception) {
+            Log.e(logTag, "Can't parse input data", ex)
+        }
+        return if (map != null) {
+            val result: HashMap<String, Any> = HashMap()
+            for (entry in map.entries) {
+                val key = entry.key
+                val value = entry.value
+                if (value is ArrayList<*> && value.isNotEmpty()) {
+                    when (value[0]) {
+                        is Boolean -> {
+                            val array = arrayOfNulls<Boolean>(value.size)
+                            value.toArray(array)
+                            result[key] = array
+                        }
+                        is Byte -> {
+                            val array = arrayOfNulls<Byte>(value.size)
+                            value.toArray(array)
+                            result[key] = array
+                        }
+                        is Int -> {
+                            val array = arrayOfNulls<Int>(value.size)
+                            value.toArray(array)
+                            result[key] = array
+                        }
+                        is Long -> {
+                            val array = arrayOfNulls<Long>(value.size)
+                            value.toArray(array)
+                            result[key] = array
+                        }
+                        is Float -> {
+                            val array = arrayOfNulls<Float>(value.size)
+                            value.toArray(array)
+                            result[key] = array
+                        }
+                        is Double -> {
+                            val array = arrayOfNulls<Double>(value.size)
+                            value.toArray(array)
+                            result[key] = array
+                        }
+                        is String -> {
+                            val array = arrayOfNulls<String>(value.size)
+                            value.toArray(array)
+                            result[key] = array
+                        }
+                    }
+                } else {
+                    result[key] = value
+                }
+            }
+            result
+        } else {
+            null
+        }
     }
 }

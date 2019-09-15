@@ -1,3 +1,8 @@
+# 0.1.2
+
+* Android:
+  * Added support for inputData
+
 # 0.1.1
 
 * iOS:
