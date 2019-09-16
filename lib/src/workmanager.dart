@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:ui';
 
 import 'package:flutter/services.dart';
@@ -74,11 +75,13 @@ class Workmanager {
   /// A helper function so you only need to implement a [BackgroundTaskHandler]
   static void executeTask(final BackgroundTaskHandler backgroundTask) {
     WidgetsFlutterBinding.ensureInitialized();
-    _backgroundChannel.setMethodCallHandler(
-      (call) async => backgroundTask(
-          call.arguments["be.tramckrijte.workmanager.DART_TASK"],
-          call.arguments),
-    );
+    _backgroundChannel.setMethodCallHandler((call) async {
+      final payload = call.arguments["be.tramckrijte.workmanager.PAYLOAD"];
+      backgroundTask(
+        call.arguments["be.tramckrijte.workmanager.DART_TASK"],
+        payload == null ? null : jsonDecode(payload),
+      );
+    });
     _backgroundChannel.invokeMethod("backgroundChannelInitialized");
   }
 
@@ -235,7 +238,7 @@ class JsonMapperHelper {
       "requiresStorageNotLow": constraints?.requiresStorageNotLow,
       "backoffPolicyType": _enumToStringToKotlinString(backoffPolicy),
       "backoffDelayInMilliseconds": backoffPolicyDelay.inMilliseconds,
-      "inputData": inputData,
+      "payload": jsonEncode(inputData),
     };
   }
 

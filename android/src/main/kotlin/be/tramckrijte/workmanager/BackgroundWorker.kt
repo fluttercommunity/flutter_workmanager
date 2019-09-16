@@ -3,7 +3,6 @@ package be.tramckrijte.workmanager
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import io.flutter.plugin.common.MethodCall
@@ -14,7 +13,6 @@ import io.flutter.view.FlutterNativeView
 import io.flutter.view.FlutterRunArguments
 import java.util.*
 import java.util.concurrent.CountDownLatch
-import kotlin.collections.HashMap
 import kotlin.system.measureTimeMillis
 
 /***
@@ -29,29 +27,22 @@ class BackgroundWorker(private val ctx: Context,
     private lateinit var backgroundChannel: MethodChannel
 
     companion object {
+        const val PAYLOAD_KEY = "be.tramckrijte.workmanager.PAYLOAD"
         const val DART_TASK_KEY = "be.tramckrijte.workmanager.DART_TASK"
-        const val IS_IN_DEBUG_MODE = "be.tramckrijte.workmanager.IS_IN_DEBUG_MODE"
+        const val IS_IN_DEBUG_MODE_KEY = "be.tramckrijte.workmanager.IS_IN_DEBUG_MODE_KEY"
 
         const val BACKGROUND_CHANNEL_NAME = "be.tramckrijte.workmanager/background_channel_work_manager"
         const val BACKGROUND_CHANNEL_INITIALIZED = "backgroundChannelInitialized"
     }
 
-    private val inputData by lazy {
-        val map = HashMap<String, Any>()
-        for (entry in workerParams.inputData.keyValueMap.entries) {
-            val key = entry.key
-            when (val value = entry.value) {
-                //because io.flutter.plugin.common.StandardMessageCodec use Boolean.TRUE and Boolean.FALSE inside writeValue
-                is Boolean -> map[key] = if (value) java.lang.Boolean.TRUE else java.lang.Boolean.TRUE
-                is Array<*> -> map[key] = value.toList()
-                else -> map[key] = value
-            }
-        }
-        map
-    }
+    private val payload
+        get() = workerParams.inputData.getString(PAYLOAD_KEY)
+
+    private val dartTask
+        get() = workerParams.inputData.getString(DART_TASK_KEY)!!
 
     private val isInDebug
-        get() = workerParams.inputData.getBoolean(IS_IN_DEBUG_MODE, false)
+        get() = workerParams.inputData.getBoolean(IS_IN_DEBUG_MODE_KEY, false)
 
     private val latch = CountDownLatch(1)
     private val randomThreadIdentifier = Random().nextInt()
@@ -66,7 +57,7 @@ class BackgroundWorker(private val ctx: Context,
             val dartBundlePath = FlutterMain.findAppBundlePath(ctx)
 
             if (isInDebug) {
-                DebugHelper.postTaskStarting(ctx, randomThreadIdentifier, workerParams.inputData.keyValueMap, callbackHandle, callbackInfo, dartBundlePath)
+                DebugHelper.postTaskStarting(ctx, randomThreadIdentifier, dartTask, payload, callbackHandle, callbackInfo, dartBundlePath)
             }
 
             val backgroundFlutterView = FlutterNativeView(ctx, true)
@@ -92,7 +83,7 @@ class BackgroundWorker(private val ctx: Context,
         }
 
         if (isInDebug) {
-            DebugHelper.postTaskCompleteNotification(ctx, randomThreadIdentifier, inputData, fetchDuration, result)
+            DebugHelper.postTaskCompleteNotification(ctx, randomThreadIdentifier, dartTask, payload, fetchDuration, result)
         }
 
         return result
@@ -103,7 +94,7 @@ class BackgroundWorker(private val ctx: Context,
             BACKGROUND_CHANNEL_INITIALIZED ->
                 backgroundChannel.invokeMethod(
                         "onResultSend",
-                        inputData,
+                        mapOf(DART_TASK_KEY to dartTask, PAYLOAD_KEY to payload),
                         object : MethodChannel.Result {
                             override fun notImplemented() {
                                 latch.countDown()

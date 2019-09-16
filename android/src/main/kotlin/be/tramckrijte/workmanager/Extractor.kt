@@ -16,15 +16,13 @@ import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TAS
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_CONSTRAINTS_STORAGE_NOT_LOW_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_EXISTING_WORK_POLICY_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_INITIAL_DELAY_SECONDS_KEY
-import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_INPUT_DATA_KEY
+import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_PAYLOAD_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_IS_IN_DEBUG_MODE_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_NAME_VALUE_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_TAG_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_UNIQUE_NAME_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.PeriodicTask.KEYS.PERIODIC_TASK_FREQUENCY_SECONDS_KEY
 import io.flutter.plugin.common.MethodCall
-import java.util.*
-import kotlin.collections.HashMap
 import kotlin.math.max
 
 val defaultBackOffPolicy = BackoffPolicy.EXPONENTIAL
@@ -74,7 +72,7 @@ sealed class WorkManagerCall {
         abstract val tag: String?
         abstract val initialDelaySeconds: Long
         abstract val constraintsConfig: Constraints?
-        abstract val inputData: Map<String, Any>?
+        abstract val payload: String?
 
         companion object KEYS {
             const val REGISTER_TASK_IS_IN_DEBUG_MODE_KEY = "isInDebugMode"
@@ -93,7 +91,7 @@ sealed class WorkManagerCall {
 
             const val REGISTER_TASK_BACK_OFF_POLICY_TYPE_KEY = "backoffPolicyType"
             const val REGISTER_TASK_BACK_OFF_POLICY_DELAY_MILLIS_KEY = "backoffDelayInMilliseconds"
-            const val REGISTER_TASK_INPUT_DATA_KEY = "inputData"
+            const val REGISTER_TASK_PAYLOAD_KEY = "payload"
         }
 
         data class OneOffTask(override val isInDebugMode: Boolean,
@@ -104,7 +102,7 @@ sealed class WorkManagerCall {
                               override val initialDelaySeconds: Long,
                               override val constraintsConfig: Constraints,
                               val backoffPolicyConfig: BackoffPolicyTaskConfig,
-                              override val inputData: Map<String, Any>? = null) : RegisterTask()
+                              override val payload: String? = null) : RegisterTask()
 
         data class PeriodicTask(override val isInDebugMode: Boolean,
                                 override val uniqueName: String,
@@ -115,7 +113,7 @@ sealed class WorkManagerCall {
                                 override val initialDelaySeconds: Long,
                                 override val constraintsConfig: Constraints,
                                 val backoffPolicyConfig: BackoffPolicyTaskConfig,
-                                override val inputData: Map<String, Any>? = null) : RegisterTask() {
+                                override val payload: String? = null) : RegisterTask() {
             companion object KEYS {
                 const val PERIODIC_TASK_FREQUENCY_SECONDS_KEY = "frequency"
             }
@@ -186,7 +184,7 @@ object Extractor {
                             initialDelaySeconds = extractInitialDelayFromCall(call),
                             constraintsConfig = extractConstraintConfigFromCall(call),
                             backoffPolicyConfig = extractBackoffPolicyConfigFromCall(call, TaskType.ONE_OFF),
-                            inputData = extractInputData(call)
+                            payload = extractPayload(call)
                     )
                 }
                 Extractor.PossibleWorkManagerCall.REGISTER_PERIODIC_TASK -> {
@@ -200,7 +198,7 @@ object Extractor {
                             initialDelaySeconds = extractInitialDelayFromCall(call),
                             constraintsConfig = extractConstraintConfigFromCall(call),
                             backoffPolicyConfig = extractBackoffPolicyConfigFromCall(call, TaskType.PERIODIC),
-                            inputData = extractInputData(call)
+                            payload = extractPayload(call)
                     )
                 }
 
@@ -281,63 +279,12 @@ object Extractor {
                 .build()
     }
 
-    private fun extractInputData(call: MethodCall): Map<String, Any>? {
-        var map: Map<String, Any>? = null
+    private fun extractPayload(call: MethodCall): String? {
         try {
-            map = call.argument<Map<String, Any>>(REGISTER_TASK_INPUT_DATA_KEY)
+            return call.argument<String>(REGISTER_TASK_PAYLOAD_KEY)
         } catch (ex: Exception) {
             Log.e(logTag, "Can't parse input data", ex)
         }
-        return if (map != null) {
-            val result: HashMap<String, Any> = HashMap()
-            for (entry in map.entries) {
-                val key = entry.key
-                val value = entry.value
-                if (value is ArrayList<*> && value.isNotEmpty()) {
-                    when (value[0]) {
-                        is Boolean -> {
-                            val array = arrayOfNulls<Boolean>(value.size)
-                            value.toArray(array)
-                            result[key] = array
-                        }
-                        is Byte -> {
-                            val array = arrayOfNulls<Byte>(value.size)
-                            value.toArray(array)
-                            result[key] = array
-                        }
-                        is Int -> {
-                            val array = arrayOfNulls<Int>(value.size)
-                            value.toArray(array)
-                            result[key] = array
-                        }
-                        is Long -> {
-                            val array = arrayOfNulls<Long>(value.size)
-                            value.toArray(array)
-                            result[key] = array
-                        }
-                        is Float -> {
-                            val array = arrayOfNulls<Float>(value.size)
-                            value.toArray(array)
-                            result[key] = array
-                        }
-                        is Double -> {
-                            val array = arrayOfNulls<Double>(value.size)
-                            value.toArray(array)
-                            result[key] = array
-                        }
-                        is String -> {
-                            val array = arrayOfNulls<String>(value.size)
-                            value.toArray(array)
-                            result[key] = array
-                        }
-                    }
-                } else {
-                    result[key] = value
-                }
-            }
-            result
-        } else {
-            null
-        }
+        return null
     }
 }
