@@ -4,8 +4,9 @@ import android.content.Context
 import androidx.work.*
 import be.tramckrijte.workmanager.BackoffPolicyTaskConfig.Companion.defaultOneOffBackoffTaskConfig
 import be.tramckrijte.workmanager.BackoffPolicyTaskConfig.Companion.defaultPeriodicBackoffTaskConfig
-import be.tramckrijte.workmanager.BackgroundWorker.Companion.IS_IN_DEBUG_MODE
+import be.tramckrijte.workmanager.BackgroundWorker.Companion.IS_IN_DEBUG_MODE_KEY
 import be.tramckrijte.workmanager.BackgroundWorker.Companion.DART_TASK_KEY
+import be.tramckrijte.workmanager.BackgroundWorker.Companion.PAYLOAD_KEY
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import java.util.concurrent.TimeUnit
@@ -71,7 +72,8 @@ private object RegisterTaskHandler : CallHandler<WorkManagerCall.RegisterTask> {
                 existingWorkPolicy = convertedCall.existingWorkPolicy,
                 initialDelaySeconds = convertedCall.initialDelaySeconds,
                 constraintsConfig = convertedCall.constraintsConfig,
-                backoffPolicyConfig = convertedCall.backoffPolicyConfig
+                backoffPolicyConfig = convertedCall.backoffPolicyConfig,
+                payload = convertedCall.payload
         )
     }
 
@@ -85,7 +87,8 @@ private object RegisterTaskHandler : CallHandler<WorkManagerCall.RegisterTask> {
                 existingWorkPolicy = convertedCall.existingWorkPolicy,
                 initialDelaySeconds = convertedCall.initialDelaySeconds,
                 constraintsConfig = convertedCall.constraintsConfig,
-                backoffPolicyConfig = convertedCall.backoffPolicyConfig
+                backoffPolicyConfig = convertedCall.backoffPolicyConfig,
+                payload = convertedCall.payload
         )
     }
 }
@@ -111,6 +114,7 @@ object WM {
     fun enqueueOneOffTask(context: Context,
                           uniqueName: String,
                           dartTask: String,
+                          payload: String? = null,
                           tag: String? = null,
                           isInDebugMode: Boolean = false,
                           existingWorkPolicy: ExistingWorkPolicy = defaultOneOffExistingWorkPolicy,
@@ -119,14 +123,7 @@ object WM {
                           backoffPolicyConfig: BackoffPolicyTaskConfig = defaultOneOffBackoffTaskConfig
     ) {
         val oneOffTaskRequest = OneTimeWorkRequest.Builder(BackgroundWorker::class.java)
-                .setInputData(
-                        Data.Builder().putAll(
-                                mapOf(
-                                        DART_TASK_KEY to dartTask,
-                                        IS_IN_DEBUG_MODE to isInDebugMode
-                                )
-                        ).build()
-                )
+                .setInputData(buildTaskInputData(dartTask, isInDebugMode, payload))
                 .setInitialDelay(initialDelaySeconds, TimeUnit.SECONDS)
                 .setConstraints(constraintsConfig)
                 .setBackoffCriteria(
@@ -143,6 +140,7 @@ object WM {
     fun enqueuePeriodicTask(context: Context,
                             uniqueName: String,
                             dartTask: String,
+                            payload: String? = null,
                             tag: String? = null,
                             frequencyInSeconds: Long = defaultPeriodicRefreshFrequencyInSeconds,
                             isInDebugMode: Boolean = false,
@@ -152,14 +150,7 @@ object WM {
                             backoffPolicyConfig: BackoffPolicyTaskConfig = defaultPeriodicBackoffTaskConfig) {
         val periodicTaskRequest =
                 PeriodicWorkRequest.Builder(BackgroundWorker::class.java, frequencyInSeconds, TimeUnit.SECONDS)
-                        .setInputData(
-                                Data.Builder().putAll(
-                                        mapOf(
-                                                DART_TASK_KEY to dartTask,
-                                                IS_IN_DEBUG_MODE to isInDebugMode
-                                        )
-                                ).build()
-                        )
+                        .setInputData(buildTaskInputData(dartTask, isInDebugMode, payload))
                         .setInitialDelay(initialDelaySeconds, TimeUnit.SECONDS)
                         .setConstraints(constraintsConfig)
                         .setBackoffCriteria(
@@ -171,6 +162,18 @@ object WM {
                         .build()
         context.workManager()
                 .enqueueUniquePeriodicWork(uniqueName, existingWorkPolicy, periodicTaskRequest)
+    }
+
+    private fun buildTaskInputData(dartTask: String, isInDebugMode: Boolean, payload: String?): Data {
+        return Data.Builder()
+                .putString(DART_TASK_KEY, dartTask)
+                .putBoolean(IS_IN_DEBUG_MODE_KEY, isInDebugMode)
+                .apply {
+                    payload?.let {
+                        putString(PAYLOAD_KEY, payload)
+                    }
+                }
+                .build()
     }
 
     fun cancelByUniqueName(context: Context, uniqueWorkName: String) = context.workManager().cancelUniqueWork(uniqueWorkName)
