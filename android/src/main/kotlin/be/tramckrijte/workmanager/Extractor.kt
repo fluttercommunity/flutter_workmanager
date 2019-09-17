@@ -280,11 +280,6 @@ object Extractor {
     }
 
     private fun extractPayload(call: MethodCall): String? {
-        try {
-            return call.argument<String>(REGISTER_TASK_PAYLOAD_KEY)
-        } catch (ex: Exception) {
-            Log.e(logTag, "Can't parse input data", ex)
-        }
-        return null
+        return call.argument<String>(REGISTER_TASK_PAYLOAD_KEY)
     }
 }
