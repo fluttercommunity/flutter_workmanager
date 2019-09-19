@@ -127,7 +127,7 @@ Workmanager.registerOneOffTask(
 
 ### InputData
 
-Add some input date for your task. Valid value types are: int, bool, double, String and their list
+Add some input data for your task. Valid value types are: `int`, `bool`, `double`, `String` and their `list`
 
 ```dart
  Workmanager.registerOneOffTask(
