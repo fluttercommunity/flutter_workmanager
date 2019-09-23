@@ -15,7 +15,7 @@ const _noDuration = const Duration(seconds: 0);
 /// [taskName] Returns the value you provided when registering the task.
 /// iOS will always return [Workmanager.iOSBackgroundTask]
 typedef BackgroundTaskHandler = Future<bool> Function(
-    String taskName, Map<dynamic, dynamic> inputData);
+    String taskName, Map<String, dynamic> inputData);
 
 /// Make sure you followed the platform setup steps first before trying to register any task.
 /// Android:
