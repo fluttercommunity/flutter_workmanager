@@ -94,6 +94,11 @@ class Workmanager {
   }) async {
     Workmanager._isInDebugMode = isInDebugMode;
     final callback = PluginUtilities.getCallbackHandle(callbackDispatcher);
+
+    if(callback == null) {
+      throw "Could not get the callback handle (are you sure your callbackDispatcher is a top level public function?)";
+    }
+
     final int handle = callback.toRawHandle();
     await _foregroundChannel.invokeMethod(
         'initialize',
