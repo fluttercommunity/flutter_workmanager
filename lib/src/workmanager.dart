@@ -94,6 +94,8 @@ class Workmanager {
   }) async {
     Workmanager._isInDebugMode = isInDebugMode;
     final callback = PluginUtilities.getCallbackHandle(callbackDispatcher);
+    assert(callback != null,
+        "The callbackDispatcher needs to be either a static function or a top level function to be accessible as a Flutter entry point.");
     final int handle = callback.toRawHandle();
     await _foregroundChannel.invokeMethod(
         'initialize',
