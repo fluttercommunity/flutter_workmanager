@@ -15,7 +15,7 @@ const _noDuration = const Duration(seconds: 0);
 /// [taskName] Returns the value you provided when registering the task.
 /// iOS will always return [Workmanager.iOSBackgroundTask]
 typedef BackgroundTaskHandler = Future<bool> Function(
-    String taskName, Map<dynamic, dynamic> inputData);
+    String taskName, Map<String, dynamic> inputData);
 
 /// Make sure you followed the platform setup steps first before trying to register any task.
 /// Android:
@@ -94,6 +94,8 @@ class Workmanager {
   }) async {
     Workmanager._isInDebugMode = isInDebugMode;
     final callback = PluginUtilities.getCallbackHandle(callbackDispatcher);
+    assert(callback != null,
+        "The callbackDispatcher needs to be either a static function or a top level function to be accessible as a Flutter entry point.");
     final int handle = callback.toRawHandle();
     await _foregroundChannel.invokeMethod(
         'initialize',

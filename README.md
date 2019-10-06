@@ -32,7 +32,7 @@ Before registering any task, the WorkManager plugin must be initialized.
 
 ```dart
 void callbackDispatcher() {
-  Workmanager.executeTask((backgroundTask) {
+  Workmanager.executeTask((task, inputData) {
     print("Native called background task: $backgroundTask"); //simpleTask will be emitted here.
     return Future.value(true);
   });
