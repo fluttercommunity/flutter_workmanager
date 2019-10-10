@@ -68,7 +68,7 @@ Here is an example of a Flutter entrypoint called `callbackDispatcher`:
 
 ```dart
 void callbackDispatcher() {
-  Workmanager.executeTask((task) {
+  Workmanager.executeTask((task, inputData) {
     switch (task) {
       case Workmanager.iOSBackgroundTask:
         stderr.writeln("The iOS background fetch was triggered");

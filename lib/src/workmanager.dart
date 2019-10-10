@@ -29,7 +29,7 @@ typedef BackgroundTaskHandler = Future<bool> Function(
 ///
 /// ```
 /// void callbackDispatcher() {
-///   Workmanager.executeTask((taskName) {
+///   Workmanager.executeTask((taskName, inputData) {
 ///     switch(taskName) {
 ///       case "":
 ///         print("Replace this print statement with your code that should be executed in the background here");
@@ -53,8 +53,8 @@ class Workmanager {
   ///
   /// ```
   /// void callbackDispatcher() {
-  ///  Workmanager.executeTask((task) async {
-  ///      switch (task) {
+  ///   Workmanager.executeTask((taskName, inputData) {
+  ///      switch (taskName) {
   ///        case Workmanager.iOSBackgroundTask:
   ///          stderr.writeln("The iOS background fetch was triggered");
   ///          break;
