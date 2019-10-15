@@ -14,14 +14,14 @@ assignees: ''
 - [x] I have ran the sample app and it does not work there
 
 **Version**
-| Technology | Version |
+| Technology          | Version       |
 | ------------------- | ------------- |
-| Workmanager version | |
-| XCode version       | |
-| Swift version       | |
+| Workmanager version |               |
+| XCode version       |               |
+| Swift version       |               |
 
 Test
-| First Header  | Second Header |
+| First Header | Second Header |
 | ------------- | ------------- |
 | Content Cell  | Content Cell  |
 | Content Cell  | Content Cell  |
