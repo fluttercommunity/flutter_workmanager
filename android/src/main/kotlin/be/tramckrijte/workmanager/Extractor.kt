@@ -1,6 +1,7 @@
 package be.tramckrijte.workmanager
 
 import android.os.Build
+import android.util.Log
 import androidx.work.*
 import be.tramckrijte.workmanager.WorkManagerCall.CancelTask.ByTag.KEYS.UNREGISTER_TASK_TAG_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.CancelTask.ByUniqueName.KEYS.UNREGISTER_TASK_UNIQUE_NAME_KEY
@@ -15,6 +16,7 @@ import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TAS
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_CONSTRAINTS_STORAGE_NOT_LOW_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_EXISTING_WORK_POLICY_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_INITIAL_DELAY_SECONDS_KEY
+import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_PAYLOAD_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_IS_IN_DEBUG_MODE_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_NAME_VALUE_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_TAG_KEY
@@ -31,6 +33,7 @@ val defaultConstraints: Constraints = Constraints.NONE
 const val defaultInitialDelaySeconds = 0L
 const val defaultRequestedBackoffDelay = 0L
 const val defaultPeriodicRefreshFrequencyInSeconds = PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS / 1000
+const val logTag = "Extractor"
 
 data class BackoffPolicyTaskConfig(val backoffPolicy: BackoffPolicy,
                                    private val requestedBackoffDelay: Long,
@@ -69,6 +72,7 @@ sealed class WorkManagerCall {
         abstract val tag: String?
         abstract val initialDelaySeconds: Long
         abstract val constraintsConfig: Constraints?
+        abstract val payload: String?
 
         companion object KEYS {
             const val REGISTER_TASK_IS_IN_DEBUG_MODE_KEY = "isInDebugMode"
@@ -87,6 +91,7 @@ sealed class WorkManagerCall {
 
             const val REGISTER_TASK_BACK_OFF_POLICY_TYPE_KEY = "backoffPolicyType"
             const val REGISTER_TASK_BACK_OFF_POLICY_DELAY_MILLIS_KEY = "backoffDelayInMilliseconds"
+            const val REGISTER_TASK_PAYLOAD_KEY = "payload"
         }
 
         data class OneOffTask(override val isInDebugMode: Boolean,
@@ -96,7 +101,8 @@ sealed class WorkManagerCall {
                               val existingWorkPolicy: ExistingWorkPolicy,
                               override val initialDelaySeconds: Long,
                               override val constraintsConfig: Constraints,
-                              val backoffPolicyConfig: BackoffPolicyTaskConfig) : RegisterTask()
+                              val backoffPolicyConfig: BackoffPolicyTaskConfig,
+                              override val payload: String? = null) : RegisterTask()
 
         data class PeriodicTask(override val isInDebugMode: Boolean,
                                 override val uniqueName: String,
@@ -106,7 +112,8 @@ sealed class WorkManagerCall {
                                 val frequencyInSeconds: Long,
                                 override val initialDelaySeconds: Long,
                                 override val constraintsConfig: Constraints,
-                                val backoffPolicyConfig: BackoffPolicyTaskConfig) : RegisterTask() {
+                                val backoffPolicyConfig: BackoffPolicyTaskConfig,
+                                override val payload: String? = null) : RegisterTask() {
             companion object KEYS {
                 const val PERIODIC_TASK_FREQUENCY_SECONDS_KEY = "frequency"
             }
@@ -176,7 +183,8 @@ object Extractor {
                             existingWorkPolicy = extractExistingWorkPolicyFromCall(call),
                             initialDelaySeconds = extractInitialDelayFromCall(call),
                             constraintsConfig = extractConstraintConfigFromCall(call),
-                            backoffPolicyConfig = extractBackoffPolicyConfigFromCall(call, TaskType.ONE_OFF)
+                            backoffPolicyConfig = extractBackoffPolicyConfigFromCall(call, TaskType.ONE_OFF),
+                            payload = extractPayload(call)
                     )
                 }
                 Extractor.PossibleWorkManagerCall.REGISTER_PERIODIC_TASK -> {
@@ -189,7 +197,8 @@ object Extractor {
                             existingWorkPolicy = extractExistingPeriodicWorkPolicyFromCall(call),
                             initialDelaySeconds = extractInitialDelayFromCall(call),
                             constraintsConfig = extractConstraintConfigFromCall(call),
-                            backoffPolicyConfig = extractBackoffPolicyConfigFromCall(call, TaskType.PERIODIC)
+                            backoffPolicyConfig = extractBackoffPolicyConfigFromCall(call, TaskType.PERIODIC),
+                            payload = extractPayload(call)
                     )
                 }
 
@@ -268,5 +277,9 @@ object Extractor {
                     }
                 }
                 .build()
+    }
+
+    private fun extractPayload(call: MethodCall): String? {
+        return call.argument<String>(REGISTER_TASK_PAYLOAD_KEY)
     }
 }

@@ -13,25 +13,30 @@ const simplePeriodicTask = "simplePeriodicTask";
 const simplePeriodic1HourTask = "simplePeriodic1HourTask";
 
 void callbackDispatcher() {
-  Workmanager.executeTask((task) async {
+  Workmanager.executeTask((task, inputData) async {
     switch (task) {
       case simpleTaskKey:
-        stderr.writeln("$simpleTaskKey was executed");
+        print("$simpleTaskKey was executed. inputData = $inputData");
         Directory tempDir = await getTemporaryDirectory();
         String tempPath = tempDir.path;
-        print("You can access other plugins in the background: $tempPath");
+        print(
+            "You can access other plugins in the background, for example Directory.getTemporaryDirectory(): $tempPath");
         break;
       case simpleDelayedTask:
-        stderr.writeln("$simpleDelayedTask was executed");
+        print("$simpleDelayedTask was executed");
         break;
       case simplePeriodicTask:
-        stderr.writeln("$simplePeriodicTask was executed");
+        print("$simplePeriodicTask was executed");
         break;
       case simplePeriodic1HourTask:
-        stderr.writeln("$simplePeriodic1HourTask was executed");
+        print("$simplePeriodic1HourTask was executed");
         break;
       case Workmanager.iOSBackgroundTask:
-        stderr.writeln("The iOS background fetch was triggered");
+        print("The iOS background fetch was triggered");
+        Directory tempDir = await getTemporaryDirectory();
+        String tempPath = tempDir.path;
+        print(
+            "You can access other plugins in the background, for example Directory.getTemporaryDirectory(): $tempPath");
         break;
     }
 
@@ -97,6 +102,13 @@ class _MyAppState extends State<MyApp> {
                     Workmanager.registerOneOffTask(
                       "1",
                       simpleTaskKey,
+                      inputData: <String, dynamic>{
+                        'int': 1,
+                        'bool': true,
+                        'dobule': 1.0,
+                        'string': 'string',
+                        'array': [1, 2, 3],
+                      },
                     );
                   }),
               //This task runs once

@@ -11,7 +11,7 @@ This is especially useful to run periodic tasks, such as fetching remote data on
 
 ```yaml
 dependencies:
-  workmanager: ^0.1.1
+  workmanager: ^0.1.3
 ```
 ```shell script
 flutter pub get
@@ -32,7 +32,7 @@ Before registering any task, the WorkManager plugin must be initialized.
 
 ```dart
 void callbackDispatcher() {
-  Workmanager.executeTask((backgroundTask) {
+  Workmanager.executeTask((task, inputData) {
     print("Native called background task: $backgroundTask"); //simpleTask will be emitted here.
     return Future.value(true);
   });
@@ -125,6 +125,23 @@ Workmanager.registerOneOffTask(
 );
 ```
 
+### InputData
+
+Add some input data for your task. Valid value types are: `int`, `bool`, `double`, `String` and their `list`
+
+```dart
+ Workmanager.registerOneOffTask(
+    "1",
+    "simpleTask", 
+    inputData: <String, dynamic>{
+    'int': 1,
+    'bool': true,
+    'dobule': 1.0,
+    'string': 'string',
+    'array': [1, 2, 3],
+    },
+);
+```
 ## BackoffPolicy
 Indicates the waiting strategy upon task failure.  
 The default is `BackoffPolicy.exponential`.    
