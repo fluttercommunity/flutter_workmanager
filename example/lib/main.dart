@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -17,23 +16,27 @@ void callbackDispatcher() {
   Workmanager.executeTask((task, inputData) async {
     switch (task) {
       case simpleTaskKey:
-        developer.log("$simpleTaskKey was executed. inputData = $inputData");
+        print("$simpleTaskKey was executed. inputData = $inputData");
         Directory tempDir = await getTemporaryDirectory();
         String tempPath = tempDir.path;
-        developer
-            .log("You can access other plugins in the background: $tempPath");
+        print(
+            "You can access other plugins in the background, for example Directory.getTemporaryDirectory(): $tempPath");
         break;
       case simpleDelayedTask:
-        developer.log("$simpleDelayedTask was executed");
+        print("$simpleDelayedTask was executed");
         break;
       case simplePeriodicTask:
-        developer.log("$simplePeriodicTask was executed");
+        print("$simplePeriodicTask was executed");
         break;
       case simplePeriodic1HourTask:
-        developer.log("$simplePeriodic1HourTask was executed");
+        print("$simplePeriodic1HourTask was executed");
         break;
       case Workmanager.iOSBackgroundTask:
-        developer.log("The iOS background fetch was triggered");
+        print("The iOS background fetch was triggered");
+        Directory tempDir = await getTemporaryDirectory();
+        String tempPath = tempDir.path;
+        print(
+            "You can access other plugins in the background, for example Directory.getTemporaryDirectory(): $tempPath");
         break;
     }
 
@@ -153,7 +156,7 @@ class _MyAppState extends State<MyApp> {
                 child: Text("Cancel All"),
                 onPressed: () async {
                   await Workmanager.cancelAll();
-                  developer.log('Cancel all tasks completed');
+                  print('Cancel all tasks completed');
                 },
               ),
             ],
