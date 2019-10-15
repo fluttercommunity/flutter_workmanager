@@ -14,11 +14,11 @@ assignees: ''
 - [x] I have ran the sample app and it does not work there
 
 **Version**
-Technology | Version
------------- | -------------
-Workmanager version | 
-XCode version | 
-Swift version |
+| Technology | Version |
+| ------------------- | ------------- |
+| Workmanager version | |
+| XCode version       | |
+| Swift version       | |
 
 **Describe the error**
 Describe error
