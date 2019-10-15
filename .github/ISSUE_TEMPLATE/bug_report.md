@@ -20,12 +20,6 @@ assignees: ''
 | XCode version       |               |
 | Swift version       |               |
 
-Test
-| First Header | Second Header |
-| ------------- | ------------- |
-| Content Cell  | Content Cell  |
-| Content Cell  | Content Cell  |
-
 **Describe the error**
 Describe error
 Optionally provide the least amount of code that shows this behaviour. Ideally in the `sample` app.
