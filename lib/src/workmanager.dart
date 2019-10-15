@@ -77,7 +77,7 @@ class Workmanager {
     WidgetsFlutterBinding.ensureInitialized();
     _backgroundChannel.setMethodCallHandler((call) async {
       final payload = call.arguments["be.tramckrijte.workmanager.PAYLOAD"];
-      backgroundTask(
+      return backgroundTask(
         call.arguments["be.tramckrijte.workmanager.DART_TASK"],
         payload == null ? null : jsonDecode(payload),
       );
