@@ -1,5 +1,9 @@
 # iOS Installation
 
+## Prerequisites
+
+This plugin is compatible with Swift 4.2 and higher. Make sure you are using Xcode 10.3 or higher.
+
 ## Enabling Background Fetch
 
 Background fetching is very different compared to Android's Background Jobs.  
