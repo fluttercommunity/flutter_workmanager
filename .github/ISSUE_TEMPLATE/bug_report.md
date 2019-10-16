@@ -14,15 +14,16 @@ assignees: ''
 - [x] I have ran the sample app and it does not work there
 
 **Version**
-| Technology          | Version       |
-| ------------------- | ------------- |
-| Workmanager version |               |
-| XCode version       |               |
-| Swift version       |               |
+
+| Technology           | Version       |
+| -------------------  | ------------- |
+| Workmanager version  |               |
+| Xcode version        |               |
+| Swift version        |               |
+| iOS deployment target|               |
 
 **Describe the error**
 Describe error
 Optionally provide the least amount of code that shows this behaviour. Ideally in the `sample` app.
 
 **Output of `flutter doctor -v`**
-
