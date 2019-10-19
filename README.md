@@ -32,7 +32,7 @@ Before registering any task, the WorkManager plugin must be initialized.
 
 ```dart
 void callbackDispatcher() {
-  Workmanager.executeTask((task, inputData) {
+  Workmanager.executeTask((task, payload) {
     print("Native called background task: $backgroundTask"); //simpleTask will be emitted here.
     return Future.value(true);
   });
@@ -133,7 +133,7 @@ Add some input data for your task. Valid value types are: `int`, `bool`, `double
  Workmanager.registerOneOffTask(
     "1",
     "simpleTask", 
-    inputData: <String, dynamic>{
+    payload: {
     'int': 1,
     'bool': true,
     'dobule': 1.0,
