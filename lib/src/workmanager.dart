@@ -15,7 +15,7 @@ const _noDuration = const Duration(seconds: 0);
 /// [taskName] Returns the value you provided when registering the task.
 /// iOS will always return [Workmanager.iOSBackgroundTask]
 typedef BackgroundTaskHandler = Future<bool> Function(
-    String taskName, Map<String, dynamic> inputData);
+    String taskName, Map<String, dynamic> payload);
 
 /// Make sure you followed the platform setup steps first before trying to register any task.
 /// Android:
@@ -29,7 +29,7 @@ typedef BackgroundTaskHandler = Future<bool> Function(
 ///
 /// ```
 /// void callbackDispatcher() {
-///   Workmanager.executeTask((taskName, inputData) {
+///   Workmanager.executeTask((taskName, payload) {
 ///     switch(taskName) {
 ///       case "":
 ///         print("Replace this print statement with your code that should be executed in the background here");
@@ -53,7 +53,7 @@ class Workmanager {
   ///
   /// ```
   /// void callbackDispatcher() {
-  ///   Workmanager.executeTask((taskName, inputData) {
+  ///   Workmanager.executeTask((taskName, payload) {
   ///      switch (taskName) {
   ///        case Workmanager.iOSBackgroundTask:
   ///          stderr.writeln("The iOS background fetch was triggered");
@@ -108,7 +108,7 @@ class Workmanager {
   /// Schedule a one off task
   /// A [uniqueName] is required so only one task can be registered.
   /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler]
-  /// The [inputData] is the input data for task. Valid value types are: int, bool, double, String and their list
+  /// The [payload] is the input data for task. Valid value types are: int, bool, double, String and their list
   static Future<void> registerOneOffTask(
     final String uniqueName,
     final String taskName, {
@@ -118,7 +118,7 @@ class Workmanager {
     final Constraints constraints,
     final BackoffPolicy backoffPolicy,
     final Duration backoffPolicyDelay = _noDuration,
-    final Map<String, dynamic> inputData,
+    final Map<String, dynamic> payload,
   }) async =>
       await _foregroundChannel.invokeMethod(
         "registerOneOffTask",
@@ -132,7 +132,7 @@ class Workmanager {
           constraints: constraints,
           backoffPolicy: backoffPolicy,
           backoffPolicyDelay: backoffPolicyDelay,
-          inputData: inputData,
+          payload: payload,
         ),
       );
 
@@ -141,7 +141,7 @@ class Workmanager {
   /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler]
   /// a [frequency] is not required and will be defaulted to 15 minutes if not provided.
   /// a [frequency] has a minimum of 15 min. Android will automatically change your frequency to 15 min if you have configured a lower frequency.
-  /// The [inputData] is the input data for task. Valid value types are: int, bool, double, String and their list
+  /// The [payload] is the input data for task. Valid value types are: int, bool, double, String and their list
   static Future<void> registerPeriodicTask(
     final String uniqueName,
     final String taskName, {
@@ -152,7 +152,7 @@ class Workmanager {
     final Constraints constraints,
     final BackoffPolicy backoffPolicy,
     final Duration backoffPolicyDelay = _noDuration,
-    final Map<String, dynamic> inputData,
+    final Map<String, dynamic> payload,
   }) async =>
       await _foregroundChannel.invokeMethod(
         "registerPeriodicTask",
@@ -167,7 +167,7 @@ class Workmanager {
           constraints: constraints,
           backoffPolicy: backoffPolicy,
           backoffPolicyDelay: backoffPolicyDelay,
-          inputData: inputData,
+          payload: payload,
         ),
       );
 
@@ -203,10 +203,10 @@ class JsonMapperHelper {
     final Constraints constraints,
     final BackoffPolicy backoffPolicy,
     final Duration backoffPolicyDelay,
-    final Map<String, dynamic> inputData,
+    final Map<String, dynamic> payload,
   }) {
-    if (inputData != null) {
-      for (final entry in inputData.entries) {
+    if (payload != null) {
+      for (final entry in payload.entries) {
         final key = entry.key;
         final value = entry.value;
         if (!(value is int ||
@@ -240,7 +240,7 @@ class JsonMapperHelper {
       "requiresStorageNotLow": constraints?.requiresStorageNotLow,
       "backoffPolicyType": _enumToStringToKotlinString(backoffPolicy),
       "backoffDelayInMilliseconds": backoffPolicyDelay.inMilliseconds,
-      "payload": jsonEncode(inputData),
+      "payload": payload == null ? null : jsonEncode(payload),
     };
   }
 
