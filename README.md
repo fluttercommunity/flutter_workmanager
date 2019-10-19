@@ -133,7 +133,7 @@ Add some input data for your task. Valid value types are: `int`, `bool`, `double
  Workmanager.registerOneOffTask(
     "1",
     "simpleTask", 
-    payload: {
+    inputData: {
     'int': 1,
     'bool': true,
     'dobule': 1.0,

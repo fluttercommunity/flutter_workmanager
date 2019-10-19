@@ -27,7 +27,7 @@ class BackgroundWorker(private val ctx: Context,
     private lateinit var backgroundChannel: MethodChannel
 
     companion object {
-        const val PAYLOAD_KEY = "be.tramckrijte.workmanager.PAYLOAD"
+        const val PAYLOAD_KEY = "be.tramckrijte.workmanager.INPUT_DATA"
         const val DART_TASK_KEY = "be.tramckrijte.workmanager.DART_TASK"
         const val IS_IN_DEBUG_MODE_KEY = "be.tramckrijte.workmanager.IS_IN_DEBUG_MODE_KEY"
 
