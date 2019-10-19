@@ -87,7 +87,7 @@ void main() {
               'requiresStorageNotLow': null,
               'backoffPolicyType': null,
               'backoffDelayInMilliseconds': 1000,
-              'payload': null,
+              'inputData': null,
             });
       });
 
@@ -110,7 +110,7 @@ void main() {
               ),
               backoffPolicy: BackoffPolicy.linear,
               backoffPolicyDelay: Duration(seconds: 3),
-              payload: <String, dynamic>{"key": "value"},
+              inputData: <String, dynamic>{"key": "value"},
             ),
             {
               'isInDebugMode': true,
@@ -127,7 +127,7 @@ void main() {
               'requiresStorageNotLow': false,
               'backoffPolicyType': 'linear',
               'backoffDelayInMilliseconds': 3000,
-              'payload': jsonEncode({"key": "value"}),
+              'inputData': jsonEncode({"key": "value"}),
             });
       });
     });
@@ -157,7 +157,7 @@ void main() {
             'requiresStorageNotLow': true,
             'backoffPolicyType': null,
             'backoffDelayInMilliseconds': 1000,
-            'payload': null,
+            'inputData': null,
           }
         ],
         [
@@ -183,7 +183,7 @@ void main() {
             'requiresStorageNotLow': false,
             'backoffPolicyType': null,
             'backoffDelayInMilliseconds': 1000,
-            'payload': null,
+            'inputData': null,
           }
         ],
         [
@@ -203,7 +203,7 @@ void main() {
             'requiresStorageNotLow': null,
             'backoffPolicyType': null,
             'backoffDelayInMilliseconds': 1000,
-            'payload': null,
+            'inputData': null,
           }
         ],
         [
@@ -229,7 +229,7 @@ void main() {
             'requiresStorageNotLow': true,
             'backoffPolicyType': null,
             'backoffDelayInMilliseconds': 1000,
-            'payload': null,
+            'inputData': null,
           }
         ],
         [
@@ -255,7 +255,7 @@ void main() {
             'requiresStorageNotLow': true,
             'backoffPolicyType': null,
             'backoffDelayInMilliseconds': 1000,
-            'payload': null,
+            'inputData': null,
           }
         ],
       ].forEach((constraintTuple) {
@@ -305,7 +305,7 @@ void main() {
               'requiresStorageNotLow': null,
               'backoffPolicyType': null,
               'backoffDelayInMilliseconds': 1000,
-              'payload': null,
+              'inputData': null,
             },
           );
         });
@@ -340,7 +340,7 @@ void main() {
               'requiresStorageNotLow': null,
               'backoffPolicyType': backOffPolicy[1],
               'backoffDelayInMilliseconds': 1000,
-              'payload': null,
+              'inputData': null,
             },
           );
         });

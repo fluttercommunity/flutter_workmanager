@@ -91,7 +91,7 @@ sealed class WorkManagerCall {
 
             const val REGISTER_TASK_BACK_OFF_POLICY_TYPE_KEY = "backoffPolicyType"
             const val REGISTER_TASK_BACK_OFF_POLICY_DELAY_MILLIS_KEY = "backoffDelayInMilliseconds"
-            const val REGISTER_TASK_PAYLOAD_KEY = "payload"
+            const val REGISTER_TASK_PAYLOAD_KEY = "inputData"
         }
 
         data class OneOffTask(override val isInDebugMode: Boolean,

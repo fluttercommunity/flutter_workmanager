@@ -15,7 +15,7 @@ const _noDuration = const Duration(seconds: 0);
 /// [taskName] Returns the value you provided when registering the task.
 /// iOS will always return [Workmanager.iOSBackgroundTask]
 typedef BackgroundTaskHandler = Future<bool> Function(
-    String taskName, Map<String, dynamic> payload);
+    String taskName, Map<String, dynamic> inputData);
 
 /// Make sure you followed the platform setup steps first before trying to register any task.
 /// Android:
@@ -29,7 +29,7 @@ typedef BackgroundTaskHandler = Future<bool> Function(
 ///
 /// ```
 /// void callbackDispatcher() {
-///   Workmanager.executeTask((taskName, payload) {
+///   Workmanager.executeTask((taskName, inputData) {
 ///     switch(taskName) {
 ///       case "":
 ///         print("Replace this print statement with your code that should be executed in the background here");
@@ -53,7 +53,7 @@ class Workmanager {
   ///
   /// ```
   /// void callbackDispatcher() {
-  ///   Workmanager.executeTask((taskName, payload) {
+  ///   Workmanager.executeTask((taskName, inputData) {
   ///      switch (taskName) {
   ///        case Workmanager.iOSBackgroundTask:
   ///          stderr.writeln("The iOS background fetch was triggered");
@@ -76,10 +76,10 @@ class Workmanager {
   static void executeTask(final BackgroundTaskHandler backgroundTask) {
     WidgetsFlutterBinding.ensureInitialized();
     _backgroundChannel.setMethodCallHandler((call) async {
-      final payload = call.arguments["be.tramckrijte.workmanager.PAYLOAD"];
+      final inputData = call.arguments["be.tramckrijte.workmanager.INPUT_DATA"];
       return backgroundTask(
         call.arguments["be.tramckrijte.workmanager.DART_TASK"],
-        payload == null ? null : jsonDecode(payload),
+        inputData == null ? null : jsonDecode(inputData),
       );
     });
     _backgroundChannel.invokeMethod("backgroundChannelInitialized");
@@ -108,7 +108,7 @@ class Workmanager {
   /// Schedule a one off task
   /// A [uniqueName] is required so only one task can be registered.
   /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler]
-  /// The [payload] is the input data for task. Valid value types are: int, bool, double, String and their list
+  /// The [inputData] is the input data for task. Valid value types are: int, bool, double, String and their list
   static Future<void> registerOneOffTask(
     final String uniqueName,
     final String taskName, {
@@ -118,7 +118,7 @@ class Workmanager {
     final Constraints constraints,
     final BackoffPolicy backoffPolicy,
     final Duration backoffPolicyDelay = _noDuration,
-    final Map<String, dynamic> payload,
+    final Map<String, dynamic> inputData,
   }) async =>
       await _foregroundChannel.invokeMethod(
         "registerOneOffTask",
@@ -132,7 +132,7 @@ class Workmanager {
           constraints: constraints,
           backoffPolicy: backoffPolicy,
           backoffPolicyDelay: backoffPolicyDelay,
-          payload: payload,
+          inputData: inputData,
         ),
       );
 
@@ -141,7 +141,7 @@ class Workmanager {
   /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler]
   /// a [frequency] is not required and will be defaulted to 15 minutes if not provided.
   /// a [frequency] has a minimum of 15 min. Android will automatically change your frequency to 15 min if you have configured a lower frequency.
-  /// The [payload] is the input data for task. Valid value types are: int, bool, double, String and their list
+  /// The [inputData] is the input data for task. Valid value types are: int, bool, double, String and their list
   static Future<void> registerPeriodicTask(
     final String uniqueName,
     final String taskName, {
@@ -152,7 +152,7 @@ class Workmanager {
     final Constraints constraints,
     final BackoffPolicy backoffPolicy,
     final Duration backoffPolicyDelay = _noDuration,
-    final Map<String, dynamic> payload,
+    final Map<String, dynamic> inputData,
   }) async =>
       await _foregroundChannel.invokeMethod(
         "registerPeriodicTask",
@@ -167,7 +167,7 @@ class Workmanager {
           constraints: constraints,
           backoffPolicy: backoffPolicy,
           backoffPolicyDelay: backoffPolicyDelay,
-          payload: payload,
+          inputData: inputData,
         ),
       );
 
@@ -203,10 +203,10 @@ class JsonMapperHelper {
     final Constraints constraints,
     final BackoffPolicy backoffPolicy,
     final Duration backoffPolicyDelay,
-    final Map<String, dynamic> payload,
+    final Map<String, dynamic> inputData,
   }) {
-    if (payload != null) {
-      for (final entry in payload.entries) {
+    if (inputData != null) {
+      for (final entry in inputData.entries) {
         final key = entry.key;
         final value = entry.value;
         if (!(value is int ||
@@ -240,7 +240,7 @@ class JsonMapperHelper {
       "requiresStorageNotLow": constraints?.requiresStorageNotLow,
       "backoffPolicyType": _enumToStringToKotlinString(backoffPolicy),
       "backoffDelayInMilliseconds": backoffPolicyDelay.inMilliseconds,
-      "payload": payload == null ? null : jsonEncode(payload),
+      "inputData": inputData == null ? null : inputData == null ? null : jsonEncode(inputData),
     };
   }
 

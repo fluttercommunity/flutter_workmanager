@@ -13,10 +13,10 @@ const simplePeriodicTask = "simplePeriodicTask";
 const simplePeriodic1HourTask = "simplePeriodic1HourTask";
 
 void callbackDispatcher() {
-  Workmanager.executeTask((task, payload) async {
+  Workmanager.executeTask((task, inputData) async {
     switch (task) {
       case simpleTaskKey:
-        print("$simpleTaskKey was executed. payload = $payload");
+        print("$simpleTaskKey was executed. inputData = $inputData");
         Directory tempDir = await getTemporaryDirectory();
         String tempPath = tempDir.path;
         print(
@@ -102,7 +102,7 @@ class _MyAppState extends State<MyApp> {
                     Workmanager.registerOneOffTask(
                       "1",
                       simpleTaskKey,
-                      payload: <String, dynamic>{
+                      inputData: <String, dynamic>{
                         'int': 1,
                         'bool': true,
                         'dobule': 1.0,
