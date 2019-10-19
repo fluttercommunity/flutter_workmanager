@@ -29,7 +29,7 @@ typedef BackgroundTaskHandler = Future<bool> Function(
 ///
 /// ```
 /// void callbackDispatcher() {
-///   Workmanager.executeTask((taskName) {
+///   Workmanager.executeTask((taskName, inputData) {
 ///     switch(taskName) {
 ///       case "":
 ///         print("Replace this print statement with your code that should be executed in the background here");
@@ -53,8 +53,8 @@ class Workmanager {
   ///
   /// ```
   /// void callbackDispatcher() {
-  ///  Workmanager.executeTask((task) async {
-  ///      switch (task) {
+  ///   Workmanager.executeTask((taskName, inputData) {
+  ///      switch (taskName) {
   ///        case Workmanager.iOSBackgroundTask:
   ///          stderr.writeln("The iOS background fetch was triggered");
   ///          break;
@@ -77,7 +77,7 @@ class Workmanager {
     WidgetsFlutterBinding.ensureInitialized();
     _backgroundChannel.setMethodCallHandler((call) async {
       final payload = call.arguments["be.tramckrijte.workmanager.PAYLOAD"];
-      backgroundTask(
+      return backgroundTask(
         call.arguments["be.tramckrijte.workmanager.DART_TASK"],
         payload == null ? null : jsonDecode(payload),
       );

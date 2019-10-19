@@ -23,11 +23,11 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
 
     }
 
-    private struct BackgroundMethodChannel {
-        static let channelName = "\(SwiftWorkmanagerPlugin.identifier)/background_channel_work_manager"
-        static let backgroundChannelInitializedMethod = "backgroundChannelInitialized"
-        static let iOSPerformFetchMethodName = "onResultSend"
-        static let iOSPerformFetchTaskName = "iOSPerformFetch"
+    private struct BackgroundChannel {
+        static let name = "\(SwiftWorkmanagerPlugin.identifier)/background_channel_work_manager"
+        static let initialized = "backgroundChannelInitialized"
+        static let iOSPerformFetch = "onResultSend"
+        static let iOSPerformFetchArguments = ["\(SwiftWorkmanagerPlugin.identifier).DART_TASK": "iOSPerformFetch"]
     }
 
     private let flutterThreadLabelPrefix = "\(SwiftWorkmanagerPlugin.identifier).BackgroundFetch"
@@ -95,7 +95,7 @@ extension SwiftWorkmanagerPlugin {
         flutterEngine!.run(withEntrypoint: flutterCallbackInformation.callbackName, libraryURI: flutterCallbackInformation.callbackLibraryPath)
         SwiftWorkmanagerPlugin.flutterPluginRegistrantCallback?(flutterEngine!)
         
-        var backgroundMethodChannel: FlutterMethodChannel? = FlutterMethodChannel(name: BackgroundMethodChannel.channelName, binaryMessenger: flutterEngine!.binaryMessenger)
+        var backgroundMethodChannel: FlutterMethodChannel? = FlutterMethodChannel(name: BackgroundChannel.name, binaryMessenger: flutterEngine!.binaryMessenger)
         
         func cleanupFlutterResources() {
             flutterEngine?.destroyContext()
@@ -105,17 +105,15 @@ extension SwiftWorkmanagerPlugin {
         
         backgroundMethodChannel?.setMethodCallHandler { (call, result) in
             switch call.method {
-            case BackgroundMethodChannel.backgroundChannelInitializedMethod:
+            case BackgroundChannel.initialized:
                 result(true)    // Agree to Flutter's method invocation
                 
-                let taskName = BackgroundMethodChannel.iOSPerformFetchTaskName
-                backgroundMethodChannel?.invokeMethod(BackgroundMethodChannel.iOSPerformFetchMethodName, arguments: taskName, result: { flutterResult in
+                backgroundMethodChannel?.invokeMethod(BackgroundChannel.iOSPerformFetch, arguments: BackgroundChannel.iOSPerformFetchArguments, result: { flutterResult in
                     cleanupFlutterResources()
                     let fetchSessionCompleted = Date()
-                    let result: UIBackgroundFetchResult = flutterResult as! Bool ? .newData : .failed
+                    let result: UIBackgroundFetchResult = (flutterResult as? Bool ?? false) ? .newData : .failed
                     let fetchDuration = fetchSessionCompleted.timeIntervalSince(fetchSessionStart)
-                    let message = "[\(String(describing: self))] \(#function) -> UIBackgroundFetchResult.\(result) (finished in \(fetchDuration.formatToSeconds()))"
-                    logInfo(message)
+                    logInfo("[\(String(describing: self))] \(#function) -> UIBackgroundFetchResult.\(result) (finished in \(fetchDuration.formatToSeconds()))")
                     DebugNotificationHelper.showCompletedFetchNotification(identifier: fetchSessionIdentifier,
                                                                            completedDate: fetchSessionCompleted,
                                                                            result: result,
