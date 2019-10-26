@@ -7,7 +7,9 @@ void main() {
     test("no callbackHandle", () {
       expect(
             () => JsonMapperHelper.toInitializeMethodArgument(isInDebugMode: true),
-        throwsA(const TypeMatcher<AssertionError>()),
+        throwsA(
+          const TypeMatcher<AssertionError>(),
+        ),
       );
     });
 
@@ -24,7 +26,9 @@ void main() {
       test("no unique name", () {
         expect(
               () => JsonMapperHelper.toRegisterMethodArgument(isInDebugMode: true),
-          throwsA(const TypeMatcher<AssertionError>()),
+          throwsA(
+            const TypeMatcher<AssertionError>(),
+          ),
         );
       });
 
@@ -33,7 +37,9 @@ void main() {
               () =>
               JsonMapperHelper.toRegisterMethodArgument(
                   isInDebugMode: true, uniqueName: "uniqueName"),
-          throwsA(const TypeMatcher<AssertionError>()),
+          throwsA(
+            const TypeMatcher<AssertionError>(),
+          ),
         );
       });
 
@@ -59,7 +65,9 @@ void main() {
                 initialDelay: Duration(seconds: 1),
                 backoffPolicyDelay: null,
               ),
-          throwsA(const TypeMatcher<NoSuchMethodError>()),
+          throwsA(
+            const TypeMatcher<NoSuchMethodError>(),
+          ),
         );
       });
     });
