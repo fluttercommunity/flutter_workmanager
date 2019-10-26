@@ -3,11 +3,7 @@ package be.tramckrijte.workmanager
 import android.content.Context
 import androidx.work.*
 import be.tramckrijte.workmanager.BackgroundWorker.Companion.DART_TASK_KEY
-import be.tramckrijte.workmanager.BackgroundWorker.Companion.IS_IN_DEBUG_MODE
-import be.tramckrijte.workmanager.BackoffPolicyTaskConfig.Companion.defaultOneOffBackoffTaskConfig
-import be.tramckrijte.workmanager.BackoffPolicyTaskConfig.Companion.defaultPeriodicBackoffTaskConfig
 import be.tramckrijte.workmanager.BackgroundWorker.Companion.IS_IN_DEBUG_MODE_KEY
-import be.tramckrijte.workmanager.BackgroundWorker.Companion.DART_TASK_KEY
 import be.tramckrijte.workmanager.BackgroundWorker.Companion.PAYLOAD_KEY
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel

@@ -216,7 +216,7 @@ object Extractor {
                     ?: defaultInitialDelaySeconds
 
     private fun extractBackoffPolicyConfigFromCall(call: MethodCall, taskType: TaskType): BackoffPolicyTaskConfig? {
-        if (!call.hasArgument(REGISTER_TASK_BACK_OFF_POLICY_TYPE_KEY)) {
+        if (call.argument<String?>(REGISTER_TASK_BACK_OFF_POLICY_TYPE_KEY) == null) {
             return null
         }
 
