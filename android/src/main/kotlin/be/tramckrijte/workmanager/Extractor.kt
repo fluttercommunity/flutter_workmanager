@@ -35,23 +35,7 @@ const val defaultPeriodicRefreshFrequencyInSeconds = PeriodicWorkRequest.MIN_PER
 data class BackoffPolicyTaskConfig(val backoffPolicy: BackoffPolicy,
                                    private val requestedBackoffDelay: Long,
                                    private val minBackoffInMillis: Long,
-                                   val backoffDelay: Long = max(minBackoffInMillis, requestedBackoffDelay)) {
-    companion object {
-        val defaultPeriodicBackoffTaskConfig =
-                BackoffPolicyTaskConfig(
-                        defaultBackOffPolicy,
-                        defaultRequestedBackoffDelay,
-                        TaskType.PERIODIC.minimumBackOffDelay
-                )
-
-        val defaultOneOffBackoffTaskConfig =
-                BackoffPolicyTaskConfig(
-                        defaultBackOffPolicy,
-                        defaultRequestedBackoffDelay,
-                        defaultRequestedBackoffDelay
-                )
-    }
-}
+                                   val backoffDelay: Long = max(minBackoffInMillis, requestedBackoffDelay))
 
 sealed class WorkManagerCall {
     data class Initialize(val callbackDispatcherHandleKey: Long,
@@ -96,7 +80,7 @@ sealed class WorkManagerCall {
                               val existingWorkPolicy: ExistingWorkPolicy,
                               override val initialDelaySeconds: Long,
                               override val constraintsConfig: Constraints,
-                              val backoffPolicyConfig: BackoffPolicyTaskConfig) : RegisterTask()
+                              val backoffPolicyConfig: BackoffPolicyTaskConfig?) : RegisterTask()
 
         data class PeriodicTask(override val isInDebugMode: Boolean,
                                 override val uniqueName: String,
@@ -106,7 +90,7 @@ sealed class WorkManagerCall {
                                 val frequencyInSeconds: Long,
                                 override val initialDelaySeconds: Long,
                                 override val constraintsConfig: Constraints,
-                                val backoffPolicyConfig: BackoffPolicyTaskConfig) : RegisterTask() {
+                                val backoffPolicyConfig: BackoffPolicyTaskConfig?) : RegisterTask() {
             companion object KEYS {
                 const val PERIODIC_TASK_FREQUENCY_SECONDS_KEY = "frequency"
             }
@@ -161,13 +145,13 @@ object Extractor {
 
     fun extractWorkManagerCallFromRawMethodName(call: MethodCall): WorkManagerCall =
             when (PossibleWorkManagerCall.fromRawMethodName(call.method)) {
-                Extractor.PossibleWorkManagerCall.INITIALIZE -> {
+                PossibleWorkManagerCall.INITIALIZE -> {
                     WorkManagerCall.Initialize(
                             call.argument<Long>(INITIALIZE_TASK_CALL_HANDLE_KEY)!!,
                             call.argument<Boolean>(INITIALIZE_TASK_IS_IN_DEBUG_MODE_KEY)!!
                     )
                 }
-                Extractor.PossibleWorkManagerCall.REGISTER_ONE_OFF_TASK -> {
+                PossibleWorkManagerCall.REGISTER_ONE_OFF_TASK -> {
                     WorkManagerCall.RegisterTask.OneOffTask(
                             isInDebugMode = call.argument<Boolean>(REGISTER_TASK_IS_IN_DEBUG_MODE_KEY)!!,
                             uniqueName = call.argument<String>(REGISTER_TASK_UNIQUE_NAME_KEY)!!,
@@ -179,7 +163,7 @@ object Extractor {
                             backoffPolicyConfig = extractBackoffPolicyConfigFromCall(call, TaskType.ONE_OFF)
                     )
                 }
-                Extractor.PossibleWorkManagerCall.REGISTER_PERIODIC_TASK -> {
+                PossibleWorkManagerCall.REGISTER_PERIODIC_TASK -> {
                     WorkManagerCall.RegisterTask.PeriodicTask(
                             isInDebugMode = call.argument<Boolean>(REGISTER_TASK_IS_IN_DEBUG_MODE_KEY)!!,
                             uniqueName = call.argument<String>(REGISTER_TASK_UNIQUE_NAME_KEY)!!,
@@ -193,11 +177,11 @@ object Extractor {
                     )
                 }
 
-                Extractor.PossibleWorkManagerCall.CANCEL_TASK_BY_UNIQUE_NAME -> WorkManagerCall.CancelTask.ByUniqueName(call.argument(UNREGISTER_TASK_UNIQUE_NAME_KEY)!!)
-                Extractor.PossibleWorkManagerCall.CANCEL_TASK_BY_TAG -> WorkManagerCall.CancelTask.ByTag(call.argument(UNREGISTER_TASK_TAG_KEY)!!)
-                Extractor.PossibleWorkManagerCall.CANCEL_ALL -> WorkManagerCall.CancelTask.All
+                PossibleWorkManagerCall.CANCEL_TASK_BY_UNIQUE_NAME -> WorkManagerCall.CancelTask.ByUniqueName(call.argument(UNREGISTER_TASK_UNIQUE_NAME_KEY)!!)
+                PossibleWorkManagerCall.CANCEL_TASK_BY_TAG -> WorkManagerCall.CancelTask.ByTag(call.argument(UNREGISTER_TASK_TAG_KEY)!!)
+                PossibleWorkManagerCall.CANCEL_ALL -> WorkManagerCall.CancelTask.All
 
-                Extractor.PossibleWorkManagerCall.UNKNOWN -> WorkManagerCall.Unknown
+                PossibleWorkManagerCall.UNKNOWN -> WorkManagerCall.Unknown
             }
 
     private fun extractExistingWorkPolicyFromCall(call: MethodCall): ExistingWorkPolicy =
@@ -222,7 +206,11 @@ object Extractor {
             call.argument<Int>(REGISTER_TASK_INITIAL_DELAY_SECONDS_KEY)?.toLong()
                     ?: defaultInitialDelaySeconds
 
-    private fun extractBackoffPolicyConfigFromCall(call: MethodCall, taskType: TaskType): BackoffPolicyTaskConfig {
+    private fun extractBackoffPolicyConfigFromCall(call: MethodCall, taskType: TaskType): BackoffPolicyTaskConfig? {
+        if (!call.hasArgument(REGISTER_TASK_BACK_OFF_POLICY_TYPE_KEY)) {
+            return null
+        }
+
         val backoffPolicy = try {
             BackoffPolicy.valueOf(call.argument<String>(REGISTER_TASK_BACK_OFF_POLICY_TYPE_KEY)!!.toUpperCase())
         } catch (ignored: Exception) {
