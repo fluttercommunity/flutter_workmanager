@@ -1,5 +1,7 @@
 # Flutter Workmanager
 [![pub package](https://img.shields.io/pub/v/workmanager.svg)](https://pub.dartlang.org/packages/workmanager)
+[![Build status](https://img.shields.io/cirrus/github/vrtdev/flutter_workmanager/master)](https://cirrus-ci.com/github/vrtdev/flutter_workmanager/)
+=======
 
 Flutter WorkManager is a wrapper around [Android's WorkManager](https://developer.android.com/topic/libraries/architecture/workmanager) and [iOS' performFetchWithCompletionHandler](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1623125-application), effectively enabling headless execution of Dart code in the background.
 
@@ -133,7 +135,7 @@ Add some input data for your task. Valid value types are: `int`, `bool`, `double
  Workmanager.registerOneOffTask(
     "1",
     "simpleTask", 
-    inputData: <String, dynamic>{
+    inputData: {
     'int': 1,
     'bool': true,
     'dobule': 1.0,

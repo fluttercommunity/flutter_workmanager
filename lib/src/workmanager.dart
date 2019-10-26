@@ -76,10 +76,10 @@ class Workmanager {
   static void executeTask(final BackgroundTaskHandler backgroundTask) {
     WidgetsFlutterBinding.ensureInitialized();
     _backgroundChannel.setMethodCallHandler((call) async {
-      final payload = call.arguments["be.tramckrijte.workmanager.PAYLOAD"];
+      final inputData = call.arguments["be.tramckrijte.workmanager.INPUT_DATA"];
       return backgroundTask(
         call.arguments["be.tramckrijte.workmanager.DART_TASK"],
-        payload == null ? null : jsonDecode(payload),
+        inputData == null ? null : jsonDecode(inputData),
       );
     });
     _backgroundChannel.invokeMethod("backgroundChannelInitialized");
@@ -240,7 +240,7 @@ class JsonMapperHelper {
       "requiresStorageNotLow": constraints?.requiresStorageNotLow,
       "backoffPolicyType": _enumToString(backoffPolicy),
       "backoffDelayInMilliseconds": backoffPolicyDelay.inMilliseconds,
-      "payload": jsonEncode(inputData),
+      "inputData": inputData == null ? null : inputData == null ? null : jsonEncode(inputData),
     };
   }
 

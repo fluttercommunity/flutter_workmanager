@@ -43,7 +43,7 @@ object DebugHelper {
                 """
                     • Result: ${ThumbnailGenerator.mapResultToEmoji(result)} ${result.javaClass.simpleName}
                     • dartTask: $dartTask
-                    • payload: ${payload ?: "not found"}
+                    • inputData: ${payload ?: "not found"}
                     • Elapsed time: ${mapMillisToSeconds(fetchDuration)}
                 """.trimIndent()
         )
@@ -61,7 +61,7 @@ object DebugHelper {
                 "${ThumbnailGenerator.workEmoji} $currentTime",
                 """
                 • dartTask: $dartTask
-                • payload: ${payload ?: "not found"}
+                • inputData: ${payload ?: "not found"}
                 • callbackHandle: $callbackHandle 
                 • callBackName: ${callbackInfo?.callbackName ?: "not found"}
                 • callbackClassName: ${callbackInfo?.callbackClassName ?: "not found"}

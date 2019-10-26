@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:test/test.dart';
 import 'package:workmanager/src/options.dart';
 import 'package:workmanager/src/workmanager.dart';
@@ -135,7 +137,7 @@ void main() {
               'requiresStorageNotLow': false,
               'backoffPolicyType': 'linear',
               'backoffDelayInMilliseconds': 3000,
-              'inputData': <String, dynamic>{"key": "value"},
+              'inputData': jsonEncode({"key": "value"}),
             });
       });
     });
