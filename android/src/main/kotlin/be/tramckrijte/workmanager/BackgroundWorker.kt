@@ -27,18 +27,22 @@ class BackgroundWorker(private val ctx: Context,
     private lateinit var backgroundChannel: MethodChannel
 
     companion object {
+        const val PAYLOAD_KEY = "be.tramckrijte.workmanager.PAYLOAD"
         const val DART_TASK_KEY = "be.tramckrijte.workmanager.DART_TASK"
-        const val IS_IN_DEBUG_MODE = "be.tramckrijte.workmanager.IS_IN_DEBUG_MODE"
+        const val IS_IN_DEBUG_MODE_KEY = "be.tramckrijte.workmanager.IS_IN_DEBUG_MODE_KEY"
 
         const val BACKGROUND_CHANNEL_NAME = "be.tramckrijte.workmanager/background_channel_work_manager"
         const val BACKGROUND_CHANNEL_INITIALIZED = "backgroundChannelInitialized"
     }
 
+    private val payload
+        get() = workerParams.inputData.getString(PAYLOAD_KEY)
+
     private val dartTask
         get() = workerParams.inputData.getString(DART_TASK_KEY)!!
 
     private val isInDebug
-        get() = workerParams.inputData.getBoolean(IS_IN_DEBUG_MODE, false)
+        get() = workerParams.inputData.getBoolean(IS_IN_DEBUG_MODE_KEY, false)
 
     private val latch = CountDownLatch(1)
     private val randomThreadIdentifier = Random().nextInt()
@@ -53,7 +57,7 @@ class BackgroundWorker(private val ctx: Context,
             val dartBundlePath = FlutterMain.findAppBundlePath(ctx)
 
             if (isInDebug) {
-                DebugHelper.postTaskStarting(ctx, randomThreadIdentifier, dartTask, callbackHandle, callbackInfo, dartBundlePath)
+                DebugHelper.postTaskStarting(ctx, randomThreadIdentifier, dartTask, payload, callbackHandle, callbackInfo, dartBundlePath)
             }
 
             val backgroundFlutterView = FlutterNativeView(ctx, true)
@@ -79,7 +83,7 @@ class BackgroundWorker(private val ctx: Context,
         }
 
         if (isInDebug) {
-            DebugHelper.postTaskCompleteNotification(ctx, randomThreadIdentifier, dartTask, fetchDuration, result)
+            DebugHelper.postTaskCompleteNotification(ctx, randomThreadIdentifier, dartTask, payload, fetchDuration, result)
         }
 
         return result
@@ -90,7 +94,7 @@ class BackgroundWorker(private val ctx: Context,
             BACKGROUND_CHANNEL_INITIALIZED ->
                 backgroundChannel.invokeMethod(
                         "onResultSend",
-                        dartTask,
+                        mapOf(DART_TASK_KEY to dartTask, PAYLOAD_KEY to payload),
                         object : MethodChannel.Result {
                             override fun notImplemented() {
                                 latch.countDown()

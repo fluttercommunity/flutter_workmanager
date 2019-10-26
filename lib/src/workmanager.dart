@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:ui';
 
 import 'package:flutter/services.dart';
@@ -13,7 +14,8 @@ const _noDuration = const Duration(seconds: 0);
 ///
 /// [taskName] Returns the value you provided when registering the task.
 /// iOS will always return [Workmanager.iOSBackgroundTask]
-typedef BackgroundTaskHandler = Future<bool> Function(String taskName);
+typedef BackgroundTaskHandler = Future<bool> Function(
+    String taskName, Map<String, dynamic> inputData);
 
 /// Make sure you followed the platform setup steps first before trying to register any task.
 /// Android:
@@ -27,7 +29,7 @@ typedef BackgroundTaskHandler = Future<bool> Function(String taskName);
 ///
 /// ```
 /// void callbackDispatcher() {
-///   Workmanager.executeTask((taskName) {
+///   Workmanager.executeTask((taskName, inputData) {
 ///     switch(taskName) {
 ///       case "":
 ///         print("Replace this print statement with your code that should be executed in the background here");
@@ -51,8 +53,8 @@ class Workmanager {
   ///
   /// ```
   /// void callbackDispatcher() {
-  ///  Workmanager.executeTask((task) async {
-  ///      switch (task) {
+  ///   Workmanager.executeTask((taskName, inputData) {
+  ///      switch (taskName) {
   ///        case Workmanager.iOSBackgroundTask:
   ///          stderr.writeln("The iOS background fetch was triggered");
   ///          break;
@@ -73,8 +75,13 @@ class Workmanager {
   /// A helper function so you only need to implement a [BackgroundTaskHandler]
   static void executeTask(final BackgroundTaskHandler backgroundTask) {
     WidgetsFlutterBinding.ensureInitialized();
-    _backgroundChannel
-        .setMethodCallHandler((call) async => backgroundTask(call.arguments));
+    _backgroundChannel.setMethodCallHandler((call) async {
+      final payload = call.arguments["be.tramckrijte.workmanager.PAYLOAD"];
+      return backgroundTask(
+        call.arguments["be.tramckrijte.workmanager.DART_TASK"],
+        payload == null ? null : jsonDecode(payload),
+      );
+    });
     _backgroundChannel.invokeMethod("backgroundChannelInitialized");
   }
 
@@ -87,6 +94,8 @@ class Workmanager {
   }) async {
     Workmanager._isInDebugMode = isInDebugMode;
     final callback = PluginUtilities.getCallbackHandle(callbackDispatcher);
+    assert(callback != null,
+        "The callbackDispatcher needs to be either a static function or a top level function to be accessible as a Flutter entry point.");
     final int handle = callback.toRawHandle();
     await _foregroundChannel.invokeMethod(
         'initialize',
@@ -99,6 +108,7 @@ class Workmanager {
   /// Schedule a one off task
   /// A [uniqueName] is required so only one task can be registered.
   /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler]
+  /// The [inputData] is the input data for task. Valid value types are: int, bool, double, String and their list
   static Future<void> registerOneOffTask(
     final String uniqueName,
     final String taskName, {
@@ -108,6 +118,7 @@ class Workmanager {
     final Constraints constraints,
     final BackoffPolicy backoffPolicy,
     final Duration backoffPolicyDelay = _noDuration,
+    final Map<String, dynamic> inputData,
   }) async =>
       await _foregroundChannel.invokeMethod(
         "registerOneOffTask",
@@ -121,6 +132,7 @@ class Workmanager {
           constraints: constraints,
           backoffPolicy: backoffPolicy,
           backoffPolicyDelay: backoffPolicyDelay,
+          inputData: inputData,
         ),
       );
 
@@ -129,6 +141,7 @@ class Workmanager {
   /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler]
   /// a [frequency] is not required and will be defaulted to 15 minutes if not provided.
   /// a [frequency] has a minimum of 15 min. Android will automatically change your frequency to 15 min if you have configured a lower frequency.
+  /// The [inputData] is the input data for task. Valid value types are: int, bool, double, String and their list
   static Future<void> registerPeriodicTask(
     final String uniqueName,
     final String taskName, {
@@ -139,6 +152,7 @@ class Workmanager {
     final Constraints constraints,
     final BackoffPolicy backoffPolicy,
     final Duration backoffPolicyDelay = _noDuration,
+    final Map<String, dynamic> inputData,
   }) async =>
       await _foregroundChannel.invokeMethod(
         "registerPeriodicTask",
@@ -153,6 +167,7 @@ class Workmanager {
           constraints: constraints,
           backoffPolicy: backoffPolicy,
           backoffPolicyDelay: backoffPolicyDelay,
+          inputData: inputData,
         ),
       );
 
@@ -188,7 +203,26 @@ class JsonMapperHelper {
     final Constraints constraints,
     final BackoffPolicy backoffPolicy,
     final Duration backoffPolicyDelay,
+    final Map<String, dynamic> inputData,
   }) {
+    if (inputData != null) {
+      for (final entry in inputData.entries) {
+        final key = entry.key;
+        final value = entry.value;
+        if (!(value is int ||
+            value is bool ||
+            value is double ||
+            value is String ||
+            value is List<int> ||
+            value is List<bool> ||
+            value is List<double> ||
+            value is List<String>)) {
+          throw Exception(
+              "argument $key has wrong type. WorkManager supports only int, bool, double, String and their list");
+        }
+      }
+    }
+
     assert(uniqueName != null);
     assert(taskName != null);
     return {
@@ -206,6 +240,7 @@ class JsonMapperHelper {
       "requiresStorageNotLow": constraints?.requiresStorageNotLow,
       "backoffPolicyType": _enumToString(backoffPolicy),
       "backoffDelayInMilliseconds": backoffPolicyDelay.inMilliseconds,
+      "payload": jsonEncode(inputData),
     };
   }
 
