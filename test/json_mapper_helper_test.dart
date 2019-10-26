@@ -6,7 +6,7 @@ void main() {
   group("toInitializeMethodArgument", () {
     test("no callbackHandle", () {
       expect(
-            () => JsonMapperHelper.toInitializeMethodArgument(isInDebugMode: true),
+        () => JsonMapperHelper.toInitializeMethodArgument(isInDebugMode: true),
         throwsA(
           const TypeMatcher<AssertionError>(),
         ),
@@ -25,7 +25,7 @@ void main() {
     group("invalid inputs", () {
       test("no unique name", () {
         expect(
-              () => JsonMapperHelper.toRegisterMethodArgument(isInDebugMode: true),
+          () => JsonMapperHelper.toRegisterMethodArgument(isInDebugMode: true),
           throwsA(
             const TypeMatcher<AssertionError>(),
           ),
@@ -34,9 +34,8 @@ void main() {
 
       test("no value", () {
         expect(
-              () =>
-              JsonMapperHelper.toRegisterMethodArgument(
-                  isInDebugMode: true, uniqueName: "uniqueName"),
+          () => JsonMapperHelper.toRegisterMethodArgument(
+              isInDebugMode: true, uniqueName: "uniqueName"),
           throwsA(
             const TypeMatcher<AssertionError>(),
           ),
@@ -57,14 +56,13 @@ void main() {
 
       test("backoff policy delay was null", () {
         expect(
-              () =>
-              JsonMapperHelper.toRegisterMethodArgument(
-                isInDebugMode: true,
-                uniqueName: "uniqueName",
-                taskName: "taskName",
-                initialDelay: Duration(seconds: 1),
-                backoffPolicyDelay: null,
-              ),
+          () => JsonMapperHelper.toRegisterMethodArgument(
+            isInDebugMode: true,
+            uniqueName: "uniqueName",
+            taskName: "taskName",
+            initialDelay: Duration(seconds: 1),
+            backoffPolicyDelay: null,
+          ),
           throwsA(
             const TypeMatcher<NoSuchMethodError>(),
           ),
