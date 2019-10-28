@@ -2,10 +2,8 @@ package be.tramckrijte.workmanager
 
 import android.content.Context
 import androidx.work.*
-import be.tramckrijte.workmanager.BackoffPolicyTaskConfig.Companion.defaultOneOffBackoffTaskConfig
-import be.tramckrijte.workmanager.BackoffPolicyTaskConfig.Companion.defaultPeriodicBackoffTaskConfig
-import be.tramckrijte.workmanager.BackgroundWorker.Companion.IS_IN_DEBUG_MODE_KEY
 import be.tramckrijte.workmanager.BackgroundWorker.Companion.DART_TASK_KEY
+import be.tramckrijte.workmanager.BackgroundWorker.Companion.IS_IN_DEBUG_MODE_KEY
 import be.tramckrijte.workmanager.BackgroundWorker.Companion.PAYLOAD_KEY
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -120,17 +118,21 @@ object WM {
                           existingWorkPolicy: ExistingWorkPolicy = defaultOneOffExistingWorkPolicy,
                           initialDelaySeconds: Long = defaultInitialDelaySeconds,
                           constraintsConfig: Constraints = defaultConstraints,
-                          backoffPolicyConfig: BackoffPolicyTaskConfig = defaultOneOffBackoffTaskConfig
+                          backoffPolicyConfig: BackoffPolicyTaskConfig?
     ) {
         val oneOffTaskRequest = OneTimeWorkRequest.Builder(BackgroundWorker::class.java)
                 .setInputData(buildTaskInputData(dartTask, isInDebugMode, payload))
                 .setInitialDelay(initialDelaySeconds, TimeUnit.SECONDS)
                 .setConstraints(constraintsConfig)
-                .setBackoffCriteria(
-                        backoffPolicyConfig.backoffPolicy,
-                        backoffPolicyConfig.backoffDelay,
-                        TimeUnit.MILLISECONDS
-                )
+                .apply {
+                    if (backoffPolicyConfig != null) {
+                        setBackoffCriteria(
+                                backoffPolicyConfig.backoffPolicy,
+                                backoffPolicyConfig.backoffDelay,
+                                TimeUnit.MILLISECONDS
+                        )
+                    }
+                }
                 .apply { tag?.let(::addTag) }
                 .build()
         context.workManager()
@@ -147,17 +149,21 @@ object WM {
                             existingWorkPolicy: ExistingPeriodicWorkPolicy = defaultPeriodExistingWorkPolicy,
                             initialDelaySeconds: Long = defaultInitialDelaySeconds,
                             constraintsConfig: Constraints = defaultConstraints,
-                            backoffPolicyConfig: BackoffPolicyTaskConfig = defaultPeriodicBackoffTaskConfig) {
+                            backoffPolicyConfig: BackoffPolicyTaskConfig?) {
         val periodicTaskRequest =
                 PeriodicWorkRequest.Builder(BackgroundWorker::class.java, frequencyInSeconds, TimeUnit.SECONDS)
                         .setInputData(buildTaskInputData(dartTask, isInDebugMode, payload))
                         .setInitialDelay(initialDelaySeconds, TimeUnit.SECONDS)
                         .setConstraints(constraintsConfig)
-                        .setBackoffCriteria(
-                                backoffPolicyConfig.backoffPolicy,
-                                backoffPolicyConfig.backoffDelay,
-                                TimeUnit.MILLISECONDS
-                        )
+                        .apply {
+                            if (backoffPolicyConfig != null) {
+                                setBackoffCriteria(
+                                        backoffPolicyConfig.backoffPolicy,
+                                        backoffPolicyConfig.backoffDelay,
+                                        TimeUnit.MILLISECONDS
+                                )
+                            }
+                        }
                         .apply { tag?.let(::addTag) }
                         .build()
         context.workManager()
