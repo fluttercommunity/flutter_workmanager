@@ -65,7 +65,7 @@ class BackgroundWorker(private val ctx: Context,
             val args =
                     FlutterRunArguments()
                             .apply {
-                                bundlePath = FlutterMain.findAppBundlePath(ctx)
+                                bundlePath = FlutterMain.findAppBundlePath()
                                 entrypoint = callbackInfo.callbackName
                                 libraryPath = callbackInfo.callbackLibraryPath
                             }

@@ -231,14 +231,14 @@ class JsonMapperHelper {
       "taskName": taskName,
       "tag": tag,
       "frequency": frequency?.inSeconds,
-      "existingWorkPolicy": _enumToStringToKotlinString(existingWorkPolicy),
+      "existingWorkPolicy": _enumToString(existingWorkPolicy),
       "initialDelaySeconds": initialDelay.inSeconds,
-      "networkType": _enumToStringToKotlinString(constraints?.networkType),
+      "networkType": _enumToString(constraints?.networkType),
       "requiresBatteryNotLow": constraints?.requiresBatteryNotLow,
       "requiresCharging": constraints?.requiresCharging,
       "requiresDeviceIdle": constraints?.requiresDeviceIdle,
       "requiresStorageNotLow": constraints?.requiresStorageNotLow,
-      "backoffPolicyType": _enumToStringToKotlinString(backoffPolicy),
+      "backoffPolicyType": _enumToString(backoffPolicy),
       "backoffDelayInMilliseconds": backoffPolicyDelay.inMilliseconds,
       "inputData": inputData == null ? null : inputData == null ? null : jsonEncode(inputData),
     };
@@ -255,6 +255,6 @@ class JsonMapperHelper {
     };
   }
 
-  static String _enumToStringToKotlinString(final dynamic enumeration) =>
+  static String _enumToString(final dynamic enumeration) =>
       enumeration?.toString()?.split('.')?.last;
 }
