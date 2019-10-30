@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-This plugin is compatible with **Swift 4.2** and up. Make sure you are using **Xcode 10.3** or higher and have set your minimum deployment target to **iOS 10** or higher.
+This plugin is compatible with **Swift 4.2** and up. Make sure you are using **Xcode 10.3** or higher and have set your minimum deployment target to **iOS 10** or higher by defining a platform version in your podfile: `platform :ios, '10.0'`
 
 ## Enabling Background Fetch
 
