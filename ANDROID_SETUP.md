@@ -2,6 +2,9 @@
 
 In order for this plugin to work properly on Android, you will need to make a custom `Application`.  
 
+this is the template for kotlin file/project.
+### Kotlin (.kt)
+
 ```kotlin
 package replace.me.with.your.package.name
 
@@ -19,6 +22,31 @@ class App : FlutterApplication(), PluginRegistry.PluginRegistrantCallback {
     override fun registerWith(reg: PluginRegistry?) {
         GeneratedPluginRegistrant.registerWith(reg)
     }
+}
+```
+
+or if you prefer Java, the template is below.
+### Java (.java)
+
+```java
+package replace.me.with.your.package.name;
+
+import be.tramckrijte.workmanager.WorkmanagerPlugin;
+import io.flutter.app.FlutterApplication;
+import io.flutter.plugin.common.PluginRegistry;
+import io.flutter.plugins.GeneratedPluginRegistrant;
+
+public class App extends FlutterApplication implements PluginRegistry.PluginRegistrantCallback {
+  @Override
+  public void onCreate() {
+    super.onCreate();
+    WorkmanagerPlugin.setPluginRegistrantCallback(this);
+  }
+
+  @Override
+  public void registerWith(PluginRegistry registry) {
+    GeneratedPluginRegistrant.registerWith(registry);
+  }
 }
 ```
 
