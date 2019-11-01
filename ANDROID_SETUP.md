@@ -2,6 +2,7 @@
 
 In order for this plugin to work properly on Android, you will need to make a custom `Application`.  
 
+### Kotlin
 ```kotlin
 package replace.me.with.your.package.name
 
@@ -21,7 +22,7 @@ class App : FlutterApplication(), PluginRegistry.PluginRegistrantCallback {
     }
 }
 ```
-
+### Java
 ```java
 package replace.me.with.your.package.name;
 
