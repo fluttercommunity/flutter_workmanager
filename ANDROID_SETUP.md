@@ -2,7 +2,9 @@
 
 In order for this plugin to work properly on Android, you will need to make a custom `Application`.  
 
-### Kotlin
+this is the template for kotlin file/project.
+### Kotlin (.kt)
+
 ```kotlin
 package replace.me.with.your.package.name
 
@@ -22,7 +24,10 @@ class App : FlutterApplication(), PluginRegistry.PluginRegistrantCallback {
     }
 }
 ```
-### Java
+
+or if you prefer Java, the template is below.
+### Java (.java)
+
 ```java
 package replace.me.with.your.package.name;
 
