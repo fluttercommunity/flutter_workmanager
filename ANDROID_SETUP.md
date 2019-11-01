@@ -22,6 +22,28 @@ class App : FlutterApplication(), PluginRegistry.PluginRegistrantCallback {
 }
 ```
 
+```java
+package replace.me.with.your.package.name;
+
+import be.tramckrijte.workmanager.WorkmanagerPlugin;
+import io.flutter.app.FlutterApplication;
+import io.flutter.plugin.common.PluginRegistry;
+import io.flutter.plugins.GeneratedPluginRegistrant;
+
+public class App extends FlutterApplication implements PluginRegistry.PluginRegistrantCallback {
+  @Override
+  public void onCreate() {
+    super.onCreate();
+    WorkmanagerPlugin.setPluginRegistrantCallback(this);
+  }
+
+  @Override
+  public void registerWith(PluginRegistry registry) {
+    GeneratedPluginRegistrant.registerWith(registry);
+  }
+}
+```
+
 You will then need to register this `Application` in the `AndroidManifest.xml`.
 
 ```xml
