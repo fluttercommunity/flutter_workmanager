@@ -1,3 +1,7 @@
+# 0.1.5
+ * Android:
+    * The result was not correctly mapped to a RETRY when returning false from a background task 
+
 # 0.1.4
  * Android:
     * Using Backoff Policy in conjunction with device idle constraint is an illegal action.  

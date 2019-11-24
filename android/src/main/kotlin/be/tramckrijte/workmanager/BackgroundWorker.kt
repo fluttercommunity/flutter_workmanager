@@ -104,8 +104,9 @@ class BackgroundWorker(private val ctx: Context,
                                 latch.countDown()
                             }
 
-                            override fun success(p0: Any?) {
-                                result = Result.success()
+                            override fun success(receivedResult: Any?) {
+                                val wasSuccessFul = receivedResult?.let { it as Boolean? } == true
+                                result = if (wasSuccessFul) Result.success() else Result.retry()
                                 latch.countDown()
                             }
                         })
