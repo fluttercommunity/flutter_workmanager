@@ -1,4 +1,6 @@
-import 'package:flutter_test/flutter_test.dart';
+import 'dart:convert';
+
+import 'package:test/test.dart';
 import 'package:workmanager/src/options.dart';
 import 'package:workmanager/src/workmanager.dart';
 
@@ -6,9 +8,11 @@ void main() {
   group("toInitializeMethodArgument", () {
     test("no callbackHandle", () {
       expect(
-          () =>
-              JsonMapperHelper.toInitializeMethodArgument(isInDebugMode: true),
-          throwsAssertionError);
+        () => JsonMapperHelper.toInitializeMethodArgument(isInDebugMode: true),
+        throwsA(
+          const TypeMatcher<AssertionError>(),
+        ),
+      );
     });
 
     test("all arguments given", () {
@@ -23,16 +27,21 @@ void main() {
     group("invalid inputs", () {
       test("no unique name", () {
         expect(
-            () =>
-                JsonMapperHelper.toRegisterMethodArgument(isInDebugMode: true),
-            throwsAssertionError);
+          () => JsonMapperHelper.toRegisterMethodArgument(isInDebugMode: true),
+          throwsA(
+            const TypeMatcher<AssertionError>(),
+          ),
+        );
       });
 
       test("no value", () {
         expect(
-            () => JsonMapperHelper.toRegisterMethodArgument(
-                isInDebugMode: true, uniqueName: "uniqueName"),
-            throwsAssertionError);
+          () => JsonMapperHelper.toRegisterMethodArgument(
+              isInDebugMode: true, uniqueName: "uniqueName"),
+          throwsA(
+            const TypeMatcher<AssertionError>(),
+          ),
+        );
       });
 
       test("initial delay was null", () {
@@ -43,20 +52,23 @@ void main() {
             taskName: "taskName",
             initialDelay: null,
           ),
-          throwsNoSuchMethodError,
+          throwsA(const TypeMatcher<NoSuchMethodError>()),
         );
       });
 
-      test("backoff policy was null", () {
+      test("backoff policy delay was null", () {
         expect(
-            () => JsonMapperHelper.toRegisterMethodArgument(
-                  isInDebugMode: true,
-                  uniqueName: "uniqueName",
-                  taskName: "taskName",
-                  initialDelay: Duration(seconds: 1),
-                  backoffPolicyDelay: null,
-                ),
-            throwsNoSuchMethodError);
+          () => JsonMapperHelper.toRegisterMethodArgument(
+            isInDebugMode: true,
+            uniqueName: "uniqueName",
+            taskName: "taskName",
+            initialDelay: Duration(seconds: 1),
+            backoffPolicyDelay: null,
+          ),
+          throwsA(
+            const TypeMatcher<NoSuchMethodError>(),
+          ),
+        );
       });
     });
 
@@ -125,7 +137,7 @@ void main() {
               'requiresStorageNotLow': false,
               'backoffPolicyType': 'linear',
               'backoffDelayInMilliseconds': 3000,
-              'inputData': <String, dynamic>{"key": "value"},
+              'inputData': jsonEncode({"key": "value"}),
             });
       });
     });

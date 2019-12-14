@@ -29,7 +29,7 @@ typedef BackgroundTaskHandler = Future<bool> Function(
 ///
 /// ```
 /// void callbackDispatcher() {
-///   Workmanager.executeTask((taskName) {
+///   Workmanager.executeTask((taskName, inputData) {
 ///     switch(taskName) {
 ///       case "":
 ///         print("Replace this print statement with your code that should be executed in the background here");
@@ -53,8 +53,8 @@ class Workmanager {
   ///
   /// ```
   /// void callbackDispatcher() {
-  ///  Workmanager.executeTask((task) async {
-  ///      switch (task) {
+  ///   Workmanager.executeTask((taskName, inputData) {
+  ///      switch (taskName) {
   ///        case Workmanager.iOSBackgroundTask:
   ///          stderr.writeln("The iOS background fetch was triggered");
   ///          break;
@@ -76,10 +76,10 @@ class Workmanager {
   static void executeTask(final BackgroundTaskHandler backgroundTask) {
     WidgetsFlutterBinding.ensureInitialized();
     _backgroundChannel.setMethodCallHandler((call) async {
-      final payload = call.arguments["be.tramckrijte.workmanager.PAYLOAD"];
-      backgroundTask(
+      final inputData = call.arguments["be.tramckrijte.workmanager.INPUT_DATA"];
+      return backgroundTask(
         call.arguments["be.tramckrijte.workmanager.DART_TASK"],
-        payload == null ? null : jsonDecode(payload),
+        inputData == null ? null : jsonDecode(inputData),
       );
     });
     _backgroundChannel.invokeMethod("backgroundChannelInitialized");
@@ -231,16 +231,16 @@ class JsonMapperHelper {
       "taskName": taskName,
       "tag": tag,
       "frequency": frequency?.inSeconds,
-      "existingWorkPolicy": _enumToStringToKotlinString(existingWorkPolicy),
+      "existingWorkPolicy": _enumToString(existingWorkPolicy),
       "initialDelaySeconds": initialDelay.inSeconds,
-      "networkType": _enumToStringToKotlinString(constraints?.networkType),
+      "networkType": _enumToString(constraints?.networkType),
       "requiresBatteryNotLow": constraints?.requiresBatteryNotLow,
       "requiresCharging": constraints?.requiresCharging,
       "requiresDeviceIdle": constraints?.requiresDeviceIdle,
       "requiresStorageNotLow": constraints?.requiresStorageNotLow,
-      "backoffPolicyType": _enumToStringToKotlinString(backoffPolicy),
+      "backoffPolicyType": _enumToString(backoffPolicy),
       "backoffDelayInMilliseconds": backoffPolicyDelay.inMilliseconds,
-      "payload": jsonEncode(inputData),
+      "inputData": inputData == null ? null : inputData == null ? null : jsonEncode(inputData),
     };
   }
 
@@ -255,6 +255,6 @@ class JsonMapperHelper {
     };
   }
 
-  static String _enumToStringToKotlinString(final dynamic enumeration) =>
+  static String _enumToString(final dynamic enumeration) =>
       enumeration?.toString()?.split('.')?.last;
 }

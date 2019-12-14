@@ -1,3 +1,21 @@
+# 0.1.5
+ * Android:
+    * The result was not correctly mapped to a RETRY when returning false from a background task 
+
+# 0.1.4
+ * Android:
+    * Using Backoff Policy in conjunction with device idle constraint is an illegal action.  
+      Backoff policy is now nullable in the Android code. See issue [#107](https://github.com/vrtdev/flutter_workmanager/issues/107).
+
+# 0.1.3
+
+* iOS & Android:
+  * Result of `BackgroundTaskHandler` now correctly returns to background method channel
+* iOS:
+  * Invoking `iOSPerformFetch` method now no longer crashes
+  * The iOS example app now  implements `setPluginRegistrantCallback` as described in our docs, making it possible to access other plugins during a backround fetch
+  * Dart debug logging is now visible again in Xcode's console
+  
 # 0.1.2
 
 * Android:
@@ -88,7 +106,7 @@
   * Fixes [#6](https://github.com/vrtdev/flutter_workmanager/issues/6)
   * Fixes [#4](https://github.com/vrtdev/flutter_workmanager/issues/4)
   * [‼️ BREAKING change] A user should extend a custom `Application` and register it in its `AndroidManifest.xml`
- 
+
     ```kotlin
     class App : FlutterApplication(), PluginRegistry.PluginRegistrantCallback {
         override fun onCreate() {
@@ -101,7 +119,7 @@
         }
     }
     ```
-      
+    
     ```xml
     <manifest xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
@@ -138,7 +156,7 @@
             </activity>
         </application>
     </manifest>
-    ```  
+    ```
     
 # 0.0.6+1
 
@@ -183,4 +201,4 @@
     * requires device idle
     * requires storage not low
   * back off policy
- 
+

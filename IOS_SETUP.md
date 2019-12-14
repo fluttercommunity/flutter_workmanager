@@ -1,5 +1,9 @@
 # iOS Installation
 
+## Prerequisites
+
+This plugin is compatible with **Swift 4.2** and up. Make sure you are using **Xcode 10.3** or higher and have set your minimum deployment target to **iOS 10** or higher by defining a platform version in your podfile: `platform :ios, '10.0'`
+
 ## Enabling Background Fetch
 
 Background fetching is very different compared to Android's Background Jobs.  
@@ -68,7 +72,7 @@ Here is an example of a Flutter entrypoint called `callbackDispatcher`:
 
 ```dart
 void callbackDispatcher() {
-  Workmanager.executeTask((task) {
+  Workmanager.executeTask((task, inputData) {
     switch (task) {
       case Workmanager.iOSBackgroundTask:
         stderr.writeln("The iOS background fetch was triggered");
