@@ -54,7 +54,7 @@ class BackgroundWorker(private val ctx: Context,
 
             val callbackHandle = SharedPreferenceHelper.getCallbackHandle(ctx)
             val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle)
-            val dartBundlePath = FlutterMain.findAppBundlePath(ctx)
+            val dartBundlePath = FlutterMain.findAppBundlePath()
 
             if (isInDebug) {
                 DebugHelper.postTaskStarting(ctx, randomThreadIdentifier, dartTask, payload, callbackHandle, callbackInfo, dartBundlePath)
