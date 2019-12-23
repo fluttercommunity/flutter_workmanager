@@ -10,3 +10,5 @@ build/
 .gradle/
 
 doc/api/*/
+
+.flutter-plugins-dependencies
