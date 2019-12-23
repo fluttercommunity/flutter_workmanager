@@ -1,3 +1,12 @@
+# 0.1.5
+ * Android:
+    * The result was not correctly mapped to a RETRY when returning false from a background task 
+
+# 0.1.4
+ * Android:
+    * Using Backoff Policy in conjunction with device idle constraint is an illegal action.  
+      Backoff policy is now nullable in the Android code. See issue [#107](https://github.com/vrtdev/flutter_workmanager/issues/107).
+
 # 0.1.3
 
 * iOS & Android:

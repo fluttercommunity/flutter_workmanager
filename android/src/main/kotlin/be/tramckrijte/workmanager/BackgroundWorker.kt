@@ -65,7 +65,7 @@ class BackgroundWorker(private val ctx: Context,
             val args =
                     FlutterRunArguments()
                             .apply {
-                                bundlePath = FlutterMain.findAppBundlePath(ctx)
+                                bundlePath = FlutterMain.findAppBundlePath()
                                 entrypoint = callbackInfo.callbackName
                                 libraryPath = callbackInfo.callbackLibraryPath
                             }
@@ -104,8 +104,9 @@ class BackgroundWorker(private val ctx: Context,
                                 latch.countDown()
                             }
 
-                            override fun success(p0: Any?) {
-                                result = Result.success()
+                            override fun success(receivedResult: Any?) {
+                                val wasSuccessFul = receivedResult?.let { it as Boolean? } == true
+                                result = if (wasSuccessFul) Result.success() else Result.retry()
                                 latch.countDown()
                             }
                         })
