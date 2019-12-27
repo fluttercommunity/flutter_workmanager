@@ -6,10 +6,10 @@ This plugin is compatible with **Swift 4.2** and up. Make sure you are using **X
 
 ## Enabling Background Fetch
 
+>  ⚠️  Background fetch this is currently the *only* supported way to do background work on iOS with work manager: **One off tasks** or **Periodic tasks** are available on Android only for now! (see #109)
+
 Background fetching is very different compared to Android's Background Jobs.  
-In order for your app to support Background Fetch, you have to enable the *Background Modes* capability in Xcode for your app's Target and check the *Background fetch* mode checkbox:
-
-
+In order for your app to support Background Fetch, you have to add the *Background Modes* capability in Xcode for your app's Target and check *Background fetch*:
 
 ![Screenshot of Background Fetch Capabilities tab in Xcode ](.art/ios_background_mode_fetch.png)
 
@@ -22,7 +22,7 @@ This will add the **UIBackgroundModes** key to your project's `Info.plist`:
 </array>
 ```
 
-And set the correct *SystemCapabilities* for your target in the `project.pbxproj` file:
+And will set the correct *SystemCapabilities* for your target in the `project.pbxproj` file:
 
 ```
 SystemCapabilities = {
@@ -141,11 +141,14 @@ From the [Apple docs](https://developer.apple.com/documentation/usernotification
 
 An easy way to get it working is by implementing it your `AppDelegate` like so:
 ```swift
-extension AppDelegate: UNUserNotificationCenterDelegate {
+class AppDelegate: FlutterAppDelegate {
+    // ...
+    override func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                         willPresent notification: UNNotification,
+                                         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+         completionHandler(.alert) // shows banner even if app is in foreground
+     }
     
-    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        completionHandler(.alert)
-    }
 }
 ```
 
