@@ -21,11 +21,8 @@ import workmanager
         
     }
     
-}
-
-extension AppDelegate: UNUserNotificationCenterDelegate {
+    override func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+         completionHandler(.alert) // shows banner even if app is in foreground
+     }
     
-    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        completionHandler(.alert) // shows banner even if app is in foreground
-    }
 }
