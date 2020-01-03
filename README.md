@@ -138,7 +138,7 @@ Add some input data for your task. Valid value types are: `int`, `bool`, `double
     inputData: {
     'int': 1,
     'bool': true,
-    'dobule': 1.0,
+    'double': 1.0,
     'string': 'string',
     'array': [1, 2, 3],
     },
