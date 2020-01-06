@@ -7,6 +7,7 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.dart.DartExecutor
+import io.flutter.embedding.engine.plugins.shim.ShimPluginRegistry
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.view.FlutterCallbackInformation
@@ -54,7 +55,6 @@ class BackgroundWorker(private val ctx: Context,
         Handler(Looper.getMainLooper()).apply {
             post {
                 engine = FlutterEngine(ctx)
-                WorkmanagerPlugin.engineConfigurator.configureFlutterEngine(engine)
                 FlutterMain.ensureInitializationComplete(ctx, null)
 
                 val callbackHandle = SharedPreferenceHelper.getCallbackHandle(ctx)
@@ -65,6 +65,8 @@ class BackgroundWorker(private val ctx: Context,
                     DebugHelper.postTaskStarting(ctx, randomThreadIdentifier, dartTask, payload, callbackHandle, callbackInfo, dartBundlePath)
                 }
 
+                //Backwards compatibility with v1. We register all the user's plugins.
+                WorkmanagerPlugin.pluginRegistryCallback?.registerWith(ShimPluginRegistry(engine))
                 engine.dartExecutor.executeDartCallback(DartExecutor.DartCallback(ctx.assets, dartBundlePath, callbackInfo))
 
                 backgroundChannel = MethodChannel(engine.dartExecutor, BACKGROUND_CHANNEL_NAME)
@@ -80,7 +82,6 @@ class BackgroundWorker(private val ctx: Context,
             }
 
             post {
-                WorkmanagerPlugin.engineConfigurator.cleanUpFlutterEngine(engine)
                 engine.destroy()
             }
         }
