@@ -3,24 +3,30 @@
 In order for this plugin to work properly on Android, you will need to make a custom `Application`.  
 
 this is the template for kotlin file/project.
+
 ### Kotlin (.kt)
 
 ```kotlin
 package replace.me.with.your.package.name
 
-import be.tramckrijte.workmanager.WorkmanagerPlugin
+import  be.tramckrijte.workmanager.WorkmanagerPlugin
 import io.flutter.app.FlutterApplication
-import io.flutter.plugin.common.PluginRegistry
+import io.flutter.embedding.android.FlutterEngineConfigurator
+import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugins.GeneratedPluginRegistrant
 
-class App : FlutterApplication(), PluginRegistry.PluginRegistrantCallback {
+class App : FlutterApplication(), FlutterEngineConfigurator {
+    override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
+
+    }
+
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        GeneratedPluginRegistrant.registerWith(flutterEngine)
+    }
+
     override fun onCreate() {
         super.onCreate()
         WorkmanagerPlugin.setPluginRegistrantCallback(this)
-    }
-
-    override fun registerWith(reg: PluginRegistry?) {
-        GeneratedPluginRegistrant.registerWith(reg)
     }
 }
 ```
@@ -33,24 +39,40 @@ package replace.me.with.your.package.name;
 
 import be.tramckrijte.workmanager.WorkmanagerPlugin;
 import io.flutter.app.FlutterApplication;
-import io.flutter.plugin.common.PluginRegistry;
+import io.flutter.embedding.android.FlutterEngineConfigurator;
+import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugins.GeneratedPluginRegistrant;
 
-public class App extends FlutterApplication implements PluginRegistry.PluginRegistrantCallback {
-  @Override
-  public void onCreate() {
-    super.onCreate();
-    WorkmanagerPlugin.setPluginRegistrantCallback(this);
-  }
+public class AppJ extends FlutterApplication implements FlutterEngineConfigurator {
+    @Override
+    public void cleanUpFlutterEngine(FlutterEngine flutterEngine) {
 
-  @Override
-  public void registerWith(PluginRegistry registry) {
-    GeneratedPluginRegistrant.registerWith(registry);
-  }
+    }
+
+    @Override
+    public void configureFlutterEngine(FlutterEngine flutterEngine) {
+        GeneratedPluginRegistrant.registerWith(flutterEngine);
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        WorkmanagerPlugin.setPluginRegistrantCallback(this);
+    }
 }
+
 ```
 
-You will then need to register this `Application` in the `AndroidManifest.xml`.
+You will then need to register this `Application` in the `AndroidManifest.xml`.  
+Also be sure to add the `flutterEmbedding` meta data flag inside the `application` tag.  
+
+```xml
+<meta-data
+    android:name="flutterEmbedding"
+    android:value="2" />
+```  
+
+Your complete `AndroidManifest.xml` should look similar to this:  
 
 ```xml
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -86,6 +108,10 @@ You will then need to register this `Application` in the `AndroidManifest.xml`.
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
     </application>
 </manifest>
 ```

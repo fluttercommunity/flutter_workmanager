@@ -1,3 +1,8 @@
+# 0.2.0
+* Android:
+    * Dropping support for registering plugins via the `registerWith` way instead only support the `Android v2 embedding`.  
+      See more details in the Android setup guide.
+    
 # 0.1.5
  * Android:
     * The result was not correctly mapped to a RETRY when returning false from a background task 
