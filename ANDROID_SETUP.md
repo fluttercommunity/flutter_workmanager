@@ -10,7 +10,7 @@ this is the template for kotlin file/project.
 package replace.me.with.your.package.name
 
 import android.app.Application
-import  be.tramckrijte.workmanager.WorkmanagerPlugin
+import be.tramckrijte.workmanager.WorkmanagerPlugin
 import io.flutter.embedding.android.FlutterEngineConfigurator
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugins.GeneratedPluginRegistrant
