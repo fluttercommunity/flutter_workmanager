@@ -5,11 +5,12 @@ import android.os.Handler
 import android.os.Looper
 import androidx.work.Worker
 import androidx.work.WorkerParameters
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.view.FlutterCallbackInformation
 import io.flutter.view.FlutterMain
-import io.flutter.view.FlutterNativeView
 import io.flutter.view.FlutterRunArguments
 import java.util.*
 import java.util.concurrent.CountDownLatch
@@ -47,45 +48,42 @@ class BackgroundWorker(private val ctx: Context,
     private val latch = CountDownLatch(1)
     private val randomThreadIdentifier = Random().nextInt()
     var result: Result = Result.retry()
+    private lateinit var engine: FlutterEngine
 
     override fun doWork(): Result {
-        Handler(Looper.getMainLooper()).post {
-            FlutterMain.ensureInitializationComplete(ctx, null)
+        Handler(Looper.getMainLooper()).apply {
+            post {
+                engine = FlutterEngine(ctx)
+                WorkmanagerPlugin.engineConfigurator.configureFlutterEngine(engine)
+                FlutterMain.ensureInitializationComplete(ctx, null)
 
-            val callbackHandle = SharedPreferenceHelper.getCallbackHandle(ctx)
-            val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle)
-            val dartBundlePath = FlutterMain.findAppBundlePath()
+                val callbackHandle = SharedPreferenceHelper.getCallbackHandle(ctx)
+                val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle)
+                val dartBundlePath = FlutterMain.findAppBundlePath()
 
-            if (isInDebug) {
-                DebugHelper.postTaskStarting(ctx, randomThreadIdentifier, dartTask, payload, callbackHandle, callbackInfo, dartBundlePath)
+                if (isInDebug) {
+                    DebugHelper.postTaskStarting(ctx, randomThreadIdentifier, dartTask, payload, callbackHandle, callbackInfo, dartBundlePath)
+                }
+
+                engine.dartExecutor.executeDartCallback(DartExecutor.DartCallback(ctx.assets, dartBundlePath, callbackInfo))
+
+                backgroundChannel = MethodChannel(engine.dartExecutor, BACKGROUND_CHANNEL_NAME)
+                backgroundChannel.setMethodCallHandler(this@BackgroundWorker)
             }
 
-            val backgroundFlutterView = FlutterNativeView(ctx, true)
+            val fetchDuration = measureTimeMillis {
+                latch.await()
+            }
 
-            val args =
-                    FlutterRunArguments()
-                            .apply {
-                                bundlePath = FlutterMain.findAppBundlePath()
-                                entrypoint = callbackInfo.callbackName
-                                libraryPath = callbackInfo.callbackLibraryPath
-                            }
+            if (isInDebug) {
+                DebugHelper.postTaskCompleteNotification(ctx, randomThreadIdentifier, dartTask, payload, fetchDuration, result)
+            }
 
-            backgroundFlutterView.runFromBundle(args)
-
-            WorkmanagerPlugin.pluginRegistryCallback.registerWith(backgroundFlutterView.pluginRegistry)
-
-            backgroundChannel = MethodChannel(backgroundFlutterView, BACKGROUND_CHANNEL_NAME)
-            backgroundChannel.setMethodCallHandler(this)
+            post {
+                WorkmanagerPlugin.engineConfigurator.cleanUpFlutterEngine(engine)
+                engine.destroy()
+            }
         }
-
-        val fetchDuration = measureTimeMillis {
-            latch.await()
-        }
-
-        if (isInDebug) {
-            DebugHelper.postTaskCompleteNotification(ctx, randomThreadIdentifier, dartTask, payload, fetchDuration, result)
-        }
-
         return result
     }
 

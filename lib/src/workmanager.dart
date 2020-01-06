@@ -98,11 +98,12 @@ class Workmanager {
         "The callbackDispatcher needs to be either a static function or a top level function to be accessible as a Flutter entry point.");
     final int handle = callback.toRawHandle();
     await _foregroundChannel.invokeMethod(
-        'initialize',
-        JsonMapperHelper.toInitializeMethodArgument(
-          isInDebugMode: _isInDebugMode,
-          callbackHandle: handle,
-        ));
+      'initialize',
+      JsonMapperHelper.toInitializeMethodArgument(
+        isInDebugMode: _isInDebugMode,
+        callbackHandle: handle,
+      ),
+    );
   }
 
   /// Schedule a one off task
@@ -240,7 +241,9 @@ class JsonMapperHelper {
       "requiresStorageNotLow": constraints?.requiresStorageNotLow,
       "backoffPolicyType": _enumToString(backoffPolicy),
       "backoffDelayInMilliseconds": backoffPolicyDelay.inMilliseconds,
-      "inputData": inputData == null ? null : inputData == null ? null : jsonEncode(inputData),
+      "inputData": inputData == null
+          ? null
+          : inputData == null ? null : jsonEncode(inputData),
     };
   }
 
