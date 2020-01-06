@@ -9,19 +9,19 @@ this is the template for kotlin file/project.
 ```kotlin
 package replace.me.with.your.package.name
 
+import android.app.Application
 import  be.tramckrijte.workmanager.WorkmanagerPlugin
-import io.flutter.app.FlutterApplication
 import io.flutter.embedding.android.FlutterEngineConfigurator
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugins.GeneratedPluginRegistrant
 
-class App : FlutterApplication(), FlutterEngineConfigurator {
-    override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
-
-    }
-
+class App : Application(), FlutterEngineConfigurator {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         GeneratedPluginRegistrant.registerWith(flutterEngine)
+    }
+
+    override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
+
     }
 
     override fun onCreate() {
@@ -38,20 +38,20 @@ or if you prefer Java, the template is below.
 package replace.me.with.your.package.name;
 
 import be.tramckrijte.workmanager.WorkmanagerPlugin;
-import io.flutter.app.FlutterApplication;
+import android.app.Application;
 import io.flutter.embedding.android.FlutterEngineConfigurator;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugins.GeneratedPluginRegistrant;
 
-public class AppJ extends FlutterApplication implements FlutterEngineConfigurator {
-    @Override
-    public void cleanUpFlutterEngine(FlutterEngine flutterEngine) {
-
-    }
-
+public class App extends Application implements FlutterEngineConfigurator {
     @Override
     public void configureFlutterEngine(FlutterEngine flutterEngine) {
         GeneratedPluginRegistrant.registerWith(flutterEngine);
+    }
+
+    @Override
+    public void cleanUpFlutterEngine(FlutterEngine flutterEngine) {
+
     }
 
     @Override
@@ -60,7 +60,6 @@ public class AppJ extends FlutterApplication implements FlutterEngineConfigurato
         WorkmanagerPlugin.setPluginRegistrantCallback(this);
     }
 }
-
 ```
 
 You will then need to register this `Application` in the `AndroidManifest.xml`.  
