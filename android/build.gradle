@@ -43,5 +43,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
     def work_version = "2.2.0"
-    implementation "androidx.work:work-runtime:$work_version"
+    implementation("androidx.work:work-runtime:$work_version") {
+    exclude group: 'com.google.guava', module: 'listenablefuture' 
+}
 }
