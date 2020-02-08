@@ -105,7 +105,7 @@ class _MyAppState extends State<MyApp> {
                       inputData: <String, dynamic>{
                         'int': 1,
                         'bool': true,
-                        'dobule': 1.0,
+                        'double': 1.0,
                         'string': 'string',
                         'array': [1, 2, 3],
                       },
