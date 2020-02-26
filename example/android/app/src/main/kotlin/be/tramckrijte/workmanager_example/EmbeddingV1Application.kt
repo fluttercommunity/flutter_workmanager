@@ -8,7 +8,8 @@ import io.flutter.plugins.GeneratedPluginRegistrant
 @Deprecated(message = "Not used, but here to show you how you can use the plugin using the old v1 embedding method.")
 class EmbeddingV1Application : FlutterApplication(), PluginRegistry.PluginRegistrantCallback {
     override fun registerWith(registry: PluginRegistry) {
-        GeneratedPluginRegistrant.registerWith(registry)
+        // The line below this would be uncommented
+        // GeneratedPluginRegistrant.registerWith(registry)
     }
 
     override fun onCreate() {

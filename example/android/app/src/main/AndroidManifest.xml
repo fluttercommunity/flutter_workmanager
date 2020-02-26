@@ -1,11 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     package="be.tramckrijte.workmanager_example">
 
     <application
         android:icon="@mipmap/ic_launcher"
-        android:label="workmanager_example"
-        tools:replace="android:name">
+        android:label="workmanager_example">
         <activity
             android:name="io.flutter.embedding.android.FlutterActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
