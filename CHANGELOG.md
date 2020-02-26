@@ -1,3 +1,8 @@
+# 0.2.1
+* Android:
+    * Fix example building  
+    * Cleanup FlutterEngine when job is stopped or cancelled [#140]((https://github.com/vrtdev/flutter_workmanager/issues/140)),
+
 # 0.2.0
 * Android:
     * Adding support for the `Android v2 embedding`.  
