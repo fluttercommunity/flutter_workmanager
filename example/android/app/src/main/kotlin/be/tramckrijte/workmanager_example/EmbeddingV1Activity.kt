@@ -8,6 +8,7 @@ import io.flutter.plugins.GeneratedPluginRegistrant
 class EmbeddingV1Activity : FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        GeneratedPluginRegistrant.registerWith(this)
+        // The line below this would be uncommented
+        // GeneratedPluginRegistrant.registerWith(this)
     }
 }
