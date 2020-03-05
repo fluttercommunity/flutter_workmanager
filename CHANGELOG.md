@@ -1,3 +1,7 @@
+# 0.2.2
+* Android:
+    * Fix crash when FlutterEngine would be destroyed twice  
+
 # 0.2.1
 * Android:
     * Fix example building  
