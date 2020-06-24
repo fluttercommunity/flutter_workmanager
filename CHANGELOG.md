@@ -1,3 +1,6 @@
+# next
+* Define iOS module so that host apps without use_frameworks! setting can consume the iOS module 
+
 # 0.2.2
 * Android:
     * Fix crash when FlutterEngine would be destroyed twice  
