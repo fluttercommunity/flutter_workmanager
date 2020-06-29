@@ -113,7 +113,8 @@ class BackgroundWorker(
         // If stopEngine is called from `onStopped`, it may not be from the main thread.
         Handler(Looper.getMainLooper()).post {
             if (!destroying) {
-                engine.destroy()
+                if (this::engine.isInitialized)
+                    engine.destroy()
                 destroying = true
             }
         }
