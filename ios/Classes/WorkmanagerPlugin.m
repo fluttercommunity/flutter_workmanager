@@ -1,5 +1,10 @@
 #import "WorkmanagerPlugin.h"
+
+#if __has_include(<workmanager/workmanager-Swift.h>)
 #import <workmanager/workmanager-Swift.h>
+#else
+#import "workmanager-Swift.h"
+#endif
 
 @implementation WorkmanagerPlugin
 
