@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 
 void main() => runApp(MyApp());
@@ -17,10 +18,9 @@ void callbackDispatcher() {
     switch (task) {
       case simpleTaskKey:
         print("$simpleTaskKey was executed. inputData = $inputData");
-        Directory tempDir = await getTemporaryDirectory();
-        String tempPath = tempDir.path;
-        print(
-            "You can access other plugins in the background, for example Directory.getTemporaryDirectory(): $tempPath");
+        final prefs = await SharedPreferences.getInstance();
+        prefs.setBool("test", true);
+        print("Bool from prefs: ${prefs.getBool("test")}");
         break;
       case simpleDelayedTask:
         print("$simpleDelayedTask was executed");
@@ -61,10 +61,10 @@ class PlatformEnabledButton extends RaisedButton {
   })  : assert(child != null, onPressed != null),
         super(
             child: child,
-            onPressed: (Platform.isAndroid && platform == _Platform.android ||
-                    Platform.isIOS && platform == _Platform.ios)
-                ? onPressed
-                : null);
+            onPressed:
+                (Platform.isAndroid && platform == _Platform.android || Platform.isIOS && platform == _Platform.ios)
+                    ? onPressed
+                    : null);
 }
 
 class _MyAppState extends State<MyApp> {
@@ -80,8 +80,7 @@ class _MyAppState extends State<MyApp> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              Text("Plugin initialization",
-                  style: Theme.of(context).textTheme.headline),
+              Text("Plugin initialization", style: Theme.of(context).textTheme.headline),
               RaisedButton(
                   child: Text("Start the Flutter background service"),
                   onPressed: () {
@@ -91,8 +90,7 @@ class _MyAppState extends State<MyApp> {
                     );
                   }),
               SizedBox(height: 16),
-              Text("One Off Tasks (Android only)",
-                  style: Theme.of(context).textTheme.headline),
+              Text("One Off Tasks (Android only)", style: Theme.of(context).textTheme.headline),
               //This task runs once.
               //Most likely this will trigger immediately
               PlatformEnabledButton(
@@ -124,8 +122,7 @@ class _MyAppState extends State<MyApp> {
                     );
                   }),
               SizedBox(height: 8),
-              Text("Periodic Tasks (Android only)",
-                  style: Theme.of(context).textTheme.headline),
+              Text("Periodic Tasks (Android only)", style: Theme.of(context).textTheme.headline),
               //This task runs periodically
               //It will wait at least 10 seconds before its first launch
               //Since we have not provided a frequency it will be the default 15 minutes

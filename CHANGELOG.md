@@ -1,5 +1,6 @@
-# next
+# 0.2.3
 * Define iOS module so that host apps without use_frameworks! setting can consume the iOS module 
+* wrap engine.destroy() call in isInitialized [#182](https://github.com/vrtdev/flutter_workmanager/pull/182)
 
 # 0.2.2
 * Android:
