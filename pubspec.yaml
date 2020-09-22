@@ -24,3 +24,5 @@ flutter:
       android:
         package: be.tramckrijte.workmanager
         pluginClass: WorkmanagerPlugin
+      ios:
+        pluginClass: WorkmanagerPlugin
