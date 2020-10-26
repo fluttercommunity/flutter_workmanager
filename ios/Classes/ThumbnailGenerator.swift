@@ -82,7 +82,7 @@ private extension UIImage {
         let directoryURL = directory.appendingPathComponent(SwiftWorkmanagerPlugin.identifier, isDirectory: true)
         let fileURL = directoryURL.appendingPathComponent("\(fileName).png")
         try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
-        guard let imageData = self.pngData() else {
+        guard let imageData = UIImagePNGRepresentation(self) else {
             throw error.cannotRepresentAsPNG(self)
         }
         try imageData.write(to: fileURL)
