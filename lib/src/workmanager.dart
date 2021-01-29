@@ -51,10 +51,10 @@ typedef BackgroundTaskHandler = Future<bool> Function(
 class Workmanager {
   factory Workmanager() => _instance;
 
-  Workmanager.private(MethodChannel backgroundChannel, MethodChannel foregroundChannel)
+  Workmanager._internal(MethodChannel backgroundChannel, MethodChannel foregroundChannel)
       : _backgroundChannel = backgroundChannel, _foregroundChannel = foregroundChannel;
 
-  static final Workmanager _instance = Workmanager.private(
+  static final Workmanager _instance = Workmanager._internal(
       const MethodChannel("be.tramckrijte.workmanager/background_channel_work_manager"),
       const MethodChannel("be.tramckrijte.workmanager/foreground_channel_work_manager"));
 
