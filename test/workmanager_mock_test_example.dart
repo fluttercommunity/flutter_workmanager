@@ -20,7 +20,7 @@ void main() {
     GetIt.I.registerSingleton<Workmanager>(MockWorkmanager());
   });
 
-  test('testCallBackDispatcher calls the Workmanager executeTask method', () {
+  test('mySetUpWrapper calls the Workmanager initialize and cancelAll method', () {
     mySetUpWrapper();
 
     verify(GetIt.I<Workmanager>().initialize(testCallBackDispatcher));
