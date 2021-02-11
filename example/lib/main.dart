@@ -14,7 +14,7 @@ const simplePeriodicTask = "simplePeriodicTask";
 const simplePeriodic1HourTask = "simplePeriodic1HourTask";
 
 void callbackDispatcher() {
-  Workmanager.executeTask((task, inputData) async {
+  Workmanager().executeTask((task, inputData) async {
     switch (task) {
       case simpleTaskKey:
         print("$simpleTaskKey was executed. inputData = $inputData");
@@ -84,7 +84,7 @@ class _MyAppState extends State<MyApp> {
               RaisedButton(
                   child: Text("Start the Flutter background service"),
                   onPressed: () {
-                    Workmanager.initialize(
+                    Workmanager().initialize(
                       callbackDispatcher,
                       isInDebugMode: true,
                     );
@@ -97,7 +97,7 @@ class _MyAppState extends State<MyApp> {
                   platform: _Platform.android,
                   child: Text("Register OneOff Task"),
                   onPressed: () {
-                    Workmanager.registerOneOffTask(
+                    Workmanager().registerOneOffTask(
                       "1",
                       simpleTaskKey,
                       inputData: <String, dynamic>{
@@ -115,7 +115,7 @@ class _MyAppState extends State<MyApp> {
                   platform: _Platform.android,
                   child: Text("Register Delayed OneOff Task"),
                   onPressed: () {
-                    Workmanager.registerOneOffTask(
+                    Workmanager().registerOneOffTask(
                       "2",
                       simpleDelayedTask,
                       initialDelay: Duration(seconds: 10),
@@ -130,7 +130,7 @@ class _MyAppState extends State<MyApp> {
                   platform: _Platform.android,
                   child: Text("Register Periodic Task"),
                   onPressed: () {
-                    Workmanager.registerPeriodicTask(
+                    Workmanager().registerPeriodicTask(
                       "3",
                       simplePeriodicTask,
                       initialDelay: Duration(seconds: 10),
@@ -142,7 +142,7 @@ class _MyAppState extends State<MyApp> {
                   platform: _Platform.android,
                   child: Text("Register 1 hour Periodic Task"),
                   onPressed: () {
-                    Workmanager.registerPeriodicTask(
+                    Workmanager().registerPeriodicTask(
                       "5",
                       simplePeriodic1HourTask,
                       frequency: Duration(hours: 1),
@@ -152,7 +152,7 @@ class _MyAppState extends State<MyApp> {
                 platform: _Platform.android,
                 child: Text("Cancel All"),
                 onPressed: () async {
-                  await Workmanager.cancelAll();
+                  await Workmanager().cancelAll();
                   print('Cancel all tasks completed');
                 },
               ),
