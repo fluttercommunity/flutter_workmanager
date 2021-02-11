@@ -1,36 +1,48 @@
 package be.tramckrijte.workmanager
 
 import android.content.Context
-import io.flutter.embedding.android.FlutterEngineConfigurator
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BinaryMessenger
-import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
 
-class WorkmanagerPlugin : MethodCallHandler, FlutterPlugin {
+class WorkmanagerPlugin : FlutterPlugin {
 
-    private lateinit var workmanagerCallHandler: WorkmanagerCallHandler
+    private var methodChannel: MethodChannel? = null
+    private var workmanagerCallHandler: WorkmanagerCallHandler? = null
 
-    override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) =
-            registerWorkManager(binding.binaryMessenger, binding.applicationContext)
+    override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        onAttachedToEngine(binding.applicationContext, binding.binaryMessenger)
+    }
 
-    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {}
+    private fun onAttachedToEngine(context: Context, messenger: BinaryMessenger) {
+        workmanagerCallHandler = WorkmanagerCallHandler(context)
+        methodChannel = MethodChannel(messenger, "be.tramckrijte.workmanager/foreground_channel_work_manager")
+        methodChannel?.setMethodCallHandler(workmanagerCallHandler)
+    }
+
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        onDetachedFromEngine()
+    }
+
+    private fun onDetachedFromEngine() {
+        methodChannel?.setMethodCallHandler(null)
+        methodChannel = null
+        workmanagerCallHandler = null
+    }
 
     companion object {
         var pluginRegistryCallback: PluginRegistry.PluginRegistrantCallback? = null
 
         @JvmStatic
-        private fun registerWorkManager(messenger: BinaryMessenger, ctx: Context) {
-            val channel = MethodChannel(messenger, "be.tramckrijte.workmanager/foreground_channel_work_manager")
-            channel.setMethodCallHandler(WorkmanagerPlugin().apply { workmanagerCallHandler = WorkmanagerCallHandler(ctx) })
+        fun registerWith(registrar: PluginRegistry.Registrar) {
+            val plugin = WorkmanagerPlugin()
+            plugin.onAttachedToEngine(registrar.context(), registrar.messenger())
+            registrar.addViewDestroyListener {
+                plugin.onDetachedFromEngine()
+                false
+            }
         }
-
-        @JvmStatic
-        fun registerWith(registrar: PluginRegistry.Registrar) =
-                registerWorkManager(registrar.messenger(), registrar.activeContext())
 
         @Deprecated(message = "Use the Android v2 embedding method.")
         @JvmStatic
@@ -38,6 +50,4 @@ class WorkmanagerPlugin : MethodCallHandler, FlutterPlugin {
             WorkmanagerPlugin.pluginRegistryCallback = pluginRegistryCallback
         }
     }
-
-    override fun onMethodCall(call: MethodCall, result: Result) = workmanagerCallHandler.handle(call, result)
 }
