@@ -33,8 +33,8 @@ void callbackDispatcher() {
         break;
       case Workmanager.iOSBackgroundTask:
         print("The iOS background fetch was triggered");
-        Directory tempDir = await getTemporaryDirectory();
-        String tempPath = tempDir.path;
+        Directory? tempDir = await getTemporaryDirectory();
+        String? tempPath = tempDir?.path;
         print(
             "You can access other plugins in the background, for example Directory.getTemporaryDirectory(): $tempPath");
         break;
@@ -55,11 +55,10 @@ class PlatformEnabledButton extends RaisedButton {
   final _Platform platform;
 
   PlatformEnabledButton({
-    this.platform,
-    @required Widget child,
-    @required VoidCallback onPressed,
-  })  : assert(child != null, onPressed != null),
-        super(
+    required this.platform,
+    required Widget child,
+    required VoidCallback onPressed,
+  })  : super(
             child: child,
             onPressed:
                 (Platform.isAndroid && platform == _Platform.android || Platform.isIOS && platform == _Platform.ios)
@@ -133,7 +132,7 @@ class _MyAppState extends State<MyApp> {
                     Workmanager.registerPeriodicTask(
                       "3",
                       simplePeriodicTask,
-                      initialDelay: Duration(seconds: 10),
+                      // initialDelay: Duration(seconds: 10),
                     );
                   }),
               //This task runs periodically

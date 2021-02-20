@@ -6,15 +6,6 @@ import 'package:workmanager/src/workmanager.dart';
 
 void main() {
   group("toInitializeMethodArgument", () {
-    test("no callbackHandle", () {
-      expect(
-        () => JsonMapperHelper.toInitializeMethodArgument(isInDebugMode: true),
-        throwsA(
-          const TypeMatcher<AssertionError>(),
-        ),
-      );
-    });
-
     test("all arguments given", () {
       expect(
           JsonMapperHelper.toInitializeMethodArgument(
@@ -46,28 +37,58 @@ void main() {
 
       test("initial delay was null", () {
         expect(
-          () => JsonMapperHelper.toRegisterMethodArgument(
+          JsonMapperHelper.toRegisterMethodArgument(
             isInDebugMode: true,
             uniqueName: "uniqueName",
             taskName: "taskName",
             initialDelay: null,
           ),
-          throwsA(const TypeMatcher<NoSuchMethodError>()),
+          {
+            'isInDebugMode': true,
+            'uniqueName': 'uniqueName',
+            'taskName': 'taskName',
+            'tag': null,
+            'frequency': null,
+            'existingWorkPolicy': null,
+            'initialDelaySeconds': null,
+            'networkType': null,
+            'requiresBatteryNotLow': null,
+            'requiresCharging': null,
+            'requiresDeviceIdle': null,
+            'requiresStorageNotLow': null,
+            'backoffPolicyType': null,
+            'backoffDelayInMilliseconds': null,
+            'inputData': null
+          },
         );
       });
 
       test("backoff policy delay was null", () {
         expect(
-          () => JsonMapperHelper.toRegisterMethodArgument(
+          JsonMapperHelper.toRegisterMethodArgument(
             isInDebugMode: true,
             uniqueName: "uniqueName",
             taskName: "taskName",
             initialDelay: Duration(seconds: 1),
             backoffPolicyDelay: null,
           ),
-          throwsA(
-            const TypeMatcher<NoSuchMethodError>(),
-          ),
+          {
+            'isInDebugMode': true,
+            'uniqueName': 'uniqueName',
+            'taskName': 'taskName',
+            'tag': null,
+            'frequency': null,
+            'existingWorkPolicy': null,
+            'initialDelaySeconds': 1,
+            'networkType': null,
+            'requiresBatteryNotLow': null,
+            'requiresCharging': null,
+            'requiresDeviceIdle': null,
+            'requiresStorageNotLow': null,
+            'backoffPolicyType': null,
+            'backoffDelayInMilliseconds': null,
+            'inputData': null
+          },
         );
       });
     });
@@ -277,7 +298,7 @@ void main() {
               taskName: "taskName",
               initialDelay: Duration(seconds: 1),
               backoffPolicyDelay: Duration(seconds: 1),
-              constraints: constraintTuple.first,
+              constraints: constraintTuple.first as Constraints,
             ),
             constraintTuple[1],
           );
@@ -299,7 +320,7 @@ void main() {
                 taskName: "taskName",
                 initialDelay: Duration(seconds: 1),
                 backoffPolicyDelay: Duration(seconds: 1),
-                existingWorkPolicy: existingWorkPolicy.first),
+                existingWorkPolicy: existingWorkPolicy.first as ExistingWorkPolicy),
             {
               'isInDebugMode': true,
               'uniqueName': 'uniqueName',
@@ -333,7 +354,7 @@ void main() {
               taskName: "taskName",
               initialDelay: Duration(seconds: 1),
               backoffPolicyDelay: Duration(seconds: 1),
-              backoffPolicy: backOffPolicy.first,
+              backoffPolicy: backOffPolicy.first as BackoffPolicy,
             ),
             {
               'isInDebugMode': true,
