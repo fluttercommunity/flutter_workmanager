@@ -147,6 +147,7 @@ class Workmanager {
     final String uniqueName,
     final String taskName, {
     final Duration frequency,
+    final Duration flexInterval,
     final String tag,
     final ExistingWorkPolicy existingWorkPolicy,
     final Duration initialDelay = _noDuration,
@@ -162,6 +163,7 @@ class Workmanager {
           uniqueName: uniqueName,
           taskName: taskName,
           frequency: frequency,
+          flexInterval: flexInterval,
           tag: tag,
           existingWorkPolicy: existingWorkPolicy,
           initialDelay: initialDelay,
@@ -199,6 +201,7 @@ class JsonMapperHelper {
     final String uniqueName,
     final String taskName,
     final Duration frequency,
+    final Duration flexInterval,
     final String tag,
     final ExistingWorkPolicy existingWorkPolicy,
     final Duration initialDelay,
@@ -233,6 +236,7 @@ class JsonMapperHelper {
       "taskName": taskName,
       "tag": tag,
       "frequency": frequency?.inSeconds,
+      "flexInterval": flexInterval?.inSeconds,
       "existingWorkPolicy": _enumToString(existingWorkPolicy),
       "initialDelaySeconds": initialDelay.inSeconds,
       "networkType": _enumToString(constraints?.networkType),
@@ -244,7 +248,9 @@ class JsonMapperHelper {
       "backoffDelayInMilliseconds": backoffPolicyDelay.inMilliseconds,
       "inputData": inputData == null
           ? null
-          : inputData == null ? null : jsonEncode(inputData),
+          : inputData == null
+              ? null
+              : jsonEncode(inputData),
     };
   }
 

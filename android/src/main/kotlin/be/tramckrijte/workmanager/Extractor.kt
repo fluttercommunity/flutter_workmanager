@@ -21,6 +21,7 @@ import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TAS
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_NAME_VALUE_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_TAG_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_UNIQUE_NAME_KEY
+import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.PeriodicTask.KEYS.PERIODIC_TASK_FLEX_INTERVAL_SECONDS_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.PeriodicTask.KEYS.PERIODIC_TASK_FREQUENCY_SECONDS_KEY
 import io.flutter.plugin.common.MethodCall
 import kotlin.math.max
@@ -33,6 +34,7 @@ val defaultConstraints: Constraints = Constraints.NONE
 const val defaultInitialDelaySeconds = 0L
 const val defaultRequestedBackoffDelay = 0L
 const val defaultPeriodicRefreshFrequencyInSeconds = PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS / 1000
+const val defaultPeriodicFlexIntervalInSeconds = PeriodicWorkRequest.MIN_PERIODIC_FLEX_MILLIS / 1000
 const val logTag = "Extractor"
 
 data class BackoffPolicyTaskConfig(val backoffPolicy: BackoffPolicy,
@@ -94,12 +96,14 @@ sealed class WorkManagerCall {
                                 override val tag: String? = null,
                                 val existingWorkPolicy: ExistingPeriodicWorkPolicy,
                                 val frequencyInSeconds: Long,
+                                val flexIntervalInSeconds: Long,
                                 override val initialDelaySeconds: Long,
                                 override val constraintsConfig: Constraints,
                                 val backoffPolicyConfig: BackoffPolicyTaskConfig?,
                                 override val payload: String? = null) : RegisterTask() {
             companion object KEYS {
                 const val PERIODIC_TASK_FREQUENCY_SECONDS_KEY = "frequency"
+                const val PERIODIC_TASK_FLEX_INTERVAL_SECONDS_KEY = "flexInterval"
             }
         }
     }
@@ -177,6 +181,7 @@ object Extractor {
                             uniqueName = call.argument<String>(REGISTER_TASK_UNIQUE_NAME_KEY)!!,
                             taskName = call.argument<String>(REGISTER_TASK_NAME_VALUE_KEY)!!,
                             frequencyInSeconds = extractFrequencySecondsFromCall(call),
+                            flexIntervalInSeconds = extractFlexIntervalSecondsFromCall(call),
                             tag = call.argument<String>(REGISTER_TASK_TAG_KEY),
                             existingWorkPolicy = extractExistingPeriodicWorkPolicyFromCall(call),
                             initialDelaySeconds = extractInitialDelayFromCall(call),
@@ -209,6 +214,10 @@ object Extractor {
 
     private fun extractFrequencySecondsFromCall(call: MethodCall): Long =
             call.argument<Int>(PERIODIC_TASK_FREQUENCY_SECONDS_KEY)?.toLong()
+                    ?: defaultPeriodicRefreshFrequencyInSeconds
+
+    private fun extractFlexIntervalSecondsFromCall(call: MethodCall): Long =
+            call.argument<Int>(PERIODIC_TASK_FLEX_INTERVAL_SECONDS_KEY)?.toLong()
                     ?: defaultPeriodicRefreshFrequencyInSeconds
 
     private fun extractInitialDelayFromCall(call: MethodCall): Long =

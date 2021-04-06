@@ -66,6 +66,7 @@ private object RegisterTaskHandler : CallHandler<WorkManagerCall.RegisterTask> {
                 dartTask = convertedCall.taskName,
                 tag = convertedCall.tag,
                 frequencyInSeconds = convertedCall.frequencyInSeconds,
+                flexIntervalInSeconds = convertedCall.flexIntervalInSeconds,
                 isInDebugMode = convertedCall.isInDebugMode,
                 existingWorkPolicy = convertedCall.existingWorkPolicy,
                 initialDelaySeconds = convertedCall.initialDelaySeconds,
@@ -145,13 +146,14 @@ object WM {
                             payload: String? = null,
                             tag: String? = null,
                             frequencyInSeconds: Long = defaultPeriodicRefreshFrequencyInSeconds,
+                            flexIntervalInSeconds: Long = defaultPeriodicFlexIntervalInSeconds,
                             isInDebugMode: Boolean = false,
                             existingWorkPolicy: ExistingPeriodicWorkPolicy = defaultPeriodExistingWorkPolicy,
                             initialDelaySeconds: Long = defaultInitialDelaySeconds,
                             constraintsConfig: Constraints = defaultConstraints,
                             backoffPolicyConfig: BackoffPolicyTaskConfig?) {
         val periodicTaskRequest =
-                PeriodicWorkRequest.Builder(BackgroundWorker::class.java, frequencyInSeconds, TimeUnit.SECONDS)
+                PeriodicWorkRequest.Builder(BackgroundWorker::class.java, frequencyInSeconds, TimeUnit.SECONDS, flexIntervalInSeconds, TimeUnit.SECONDS)
                         .setInputData(buildTaskInputData(dartTask, isInDebugMode, payload))
                         .setInitialDelay(initialDelaySeconds, TimeUnit.SECONDS)
                         .setConstraints(constraintsConfig)
