@@ -3,6 +3,7 @@ package be.tramckrijte.workmanager
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.concurrent.futures.ResolvableFuture
 import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
@@ -128,10 +129,12 @@ class BackgroundWorker(
                     mapOf(DART_TASK_KEY to dartTask, PAYLOAD_KEY to payload),
                     object : MethodChannel.Result {
                         override fun notImplemented() {
+                            Log.e("WorkManager", "onResultSend notImplemented")
                             stopEngine(Result.failure())
                         }
 
-                        override fun error(p0: String?, p1: String?, p2: Any?) {
+                        override fun error(errorCode: String?, message: String?, p2: Any?) {
+                            Log.e("WorkManager", "onResultSend error ${errorCode}----${message}")
                             stopEngine(Result.failure())
                         }
 
