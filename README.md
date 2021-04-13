@@ -13,7 +13,7 @@ This is especially useful to run periodic tasks, such as fetching remote data on
 
 ```yaml
 dependencies:
-  workmanager: ^0.2.3
+  workmanager: ^0.2.4
 ```
 ```shell script
 flutter pub get
