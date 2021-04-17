@@ -1,3 +1,7 @@
+# 0.3.0
+
+* BREAKING CHANGE: The Dart side is now instantiated using the factory pattern for easier mocking & testing.
+
 # 0.2.4
 * Restore iOS compatibility for Flutter 1.20
 * Migrate the iOS project using Xcode 12
