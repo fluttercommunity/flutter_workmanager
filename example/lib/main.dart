@@ -58,12 +58,12 @@ class PlatformEnabledButton extends RaisedButton {
     required this.platform,
     required Widget child,
     required VoidCallback onPressed,
-  })  : super(
+  }) : super(
             child: child,
-            onPressed:
-                (Platform.isAndroid && platform == _Platform.android || Platform.isIOS && platform == _Platform.ios)
-                    ? onPressed
-                    : null);
+            onPressed: (Platform.isAndroid && platform == _Platform.android ||
+                    Platform.isIOS && platform == _Platform.ios)
+                ? onPressed
+                : null);
 }
 
 class _MyAppState extends State<MyApp> {
@@ -79,7 +79,8 @@ class _MyAppState extends State<MyApp> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              Text("Plugin initialization", style: Theme.of(context).textTheme.headline),
+              Text("Plugin initialization",
+                  style: Theme.of(context).textTheme.headline),
               RaisedButton(
                   child: Text("Start the Flutter background service"),
                   onPressed: () {
@@ -89,7 +90,8 @@ class _MyAppState extends State<MyApp> {
                     );
                   }),
               SizedBox(height: 16),
-              Text("One Off Tasks (Android only)", style: Theme.of(context).textTheme.headline),
+              Text("One Off Tasks (Android only)",
+                  style: Theme.of(context).textTheme.headline),
               //This task runs once.
               //Most likely this will trigger immediately
               PlatformEnabledButton(
@@ -121,7 +123,8 @@ class _MyAppState extends State<MyApp> {
                     );
                   }),
               SizedBox(height: 8),
-              Text("Periodic Tasks (Android only)", style: Theme.of(context).textTheme.headline),
+              Text("Periodic Tasks (Android only)",
+                  style: Theme.of(context).textTheme.headline),
               //This task runs periodically
               //It will wait at least 10 seconds before its first launch
               //Since we have not provided a frequency it will be the default 15 minutes
@@ -132,7 +135,7 @@ class _MyAppState extends State<MyApp> {
                     Workmanager().registerPeriodicTask(
                       "3",
                       simplePeriodicTask,
-                      // initialDelay: Duration(seconds: 10),
+                      initialDelay: Duration(seconds: 10),
                     );
                   }),
               //This task runs periodically
