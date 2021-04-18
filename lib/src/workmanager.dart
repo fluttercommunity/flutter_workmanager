@@ -15,7 +15,7 @@ const _noDuration = const Duration(seconds: 0);
 /// [taskName] Returns the value you provided when registering the task.
 /// iOS will always return [Workmanager.iOSBackgroundTask]
 typedef BackgroundTaskHandler = Future<bool> Function(
-    String taskName, Map<String, dynamic> inputData);
+    String taskName, Map<String, dynamic>? inputData);
 
 /// Make sure you followed the platform setup steps first before trying to register any task.
 /// Android:
@@ -51,12 +51,16 @@ typedef BackgroundTaskHandler = Future<bool> Function(
 class Workmanager {
   factory Workmanager() => _instance;
 
-  Workmanager._internal(MethodChannel backgroundChannel, MethodChannel foregroundChannel)
-      : _backgroundChannel = backgroundChannel, _foregroundChannel = foregroundChannel;
+  Workmanager._internal(
+      MethodChannel backgroundChannel, MethodChannel foregroundChannel)
+      : _backgroundChannel = backgroundChannel,
+        _foregroundChannel = foregroundChannel;
 
   static final Workmanager _instance = Workmanager._internal(
-      const MethodChannel("be.tramckrijte.workmanager/background_channel_work_manager"),
-      const MethodChannel("be.tramckrijte.workmanager/foreground_channel_work_manager"));
+      const MethodChannel(
+          "be.tramckrijte.workmanager/background_channel_work_manager"),
+      const MethodChannel(
+          "be.tramckrijte.workmanager/foreground_channel_work_manager"));
 
   /// Use this constant inside your callbackDispatcher to identify when an iOS Background Fetch occurred.
   ///
@@ -105,14 +109,16 @@ class Workmanager {
     final callback = PluginUtilities.getCallbackHandle(callbackDispatcher);
     assert(callback != null,
         "The callbackDispatcher needs to be either a static function or a top level function to be accessible as a Flutter entry point.");
-    final int handle = callback.toRawHandle();
-    await _foregroundChannel.invokeMethod(
-      'initialize',
-      JsonMapperHelper.toInitializeMethodArgument(
-        isInDebugMode: _isInDebugMode,
-        callbackHandle: handle,
-      ),
-    );
+    if (callback != null) {
+      final int handle = callback.toRawHandle();
+      await _foregroundChannel.invokeMethod<void>(
+        'initialize',
+        JsonMapperHelper.toInitializeMethodArgument(
+          isInDebugMode: _isInDebugMode,
+          callbackHandle: handle,
+        ),
+      );
+    }
   }
 
   /// Schedule a one off task
@@ -122,13 +128,13 @@ class Workmanager {
   Future<void> registerOneOffTask(
     final String uniqueName,
     final String taskName, {
-    final String tag,
-    final ExistingWorkPolicy existingWorkPolicy,
+    final String? tag,
+    final ExistingWorkPolicy? existingWorkPolicy,
     final Duration initialDelay = _noDuration,
-    final Constraints constraints,
-    final BackoffPolicy backoffPolicy,
+    final Constraints? constraints,
+    final BackoffPolicy? backoffPolicy,
     final Duration backoffPolicyDelay = _noDuration,
-    final Map<String, dynamic> inputData,
+    final Map<String, dynamic>? inputData,
   }) async =>
       await _foregroundChannel.invokeMethod(
         "registerOneOffTask",
@@ -155,14 +161,14 @@ class Workmanager {
   Future<void> registerPeriodicTask(
     final String uniqueName,
     final String taskName, {
-    final Duration frequency,
-    final String tag,
-    final ExistingWorkPolicy existingWorkPolicy,
+    final Duration? frequency,
+    final String? tag,
+    final ExistingWorkPolicy? existingWorkPolicy,
     final Duration initialDelay = _noDuration,
-    final Constraints constraints,
-    final BackoffPolicy backoffPolicy,
+    final Constraints? constraints,
+    final BackoffPolicy? backoffPolicy,
     final Duration backoffPolicyDelay = _noDuration,
-    final Map<String, dynamic> inputData,
+    final Map<String, dynamic>? inputData,
   }) async =>
       await _foregroundChannel.invokeMethod(
         "registerPeriodicTask",
@@ -203,18 +209,18 @@ class Workmanager {
 /// A helper object to convert the selected options to JSON format. Mainly for testability.
 class JsonMapperHelper {
   @visibleForTesting
-  static Map<String, Object> toRegisterMethodArgument({
-    final bool isInDebugMode,
-    final String uniqueName,
-    final String taskName,
-    final Duration frequency,
-    final String tag,
-    final ExistingWorkPolicy existingWorkPolicy,
-    final Duration initialDelay,
-    final Constraints constraints,
-    final BackoffPolicy backoffPolicy,
-    final Duration backoffPolicyDelay,
-    final Map<String, dynamic> inputData,
+  static Map<String, Object?> toRegisterMethodArgument({
+    final bool isInDebugMode = false,
+    final String? uniqueName,
+    final String? taskName,
+    final Duration? frequency,
+    final String? tag,
+    final ExistingWorkPolicy? existingWorkPolicy,
+    final Duration? initialDelay,
+    final Constraints? constraints,
+    final BackoffPolicy? backoffPolicy,
+    final Duration? backoffPolicyDelay,
+    final Map<String, dynamic>? inputData,
   }) {
     if (inputData != null) {
       for (final entry in inputData.entries) {
@@ -243,32 +249,29 @@ class JsonMapperHelper {
       "tag": tag,
       "frequency": frequency?.inSeconds,
       "existingWorkPolicy": _enumToString(existingWorkPolicy),
-      "initialDelaySeconds": initialDelay.inSeconds,
+      "initialDelaySeconds": initialDelay?.inSeconds,
       "networkType": _enumToString(constraints?.networkType),
       "requiresBatteryNotLow": constraints?.requiresBatteryNotLow,
       "requiresCharging": constraints?.requiresCharging,
       "requiresDeviceIdle": constraints?.requiresDeviceIdle,
       "requiresStorageNotLow": constraints?.requiresStorageNotLow,
       "backoffPolicyType": _enumToString(backoffPolicy),
-      "backoffDelayInMilliseconds": backoffPolicyDelay.inMilliseconds,
-      "inputData": inputData == null
-          ? null
-          : inputData == null ? null : jsonEncode(inputData),
+      "backoffDelayInMilliseconds": backoffPolicyDelay?.inMilliseconds,
+      "inputData": inputData == null ? null : jsonEncode(inputData),
     };
   }
 
   @visibleForTesting
-  static Map<String, Object> toInitializeMethodArgument({
-    final bool isInDebugMode,
-    final int callbackHandle,
+  static Map<String, Object?> toInitializeMethodArgument({
+    required final bool isInDebugMode,
+    required final int callbackHandle,
   }) {
-    assert(callbackHandle != null);
     return {
       "isInDebugMode": isInDebugMode,
       "callbackHandle": callbackHandle,
     };
   }
 
-  static String _enumToString(final dynamic enumeration) =>
+  static String? _enumToString(final dynamic enumeration) =>
       enumeration?.toString()?.split('.')?.last;
 }
