@@ -51,12 +51,16 @@ typedef BackgroundTaskHandler = Future<bool> Function(
 class Workmanager {
   factory Workmanager() => _instance;
 
-  Workmanager._internal(MethodChannel backgroundChannel, MethodChannel foregroundChannel)
-      : _backgroundChannel = backgroundChannel, _foregroundChannel = foregroundChannel;
+  Workmanager._internal(
+      MethodChannel backgroundChannel, MethodChannel foregroundChannel)
+      : _backgroundChannel = backgroundChannel,
+        _foregroundChannel = foregroundChannel;
 
   static final Workmanager _instance = Workmanager._internal(
-      const MethodChannel("be.tramckrijte.workmanager/background_channel_work_manager"),
-      const MethodChannel("be.tramckrijte.workmanager/foreground_channel_work_manager"));
+      const MethodChannel(
+          "be.tramckrijte.workmanager/background_channel_work_manager"),
+      const MethodChannel(
+          "be.tramckrijte.workmanager/foreground_channel_work_manager"));
 
   /// Use this constant inside your callbackDispatcher to identify when an iOS Background Fetch occurred.
   ///
@@ -105,9 +109,9 @@ class Workmanager {
     final callback = PluginUtilities.getCallbackHandle(callbackDispatcher);
     assert(callback != null,
         "The callbackDispatcher needs to be either a static function or a top level function to be accessible as a Flutter entry point.");
-    if(callback != null) {
+    if (callback != null) {
       final int handle = callback.toRawHandle();
-      await _foregroundChannel.invokeMethod(
+      await _foregroundChannel.invokeMethod<void>(
         'initialize',
         JsonMapperHelper.toInitializeMethodArgument(
           isInDebugMode: _isInDebugMode,
@@ -253,9 +257,7 @@ class JsonMapperHelper {
       "requiresStorageNotLow": constraints?.requiresStorageNotLow,
       "backoffPolicyType": _enumToString(backoffPolicy),
       "backoffDelayInMilliseconds": backoffPolicyDelay?.inMilliseconds,
-      "inputData": inputData == null
-          ? null
-          : jsonEncode(inputData),
+      "inputData": inputData == null ? null : jsonEncode(inputData),
     };
   }
 

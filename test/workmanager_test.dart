@@ -1,10 +1,11 @@
+import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:get_it/get_it.dart';
 
 import 'package:test/test.dart';
 import 'package:workmanager/src/workmanager.dart';
 
-class MockWorkmanager extends Mock implements Workmanager {}
+import 'workmanager_test.mocks.dart';
 
 Future<bool> testCallBackDispatcher(task, inputData) {
   return Future.value(true);
@@ -15,6 +16,7 @@ void mySetUpWrapper() {
   GetIt.I<Workmanager>().cancelAll();
 }
 
+@GenerateMocks([Workmanager])
 void main() {
   group(
       "singleton pattern",
