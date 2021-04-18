@@ -1,3 +1,7 @@
+# 0.4.0
+
+* The package now supports null-safety
+
 # 0.3.0
 
 * BREAKING CHANGE: The Dart side is now instantiated using the factory pattern for easier mocking & testing.
@@ -17,7 +21,7 @@
 # 0.2.1
 * Android:
     * Fix example building  
-    * Cleanup FlutterEngine when job is stopped or cancelled [#140]((https://github.com/vrtdev/flutter_workmanager/issues/140)),
+    * Cleanup FlutterEngine when job is stopped or cancelled [#140](https://github.com/vrtdev/flutter_workmanager/issues/140),
 
 # 0.2.0
 * Android:
