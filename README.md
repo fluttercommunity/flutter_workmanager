@@ -9,19 +9,6 @@ This is especially useful to run periodic tasks, such as fetching remote data on
 
 > This plugin was featured in this [Medium blogpost](https://medium.com/vrt-digital-studio/flutter-workmanager-81e0cfbd6f6e)
 
-# Installation
-
-```yaml
-dependencies:
-  workmanager: ^0.2.0
-```
-```shell script
-flutter pub get
-```
-```dart
-import 'package:workmanager/workmanager.dart';
-```
-
 # Platform Setup
 In order for background work to be scheduled correctly you should follow the Android and iOS setup first.  
 

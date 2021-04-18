@@ -22,4 +22,4 @@ However to facilitate debugging, the plugin provides an `isInDebugMode` flag whe
 Once this flag is enabled you will receive a notification whenever a background task was triggered.  
 This way you can keep track whether that task ran successfully or not.  
 
-![example of android debug notification](.art/android_debug_notification.gif)  
+ <img src=".art/android_debug_notification.gif" height="650">
