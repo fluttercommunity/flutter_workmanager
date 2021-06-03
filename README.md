@@ -21,18 +21,18 @@ Before registering any task, the WorkManager plugin must be initialized.
 
 ```dart
 void callbackDispatcher() {
-  Workmanager.executeTask((task, inputData) {
+  Workmanager().executeTask((task, inputData) {
     print("Native called background task: $backgroundTask"); //simpleTask will be emitted here.
     return Future.value(true);
   });
 }
 
 void main() {
-  Workmanager.initialize(
+  Workmanager().initialize(
     callbackDispatcher, // The top level function, aka callbackDispatcher
     isInDebugMode: true // If enabled it will post a notification whenever the task is running. Handy for debugging tasks
   );
-  Workmanager.registerOneOffTask("1", "simpleTask"); //Android only (see below)
+  Workmanager().registerOneOffTask("1", "simpleTask"); //Android only (see below)
   runApp(MyApp());
 }
 ```
@@ -50,15 +50,15 @@ Two kinds of background tasks can be registered :
 
 ```dart
 // One off task registration
-Workmanager.registerOneOffTask(
+Workmanager().registerOneOffTask(
     "1", 
     "simpleTask"
 );
 
 // Periodic task registration
-Workmanager.registerPeriodicTask(
+Workmanager().registerPeriodicTask(
     "2", 
-    "simplePeriodicTask", \
+    "simplePeriodicTask", 
     // When no frequency is provided the default 15 minutes is set.
     // Minimum frequency is 15 min. Android will automatically change your frequency to 15 min if you have configured a lower frequency.
     frequency: Duration(hours: 1),
@@ -76,7 +76,7 @@ Handy for cancellation by `tag`.
 This is different from the unique name in that you can group multiple tasks under one tag.  
 
 ```dart
-Workmanager.registerOneOffTask("1", "simpleTask", tag: "tag");
+Workmanager().registerOneOffTask("1", "simpleTask", tag: "tag");
 ```
 
 ## Existing Work Policy
@@ -85,7 +85,7 @@ Indicates the desired behaviour when the same task is scheduled more than once.
 The default is `KEEP`
 
 ```dart
-Workmanager.registerOneOffTask("1", "simpleTask", existingWorkPolicy: ExistingWorkPolicy.append);
+Workmanager().registerOneOffTask("1", "simpleTask", existingWorkPolicy: ExistingWorkPolicy.append);
 ```
 
 ## Initial Delay
@@ -93,7 +93,7 @@ Workmanager.registerOneOffTask("1", "simpleTask", existingWorkPolicy: ExistingWo
 Indicates how along a task should waitbefore its first run.
 
 ```dart
-Workmanager.registerOneOffTask("1", "simpleTask", initialDelay: Duration(seconds: 10));
+Workmanager().registerOneOffTask("1", "simpleTask", initialDelay: Duration(seconds: 10));
 ```
 
 ## Constraints
@@ -101,7 +101,7 @@ Workmanager.registerOneOffTask("1", "simpleTask", initialDelay: Duration(seconds
 > Not all constraints are mapped.
 
 ```dart
-Workmanager.registerOneOffTask(
+Workmanager().registerOneOffTask(
     "1", 
     "simpleTask", 
     constraints: Constraints(
@@ -119,7 +119,7 @@ Workmanager.registerOneOffTask(
 Add some input data for your task. Valid value types are: `int`, `bool`, `double`, `String` and their `list`
 
 ```dart
- Workmanager.registerOneOffTask(
+ Workmanager().registerOneOffTask(
     "1",
     "simpleTask", 
     inputData: {
@@ -137,7 +137,7 @@ The default is `BackoffPolicy.exponential`.
 You can also specify the delay. 
 
 ```dart
-Workmanager.registerOneOffTask("1", "simpleTask", backoffPolicy: BackoffPolicy.exponential, backoffPolicyDelay: Duration(seconds: 10));
+Workmanager().registerOneOffTask("1", "simpleTask", backoffPolicy: BackoffPolicy.exponential, backoffPolicyDelay: Duration(seconds: 10));
 ```
 
 ## Cancellation
@@ -149,17 +149,17 @@ A task can be cancelled in different ways :
 Cancels the task that was previously registered using this **Tag**, if any.  
 
 ```dart
-Workmanager.cancelByTag("tag");
+Workmanager().cancelByTag("tag");
 ```
 
 ### By Unique Name
 
 ```dart
-Workmanager.cancelByUniqueName("<MyTask>");
+Workmanager().cancelByUniqueName("<MyTask>");
 ```
 
 ### All
 
 ```dart
-Workmanager.cancelAll();
+Workmanager().cancelAll();
 ```
