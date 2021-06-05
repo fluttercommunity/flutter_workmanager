@@ -48,19 +48,19 @@ class Constraints {
   final NetworkType networkType;
 
   /// true if the work should only execute when the battery isn't low
-  final bool requiresBatteryNotLow;
+  final bool? requiresBatteryNotLow;
 
   /// true if the work should only execute while the device is charging
-  final bool requiresCharging;
+  final bool? requiresCharging;
 
   /// true if the work should only execute while the device is idle
-  final bool requiresDeviceIdle;
+  final bool? requiresDeviceIdle;
 
   /// true if the work should only execute when the storage isn't low
-  final bool requiresStorageNotLow;
+  final bool? requiresStorageNotLow;
 
   Constraints({
-    this.networkType,
+    required this.networkType,
     this.requiresBatteryNotLow,
     this.requiresCharging,
     this.requiresDeviceIdle,
