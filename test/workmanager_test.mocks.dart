@@ -61,6 +61,7 @@ class MockWorkmanager extends _i1.Mock implements _i2.Workmanager {
           String? tag,
           _i4.ExistingWorkPolicy? existingWorkPolicy,
           Duration? initialDelay = const Duration(seconds: 0),
+          Duration? flexInterval = const Duration(seconds: 0),
           _i4.Constraints? constraints,
           _i4.BackoffPolicy? backoffPolicy,
           Duration? backoffPolicyDelay = const Duration(seconds: 0),
@@ -71,6 +72,7 @@ class MockWorkmanager extends _i1.Mock implements _i2.Workmanager {
             taskName
           ], {
             #frequency: frequency,
+            #flexInterval: flexInterval,
             #tag: tag,
             #existingWorkPolicy: existingWorkPolicy,
             #initialDelay: initialDelay,
