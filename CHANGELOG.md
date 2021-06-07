@@ -1,3 +1,9 @@
+# 0.4.1
+
+* Bumps Android dependencies (Kotlin, AGP, workmanager 2.5.0)
+* Android: Remove jcenter reference
+* Android: Build using compile/target SDK 30.
+
 # 0.4.0
 
 * The package now supports null-safety
