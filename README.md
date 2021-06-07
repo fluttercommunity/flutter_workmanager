@@ -41,6 +41,18 @@ void main() {
 
 --- 
 
+# Work Result
+
+The `Workmanager().executeTask(...` block supports 3 possible outcomes:
+
+1. `Future.value(true)`: The task is successful.
+2. `Future.value(false)`: The task did not complete successfully and needs to be retried.
+3. `Future.error(...)`: The task failed. 
+
+On Android, the `BackoffPolicy` will configure how `WorkManager` is going to retry the task.
+
+Refer to the example app for a successful, retrying and a failed task.
+
 # Customisation (Android only!) 
 Not every `Android WorkManager` feature is ported.
 
@@ -131,6 +143,7 @@ Add some input data for your task. Valid value types are: `int`, `bool`, `double
     },
 );
 ```
+
 ## BackoffPolicy
 Indicates the waiting strategy upon task failure.  
 The default is `BackoffPolicy.exponential`.    

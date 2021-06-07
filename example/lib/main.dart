@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -9,6 +10,8 @@ import 'package:workmanager/workmanager.dart';
 void main() => runApp(MyApp());
 
 const simpleTaskKey = "simpleTask";
+const rescheduledTaskKey = "rescheduledTask";
+const failedTaskKey = "failedTask";
 const simpleDelayedTask = "simpleDelayedTask";
 const simplePeriodicTask = "simplePeriodicTask";
 const simplePeriodic1HourTask = "simplePeriodic1HourTask";
@@ -22,6 +25,20 @@ void callbackDispatcher() {
         prefs.setBool("test", true);
         print("Bool from prefs: ${prefs.getBool("test")}");
         break;
+      case rescheduledTaskKey:
+        final key = inputData!['key']!;
+        final prefs = await SharedPreferences.getInstance();
+        if (prefs.containsKey('unique-$key')) {
+          print('has been running before, task is successful');
+          return true;
+        } else {
+          await prefs.setBool('unique-$key', true);
+          print('reschedule task');
+          return false;
+        }
+      case failedTaskKey:
+        print('failed task');
+        return Future.error('failed');
       case simpleDelayedTask:
         print("$simpleDelayedTask was executed");
         break;
@@ -34,7 +51,7 @@ void callbackDispatcher() {
       case Workmanager.iOSBackgroundTask:
         print("The iOS background fetch was triggered");
         Directory? tempDir = await getTemporaryDirectory();
-        String? tempPath = tempDir?.path;
+        String? tempPath = tempDir.path;
         print(
             "You can access other plugins in the background, for example Directory.getTemporaryDirectory(): $tempPath");
         break;
@@ -95,21 +112,45 @@ class _MyAppState extends State<MyApp> {
               //This task runs once.
               //Most likely this will trigger immediately
               PlatformEnabledButton(
-                  platform: _Platform.android,
-                  child: Text("Register OneOff Task"),
-                  onPressed: () {
-                    Workmanager().registerOneOffTask(
-                      "1",
-                      simpleTaskKey,
-                      inputData: <String, dynamic>{
-                        'int': 1,
-                        'bool': true,
-                        'double': 1.0,
-                        'string': 'string',
-                        'array': [1, 2, 3],
-                      },
-                    );
-                  }),
+                platform: _Platform.android,
+                child: Text("Register OneOff Task"),
+                onPressed: () {
+                  Workmanager().registerOneOffTask(
+                    "1",
+                    simpleTaskKey,
+                    inputData: <String, dynamic>{
+                      'int': 1,
+                      'bool': true,
+                      'double': 1.0,
+                      'string': 'string',
+                      'array': [1, 2, 3],
+                    },
+                  );
+                },
+              ),
+              PlatformEnabledButton(
+                platform: _Platform.android,
+                child: Text("Register rescheduled Task"),
+                onPressed: () {
+                  Workmanager().registerOneOffTask(
+                    "1-rescheduled",
+                    rescheduledTaskKey,
+                    inputData: <String, dynamic>{
+                      'key': Random().nextInt(64000),
+                    },
+                  );
+                },
+              ),
+              PlatformEnabledButton(
+                platform: _Platform.android,
+                child: Text("Register failed Task"),
+                onPressed: () {
+                  Workmanager().registerOneOffTask(
+                    "1-failed",
+                    failedTaskKey,
+                  );
+                },
+              ),
               //This task runs once
               //This wait at least 10 seconds before running
               PlatformEnabledButton(

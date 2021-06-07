@@ -3,6 +3,7 @@ package be.tramckrijte.workmanager
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.concurrent.futures.ResolvableFuture
 import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
@@ -30,6 +31,8 @@ class BackgroundWorker(
     private lateinit var backgroundChannel: MethodChannel
 
     companion object {
+        const val TAG = "BackgroundWorker"
+
         const val PAYLOAD_KEY = "be.tramckrijte.workmanager.INPUT_DATA"
         const val DART_TASK_KEY = "be.tramckrijte.workmanager.DART_TASK"
         const val IS_IN_DEBUG_MODE_KEY = "be.tramckrijte.workmanager.IS_IN_DEBUG_MODE_KEY"
@@ -131,7 +134,8 @@ class BackgroundWorker(
                             stopEngine(Result.failure())
                         }
 
-                        override fun error(p0: String?, p1: String?, p2: Any?) {
+                        override fun error(errorCode: String?, errorMessage: String?, errorDetails: Any?) {
+                            Log.e(TAG, "errorCode: $errorCode, errorMessage: $errorMessage")
                             stopEngine(Result.failure())
                         }
 
