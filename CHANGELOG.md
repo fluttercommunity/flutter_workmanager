@@ -1,3 +1,7 @@
+# 0.5.0-dev.1
+
+* Android: Load Flutter environment asynchronously in the Worker task
+
 # 0.4.1
 
 * Bumps Android dependencies (Kotlin, AGP, workmanager 2.5.0)
