@@ -10,23 +10,22 @@ import androidx.work.WorkerParameters
 import com.google.common.util.concurrent.ListenableFuture
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.dart.DartExecutor
+import io.flutter.embedding.engine.loader.FlutterLoader
 import io.flutter.embedding.engine.plugins.shim.ShimPluginRegistry
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.view.FlutterCallbackInformation
-import io.flutter.view.FlutterMain
 import java.util.*
 
 /***
  * A simple worker that will post your input back to your Flutter application.
  *
  * It will block the background thread until a value of either true or false is received back from Flutter code.
- *
  */
 class BackgroundWorker(
-    private val ctx: Context,
+    applicationContext: Context,
     private val workerParams: WorkerParameters
-) : ListenableWorker(ctx, workerParams), MethodChannel.MethodCallHandler {
+) : ListenableWorker(applicationContext, workerParams), MethodChannel.MethodCallHandler {
 
     private lateinit var backgroundChannel: MethodChannel
 
@@ -37,8 +36,11 @@ class BackgroundWorker(
         const val DART_TASK_KEY = "be.tramckrijte.workmanager.DART_TASK"
         const val IS_IN_DEBUG_MODE_KEY = "be.tramckrijte.workmanager.IS_IN_DEBUG_MODE_KEY"
 
-        const val BACKGROUND_CHANNEL_NAME = "be.tramckrijte.workmanager/background_channel_work_manager"
+        const val BACKGROUND_CHANNEL_NAME =
+            "be.tramckrijte.workmanager/background_channel_work_manager"
         const val BACKGROUND_CHANNEL_INITIALIZED = "backgroundChannelInitialized"
+
+        private val flutterLoader = FlutterLoader()
     }
 
     private val payload
@@ -51,40 +53,55 @@ class BackgroundWorker(
         get() = workerParams.inputData.getBoolean(IS_IN_DEBUG_MODE_KEY, false)
 
     private val randomThreadIdentifier = Random().nextInt()
-    private lateinit var engine: FlutterEngine
+    private var engine: FlutterEngine? = null
 
-    private var destroying = false
     private var startTime: Long = 0
     private val resolvableFuture = ResolvableFuture.create<Result>()
 
     override fun startWork(): ListenableFuture<Result> {
         startTime = System.currentTimeMillis()
 
-        engine = FlutterEngine(ctx)
-        FlutterMain.ensureInitializationComplete(ctx, null)
+        engine = FlutterEngine(applicationContext)
 
-        val callbackHandle = SharedPreferenceHelper.getCallbackHandle(ctx)
-        val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle)
-        val dartBundlePath = FlutterMain.findAppBundlePath()
-
-        if (isInDebug) {
-            DebugHelper.postTaskStarting(
-                ctx,
-                randomThreadIdentifier,
-                dartTask,
-                payload,
-                callbackHandle,
-                callbackInfo,
-                dartBundlePath
-            )
+        if (!flutterLoader.initialized()) {
+            flutterLoader.startInitialization(applicationContext)
         }
 
-        //Backwards compatibility with v1. We register all the user's plugins.
-        WorkmanagerPlugin.pluginRegistryCallback?.registerWith(ShimPluginRegistry(engine))
-        engine.dartExecutor.executeDartCallback(DartExecutor.DartCallback(ctx.assets, dartBundlePath, callbackInfo))
+        flutterLoader.ensureInitializationCompleteAsync(
+            applicationContext,
+            null,
+            Handler(Looper.getMainLooper())
+        ) {
+            val callbackHandle = SharedPreferenceHelper.getCallbackHandle(applicationContext)
+            val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle)
+            val dartBundlePath = flutterLoader.findAppBundlePath()
 
-        backgroundChannel = MethodChannel(engine.dartExecutor, BACKGROUND_CHANNEL_NAME)
-        backgroundChannel.setMethodCallHandler(this@BackgroundWorker)
+            if (isInDebug) {
+                DebugHelper.postTaskStarting(
+                    applicationContext,
+                    randomThreadIdentifier,
+                    dartTask,
+                    payload,
+                    callbackHandle,
+                    callbackInfo,
+                    dartBundlePath
+                )
+            }
+
+            //Backwards compatibility with v1. We register all the user's plugins.
+            WorkmanagerPlugin.pluginRegistryCallback?.registerWith(ShimPluginRegistry(engine!!))
+
+            backgroundChannel = MethodChannel(engine!!.dartExecutor, BACKGROUND_CHANNEL_NAME)
+            backgroundChannel.setMethodCallHandler(this@BackgroundWorker)
+
+            engine!!.dartExecutor.executeDartCallback(
+                DartExecutor.DartCallback(
+                    applicationContext.assets,
+                    dartBundlePath,
+                    callbackInfo
+                )
+            )
+        }
 
         return resolvableFuture
     }
@@ -98,7 +115,7 @@ class BackgroundWorker(
 
         if (isInDebug) {
             DebugHelper.postTaskCompleteNotification(
-                ctx,
+                applicationContext,
                 randomThreadIdentifier,
                 dartTask,
                 payload,
@@ -115,11 +132,8 @@ class BackgroundWorker(
 
         // If stopEngine is called from `onStopped`, it may not be from the main thread.
         Handler(Looper.getMainLooper()).post {
-            if (!destroying) {
-                if (this::engine.isInitialized)
-                    engine.destroy()
-                destroying = true
-            }
+            engine?.destroy()
+            engine = null
         }
     }
 
@@ -134,7 +148,11 @@ class BackgroundWorker(
                             stopEngine(Result.failure())
                         }
 
-                        override fun error(errorCode: String?, errorMessage: String?, errorDetails: Any?) {
+                        override fun error(
+                            errorCode: String?,
+                            errorMessage: String?,
+                            errorDetails: Any?
+                        ) {
                             Log.e(TAG, "errorCode: $errorCode, errorMessage: $errorMessage")
                             stopEngine(Result.failure())
                         }
