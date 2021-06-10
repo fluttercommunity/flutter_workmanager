@@ -7,6 +7,8 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     
     static let identifier = "be.tramckrijte.workmanager"
     
+    static let defaultBGProcessingTaskIdentifier = "workmanager.background.task"
+    
     private static var flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?
 
     private struct ForegroundMethodChannel {
@@ -32,7 +34,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     }
 
     @available(iOS 13.0, *)
-    private func handleBackgroundTask(task: BGProcessingTask) {
+    private func handleBGProcessingTask(_ task: BGProcessingTask) {
         let operationQueue = OperationQueue()
         
         // Create an operation that performs the main part of the background task
@@ -56,9 +58,9 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     
     public override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable : Any] = [:]) -> Bool {
         if #available(iOS 13.0, *) {
-            BGTaskScheduler.shared.register(forTaskWithIdentifier: "workmanager.background.task", using: nil) { task in
+            BGTaskScheduler.shared.register(forTaskWithIdentifier: SwiftWorkmanagerPlugin.defaultBGProcessingTaskIdentifier, using: nil) { task in
                 if let task = task as? BGProcessingTask {
-                    self.handleBackgroundTask(task: task)
+                    self.handleBGProcessingTask(task)
                 }
             }
         }
@@ -116,7 +118,7 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
             
             if #available(iOS 13.0, *) {
                 let initialDelaySeconds = arguments[ForegroundMethodChannel.methods.registerOneOffTask.arguments.initialDelaySeconds.rawValue] as! Int64
-                let request = BGProcessingTaskRequest(identifier: "workmanager.background.task")
+                let request = BGProcessingTaskRequest(identifier: SwiftWorkmanagerPlugin.defaultBGProcessingTaskIdentifier)
                 let requiresCharging = arguments[ForegroundMethodChannel.methods.registerOneOffTask.arguments.requiresCharging.rawValue] as? Bool ?? false
                 
                 var requiresNetworkConnectivity = false

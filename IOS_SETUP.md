@@ -8,7 +8,49 @@ This plugin is compatible with **Swift 4.2** and up. Make sure you are using **X
 ## Enable BGTaskScheduler
 
 > ⚠️ BGTaskScheduler is similar to Background Fetch described below and brings a similar set of constraints. Most notably, there are no guarantees when the background task will be run. Excerpt from the documentation:
+> 
+> Schedule a processing task request to ask that the system launch your app when conditions are favorable for battery life to handle deferrable, longer-running processing, such as syncing, database maintenance, or similar tasks. The system will attempt to fulfill this request to the best of its ability within the next two days as long as the user has used your app within the past week.
 
+![Screenshot of Background Fetch Capabilities tab in Xcode ](.art/ios_background_mode_background_processing.png)
+
+This will add the **UIBackgroundModes** key to your project's `Info.plist`:
+
+``` xml
+<key>UIBackgroundModes</key>
+<array>
+	<string>processing</string>
+</array>
+```
+
+Additionally, you must configure the background task identifiers. The default identifier is `workmanager.background.task` in the host Apps Info.plist:
+
+``` xml
+<key>BGTaskSchedulerPermittedIdentifiers</key>
+<array>
+	<string>workmanager.background.task</string>
+</array>
+</plist>
+```
+
+And will set the correct *SystemCapabilities* for your target in the `project.pbxproj` file:
+
+```
+SystemCapabilities = {
+	com.apple.BackgroundModes = {
+		enabled = 1;
+	};
+};
+```
+
+## Testing BGTaskScheduler
+
+Follow the instructions on https://developer.apple.com/documentation/backgroundtasks/starting_and_terminating_tasks_during_development.
+
+The exact command to trigger the WorkManager default BG Task is:
+
+```
+e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"workmanager.background.task"]
+```
 
 ## Enabling Background Fetch
 
