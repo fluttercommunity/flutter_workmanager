@@ -1,3 +1,7 @@
+# 0.5.0-dev.2
+
+* iOS: Modern-style task processing using BGTaskScheduler is now supported. Please see the updated instructions in IOS_SETUP.md.
+
 # 0.5.0-dev.1
 
 * Android: Load Flutter environment asynchronously in the Worker task
