@@ -16,6 +16,8 @@ extension UIBackgroundFetchResult: CustomDebugStringConvertible {
             return "noData"
         case .failed:
             return "failed"
+        @unknown default:
+            fatalError("Unknown background fetch result: \(self)")
         }
     }
 }

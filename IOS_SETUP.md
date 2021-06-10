@@ -4,9 +4,15 @@
 
 This plugin is compatible with **Swift 4.2** and up. Make sure you are using **Xcode 10.3** or higher and have set your minimum deployment target to **iOS 10** or higher by defining a platform version in your podfile: `platform :ios, '10.0'`
 
+
+## Enable BGTaskScheduler
+
+> ⚠️ BGTaskScheduler is similar to Background Fetch described below and brings a similar set of constraints. Most notably, there are no guarantees when the background task will be run. Excerpt from the documentation:
+
+
 ## Enabling Background Fetch
 
->  ⚠️  Background fetch this is currently the *only* supported way to do background work on iOS with work manager: **One off tasks** or **Periodic tasks** are available on Android only for now! (see #109)
+> ⚠️ Background fetch is one supported way to do background work on iOS with work manager: **Periodic tasks** are available on Android only for now! (see #109)
 
 Background fetching is very different compared to Android's Background Jobs.  
 In order for your app to support Background Fetch, you have to add the *Background Modes* capability in Xcode for your app's Target and check *Background fetch*:

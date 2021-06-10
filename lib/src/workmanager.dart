@@ -44,6 +44,10 @@ typedef BackgroundTaskHandler = Future<bool> Function(
 /// }
 /// ```
 ///
+/// You can schedule a specific iOS task using:
+/// - `Workmanager#registerOneOffTask()`
+/// Please read the documentation on limitations for background processing on iOS.
+///
 /// You can now schedule Android tasks using:
 /// - `Workmanager#registerOneOffTask()` or `Workmanager#registerPeriodicTask`
 ///
@@ -78,6 +82,25 @@ class Workmanager {
   /// }
   /// ```
   static const String iOSBackgroundTask = "iOSPerformFetch";
+
+  /// Use this constant inside your callbackDispatcher to identify when an iOS Background Processing via BGTaskScheduler occurred.
+  ///
+  /// ```
+  /// void callbackDispatcher() {
+  ///   Workmanager().executeTask((taskName, inputData) {
+  ///      switch (taskName) {
+  ///        case Workmanager.iOSBackgroundProcessingTask:
+  ///          stderr.writeln("A iOS BG processing task was initiated.");
+  ///          break;
+  ///      }
+  ///
+  ///      return Future.value(true);
+  ///  });
+  /// }
+  /// ```
+  static const String iOSBackgroundProcessingTask =
+      "workmanager.background.task";
+
   static bool _isInDebugMode = false;
 
   MethodChannel _backgroundChannel = const MethodChannel(

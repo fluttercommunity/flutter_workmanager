@@ -43,7 +43,7 @@ private object RegisterTaskHandler : CallHandler<WorkManagerCall.RegisterTask> {
                             "You should ensure you have called the 'initialize' function first! " +
                             "Example: \n" +
                             "\n" +
-                            "`Workmanager.initialize(\n" +
+                            "`Workmanager().initialize(\n" +
                             "  callbackDispatcher,\n" +
                             " )`" +
                             "\n" +
