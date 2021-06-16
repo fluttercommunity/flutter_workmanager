@@ -136,8 +136,7 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
                     try BGTaskScheduler.shared.submit(request)
                     result(true)
                 } catch {
-                    print("Could not schedule app refresh: \(error)")
-                    result(false)
+                    result(WMPError.bgTaskSchedulingFailed(error).asFlutterError)
                 }
 
                 return

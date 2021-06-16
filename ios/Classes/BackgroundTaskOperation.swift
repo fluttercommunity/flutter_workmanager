@@ -18,7 +18,6 @@ class BackgroundTaskOperation : Operation {
     }
     
     override func main() {
-        print("Running the operation")
         let semaphore = DispatchSemaphore(value: 0)
         
         DispatchQueue.main.async {
@@ -31,7 +30,5 @@ class BackgroundTaskOperation : Operation {
         }
 
         semaphore.wait()
-        
-        print("Operation completed")
     }
 }
