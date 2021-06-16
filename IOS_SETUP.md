@@ -120,7 +120,7 @@ Here is an example of a Flutter entrypoint called `callbackDispatcher`:
 
 ```dart
 void callbackDispatcher() {
-  Workmanager.executeTask((task, inputData) {
+  Workmanager().executeTask((task, inputData) {
     switch (task) {
       case Workmanager.iOSBackgroundTask:
         stderr.writeln("The iOS background fetch was triggered");
@@ -153,7 +153,7 @@ If you launched your app using the Flutter command line tools or another IDE lik
 To make background work more visible when developing, the WorkManager plugin provides an `isInDebugMode` flag when initializing the plugin:
 
 ```dart
-Workmanager.initialize(callbackDispatcher, isInDebugMode: true)
+Workmanager().initialize(callbackDispatcher, isInDebugMode: true)
 ```
 
 If `isInDebugMode` is `true`, a local notification will be displayed whenever a background fetch was triggered by iOS. In the example gif below, two background fetches were *simulated* in quick succession. Both completing succesfully after a few seconds in this case:

@@ -13,7 +13,16 @@ const _noDuration = const Duration(seconds: 0);
 /// You should return whether the task ran successfully or not.
 ///
 /// [taskName] Returns the value you provided when registering the task.
-/// iOS will always return [Workmanager.iOSBackgroundTask]
+/// iOS will pass [Workmanager.iOSBackgroundTask] (for background-fetch) or
+/// [Workmanager.iOSBackgroundProcessingTask] for BGTaskScheduler based tasks.
+///
+/// The behavior for retries is different on each platform:
+/// - Android: return `false` from the this method will reschedule the work
+///   based on the policy given in [Workmanager.registerOneOffTask], for example
+/// - iOS: The return value is ignored, but if work has failed, you can schedule
+///   another attempt using [Workmanager.registerOneOffTask]. This depends on
+///   BGTaskScheduler being set up correctly. Please follow the README for
+///   instructions.
 typedef BackgroundTaskHandler = Future<bool> Function(
     String taskName, Map<String, dynamic>? inputData);
 
@@ -122,7 +131,8 @@ class Workmanager {
   }
 
   /// This call is required if you wish to use the [WorkManager] plugin.
-  /// [callbackDispatcher] is a top level function which will be invoked by Android
+  /// [callbackDispatcher] is a top level function which will be invoked by
+  /// Android or iOS. See the discussion on [BackgroundTaskHandler] for details.
   /// [isInDebugMode] true will post debug notifications with information about when a task should have run
   Future<void> initialize(
     final Function callbackDispatcher, {
@@ -149,11 +159,26 @@ class Workmanager {
   /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler]
   /// The [inputData] is the input data for task. Valid value types are: int, bool, double, String and their list
   Future<void> registerOneOffTask(
+    /// Only supported on Android.
     final String uniqueName,
+
+    /// Only supported on Android.
     final String taskName, {
+
+    /// Only supported on Android.
     final String? tag,
+
+    /// Only supported on Android.
     final ExistingWorkPolicy? existingWorkPolicy,
+
+    /// Configures a initial delay.
+    ///
+    /// The delay configured here is not guaranteed. The underlying system may
+    /// decide to schedule the ask a lot later.
     final Duration initialDelay = _noDuration,
+
+    /// Fully supported on Android, but only partially supported on iOS.
+    /// See [Constraints] for details.
     final Constraints? constraints,
     final BackoffPolicy? backoffPolicy,
     final Duration backoffPolicyDelay = _noDuration,

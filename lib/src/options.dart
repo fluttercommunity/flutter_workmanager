@@ -11,6 +11,12 @@ enum ExistingWorkPolicy {
 }
 
 /// An enumeration of various network types that can be used as Constraints for work.
+///
+/// Fully supported on Android.
+///
+/// On iOS, this enumeration is used to define whether a piece of work requires
+/// internet connectivity, by checking for either [NetworkType.connected] or
+/// [NetworkType.metered].
 enum NetworkType {
   /// Any working network connection is required for this work.
   connected,
@@ -47,16 +53,22 @@ class Constraints {
   /// An enumeration of various network types that can be used as Constraints for work.
   final NetworkType networkType;
 
-  /// true if the work should only execute when the battery isn't low
+  /// `true` if the work should only execute when the battery isn't low.
+  ///
+  /// Only supported on Android.
   final bool? requiresBatteryNotLow;
 
-  /// true if the work should only execute while the device is charging
+  /// `true` if the work should only execute while the device is charging.
   final bool? requiresCharging;
 
-  /// true if the work should only execute while the device is idle
+  /// `true` if the work should only execute while the device is idle.
+  ///
+  /// Only supported on Android.
   final bool? requiresDeviceIdle;
 
-  /// true if the work should only execute when the storage isn't low
+  /// `true` if the work should only execute when the storage isn't low.
+  ///
+  /// Only supported on Android.
   final bool? requiresStorageNotLow;
 
   Constraints({
