@@ -195,14 +195,14 @@ object Extractor {
 
     private fun extractExistingWorkPolicyFromCall(call: MethodCall): ExistingWorkPolicy =
             try {
-                ExistingWorkPolicy.valueOf(call.argument<String>(REGISTER_TASK_EXISTING_WORK_POLICY_KEY)!!.toUpperCase())
+                ExistingWorkPolicy.valueOf(call.argument<String>(REGISTER_TASK_EXISTING_WORK_POLICY_KEY)!!.uppercase())
             } catch (ignored: Exception) {
                 defaultOneOffExistingWorkPolicy
             }
 
     private fun extractExistingPeriodicWorkPolicyFromCall(call: MethodCall): ExistingPeriodicWorkPolicy =
             try {
-                ExistingPeriodicWorkPolicy.valueOf(call.argument<String>(REGISTER_TASK_EXISTING_WORK_POLICY_KEY)!!.toUpperCase())
+                ExistingPeriodicWorkPolicy.valueOf(call.argument<String>(REGISTER_TASK_EXISTING_WORK_POLICY_KEY)!!.uppercase())
             } catch (ignored: Exception) {
                 defaultPeriodExistingWorkPolicy
             }
@@ -221,7 +221,7 @@ object Extractor {
         }
 
         val backoffPolicy = try {
-            BackoffPolicy.valueOf(call.argument<String>(REGISTER_TASK_BACK_OFF_POLICY_TYPE_KEY)!!.toUpperCase())
+            BackoffPolicy.valueOf(call.argument<String>(REGISTER_TASK_BACK_OFF_POLICY_TYPE_KEY)!!.uppercase())
         } catch (ignored: Exception) {
             defaultBackOffPolicy
         }
@@ -240,7 +240,7 @@ object Extractor {
     private fun extractConstraintConfigFromCall(call: MethodCall): Constraints {
         fun extractNetworkTypeFromCall(call: MethodCall) =
                 try {
-                    NetworkType.valueOf(call.argument<String>(REGISTER_TASK_CONSTRAINTS_NETWORK_TYPE_KEY)!!.toUpperCase())
+                    NetworkType.valueOf(call.argument<String>(REGISTER_TASK_CONSTRAINTS_NETWORK_TYPE_KEY)!!.uppercase())
                 } catch (ignored: Exception) {
                     defaultNetworkType
                 }

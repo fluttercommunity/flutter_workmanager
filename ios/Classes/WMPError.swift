@@ -12,6 +12,7 @@ enum WMPError: Error {
     case unhandledMethod(_ methodName: String)
     case unexpectedMethodArguments(_ argumentsDescription: String)
     case workmanagerNotInitialized
+    case bgTaskSchedulingFailed(_ error: Error)
     
     var code: String {
         return "\(self) error"
@@ -25,11 +26,19 @@ enum WMPError: Error {
             return "Unhandled method \(methodName)"
         case .unexpectedMethodArguments(let argumentsDescription):
             return "Unexpected call arguments \(argumentsDescription)"
+        case .bgTaskSchedulingFailed(let error):
+            return """
+                Scheduling the task using BGTaskScheduler has failed.
+                
+                This may be due to too many tasks being scheduled but not run.
+                
+                See the error for details: \(error).
+                """
         case .workmanagerNotInitialized:
             return  """
             You should ensure you have called the 'initialize' function first!
             Example:
-            `Workmanager.initialize(
+            `Workmanager().initialize(
               callbackDispatcher,
              )`
             

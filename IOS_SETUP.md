@@ -4,9 +4,57 @@
 
 This plugin is compatible with **Swift 4.2** and up. Make sure you are using **Xcode 10.3** or higher and have set your minimum deployment target to **iOS 10** or higher by defining a platform version in your podfile: `platform :ios, '10.0'`
 
+
+## Enable BGTaskScheduler
+
+> ⚠️ BGTaskScheduler is similar to Background Fetch described below and brings a similar set of constraints. Most notably, there are no guarantees when the background task will be run. Excerpt from the documentation:
+> 
+> Schedule a processing task request to ask that the system launch your app when conditions are favorable for battery life to handle deferrable, longer-running processing, such as syncing, database maintenance, or similar tasks. The system will attempt to fulfill this request to the best of its ability within the next two days as long as the user has used your app within the past week.
+
+![Screenshot of Background Fetch Capabilities tab in Xcode ](.art/ios_background_mode_background_processing.png)
+
+This will add the **UIBackgroundModes** key to your project's `Info.plist`:
+
+``` xml
+<key>UIBackgroundModes</key>
+<array>
+	<string>processing</string>
+</array>
+```
+
+Additionally, you must configure the background task identifiers. The default identifier is `workmanager.background.task` in the host Apps Info.plist:
+
+``` xml
+<key>BGTaskSchedulerPermittedIdentifiers</key>
+<array>
+	<string>workmanager.background.task</string>
+</array>
+</plist>
+```
+
+And will set the correct *SystemCapabilities* for your target in the `project.pbxproj` file:
+
+```
+SystemCapabilities = {
+	com.apple.BackgroundModes = {
+		enabled = 1;
+	};
+};
+```
+
+## Testing BGTaskScheduler
+
+Follow the instructions on https://developer.apple.com/documentation/backgroundtasks/starting_and_terminating_tasks_during_development.
+
+The exact command to trigger the WorkManager default BG Task is:
+
+```
+e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"workmanager.background.task"]
+```
+
 ## Enabling Background Fetch
 
->  ⚠️  Background fetch this is currently the *only* supported way to do background work on iOS with work manager: **One off tasks** or **Periodic tasks** are available on Android only for now! (see #109)
+> ⚠️ Background fetch is one supported way to do background work on iOS with work manager: **Periodic tasks** are available on Android only for now! (see #109)
 
 Background fetching is very different compared to Android's Background Jobs.  
 In order for your app to support Background Fetch, you have to add the *Background Modes* capability in Xcode for your app's Target and check *Background fetch*:
@@ -72,7 +120,7 @@ Here is an example of a Flutter entrypoint called `callbackDispatcher`:
 
 ```dart
 void callbackDispatcher() {
-  Workmanager.executeTask((task, inputData) {
+  Workmanager().executeTask((task, inputData) {
     switch (task) {
       case Workmanager.iOSBackgroundTask:
         stderr.writeln("The iOS background fetch was triggered");
@@ -105,7 +153,7 @@ If you launched your app using the Flutter command line tools or another IDE lik
 To make background work more visible when developing, the WorkManager plugin provides an `isInDebugMode` flag when initializing the plugin:
 
 ```dart
-Workmanager.initialize(callbackDispatcher, isInDebugMode: true)
+Workmanager().initialize(callbackDispatcher, isInDebugMode: true)
 ```
 
 If `isInDebugMode` is `true`, a local notification will be displayed whenever a background fetch was triggered by iOS. In the example gif below, two background fetches were *simulated* in quick succession. Both completing succesfully after a few seconds in this case:

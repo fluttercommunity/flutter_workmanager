@@ -55,6 +55,10 @@ void callbackDispatcher() {
         print(
             "You can access other plugins in the background, for example Directory.getTemporaryDirectory(): $tempPath");
         break;
+      case Workmanager.iOSBackgroundProcessingTask:
+        print("The iOS Background processing task was called");
+        await Future.delayed(Duration(seconds: 2));
+        break;
     }
 
     return Future.value(true);
@@ -107,6 +111,28 @@ class _MyAppState extends State<MyApp> {
                     );
                   }),
               SizedBox(height: 16),
+              Text("BG Processing Tasks (iOS only)",
+                  style: Theme.of(context).textTheme.headline),
+              //This task runs once.
+              //Most likely this will trigger immediately
+              PlatformEnabledButton(
+                platform: _Platform.ios,
+                child: Text("Perform a BG Task"),
+                onPressed: () {
+                  Workmanager().registerOneOffTask(
+                    "1",
+                    simpleTaskKey,
+                    inputData: <String, dynamic>{
+                      'int': 1,
+                      'bool': true,
+                      'double': 1.0,
+                      'string': 'string',
+                      'array': [1, 2, 3],
+                    },
+                  );
+                },
+              ),
+
               Text("One Off Tasks (Android only)",
                   style: Theme.of(context).textTheme.headline),
               //This task runs once.

@@ -1,3 +1,4 @@
+import BackgroundTasks
 import Flutter
 import UIKit
 import os
@@ -5,6 +6,8 @@ import os
 public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     
     static let identifier = "be.tramckrijte.workmanager"
+    
+    static let defaultBGProcessingTaskIdentifier = "workmanager.background.task"
     
     private static var flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?
 
@@ -19,19 +22,51 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
                     case callbackHandle
                 }
             }
+            struct registerOneOffTask {
+                static let name = "\(registerOneOffTask.self)"
+                enum arguments: String {
+                    case initialDelaySeconds
+                    case networkType
+                    case requiresCharging
+                }
+            }
+        }
+    }
+
+    @available(iOS 13.0, *)
+    private func handleBGProcessingTask(_ task: BGProcessingTask) {
+        let operationQueue = OperationQueue()
+        
+        // Create an operation that performs the main part of the background task
+        let operation = BackgroundTaskOperation(task.identifier, flutterPluginRegistrantCallback: SwiftWorkmanagerPlugin.flutterPluginRegistrantCallback)
+        
+        // Provide an expiration handler for the background task
+        // that cancels the operation
+        task.expirationHandler = {
+            operation.cancel()
+        }
+        
+        // Inform the system that the background task is complete
+        // when the operation completes
+        operation.completionBlock = {
+            task.setTaskCompleted(success: !operation.isCancelled)
+        }
+        
+        // Start the operation
+        operationQueue.addOperation(operation)
+    }
+    
+    public override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable : Any] = [:]) -> Bool {
+        if #available(iOS 13.0, *) {
+            BGTaskScheduler.shared.register(forTaskWithIdentifier: SwiftWorkmanagerPlugin.defaultBGProcessingTaskIdentifier, using: nil) { task in
+                if let task = task as? BGProcessingTask {
+                    self.handleBGProcessingTask(task)
+                }
+            }
         }
 
+        return true
     }
-
-    private struct BackgroundChannel {
-        static let name = "\(SwiftWorkmanagerPlugin.identifier)/background_channel_work_manager"
-        static let initialized = "backgroundChannelInitialized"
-        static let iOSPerformFetch = "onResultSend"
-        static let iOSPerformFetchArguments = ["\(SwiftWorkmanagerPlugin.identifier).DART_TASK": "iOSPerformFetch"]
-    }
-
-    private let flutterThreadLabelPrefix = "\(SwiftWorkmanagerPlugin.identifier).BackgroundFetch"
-
 }
 
 //MARK: - FlutterPlugin conformance
@@ -44,12 +79,10 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
     }
     
     public static func register(with registrar: FlutterPluginRegistrar) {
-        
         let foregroundMethodChannel = FlutterMethodChannel(name: ForegroundMethodChannel.channelName, binaryMessenger: registrar.messenger())
         let instance = SwiftWorkmanagerPlugin()
         registrar.addMethodCallDelegate(instance, channel: foregroundMethodChannel)
         registrar.addApplicationDelegate(instance)
-        
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -61,13 +94,64 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
             UserDefaultsHelper.storeCallbackHandle(handle)
             UserDefaultsHelper.storeIsDebug(isInDebug)
             result(true)
+            
+        case (ForegroundMethodChannel.methods.registerOneOffTask.name, let .some(arguments)):
+            if !validateCallbackHandle() {
+                result(
+                    FlutterError(
+                        code: "1",
+                        message: "You have not properly initialized the Flutter WorkManager Package. " +
+                            "You should ensure you have called the 'initialize' function first! " +
+                            "Example: \n" +
+                            "\n" +
+                            "`Workmanager().initialize(\n" +
+                            "  callbackDispatcher,\n" +
+                            " )`" +
+                            "\n" +
+                            "\n" +
+                            "The `callbackDispatcher` is a top level function. See example in repository.",
+                        details: nil
+                    )
+                )
+                return
+            }            
+            
+            if #available(iOS 13.0, *) {
+                let initialDelaySeconds = arguments[ForegroundMethodChannel.methods.registerOneOffTask.arguments.initialDelaySeconds.rawValue] as! Int64
+                let request = BGProcessingTaskRequest(identifier: SwiftWorkmanagerPlugin.defaultBGProcessingTaskIdentifier)
+                let requiresCharging = arguments[ForegroundMethodChannel.methods.registerOneOffTask.arguments.requiresCharging.rawValue] as? Bool ?? false
+                
+                var requiresNetworkConnectivity = false
+                if let networkTypeInput = arguments[ForegroundMethodChannel.methods.registerOneOffTask.arguments.initialDelaySeconds.rawValue] as? String,
+                   let networkType = NetworkType(rawValue: networkTypeInput),
+                   networkType == .connected || networkType == .metered {
+                    requiresNetworkConnectivity = true
+                }
+                
+                request.earliestBeginDate = Date(timeIntervalSinceNow: Double(initialDelaySeconds))
+                request.requiresExternalPower = requiresCharging
+                request.requiresNetworkConnectivity = requiresNetworkConnectivity
+                
+                do {
+                    try BGTaskScheduler.shared.submit(request)
+                    result(true)
+                } catch {
+                    result(WMPError.bgTaskSchedulingFailed(error).asFlutterError)
+                }
+
+                return
+            } else {
+                result(WMPError.unhandledMethod(call.method).asFlutterError)
+            }
         default:
             result(WMPError.unhandledMethod(call.method).asFlutterError)
             return
         }
-        
     }
     
+    private func validateCallbackHandle() -> Bool {
+        return UserDefaultsHelper.getStoredCallbackHandle() != nil
+    }
 }
 
 //MARK: - AppDelegate conformance
@@ -75,59 +159,9 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
 extension SwiftWorkmanagerPlugin {
     
     override public func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) -> Bool {
-        
-        guard let callbackHandle = UserDefaultsHelper.getStoredCallbackHandle(),
-            let flutterCallbackInformation = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)
-            else {
-                logError("[\(String(describing: self))] \(WMPError.workmanagerNotInitialized.message)")
-                completionHandler(.failed)
-                return false
-        }
-        
-        let fetchSessionStart = Date()
-        let fetchSessionIdentifier = UUID()
-        DebugNotificationHelper.showStartFetchNotification(identifier: fetchSessionIdentifier,
-                                                           startDate: fetchSessionStart,
-                                                           callBackHandle: callbackHandle,
-                                                           callbackInfo: flutterCallbackInformation)
-        
-        var flutterEngine: FlutterEngine? = FlutterEngine(name: flutterThreadLabelPrefix, project: nil, allowHeadlessExecution: true)
-        flutterEngine!.run(withEntrypoint: flutterCallbackInformation.callbackName, libraryURI: flutterCallbackInformation.callbackLibraryPath)
-        SwiftWorkmanagerPlugin.flutterPluginRegistrantCallback?(flutterEngine!)
-        
-        var backgroundMethodChannel: FlutterMethodChannel? = FlutterMethodChannel(name: BackgroundChannel.name, binaryMessenger: flutterEngine!.binaryMessenger)
-        
-        func cleanupFlutterResources() {
-            flutterEngine?.destroyContext()
-            backgroundMethodChannel = nil
-            flutterEngine = nil
-        }
-        
-        backgroundMethodChannel?.setMethodCallHandler { (call, result) in
-            switch call.method {
-            case BackgroundChannel.initialized:
-                result(true)    // Agree to Flutter's method invocation
-                
-                backgroundMethodChannel?.invokeMethod(BackgroundChannel.iOSPerformFetch, arguments: BackgroundChannel.iOSPerformFetchArguments, result: { flutterResult in
-                    cleanupFlutterResources()
-                    let fetchSessionCompleted = Date()
-                    let result: UIBackgroundFetchResult = (flutterResult as? Bool ?? false) ? .newData : .failed
-                    let fetchDuration = fetchSessionCompleted.timeIntervalSince(fetchSessionStart)
-                    logInfo("[\(String(describing: self))] \(#function) -> UIBackgroundFetchResult.\(result) (finished in \(fetchDuration.formatToSeconds()))")
-                    DebugNotificationHelper.showCompletedFetchNotification(identifier: fetchSessionIdentifier,
-                                                                           completedDate: fetchSessionCompleted,
-                                                                           result: result,
-                                                                           elapsedTime: fetchDuration)
-                    completionHandler(result)
-                })
-            default:
-                result(WMPError.unhandledMethod(call.method).asFlutterError)
-                cleanupFlutterResources()
-                completionHandler(UIBackgroundFetchResult.failed)
-            }
-        }
-        
-        return true
+        return BackgroundWorker(mode: .backgroundFetch, flutterPluginRegistrantCallback: SwiftWorkmanagerPlugin.flutterPluginRegistrantCallback)
+            .performBackgroundRequest(completionHandler)
     }
-    
+        
 }
+

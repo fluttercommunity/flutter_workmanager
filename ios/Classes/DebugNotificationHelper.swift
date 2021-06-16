@@ -12,7 +12,7 @@ struct DebugNotificationHelper {
     
     static func showStartFetchNotification(identifier: UUID, startDate: Date, callBackHandle: Int64, callbackInfo: FlutterCallbackInformation) {
         let message =
-        """
+            """
         Starting Dart/Flutter with following params:
          • callbackHandle: '\(callBackHandle)'
          • callBackName: '\(callbackInfo.callbackName ?? "not found")'
@@ -27,7 +27,7 @@ struct DebugNotificationHelper {
     
     static func showCompletedFetchNotification(identifier: UUID, completedDate: Date, result: UIBackgroundFetchResult, elapsedTime: TimeInterval) {
         let message =
-        """
+            """
         Perform fetch completed:
          • Elapsed time: \(elapsedTime.formatToSeconds())
          • Result: UIBackgroundFetchResult.\(result)

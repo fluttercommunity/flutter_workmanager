@@ -39,6 +39,8 @@ void main() {
 
 > The `callbackDispatcher` needs to be either a static function or a top level function to be accessible as a Flutter entry point.
 
+Android tasks are identified using their `taskName`, whereas two default constants are provided for iOS background operations, depending on whether background fetch or BGTaskScheduler is used: `Workmanager.iOSBackgroundTask` & `Workmanager.iOSBackgroundProcessingTask`.
+
 --- 
 
 # Work Result
@@ -46,14 +48,36 @@ void main() {
 The `Workmanager().executeTask(...` block supports 3 possible outcomes:
 
 1. `Future.value(true)`: The task is successful.
-2. `Future.value(false)`: The task did not complete successfully and needs to be retried.
+2. `Future.value(false)`: The task did not complete successfully and needs to be retried. On Android, the retry is done automatically. On iOS (when using BGTaskScheduler), the retry needs to be scheduled manually.
 3. `Future.error(...)`: The task failed. 
 
 On Android, the `BackoffPolicy` will configure how `WorkManager` is going to retry the task.
 
 Refer to the example app for a successful, retrying and a failed task.
 
-# Customisation (Android only!) 
+# Customisation (iOS - BGTaskScheduler only)
+iOS supports **One off tasks** with a few basic constraints:
+
+```dart
+Workmanager().registerOneOffTask(
+  "1", // Ignored on iOS
+  simpleTaskKey, // Ignored on iOS
+  initialDelay: Duration(minutes: 30),
+  constraints: Constraints(
+    // connected or metered mark the task as requiring internet
+    networkType: NetworkType.connected,
+    // require external power
+    requiresCharging: true,
+  ),
+  inputData: ... // fully supported
+);
+```
+
+Tasks registered this way will appear in the callback dispatcher using as `Workmanager.iOSBackgroundProcessingTask`.
+
+For more information see the [BGTaskScheduler documentation](https://developer.apple.com/documentation/backgroundtasks).
+
+# Customisation (Android) 
 Not every `Android WorkManager` feature is ported.
 
 Two kinds of background tasks can be registered :
