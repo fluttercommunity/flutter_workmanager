@@ -72,7 +72,7 @@ class MyApp extends StatefulWidget {
 
 enum _Platform { android, ios }
 
-class PlatformEnabledButton extends RaisedButton {
+class PlatformEnabledButton extends ElevatedButton {
   final _Platform platform;
 
   PlatformEnabledButton({
@@ -100,19 +100,24 @@ class _MyAppState extends State<MyApp> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              Text("Plugin initialization",
-                  style: Theme.of(context).textTheme.headline),
-              RaisedButton(
-                  child: Text("Start the Flutter background service"),
-                  onPressed: () {
-                    Workmanager().initialize(
-                      callbackDispatcher,
-                      isInDebugMode: true,
-                    );
-                  }),
+              Text(
+                "Plugin initialization",
+                style: Theme.of(context).textTheme.headline5,
+              ),
+              ElevatedButton(
+                child: Text("Start the Flutter background service"),
+                onPressed: () {
+                  Workmanager().initialize(
+                    callbackDispatcher,
+                    isInDebugMode: true,
+                  );
+                },
+              ),
               SizedBox(height: 16),
-              Text("BG Processing Tasks (iOS only)",
-                  style: Theme.of(context).textTheme.headline),
+              Text(
+                "BG Processing Tasks (iOS only)",
+                style: Theme.of(context).textTheme.headline5,
+              ),
               //This task runs once.
               //Most likely this will trigger immediately
               PlatformEnabledButton(
@@ -133,8 +138,10 @@ class _MyAppState extends State<MyApp> {
                 },
               ),
 
-              Text("One Off Tasks (Android only)",
-                  style: Theme.of(context).textTheme.headline),
+              Text(
+                "One Off Tasks (Android only)",
+                style: Theme.of(context).textTheme.headline5,
+              ),
               //This task runs once.
               //Most likely this will trigger immediately
               PlatformEnabledButton(
@@ -190,8 +197,10 @@ class _MyAppState extends State<MyApp> {
                     );
                   }),
               SizedBox(height: 8),
-              Text("Periodic Tasks (Android only)",
-                  style: Theme.of(context).textTheme.headline),
+              Text(
+                "Periodic Tasks (Android only)",
+                style: Theme.of(context).textTheme.headline5,
+              ),
               //This task runs periodically
               //It will wait at least 10 seconds before its first launch
               //Since we have not provided a frequency it will be the default 15 minutes
