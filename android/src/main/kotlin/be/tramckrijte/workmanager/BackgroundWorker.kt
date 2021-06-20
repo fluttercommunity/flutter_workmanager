@@ -15,7 +15,7 @@ import io.flutter.embedding.engine.plugins.shim.ShimPluginRegistry
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.view.FlutterCallbackInformation
-import java.util.*
+import java.util.Random
 
 /***
  * A simple worker that will post your input back to your Flutter application.

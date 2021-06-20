@@ -1,7 +1,13 @@
 package be.tramckrijte.workmanager
 
 import android.os.Build
-import androidx.work.*
+import androidx.work.BackoffPolicy
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequest
+import androidx.work.PeriodicWorkRequest
 import be.tramckrijte.workmanager.WorkManagerCall.CancelTask.ByTag.KEYS.UNREGISTER_TASK_TAG_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.CancelTask.ByUniqueName.KEYS.UNREGISTER_TASK_UNIQUE_NAME_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.Initialize.KEYS.INITIALIZE_TASK_CALL_HANDLE_KEY
@@ -31,7 +37,8 @@ val defaultPeriodExistingWorkPolicy = ExistingPeriodicWorkPolicy.KEEP
 val defaultConstraints: Constraints = Constraints.NONE
 const val defaultInitialDelaySeconds = 0L
 const val defaultRequestedBackoffDelay = 0L
-const val defaultPeriodicRefreshFrequencyInSeconds = PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS / 1000
+const val defaultPeriodicRefreshFrequencyInSeconds =
+    PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS / 1000
 const val logTag = "Extractor"
 
 data class BackoffPolicyTaskConfig(
@@ -174,7 +181,10 @@ object Extractor {
                     existingWorkPolicy = extractExistingWorkPolicyFromCall(call),
                     initialDelaySeconds = extractInitialDelayFromCall(call),
                     constraintsConfig = extractConstraintConfigFromCall(call),
-                    backoffPolicyConfig = extractBackoffPolicyConfigFromCall(call, TaskType.ONE_OFF),
+                    backoffPolicyConfig = extractBackoffPolicyConfigFromCall(
+                        call,
+                        TaskType.ONE_OFF
+                    ),
                     payload = extractPayload(call)
                 )
             }
@@ -188,13 +198,22 @@ object Extractor {
                     existingWorkPolicy = extractExistingPeriodicWorkPolicyFromCall(call),
                     initialDelaySeconds = extractInitialDelayFromCall(call),
                     constraintsConfig = extractConstraintConfigFromCall(call),
-                    backoffPolicyConfig = extractBackoffPolicyConfigFromCall(call, TaskType.PERIODIC),
+                    backoffPolicyConfig = extractBackoffPolicyConfigFromCall(
+                        call,
+                        TaskType.PERIODIC
+                    ),
                     payload = extractPayload(call)
                 )
             }
 
-            PossibleWorkManagerCall.CANCEL_TASK_BY_UNIQUE_NAME -> WorkManagerCall.CancelTask.ByUniqueName(call.argument(UNREGISTER_TASK_UNIQUE_NAME_KEY)!!)
-            PossibleWorkManagerCall.CANCEL_TASK_BY_TAG -> WorkManagerCall.CancelTask.ByTag(call.argument(UNREGISTER_TASK_TAG_KEY)!!)
+            PossibleWorkManagerCall.CANCEL_TASK_BY_UNIQUE_NAME -> WorkManagerCall.CancelTask.ByUniqueName(
+                call.argument(UNREGISTER_TASK_UNIQUE_NAME_KEY)!!
+            )
+            PossibleWorkManagerCall.CANCEL_TASK_BY_TAG -> WorkManagerCall.CancelTask.ByTag(
+                call.argument(
+                    UNREGISTER_TASK_TAG_KEY
+                )!!
+            )
             PossibleWorkManagerCall.CANCEL_ALL -> WorkManagerCall.CancelTask.All
 
             PossibleWorkManagerCall.UNKNOWN -> WorkManagerCall.Unknown
@@ -202,23 +221,29 @@ object Extractor {
 
     private fun extractExistingWorkPolicyFromCall(call: MethodCall): ExistingWorkPolicy =
         try {
-            ExistingWorkPolicy.valueOf(call.argument<String>(REGISTER_TASK_EXISTING_WORK_POLICY_KEY)!!.uppercase())
+            ExistingWorkPolicy.valueOf(
+                call.argument<String>(REGISTER_TASK_EXISTING_WORK_POLICY_KEY)!!.uppercase()
+            )
         } catch (ignored: Exception) {
             defaultOneOffExistingWorkPolicy
         }
 
-    private fun extractExistingPeriodicWorkPolicyFromCall(call: MethodCall): ExistingPeriodicWorkPolicy =
+    private fun extractExistingPeriodicWorkPolicyFromCall(call: MethodCall) =
         try {
-            ExistingPeriodicWorkPolicy.valueOf(call.argument<String>(REGISTER_TASK_EXISTING_WORK_POLICY_KEY)!!.uppercase())
+            ExistingPeriodicWorkPolicy.valueOf(
+                call.argument<String>(
+                    REGISTER_TASK_EXISTING_WORK_POLICY_KEY
+                )!!.uppercase()
+            )
         } catch (ignored: Exception) {
             defaultPeriodExistingWorkPolicy
         }
 
-    private fun extractFrequencySecondsFromCall(call: MethodCall): Long =
+    private fun extractFrequencySecondsFromCall(call: MethodCall) =
         call.argument<Int>(PERIODIC_TASK_FREQUENCY_SECONDS_KEY)?.toLong()
             ?: defaultPeriodicRefreshFrequencyInSeconds
 
-    private fun extractInitialDelayFromCall(call: MethodCall): Long =
+    private fun extractInitialDelayFromCall(call: MethodCall) =
         call.argument<Int>(REGISTER_TASK_INITIAL_DELAY_SECONDS_KEY)?.toLong()
             ?: defaultInitialDelaySeconds
 
@@ -228,13 +253,16 @@ object Extractor {
         }
 
         val backoffPolicy = try {
-            BackoffPolicy.valueOf(call.argument<String>(REGISTER_TASK_BACK_OFF_POLICY_TYPE_KEY)!!.uppercase())
+            BackoffPolicy.valueOf(
+                call.argument<String>(REGISTER_TASK_BACK_OFF_POLICY_TYPE_KEY)!!.uppercase()
+            )
         } catch (ignored: Exception) {
             defaultBackOffPolicy
         }
 
-        val requestedBackoffDelay = call.argument<Int>(REGISTER_TASK_BACK_OFF_POLICY_DELAY_MILLIS_KEY)?.toLong()
-            ?: defaultRequestedBackoffDelay
+        val requestedBackoffDelay =
+            call.argument<Int>(REGISTER_TASK_BACK_OFF_POLICY_DELAY_MILLIS_KEY)?.toLong()
+                ?: defaultRequestedBackoffDelay
         val minimumBackOffDelay = taskType.minimumBackOffDelay
 
         return BackoffPolicyTaskConfig(
@@ -247,20 +275,24 @@ object Extractor {
     private fun extractConstraintConfigFromCall(call: MethodCall): Constraints {
         fun extractNetworkTypeFromCall(call: MethodCall) =
             try {
-                NetworkType.valueOf(call.argument<String>(REGISTER_TASK_CONSTRAINTS_NETWORK_TYPE_KEY)!!.uppercase())
+                NetworkType.valueOf(
+                    call.argument<String>(REGISTER_TASK_CONSTRAINTS_NETWORK_TYPE_KEY)!!.uppercase()
+                )
             } catch (ignored: Exception) {
                 defaultNetworkType
             }
 
         val requestedNetworkType = extractNetworkTypeFromCall(call)
-        val requiresBatteryNotLow = call.argument<Boolean>(REGISTER_TASK_CONSTRAINTS_BATTERY_NOT_LOW_KEY)
-            ?: false
+        val requiresBatteryNotLow =
+            call.argument<Boolean>(REGISTER_TASK_CONSTRAINTS_BATTERY_NOT_LOW_KEY)
+                ?: false
         val requiresCharging = call.argument<Boolean>(REGISTER_TASK_CONSTRAINTS_CHARGING_KEY)
             ?: false
         val requiresDeviceIdle = call.argument<Boolean>(REGISTER_TASK_CONSTRAINTS_DEVICE_IDLE_KEY)
             ?: false
-        val requiresStorageNotLow = call.argument<Boolean>(REGISTER_TASK_CONSTRAINTS_STORAGE_NOT_LOW_KEY)
-            ?: false
+        val requiresStorageNotLow =
+            call.argument<Boolean>(REGISTER_TASK_CONSTRAINTS_STORAGE_NOT_LOW_KEY)
+                ?: false
         return Constraints.Builder()
             .setRequiredNetworkType(requestedNetworkType)
             .setRequiresBatteryNotLow(requiresBatteryNotLow)

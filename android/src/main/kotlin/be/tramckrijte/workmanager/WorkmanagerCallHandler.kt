@@ -1,7 +1,13 @@
 package be.tramckrijte.workmanager
 
 import android.content.Context
-import androidx.work.*
+import androidx.work.Constraints
+import androidx.work.Data
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequest
+import androidx.work.PeriodicWorkRequest
+import androidx.work.WorkManager
 import be.tramckrijte.workmanager.BackgroundWorker.Companion.DART_TASK_KEY
 import be.tramckrijte.workmanager.BackgroundWorker.Companion.IS_IN_DEBUG_MODE_KEY
 import be.tramckrijte.workmanager.BackgroundWorker.Companion.PAYLOAD_KEY
@@ -20,22 +26,41 @@ class WorkmanagerCallHandler(private val ctx: Context) : MethodChannel.MethodCal
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (val extractedCall = Extractor.extractWorkManagerCallFromRawMethodName(call)) {
             is WorkManagerCall.Initialize -> InitializeHandler.handle(ctx, extractedCall, result)
-            is WorkManagerCall.RegisterTask -> RegisterTaskHandler.handle(ctx, extractedCall, result)
-            is WorkManagerCall.CancelTask -> UnregisterTaskHandler.handle(ctx, extractedCall, result)
+            is WorkManagerCall.RegisterTask -> RegisterTaskHandler.handle(
+                ctx,
+                extractedCall,
+                result
+            )
+            is WorkManagerCall.CancelTask -> UnregisterTaskHandler.handle(
+                ctx,
+                extractedCall,
+                result
+            )
             is WorkManagerCall.Unknown -> UnknownTaskHandler.handle(ctx, extractedCall, result)
         }
     }
 }
 
 private object InitializeHandler : CallHandler<WorkManagerCall.Initialize> {
-    override fun handle(context: Context, convertedCall: WorkManagerCall.Initialize, result: MethodChannel.Result) {
-        SharedPreferenceHelper.saveCallbackDispatcherHandleKey(context, convertedCall.callbackDispatcherHandleKey)
+    override fun handle(
+        context: Context,
+        convertedCall: WorkManagerCall.Initialize,
+        result: MethodChannel.Result
+    ) {
+        SharedPreferenceHelper.saveCallbackDispatcherHandleKey(
+            context,
+            convertedCall.callbackDispatcherHandleKey
+        )
         result.success()
     }
 }
 
 private object RegisterTaskHandler : CallHandler<WorkManagerCall.RegisterTask> {
-    override fun handle(context: Context, convertedCall: WorkManagerCall.RegisterTask, result: MethodChannel.Result) {
+    override fun handle(
+        context: Context,
+        convertedCall: WorkManagerCall.RegisterTask,
+        result: MethodChannel.Result
+    ) {
         if (!SharedPreferenceHelper.hasCallbackHandle(context)) {
             result.error(
                 "1",
@@ -56,12 +81,18 @@ private object RegisterTaskHandler : CallHandler<WorkManagerCall.RegisterTask> {
 
         when (convertedCall) {
             is WorkManagerCall.RegisterTask.OneOffTask -> enqueueOneOffTask(context, convertedCall)
-            is WorkManagerCall.RegisterTask.PeriodicTask -> enqueuePeriodicTask(context, convertedCall)
+            is WorkManagerCall.RegisterTask.PeriodicTask -> enqueuePeriodicTask(
+                context,
+                convertedCall
+            )
         }
         result.success()
     }
 
-    private fun enqueuePeriodicTask(context: Context, convertedCall: WorkManagerCall.RegisterTask.PeriodicTask) {
+    private fun enqueuePeriodicTask(
+        context: Context,
+        convertedCall: WorkManagerCall.RegisterTask.PeriodicTask
+    ) {
         WM.enqueuePeriodicTask(
             context = context,
             uniqueName = convertedCall.uniqueName,
@@ -77,7 +108,10 @@ private object RegisterTaskHandler : CallHandler<WorkManagerCall.RegisterTask> {
         )
     }
 
-    private fun enqueueOneOffTask(context: Context, convertedCall: WorkManagerCall.RegisterTask.OneOffTask) {
+    private fun enqueueOneOffTask(
+        context: Context,
+        convertedCall: WorkManagerCall.RegisterTask.OneOffTask
+    ) {
         WM.enqueueOneOffTask(
             context = context,
             uniqueName = convertedCall.uniqueName,
@@ -94,9 +128,16 @@ private object RegisterTaskHandler : CallHandler<WorkManagerCall.RegisterTask> {
 }
 
 private object UnregisterTaskHandler : CallHandler<WorkManagerCall.CancelTask> {
-    override fun handle(context: Context, convertedCall: WorkManagerCall.CancelTask, result: MethodChannel.Result) {
+    override fun handle(
+        context: Context,
+        convertedCall: WorkManagerCall.CancelTask,
+        result: MethodChannel.Result
+    ) {
         when (convertedCall) {
-            is WorkManagerCall.CancelTask.ByUniqueName -> WM.cancelByUniqueName(context, convertedCall.uniqueName)
+            is WorkManagerCall.CancelTask.ByUniqueName -> WM.cancelByUniqueName(
+                context,
+                convertedCall.uniqueName
+            )
             is WorkManagerCall.CancelTask.ByTag -> WM.cancelByTag(context, convertedCall.tag)
             WorkManagerCall.CancelTask.All -> WM.cancelAll(context)
         }
@@ -105,7 +146,11 @@ private object UnregisterTaskHandler : CallHandler<WorkManagerCall.CancelTask> {
 }
 
 private object UnknownTaskHandler : CallHandler<WorkManagerCall.Unknown> {
-    override fun handle(context: Context, convertedCall: WorkManagerCall.Unknown, result: MethodChannel.Result) {
+    override fun handle(
+        context: Context,
+        convertedCall: WorkManagerCall.Unknown,
+        result: MethodChannel.Result
+    ) {
         result.notImplemented()
     }
 }
@@ -156,7 +201,11 @@ object WM {
         backoffPolicyConfig: BackoffPolicyTaskConfig?
     ) {
         val periodicTaskRequest =
-            PeriodicWorkRequest.Builder(BackgroundWorker::class.java, frequencyInSeconds, TimeUnit.SECONDS)
+            PeriodicWorkRequest.Builder(
+                BackgroundWorker::class.java,
+                frequencyInSeconds,
+                TimeUnit.SECONDS
+            )
                 .setInputData(buildTaskInputData(dartTask, isInDebugMode, payload))
                 .setInitialDelay(initialDelaySeconds, TimeUnit.SECONDS)
                 .setConstraints(constraintsConfig)
@@ -175,7 +224,11 @@ object WM {
             .enqueueUniquePeriodicWork(uniqueName, existingWorkPolicy, periodicTaskRequest)
     }
 
-    private fun buildTaskInputData(dartTask: String, isInDebugMode: Boolean, payload: String?): Data {
+    private fun buildTaskInputData(
+        dartTask: String,
+        isInDebugMode: Boolean,
+        payload: String?
+    ): Data {
         return Data.Builder()
             .putString(DART_TASK_KEY, dartTask)
             .putBoolean(IS_IN_DEBUG_MODE_KEY, isInDebugMode)
@@ -187,7 +240,9 @@ object WM {
             .build()
     }
 
-    fun cancelByUniqueName(context: Context, uniqueWorkName: String) = context.workManager().cancelUniqueWork(uniqueWorkName)
+    fun cancelByUniqueName(context: Context, uniqueWorkName: String) =
+        context.workManager().cancelUniqueWork(uniqueWorkName)
+
     fun cancelByTag(context: Context, tag: String) = context.workManager().cancelAllWorkByTag(tag)
     fun cancelAll(context: Context) = context.workManager().cancelAllWork()
 }

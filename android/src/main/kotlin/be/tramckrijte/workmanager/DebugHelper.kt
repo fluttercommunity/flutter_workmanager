@@ -8,7 +8,7 @@ import androidx.core.app.NotificationCompat
 import androidx.work.ListenableWorker
 import io.flutter.view.FlutterCallbackInformation
 import java.text.DateFormat
-import java.util.*
+import java.util.Date
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
 object ThumbnailGenerator {
@@ -24,11 +24,13 @@ object ThumbnailGenerator {
 object DebugHelper {
     private const val debugChannelId = "WorkmanagerDebugChannelId"
     private const val debugChannelName = "A helper channel to debug your background tasks."
-    private val debugDateFormatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM)
+    private val debugDateFormatter =
+        DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM)
 
     private val currentTime get() = debugDateFormatter.format(Date())
 
-    private fun mapMillisToSeconds(milliseconds: Long) = "${MILLISECONDS.toSeconds(milliseconds)} seconds."
+    private fun mapMillisToSeconds(milliseconds: Long) =
+        "${MILLISECONDS.toSeconds(milliseconds)} seconds."
 
     fun postTaskCompleteNotification(
         ctx: Context,
@@ -98,7 +100,13 @@ object DebugHelper {
 
     private fun NotificationManager.createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createNotificationChannel(NotificationChannel(debugChannelId, debugChannelName, NotificationManager.IMPORTANCE_DEFAULT))
+            createNotificationChannel(
+                NotificationChannel(
+                    debugChannelId,
+                    debugChannelName,
+                    NotificationManager.IMPORTANCE_DEFAULT
+                )
+            )
         }
     }
 }
