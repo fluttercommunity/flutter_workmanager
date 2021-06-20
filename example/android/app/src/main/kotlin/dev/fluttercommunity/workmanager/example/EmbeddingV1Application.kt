@@ -1,4 +1,4 @@
-package be.tramckrijte.workmanager_example
+package dev.fluttercommunity.workmanager.example
 
 import be.tramckrijte.workmanager.WorkmanagerPlugin
 import io.flutter.app.FlutterApplication
