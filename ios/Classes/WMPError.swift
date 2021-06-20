@@ -13,11 +13,11 @@ enum WMPError: Error {
     case unexpectedMethodArguments(_ argumentsDescription: String)
     case workmanagerNotInitialized
     case bgTaskSchedulingFailed(_ error: Error)
-    
+
     var code: String {
         return "\(self) error"
     }
-    
+
     var message: String {
         switch self {
         case .methodChannelNotSet:
@@ -29,9 +29,9 @@ enum WMPError: Error {
         case .bgTaskSchedulingFailed(let error):
             return """
                 Scheduling the task using BGTaskScheduler has failed.
-                
+
                 This may be due to too many tasks being scheduled but not run.
-                
+
                 See the error for details: \(error).
                 """
         case .workmanagerNotInitialized:
@@ -41,16 +41,16 @@ enum WMPError: Error {
             `Workmanager().initialize(
               callbackDispatcher,
              )`
-            
+
             The `callbackDispatcher` is a top level function. See example in repository.
             """
         }
     }
-    
+
     var details: Any? {
         return nil
     }
-    
+
     var asFlutterError: FlutterError {
         return FlutterError(code: code, message: message, details: details)
     }
