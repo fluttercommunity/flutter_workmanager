@@ -1,3 +1,7 @@
+# next
+
+* Android: Use `Number` type for specifying the callback handler key & convert to Long
+
 # 0.5.0-dev.4
 
 * Replace _noDuration variable with `Duration.zero` directly (#283)
