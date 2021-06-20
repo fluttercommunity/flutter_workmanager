@@ -1,3 +1,7 @@
+# 0.5.0-dev.4
+
+* Replace _noDuration variable with `Duration.zero` directly (#283)
+
 # 0.5.0-dev.3
 
 * Documentation for BGTaskScheduler added
