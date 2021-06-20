@@ -15,7 +15,7 @@ import io.flutter.embedding.engine.plugins.shim.ShimPluginRegistry
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.view.FlutterCallbackInformation
-import java.util.*
+import java.util.Random
 
 /***
  * A simple worker that will post your input back to your Flutter application.
@@ -88,7 +88,7 @@ class BackgroundWorker(
                 )
             }
 
-            //Backwards compatibility with v1. We register all the user's plugins.
+            // Backwards compatibility with v1. We register all the user's plugins.
             WorkmanagerPlugin.pluginRegistryCallback?.registerWith(ShimPluginRegistry(engine!!))
 
             backgroundChannel = MethodChannel(engine!!.dartExecutor, BACKGROUND_CHANNEL_NAME)
@@ -161,7 +161,8 @@ class BackgroundWorker(
                             val wasSuccessFul = receivedResult?.let { it as Boolean? } == true
                             stopEngine(if (wasSuccessFul) Result.success() else Result.retry())
                         }
-                    })
+                    }
+                )
         }
     }
 }

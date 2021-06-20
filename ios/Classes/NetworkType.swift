@@ -16,10 +16,10 @@ enum NetworkType: String {
     case metered
 
     /// Default value. A network is not required for this work.
-    case not_required
+    case notRequired
 
     /// A non-roaming network connection is required for this work.
-    case not_roaming
+    case notRoaming
 
     /// An unmetered network connection is required for this work.
     case unmetered

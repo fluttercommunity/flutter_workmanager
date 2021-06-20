@@ -1,0 +1,12 @@
+name: analysis
+on: pull_request
+
+jobs:
+  package-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2 # required
+      - uses: axel-op/dart-package-analyzer@v3
+        with:
+          # Required:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}

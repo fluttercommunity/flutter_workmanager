@@ -1,9 +1,8 @@
-package be.tramckrijte.workmanager_example
+package dev.fluttercommunity.workmanager.example
 
 import be.tramckrijte.workmanager.WorkmanagerPlugin
 import io.flutter.app.FlutterApplication
 import io.flutter.plugin.common.PluginRegistry
-import io.flutter.plugins.GeneratedPluginRegistrant
 
 @Deprecated(message = "Not used, but here to show you how you can use the plugin using the old v1 embedding method.")
 class EmbeddingV1Application : FlutterApplication(), PluginRegistry.PluginRegistrantCallback {

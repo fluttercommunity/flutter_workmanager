@@ -3,7 +3,7 @@
 [![Build status](https://img.shields.io/cirrus/github/vrtdev/flutter_workmanager/master)](https://cirrus-ci.com/github/vrtdev/flutter_workmanager/)
 =======
 
-Flutter WorkManager is a wrapper around [Android's WorkManager](https://developer.android.com/topic/libraries/architecture/workmanager) and [iOS' performFetchWithCompletionHandler](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1623125-application), effectively enabling headless execution of Dart code in the background.
+Flutter WorkManager is a wrapper around [Android's WorkManager](https://developer.android.com/topic/libraries/architecture/workmanager), [iOS' performFetchWithCompletionHandler](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1623125-application) and [iOS BGAppRefreshTask](https://developer.apple.com/documentation/backgroundtasks/bgapprefreshtask), effectively enabling headless execution of Dart code in the background.
 
 This is especially useful to run periodic tasks, such as fetching remote data on a regular basis.
 
@@ -12,8 +12,8 @@ This is especially useful to run periodic tasks, such as fetching remote data on
 # Platform Setup
 In order for background work to be scheduled correctly you should follow the Android and iOS setup first.  
 
-- [Android Setup](ANDROID_SETUP.md)
-- [iOS Setup](IOS_SETUP.md)
+- [Android Setup](https://github.com/fluttercommunity/flutter_workmanager/blob/master/ANDROID_SETUP.md)
+- [iOS Setup](https://github.com/fluttercommunity/flutter_workmanager/blob/master/IOS_SETUP.md)
 
 # How to use the package?
 See sample folder for a complete working example.  

@@ -10,6 +10,7 @@ environment:
   flutter: ">=1.12.13+hotfix.5"
 
 dependencies:
+  pedantic: ^1.11.0
   flutter:
     sdk: flutter
 

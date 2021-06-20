@@ -1,0 +1,52 @@
+name: format + publishable
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  format_dart:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: 'stable'
+      - name: Format
+        run: |
+          flutter format --set-exit-if-changed .
+
+  format_kotlin:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "checkout"
+        uses: actions/checkout@v2
+
+      - name: "ktlint"
+        uses: "vroy/gha-kotlin-linter@v1"
+
+  format_swift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: GitHub Action for SwiftLint
+        uses: norio-nomura/action-swiftlint@3.2.1
+
+  publishable:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: 'stable'
+
+      - name: publish checks
+        run: |
+          flutter pub get
+          flutter pub publish -n
+          pub global activate tuneup
+          pub global run tuneup check

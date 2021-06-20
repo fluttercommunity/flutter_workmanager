@@ -37,7 +37,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "be.tramckrijte.workmanager_example"
+        applicationId "dev.fluttercommunity.workmanager.example"
         minSdkVersion 16
         targetSdkVersion 30
         versionCode flutterVersionCode.toInteger()

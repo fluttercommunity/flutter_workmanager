@@ -8,23 +8,22 @@
 import Foundation
 
 struct UserDefaultsHelper {
-    
+
     // MARK: Properties
-    
+
     private static let userDefaults = UserDefaults(suiteName: "\(SwiftWorkmanagerPlugin.identifier).userDefaults")!
-    
+
     enum Key {
         case callbackHandle
         case isDebug
-        
+
         var stringValue: String {
             return "\(SwiftWorkmanagerPlugin.identifier).\(self)"
         }
     }
-    
-    
+
     // MARK: callbackHandle
-    
+
     static func storeCallbackHandle(_ handle: Int64) {
        store(handle, key: .callbackHandle)
     }
@@ -32,10 +31,9 @@ struct UserDefaultsHelper {
     static func getStoredCallbackHandle() -> Int64? {
         return getValue(for: .callbackHandle)
     }
-    
-    
+
     // MARK: isDebug
-    
+
     static func storeIsDebug(_ isDebug: Bool) {
         store(isDebug, key: .isDebug)
     }
@@ -43,10 +41,9 @@ struct UserDefaultsHelper {
     static func getIsDebug() -> Bool {
         return getValue(for: .isDebug) ?? false
     }
-    
-    
+
     // MARK: Private helper functions
-    
+
     private static func store<T>(_ value: T, key: Key) {
         userDefaults.setValue(value, forKey: key.stringValue)
     }
@@ -54,5 +51,5 @@ struct UserDefaultsHelper {
     private static func getValue<T>(for key: Key) -> T? {
         return userDefaults.value(forKey: key.stringValue) as? T
     }
-    
+
 }

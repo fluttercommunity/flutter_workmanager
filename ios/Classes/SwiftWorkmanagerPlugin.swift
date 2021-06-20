@@ -4,27 +4,27 @@ import UIKit
 import os
 
 public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
-    
+
     static let identifier = "be.tramckrijte.workmanager"
-    
+
     static let defaultBGProcessingTaskIdentifier = "workmanager.background.task"
-    
+
     private static var flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?
 
     private struct ForegroundMethodChannel {
         static let channelName = "\(SwiftWorkmanagerPlugin.identifier)/foreground_channel_work_manager"
 
-        struct methods {
-            struct initialize {
-                static let name = "\(initialize.self)"
-                enum arguments: String {
+        struct Methods {
+            struct Initialize {
+                static let name = "\(Initialize.self)"
+                enum Arguments: String {
                     case isInDebugMode
                     case callbackHandle
                 }
             }
-            struct registerOneOffTask {
-                static let name = "\(registerOneOffTask.self)"
-                enum arguments: String {
+            struct RegisterOneOffTask {
+                static let name = "\(RegisterOneOffTask.self)"
+                enum Arguments: String {
                     case initialDelaySeconds
                     case networkType
                     case requiresCharging
@@ -36,29 +36,36 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     @available(iOS 13.0, *)
     private func handleBGProcessingTask(_ task: BGProcessingTask) {
         let operationQueue = OperationQueue()
-        
+
         // Create an operation that performs the main part of the background task
-        let operation = BackgroundTaskOperation(task.identifier, flutterPluginRegistrantCallback: SwiftWorkmanagerPlugin.flutterPluginRegistrantCallback)
-        
+        let operation = BackgroundTaskOperation(
+            task.identifier,
+            flutterPluginRegistrantCallback: SwiftWorkmanagerPlugin.flutterPluginRegistrantCallback
+        )
+
         // Provide an expiration handler for the background task
         // that cancels the operation
         task.expirationHandler = {
             operation.cancel()
         }
-        
+
         // Inform the system that the background task is complete
         // when the operation completes
         operation.completionBlock = {
             task.setTaskCompleted(success: !operation.isCancelled)
         }
-        
+
         // Start the operation
         operationQueue.addOperation(operation)
     }
-    
-    public override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable : Any] = [:]) -> Bool {
+
+    public override func application(_ application: UIApplication,
+                                     didFinishLaunchingWithOptions launchOptions: [AnyHashable: Any] = [:]) -> Bool {
         if #available(iOS 13.0, *) {
-            BGTaskScheduler.shared.register(forTaskWithIdentifier: SwiftWorkmanagerPlugin.defaultBGProcessingTaskIdentifier, using: nil) { task in
+            BGTaskScheduler.shared.register(
+                forTaskWithIdentifier: SwiftWorkmanagerPlugin.defaultBGProcessingTaskIdentifier,
+                using: nil
+            ) { task in
                 if let task = task as? BGProcessingTask {
                     self.handleBGProcessingTask(task)
                 }
@@ -69,7 +76,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     }
 }
 
-//MARK: - FlutterPlugin conformance
+// MARK: - FlutterPlugin conformance
 
 extension SwiftWorkmanagerPlugin: FlutterPlugin {
 
@@ -77,25 +84,33 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
     public static func setPluginRegistrantCallback(_ callback: @escaping FlutterPluginRegistrantCallback) {
         flutterPluginRegistrantCallback = callback
     }
-    
+
     public static func register(with registrar: FlutterPluginRegistrar) {
-        let foregroundMethodChannel = FlutterMethodChannel(name: ForegroundMethodChannel.channelName, binaryMessenger: registrar.messenger())
+        let foregroundMethodChannel = FlutterMethodChannel(
+            name: ForegroundMethodChannel.channelName,
+            binaryMessenger: registrar.messenger()
+        )
         let instance = SwiftWorkmanagerPlugin()
         registrar.addMethodCallDelegate(instance, channel: foregroundMethodChannel)
         registrar.addApplicationDelegate(instance)
     }
-    
+
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        
+
         switch (call.method, call.arguments as? [AnyHashable: Any]) {
-        case (ForegroundMethodChannel.methods.initialize.name, let .some(arguments)):
-            let isInDebug = arguments[ForegroundMethodChannel.methods.initialize.arguments.isInDebugMode.rawValue] as! Bool
-            let handle = arguments[ForegroundMethodChannel.methods.initialize.arguments.callbackHandle.rawValue] as! Int64
+        case (ForegroundMethodChannel.Methods.Initialize.name, let .some(arguments)):
+            let method = ForegroundMethodChannel.Methods.Initialize.self
+            guard let isInDebug = arguments[method.Arguments.isInDebugMode.rawValue] as? Bool,
+                  let handle = arguments[method.Arguments.callbackHandle.rawValue] as? Int64 else {
+                result(WMPError.invalidParameters.asFlutterError)
+                return
+            }
+
             UserDefaultsHelper.storeCallbackHandle(handle)
             UserDefaultsHelper.storeIsDebug(isInDebug)
             result(true)
-            
-        case (ForegroundMethodChannel.methods.registerOneOffTask.name, let .some(arguments)):
+
+        case (ForegroundMethodChannel.Methods.RegisterOneOffTask.name, let .some(arguments)):
             if !validateCallbackHandle() {
                 result(
                     FlutterError(
@@ -114,24 +129,31 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
                     )
                 )
                 return
-            }            
-            
+            }
+
             if #available(iOS 13.0, *) {
-                let initialDelaySeconds = arguments[ForegroundMethodChannel.methods.registerOneOffTask.arguments.initialDelaySeconds.rawValue] as! Int64
-                let request = BGProcessingTaskRequest(identifier: SwiftWorkmanagerPlugin.defaultBGProcessingTaskIdentifier)
-                let requiresCharging = arguments[ForegroundMethodChannel.methods.registerOneOffTask.arguments.requiresCharging.rawValue] as? Bool ?? false
-                
+                let method = ForegroundMethodChannel.Methods.RegisterOneOffTask.self
+                guard let initialDelaySeconds =
+                        arguments[method.Arguments.initialDelaySeconds.rawValue] as? Int64 else {
+                    result(WMPError.invalidParameters.asFlutterError)
+                    return
+                }
+                let request = BGProcessingTaskRequest(
+                    identifier: SwiftWorkmanagerPlugin.defaultBGProcessingTaskIdentifier
+                )
+                let requiresCharging = arguments[method.Arguments.requiresCharging.rawValue] as? Bool ?? false
+
                 var requiresNetworkConnectivity = false
-                if let networkTypeInput = arguments[ForegroundMethodChannel.methods.registerOneOffTask.arguments.initialDelaySeconds.rawValue] as? String,
+                if let networkTypeInput = arguments[method.Arguments.initialDelaySeconds.rawValue] as? String,
                    let networkType = NetworkType(rawValue: networkTypeInput),
                    networkType == .connected || networkType == .metered {
                     requiresNetworkConnectivity = true
                 }
-                
+
                 request.earliestBeginDate = Date(timeIntervalSinceNow: Double(initialDelaySeconds))
                 request.requiresExternalPower = requiresCharging
                 request.requiresNetworkConnectivity = requiresNetworkConnectivity
-                
+
                 do {
                     try BGTaskScheduler.shared.submit(request)
                     result(true)
@@ -148,20 +170,26 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
             return
         }
     }
-    
+
     private func validateCallbackHandle() -> Bool {
         return UserDefaultsHelper.getStoredCallbackHandle() != nil
     }
 }
 
-//MARK: - AppDelegate conformance
+// MARK: - AppDelegate conformance
 
 extension SwiftWorkmanagerPlugin {
-    
-    override public func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) -> Bool {
-        return BackgroundWorker(mode: .backgroundFetch, flutterPluginRegistrantCallback: SwiftWorkmanagerPlugin.flutterPluginRegistrantCallback)
-            .performBackgroundRequest(completionHandler)
-    }
-        
-}
 
+    override public func application(
+        _ application: UIApplication,
+        performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+    ) -> Bool {
+        let worker = BackgroundWorker(
+            mode: .backgroundFetch,
+            flutterPluginRegistrantCallback: SwiftWorkmanagerPlugin.flutterPluginRegistrantCallback
+        )
+
+        return worker.performBackgroundRequest(completionHandler)
+    }
+
+}

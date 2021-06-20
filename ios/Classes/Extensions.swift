@@ -28,7 +28,7 @@ internal extension Date {
         formatter.locale = Locale.current
         formatter.dateStyle = .short
         formatter.timeStyle = .medium
-        
+
         return formatter.string(from: self)
     }
 }
