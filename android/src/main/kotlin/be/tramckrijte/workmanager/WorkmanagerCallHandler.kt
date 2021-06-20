@@ -38,18 +38,18 @@ private object RegisterTaskHandler : CallHandler<WorkManagerCall.RegisterTask> {
     override fun handle(context: Context, convertedCall: WorkManagerCall.RegisterTask, result: MethodChannel.Result) {
         if (!SharedPreferenceHelper.hasCallbackHandle(context)) {
             result.error(
-                    "1",
-                    "You have not properly initialized the Flutter WorkManager Package. " +
-                            "You should ensure you have called the 'initialize' function first! " +
-                            "Example: \n" +
-                            "\n" +
-                            "`Workmanager().initialize(\n" +
-                            "  callbackDispatcher,\n" +
-                            " )`" +
-                            "\n" +
-                            "\n" +
-                            "The `callbackDispatcher` is a top level function. See example in repository.",
-                    null
+                "1",
+                "You have not properly initialized the Flutter WorkManager Package. " +
+                    "You should ensure you have called the 'initialize' function first! " +
+                    "Example: \n" +
+                    "\n" +
+                    "`Workmanager().initialize(\n" +
+                    "  callbackDispatcher,\n" +
+                    " )`" +
+                    "\n" +
+                    "\n" +
+                    "The `callbackDispatcher` is a top level function. See example in repository.",
+                null
             )
             return
         }
@@ -62,32 +62,33 @@ private object RegisterTaskHandler : CallHandler<WorkManagerCall.RegisterTask> {
     }
 
     private fun enqueuePeriodicTask(context: Context, convertedCall: WorkManagerCall.RegisterTask.PeriodicTask) {
-        WM.enqueuePeriodicTask(context = context,
-                uniqueName = convertedCall.uniqueName,
-                dartTask = convertedCall.taskName,
-                tag = convertedCall.tag,
-                frequencyInSeconds = convertedCall.frequencyInSeconds,
-                isInDebugMode = convertedCall.isInDebugMode,
-                existingWorkPolicy = convertedCall.existingWorkPolicy,
-                initialDelaySeconds = convertedCall.initialDelaySeconds,
-                constraintsConfig = convertedCall.constraintsConfig,
-                backoffPolicyConfig = convertedCall.backoffPolicyConfig,
-                payload = convertedCall.payload
+        WM.enqueuePeriodicTask(
+            context = context,
+            uniqueName = convertedCall.uniqueName,
+            dartTask = convertedCall.taskName,
+            tag = convertedCall.tag,
+            frequencyInSeconds = convertedCall.frequencyInSeconds,
+            isInDebugMode = convertedCall.isInDebugMode,
+            existingWorkPolicy = convertedCall.existingWorkPolicy,
+            initialDelaySeconds = convertedCall.initialDelaySeconds,
+            constraintsConfig = convertedCall.constraintsConfig,
+            backoffPolicyConfig = convertedCall.backoffPolicyConfig,
+            payload = convertedCall.payload
         )
     }
 
     private fun enqueueOneOffTask(context: Context, convertedCall: WorkManagerCall.RegisterTask.OneOffTask) {
         WM.enqueueOneOffTask(
-                context = context,
-                uniqueName = convertedCall.uniqueName,
-                dartTask = convertedCall.taskName,
-                tag = convertedCall.tag,
-                isInDebugMode = convertedCall.isInDebugMode,
-                existingWorkPolicy = convertedCall.existingWorkPolicy,
-                initialDelaySeconds = convertedCall.initialDelaySeconds,
-                constraintsConfig = convertedCall.constraintsConfig,
-                backoffPolicyConfig = convertedCall.backoffPolicyConfig,
-                payload = convertedCall.payload
+            context = context,
+            uniqueName = convertedCall.uniqueName,
+            dartTask = convertedCall.taskName,
+            tag = convertedCall.tag,
+            isInDebugMode = convertedCall.isInDebugMode,
+            existingWorkPolicy = convertedCall.existingWorkPolicy,
+            initialDelaySeconds = convertedCall.initialDelaySeconds,
+            constraintsConfig = convertedCall.constraintsConfig,
+            backoffPolicyConfig = convertedCall.backoffPolicyConfig,
+            payload = convertedCall.payload
         )
     }
 }
@@ -110,77 +111,80 @@ private object UnknownTaskHandler : CallHandler<WorkManagerCall.Unknown> {
 }
 
 object WM {
-    fun enqueueOneOffTask(context: Context,
-                          uniqueName: String,
-                          dartTask: String,
-                          payload: String? = null,
-                          tag: String? = null,
-                          isInDebugMode: Boolean = false,
-                          existingWorkPolicy: ExistingWorkPolicy = defaultOneOffExistingWorkPolicy,
-                          initialDelaySeconds: Long = defaultInitialDelaySeconds,
-                          constraintsConfig: Constraints = defaultConstraints,
-                          backoffPolicyConfig: BackoffPolicyTaskConfig?
+    fun enqueueOneOffTask(
+        context: Context,
+        uniqueName: String,
+        dartTask: String,
+        payload: String? = null,
+        tag: String? = null,
+        isInDebugMode: Boolean = false,
+        existingWorkPolicy: ExistingWorkPolicy = defaultOneOffExistingWorkPolicy,
+        initialDelaySeconds: Long = defaultInitialDelaySeconds,
+        constraintsConfig: Constraints = defaultConstraints,
+        backoffPolicyConfig: BackoffPolicyTaskConfig?
     ) {
         val oneOffTaskRequest = OneTimeWorkRequest.Builder(BackgroundWorker::class.java)
+            .setInputData(buildTaskInputData(dartTask, isInDebugMode, payload))
+            .setInitialDelay(initialDelaySeconds, TimeUnit.SECONDS)
+            .setConstraints(constraintsConfig)
+            .apply {
+                if (backoffPolicyConfig != null) {
+                    setBackoffCriteria(
+                        backoffPolicyConfig.backoffPolicy,
+                        backoffPolicyConfig.backoffDelay,
+                        TimeUnit.MILLISECONDS
+                    )
+                }
+            }
+            .apply { tag?.let(::addTag) }
+            .build()
+        context.workManager()
+            .enqueueUniqueWork(uniqueName, existingWorkPolicy, oneOffTaskRequest)
+    }
+
+    fun enqueuePeriodicTask(
+        context: Context,
+        uniqueName: String,
+        dartTask: String,
+        payload: String? = null,
+        tag: String? = null,
+        frequencyInSeconds: Long = defaultPeriodicRefreshFrequencyInSeconds,
+        isInDebugMode: Boolean = false,
+        existingWorkPolicy: ExistingPeriodicWorkPolicy = defaultPeriodExistingWorkPolicy,
+        initialDelaySeconds: Long = defaultInitialDelaySeconds,
+        constraintsConfig: Constraints = defaultConstraints,
+        backoffPolicyConfig: BackoffPolicyTaskConfig?
+    ) {
+        val periodicTaskRequest =
+            PeriodicWorkRequest.Builder(BackgroundWorker::class.java, frequencyInSeconds, TimeUnit.SECONDS)
                 .setInputData(buildTaskInputData(dartTask, isInDebugMode, payload))
                 .setInitialDelay(initialDelaySeconds, TimeUnit.SECONDS)
                 .setConstraints(constraintsConfig)
                 .apply {
                     if (backoffPolicyConfig != null) {
                         setBackoffCriteria(
-                                backoffPolicyConfig.backoffPolicy,
-                                backoffPolicyConfig.backoffDelay,
-                                TimeUnit.MILLISECONDS
+                            backoffPolicyConfig.backoffPolicy,
+                            backoffPolicyConfig.backoffDelay,
+                            TimeUnit.MILLISECONDS
                         )
                     }
                 }
                 .apply { tag?.let(::addTag) }
                 .build()
         context.workManager()
-                .enqueueUniqueWork(uniqueName, existingWorkPolicy, oneOffTaskRequest)
-    }
-
-    fun enqueuePeriodicTask(context: Context,
-                            uniqueName: String,
-                            dartTask: String,
-                            payload: String? = null,
-                            tag: String? = null,
-                            frequencyInSeconds: Long = defaultPeriodicRefreshFrequencyInSeconds,
-                            isInDebugMode: Boolean = false,
-                            existingWorkPolicy: ExistingPeriodicWorkPolicy = defaultPeriodExistingWorkPolicy,
-                            initialDelaySeconds: Long = defaultInitialDelaySeconds,
-                            constraintsConfig: Constraints = defaultConstraints,
-                            backoffPolicyConfig: BackoffPolicyTaskConfig?) {
-        val periodicTaskRequest =
-                PeriodicWorkRequest.Builder(BackgroundWorker::class.java, frequencyInSeconds, TimeUnit.SECONDS)
-                        .setInputData(buildTaskInputData(dartTask, isInDebugMode, payload))
-                        .setInitialDelay(initialDelaySeconds, TimeUnit.SECONDS)
-                        .setConstraints(constraintsConfig)
-                        .apply {
-                            if (backoffPolicyConfig != null) {
-                                setBackoffCriteria(
-                                        backoffPolicyConfig.backoffPolicy,
-                                        backoffPolicyConfig.backoffDelay,
-                                        TimeUnit.MILLISECONDS
-                                )
-                            }
-                        }
-                        .apply { tag?.let(::addTag) }
-                        .build()
-        context.workManager()
-                .enqueueUniquePeriodicWork(uniqueName, existingWorkPolicy, periodicTaskRequest)
+            .enqueueUniquePeriodicWork(uniqueName, existingWorkPolicy, periodicTaskRequest)
     }
 
     private fun buildTaskInputData(dartTask: String, isInDebugMode: Boolean, payload: String?): Data {
         return Data.Builder()
-                .putString(DART_TASK_KEY, dartTask)
-                .putBoolean(IS_IN_DEBUG_MODE_KEY, isInDebugMode)
-                .apply {
-                    payload?.let {
-                        putString(PAYLOAD_KEY, payload)
-                    }
+            .putString(DART_TASK_KEY, dartTask)
+            .putBoolean(IS_IN_DEBUG_MODE_KEY, isInDebugMode)
+            .apply {
+                payload?.let {
+                    putString(PAYLOAD_KEY, payload)
                 }
-                .build()
+            }
+            .build()
     }
 
     fun cancelByUniqueName(context: Context, uniqueWorkName: String) = context.workManager().cancelUniqueWork(uniqueWorkName)

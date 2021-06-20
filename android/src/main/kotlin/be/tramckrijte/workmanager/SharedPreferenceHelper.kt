@@ -10,9 +10,9 @@ object SharedPreferenceHelper {
 
     fun saveCallbackDispatcherHandleKey(ctx: Context, callbackHandle: Long) {
         ctx.prefs()
-                .edit()
-                .putLong(CALLBACK_DISPATCHER_HANDLE_KEY, callbackHandle)
-                .apply()
+            .edit()
+            .putLong(CALLBACK_DISPATCHER_HANDLE_KEY, callbackHandle)
+            .apply()
     }
 
     fun getCallbackHandle(ctx: Context): Long {

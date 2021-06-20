@@ -88,7 +88,7 @@ class BackgroundWorker(
                 )
             }
 
-            //Backwards compatibility with v1. We register all the user's plugins.
+            // Backwards compatibility with v1. We register all the user's plugins.
             WorkmanagerPlugin.pluginRegistryCallback?.registerWith(ShimPluginRegistry(engine!!))
 
             backgroundChannel = MethodChannel(engine!!.dartExecutor, BACKGROUND_CHANNEL_NAME)
@@ -161,7 +161,8 @@ class BackgroundWorker(
                             val wasSuccessFul = receivedResult?.let { it as Boolean? } == true
                             stopEngine(if (wasSuccessFul) Result.success() else Result.retry())
                         }
-                    })
+                    }
+                )
         }
     }
 }

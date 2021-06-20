@@ -13,10 +13,10 @@ import java.util.concurrent.TimeUnit.MILLISECONDS
 
 object ThumbnailGenerator {
     fun mapResultToEmoji(result: ListenableWorker.Result): String =
-            when (result) {
-                is ListenableWorker.Result.Success -> "\uD83C\uDF89"
-                else -> "\uD83D\uDD25"
-            }
+        when (result) {
+            is ListenableWorker.Result.Success -> "\uD83C\uDF89"
+            else -> "\uD83D\uDD25"
+        }
 
     val workEmoji get() = listOf("\uD83D\uDC77\u200D♀️", "\uD83D\uDC77\u200D♂️").random()
 }
@@ -30,36 +30,41 @@ object DebugHelper {
 
     private fun mapMillisToSeconds(milliseconds: Long) = "${MILLISECONDS.toSeconds(milliseconds)} seconds."
 
-    fun postTaskCompleteNotification(ctx: Context,
-                                     threadIdentifier: Int,
-                                     dartTask: String,
-                                     payload: String? = null,
-                                     fetchDuration: Long,
-                                     result: ListenableWorker.Result) {
+    fun postTaskCompleteNotification(
+        ctx: Context,
+        threadIdentifier: Int,
+        dartTask: String,
+        payload: String? = null,
+        fetchDuration: Long,
+        result: ListenableWorker.Result
+    ) {
         postNotification(
-                ctx,
-                threadIdentifier,
-                "${ThumbnailGenerator.workEmoji} $currentTime",
-                """
+            ctx,
+            threadIdentifier,
+            "${ThumbnailGenerator.workEmoji} $currentTime",
+            """
                     • Result: ${ThumbnailGenerator.mapResultToEmoji(result)} ${result.javaClass.simpleName}
                     • dartTask: $dartTask
                     • inputData: ${payload ?: "not found"}
                     • Elapsed time: ${mapMillisToSeconds(fetchDuration)}
-                """.trimIndent()
+            """.trimIndent()
         )
     }
 
-    fun postTaskStarting(ctx: Context,
-                         threadIdentifier: Int,
-                         dartTask: String,
-                         payload: String? = null,
-                         callbackHandle: Long,
-                         callbackInfo: FlutterCallbackInformation?,
-                         dartBundlePath: String?) {
-        postNotification(ctx,
-                threadIdentifier,
-                "${ThumbnailGenerator.workEmoji} $currentTime",
-                """
+    fun postTaskStarting(
+        ctx: Context,
+        threadIdentifier: Int,
+        dartTask: String,
+        payload: String? = null,
+        callbackHandle: Long,
+        callbackInfo: FlutterCallbackInformation?,
+        dartBundlePath: String?
+    ) {
+        postNotification(
+            ctx,
+            threadIdentifier,
+            "${ThumbnailGenerator.workEmoji} $currentTime",
+            """
                 • dartTask: $dartTask
                 • inputData: ${payload ?: "not found"}
                 • callbackHandle: $callbackHandle 
@@ -67,7 +72,7 @@ object DebugHelper {
                 • callbackClassName: ${callbackInfo?.callbackClassName ?: "not found"}
                 • callbackLibraryPath: ${callbackInfo?.callbackLibraryPath ?: "not found"}
                 • dartBundlePath: $dartBundlePath"
-                """.trimIndent()
+            """.trimIndent()
 
         )
     }
@@ -77,16 +82,16 @@ object DebugHelper {
             createNotificationChannel()
 
             notify(
-                    messageId,
-                    NotificationCompat.Builder(ctx, debugChannelId)
-                            .setContentTitle(title)
-                            .setContentText(contentText)
-                            .setStyle(
-                                    NotificationCompat.BigTextStyle()
-                                            .bigText(contentText)
-                            )
-                            .setSmallIcon(android.R.drawable.stat_notify_sync)
-                            .build()
+                messageId,
+                NotificationCompat.Builder(ctx, debugChannelId)
+                    .setContentTitle(title)
+                    .setContentText(contentText)
+                    .setStyle(
+                        NotificationCompat.BigTextStyle()
+                            .bigText(contentText)
+                    )
+                    .setSmallIcon(android.R.drawable.stat_notify_sync)
+                    .build()
             )
         }
     }
