@@ -320,7 +320,8 @@ void main() {
                 taskName: "taskName",
                 initialDelay: Duration(seconds: 1),
                 backoffPolicyDelay: Duration(seconds: 1),
-                existingWorkPolicy: existingWorkPolicy.first as ExistingWorkPolicy),
+                existingWorkPolicy:
+                    existingWorkPolicy.first as ExistingWorkPolicy),
             {
               'isInDebugMode': true,
               'uniqueName': 'uniqueName',
