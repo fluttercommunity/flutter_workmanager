@@ -25,13 +25,22 @@ private interface CallHandler<T : WorkManagerCall> {
 class WorkmanagerCallHandler(private val ctx: Context) : MethodChannel.MethodCallHandler {
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (val extractedCall = Extractor.extractWorkManagerCallFromRawMethodName(call)) {
-            is WorkManagerCall.Initialize -> InitializeHandler.handle(ctx, extractedCall, result)
+            is WorkManagerCall.Initialize -> InitializeHandler.handle(
+                ctx,
+                extractedCall,
+                result
+            )
             is WorkManagerCall.RegisterTask -> RegisterTaskHandler.handle(
                 ctx,
                 extractedCall,
                 result
             )
             is WorkManagerCall.CancelTask -> UnregisterTaskHandler.handle(
+                ctx,
+                extractedCall,
+                result
+            )
+            is WorkManagerCall.Failed -> FailedTaskHandler(extractedCall.code).handle(
                 ctx,
                 extractedCall,
                 result
@@ -142,6 +151,16 @@ private object UnregisterTaskHandler : CallHandler<WorkManagerCall.CancelTask> {
             WorkManagerCall.CancelTask.All -> WM.cancelAll(context)
         }
         result.success()
+    }
+}
+
+class FailedTaskHandler(private val code: String) : CallHandler<WorkManagerCall.Failed> {
+    override fun handle(
+        context: Context,
+        convertedCall: WorkManagerCall.Failed,
+        result: MethodChannel.Result
+    ) {
+        result.error(code, null, null)
     }
 }
 
