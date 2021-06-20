@@ -42,7 +42,11 @@ struct ThumbnailGenerator {
         do {
             let thumbnailImage = try thumbnail.renderAsImage()
             let localURL = try thumbnailImage.persist(fileName: name)
-            return try UNNotificationAttachment(identifier: "\(SwiftWorkmanagerPlugin.identifier).\(name)", url: localURL, options: nil)
+            return try UNNotificationAttachment(
+                identifier: "\(SwiftWorkmanagerPlugin.identifier).\(name)",
+                url: localURL,
+                options: nil
+            )
         } catch {
             logInfo("\(logPrefix) \(#function) something went wrong creating a thumbnail for local debug notification")
             return nil
@@ -63,17 +67,17 @@ private extension UIView {
         defer { UIGraphicsEndImageContext() }
 
         guard let context = UIGraphicsGetCurrentContext() else {
-            throw error.noCurrentGraphicsContextFound
+            throw GraphicsError.noCurrentGraphicsContextFound
         }
         self.layer.render(in: context)
         guard let image = UIGraphicsGetImageFromCurrentImageContext() else {
-            throw error.noCurrentGraphicsContextFound
+            throw GraphicsError.noCurrentGraphicsContextFound
         }
 
         return image
     }
 
-    enum error: Error {
+    enum GraphicsError: Error {
         case noCurrentGraphicsContextFound
     }
 }
@@ -85,14 +89,14 @@ private extension UIImage {
         let fileURL = directoryURL.appendingPathComponent("\(fileName).png")
         try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
         guard let imageData = self.pngData() else {
-            throw error.cannotRepresentAsPNG(self)
+            throw ImageError.cannotRepresentAsPNG(self)
         }
         try imageData.write(to: fileURL)
 
         return fileURL
     }
 
-    enum error: Error {
+    enum ImageError: Error {
         case cannotRepresentAsPNG(UIImage)
     }
 

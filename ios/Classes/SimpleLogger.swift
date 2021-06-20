@@ -11,19 +11,20 @@ import os
 enum LogType: String {
 
     /// Use this level to capture information about things that might result a failure.
-    case `default` = "default"
+    case `default`
 
     /// Use this level to capture information that may be helpful, but isn’t essential, for troubleshooting errors.
-    case info = "info"
+    case info
 
-    /// Use this level to capture information that may be useful during development or while troubleshooting a specific problem.
-    case debug = "debug"
+    /// Use this level to capture information that may be useful during development or while troubleshooting a specific
+    /// problem.
+    case debug
 
     /// Use this log level to capture process-level information to report errors in the process.
-    case error = "error"
+    case error
 
     /// Use this level to capture system-level or multi-process information to report system errors.
-    case fault = "fault"
+    case fault
 
     /// Returns the underlying `OSLogType`
     var osLogType: OSLogType {

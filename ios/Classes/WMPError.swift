@@ -8,6 +8,7 @@
 import Foundation
 
 enum WMPError: Error {
+    case invalidParameters
     case methodChannelNotSet
     case unhandledMethod(_ methodName: String)
     case unexpectedMethodArguments(_ argumentsDescription: String)
@@ -20,6 +21,8 @@ enum WMPError: Error {
 
     var message: String {
         switch self {
+        case .invalidParameters:
+            return "Invalid parameters passed"
         case .methodChannelNotSet:
             return "Method channel not set"
         case .unhandledMethod(let methodName):

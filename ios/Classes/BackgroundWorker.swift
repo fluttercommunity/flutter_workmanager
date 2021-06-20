@@ -59,16 +59,30 @@ class BackgroundWorker {
 
         let taskSessionStart = Date()
         let taskSessionIdentifier = UUID()
-        DebugNotificationHelper.showStartFetchNotification(identifier: taskSessionIdentifier,
-                                                           startDate: taskSessionStart,
-                                                           callBackHandle: callbackHandle,
-                                                           callbackInfo: flutterCallbackInformation)
 
-        var flutterEngine: FlutterEngine? = FlutterEngine(name: backgroundMode.flutterThreadlabelPrefix, project: nil, allowHeadlessExecution: true)
-        flutterEngine!.run(withEntrypoint: flutterCallbackInformation.callbackName, libraryURI: flutterCallbackInformation.callbackLibraryPath)
+        let debugHelper = DebugNotificationHelper(taskSessionIdentifier)
+        debugHelper.showStartFetchNotification(
+            startDate: taskSessionStart,
+            callBackHandle: callbackHandle,
+            callbackInfo: flutterCallbackInformation
+        )
+
+        var flutterEngine: FlutterEngine? = FlutterEngine(
+            name: backgroundMode.flutterThreadlabelPrefix,
+            project: nil,
+            allowHeadlessExecution: true
+        )
+
+        flutterEngine!.run(
+            withEntrypoint: flutterCallbackInformation.callbackName,
+            libraryURI: flutterCallbackInformation.callbackLibraryPath
+        )
         flutterPluginRegistrantCallback?(flutterEngine!)
 
-        var backgroundMethodChannel: FlutterMethodChannel? = FlutterMethodChannel(name: BackgroundChannel.name, binaryMessenger: flutterEngine!.binaryMessenger)
+        var backgroundMethodChannel: FlutterMethodChannel? = FlutterMethodChannel(
+            name: BackgroundChannel.name,
+            binaryMessenger: flutterEngine!.binaryMessenger
+        )
 
         func cleanupFlutterResources() {
             flutterEngine?.destroyContext()
@@ -81,18 +95,23 @@ class BackgroundWorker {
             case BackgroundChannel.initialized:
                 result(true)    // Agree to Flutter's method invocation
 
-                backgroundMethodChannel?.invokeMethod(BackgroundChannel.onResultSendCommand, arguments: self.backgroundMode.onResultSendArguments, result: { flutterResult in
-                    cleanupFlutterResources()
-                    let taskSessionCompleter = Date()
-                    let result: UIBackgroundFetchResult = (flutterResult as? Bool ?? false) ? .newData : .failed
-                    let taskDuration = taskSessionCompleter.timeIntervalSince(taskSessionStart)
-                    logInfo("[\(String(describing: self))] \(#function) -> performBackgroundRequest.\(result) (finished in \(taskDuration.formatToSeconds()))")
-                    DebugNotificationHelper.showCompletedFetchNotification(identifier: taskSessionIdentifier,
-                                                                           completedDate: taskSessionCompleter,
-                                                                           result: result,
-                                                                           elapsedTime: taskDuration)
-                    completionHandler(result)
-                })
+                backgroundMethodChannel?.invokeMethod(
+                    BackgroundChannel.onResultSendCommand,
+                    arguments: self.backgroundMode.onResultSendArguments,
+                    result: { flutterResult in
+                        cleanupFlutterResources()
+                        let taskSessionCompleter = Date()
+                        let result: UIBackgroundFetchResult = (flutterResult as? Bool ?? false) ? .newData : .failed
+                        let taskDuration = taskSessionCompleter.timeIntervalSince(taskSessionStart)
+                        logInfo("[\(String(describing: self))] \(#function) -> performBackgroundRequest.\(result) (finished in \(taskDuration.formatToSeconds()))")
+
+                        debugHelper.showCompletedFetchNotification(
+                            completedDate: taskSessionCompleter,
+                            result: result,
+                            elapsedTime: taskDuration
+                        )
+                        completionHandler(result)
+                    })
             default:
                 result(WMPError.unhandledMethod(call.method).asFlutterError)
                 cleanupFlutterResources()

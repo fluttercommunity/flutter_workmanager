@@ -8,9 +8,18 @@
 import Foundation
 import UserNotifications
 
-struct DebugNotificationHelper {
+class DebugNotificationHelper {
 
-    static func showStartFetchNotification(identifier: UUID, startDate: Date, callBackHandle: Int64, callbackInfo: FlutterCallbackInformation) {
+    private let identifier: UUID
+
+    init(_ identifier: UUID) {
+        self.identifier = identifier
+    }
+
+    func showStartFetchNotification(startDate: Date,
+                                    callBackHandle: Int64,
+                                    callbackInfo: FlutterCallbackInformation
+    ) {
         let message =
             """
         Starting Dart/Flutter with following params:
@@ -25,7 +34,9 @@ struct DebugNotificationHelper {
                                                      icon: .startWork)
     }
 
-    static func showCompletedFetchNotification(identifier: UUID, completedDate: Date, result: UIBackgroundFetchResult, elapsedTime: TimeInterval) {
+    func showCompletedFetchNotification(completedDate: Date,
+                                        result: UIBackgroundFetchResult,
+                                        elapsedTime: TimeInterval) {
         let message =
             """
         Perform fetch completed:
@@ -40,19 +51,32 @@ struct DebugNotificationHelper {
 
     // MARK: - Private helper functions
 
-    private static func scheduleNotification(identifier: String, title: String, body: String, icon: ThumbnailGenerator.ThumbnailIcon) {
+    private static func scheduleNotification(identifier: String,
+                                             title: String,
+                                             body: String,
+                                             icon: ThumbnailGenerator.ThumbnailIcon) {
         guard UserDefaultsHelper.getIsDebug() else {
             logInfo("\(logPrefix) \(#function): plugin is not running in debug mode or on iOS 9 or lower")
             return
         }
 
         UNUserNotificationCenter.current().requestAuthorization(options: [.sound, .alert]) { (_, _) in }
-        let notificationRequest = createNotificationRequest(identifier: identifier, threadIdentifier: SwiftWorkmanagerPlugin.identifier, title: title, body: body, icon: icon)
+        let notificationRequest = createNotificationRequest(
+            identifier: identifier,
+            threadIdentifier: SwiftWorkmanagerPlugin.identifier,
+            title: title,
+            body: body,
+            icon: icon
+        )
         UNUserNotificationCenter.current().add(notificationRequest, withCompletionHandler: nil)
 
     }
 
-    private static func createNotificationRequest(identifier: String, threadIdentifier: String, title: String, body: String, icon: ThumbnailGenerator.ThumbnailIcon) -> UNNotificationRequest {
+    private static func createNotificationRequest(identifier: String,
+                                                  threadIdentifier: String,
+                                                  title: String,
+                                                  body: String,
+                                                  icon: ThumbnailGenerator.ThumbnailIcon) -> UNNotificationRequest {
         let notification = UNMutableNotificationContent()
         notification.title = title
         notification.body = body
@@ -61,7 +85,11 @@ struct DebugNotificationHelper {
             notification.attachments = [thumbnail]
         }
         let immediateFutureTrigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-        let notificationRequest = UNNotificationRequest(identifier: identifier, content: notification, trigger: immediateFutureTrigger)
+        let notificationRequest = UNNotificationRequest(
+            identifier: identifier,
+            content: notification,
+            trigger: immediateFutureTrigger
+        )
 
         return notificationRequest
     }
