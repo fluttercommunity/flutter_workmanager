@@ -13,3 +13,4 @@ doc/api/*/
 
 .flutter-plugins-dependencies
 .fvm
+*.iml
