@@ -7,8 +7,6 @@ import 'package:flutter/widgets.dart';
 
 import 'options.dart';
 
-const _noDuration = const Duration(seconds: 0);
-
 /// Function that executes your background work.
 /// You should return whether the task ran successfully or not.
 ///
@@ -175,13 +173,13 @@ class Workmanager {
     ///
     /// The delay configured here is not guaranteed. The underlying system may
     /// decide to schedule the ask a lot later.
-    final Duration initialDelay = _noDuration,
+    final Duration initialDelay = Duration.zero,
 
     /// Fully supported on Android, but only partially supported on iOS.
     /// See [Constraints] for details.
     final Constraints? constraints,
     final BackoffPolicy? backoffPolicy,
-    final Duration backoffPolicyDelay = _noDuration,
+    final Duration backoffPolicyDelay = Duration.zero,
     final Map<String, dynamic>? inputData,
   }) async =>
       await _foregroundChannel.invokeMethod(
@@ -212,10 +210,10 @@ class Workmanager {
     final Duration? frequency,
     final String? tag,
     final ExistingWorkPolicy? existingWorkPolicy,
-    final Duration initialDelay = _noDuration,
+    final Duration initialDelay = Duration.zero,
     final Constraints? constraints,
     final BackoffPolicy? backoffPolicy,
-    final Duration backoffPolicyDelay = _noDuration,
+    final Duration backoffPolicyDelay = Duration.zero,
     final Map<String, dynamic>? inputData,
   }) async =>
       await _foregroundChannel.invokeMethod(
