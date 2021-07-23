@@ -27,8 +27,8 @@ void main() {
     try {
       await wm.registerOneOffTask('taskId', 'taskName');
     } on PlatformException catch (e) {
-      if (e.toString() !=
-          'PlatformException(bgTaskSchedulingFailed(Error Domain=BGTaskSchedulerErrorDomain Code=1 "(null)")') {
+      if (e.code !=
+          'bgTaskSchedulingFailed(Error Domain=BGTaskSchedulerErrorDomain Code=1 "(null)") error') {
         rethrow;
       }
     }
