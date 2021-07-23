@@ -21,58 +21,58 @@ jobs:
           flutter pub get
           flutter test
 
-  # drive_ios:
-  #   strategy:
-  #     matrix:
-  #       device:
-  #         # - "iPhone 8 (14.4)"
-  #         - "iPhone 11 Pro (14.4)"
-  #     fail-fast: false
-  #   runs-on: macos-latest
-  #   needs: test
-  #   steps:
-  #     - name: List all simulators
-  #       run: xcrun instruments -s
-  #     # get UUID  simulator and boot a simulator on mac from  command line
-  #     - name: Start Simulator
-  #       run: |
-  #         UDID=$(
-  #           xcrun instruments -s |
-  #           awk \
-  #             -F ' *[][]' \
-  #             -v 'device=${{ matrix.device }}' \
-  #             '$1 == device { print $2 }'
-  #         )
-  #         xcrun simctl boot "${UDID:?No Simulator with this name found}"
-  #     - uses: actions/checkout@v2
-  #     - uses: subosito/flutter-action@v1
-  #       with:
-  #         channel: 'stable'
-  #     # Run flutter integrate tests
-  #     - name: Run Flutter Driver tests
-  #       run: cd example && flutter drive --driver=test_driver/integration_test.dart integration_test/flutter_uploader_test.dart
+  drive_ios:
+    strategy:
+      matrix:
+        device:
+          # - "iPhone 8 (14.4)"
+          - "iPhone 11 Pro (14.4)"
+      fail-fast: false
+    runs-on: macos-latest
+    needs: test
+    steps:
+      - name: List all simulators
+        run: xcrun instruments -s
+      # get UUID  simulator and boot a simulator on mac from  command line
+      - name: Start Simulator
+        run: |
+          UDID=$(
+            xcrun instruments -s |
+            awk \
+              -F ' *[][]' \
+              -v 'device=${{ matrix.device }}' \
+              '$1 == device { print $2 }'
+          )
+          xcrun simctl boot "${UDID:?No Simulator with this name found}"
+      - uses: actions/checkout@v2
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: 'stable'
+      # Run flutter integrate tests
+      - name: Run Flutter integration tests
+        run: cd example && flutter test integration_test/workmanager_integration_test.dart
 
 
-  # drive_android:
-  #   runs-on: macos-latest
-  #   #creates a build matrix for your jobs
-  #   strategy:
-  #     #set of different configurations of the virtual environment.
-  #     matrix:
-  #       api-level: [29]
-  #       # api-level: [21, 29]
-  #       target: [default]
-  #   needs: test
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - uses: subosito/flutter-action@v1
-  #       with:
-  #         channel: 'stable'
-  #     - name: Run Flutter Driver tests
-  #       uses: reactivecircus/android-emulator-runner@v2
-  #       with:
-  #         api-level: ${{ matrix.api-level }}
-  #         target: ${{ matrix.target }}
-  #         arch: x86_64
-  #         profile: Nexus 6
-  #         script: cd example && flutter drive --driver=test_driver/integration_test.dart integration_test/flutter_uploader_test.dart
+  drive_android:
+    runs-on: macos-latest
+    #creates a build matrix for your jobs
+    strategy:
+      #set of different configurations of the virtual environment.
+      matrix:
+        api-level: [29]
+        # api-level: [21, 29]
+        target: [default]
+    needs: test
+    steps:
+      - uses: actions/checkout@v2
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: 'stable'
+      - name: Run Flutter Driver tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api-level }}
+          target: ${{ matrix.target }}
+          arch: x86_64
+          profile: Nexus 6
+          script: cd example && flutter test integration_test/workmanager_integration_test.dart
