@@ -1,3 +1,7 @@
+# 0.5.0-dev.5
+
+* Resolve a null pointer error in BackgroundWorker
+
 # 0.5.0-dev.4
 
 * Replace _noDuration variable with `Duration.zero` directly (#283)
