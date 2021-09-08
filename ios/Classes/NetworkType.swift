@@ -29,13 +29,12 @@ enum NetworkType: String {
     ///
     /// Only applies to Android.
     case temporarilyUnmetered
-    
+
     /// Convenience constructor to build a [NetworkType] from a Dart enum.
     init?(fromDart: String) {
         self.init(rawValue: fromDart.camelCased(with: "_"))
     }
 }
-
 
 private extension String {
     func camelCased(with separator: Character) -> String {
