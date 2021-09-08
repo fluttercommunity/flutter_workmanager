@@ -2,6 +2,7 @@
 # next
 
 * Android: Use `Number` type for specifying the callback handler key & convert to Long
+* Android: Bump WorkManager dependency to 2.6.0
 
 # 0.5.0-dev.6
 
