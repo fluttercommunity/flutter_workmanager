@@ -13,7 +13,7 @@ class ExtractorTests {
             "not_required" to NetworkType.NOT_REQUIRED,
             "not_roaming" to NetworkType.NOT_ROAMING,
             "temporarily_unmetered" to NetworkType.TEMPORARILY_UNMETERED,
-            "connected" to NetworkType.CONNECTED,
+            "connected" to NetworkType.CONNECTED
         )
 
         all.forEach { (dartString, wmConstant) ->
