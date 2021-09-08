@@ -175,10 +175,7 @@ object Extractor {
                 if (handle == null || inDebugMode == null) {
                     WorkManagerCall.Failed("Invalid parameters passed")
                 } else {
-                    WorkManagerCall.Initialize(
-                        call.argument<Number>(INITIALIZE_TASK_CALL_HANDLE_KEY)!!.toLong(),
-                        call.argument<Boolean>(INITIALIZE_TASK_IS_IN_DEBUG_MODE_KEY)!!
-                    )
+                    WorkManagerCall.Initialize(handle, inDebugMode)
                 }
             }
             PossibleWorkManagerCall.REGISTER_ONE_OFF_TASK -> {
