@@ -35,7 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Run native iOS tests
-        run: cd example/android && ./gradlew workmanager:test
+        run: cd example/android && gradle workmanager:test
 
   drive_ios:
     strategy:
