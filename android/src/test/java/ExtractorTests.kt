@@ -8,22 +8,24 @@ class ExtractorTests {
     @Test
     fun shouldParseNetworkTypeFromCall() {
         val all = mapOf(
-                "unmetered" to NetworkType.UNMETERED,
-                "metered" to NetworkType.METERED,
-                "not_required" to NetworkType.NOT_REQUIRED,
-                "not_roaming" to NetworkType.NOT_ROAMING,
-                "temporarily_unmetered" to NetworkType.TEMPORARILY_UNMETERED,
-                "connected" to NetworkType.CONNECTED,
+            "unmetered" to NetworkType.UNMETERED,
+            "metered" to NetworkType.METERED,
+            "not_required" to NetworkType.NOT_REQUIRED,
+            "not_roaming" to NetworkType.NOT_ROAMING,
+            "temporarily_unmetered" to NetworkType.TEMPORARILY_UNMETERED,
+            "connected" to NetworkType.CONNECTED,
         )
 
         all.forEach { (dartString, wmConstant) ->
-            val call = MethodCall("", mapOf(
+            val call = MethodCall(
+                "",
+                mapOf(
                     "networkType" to dartString
-            ))
+                )
+            )
             val constraints = Extractor.extractConstraintConfigFromCall(call)
 
             assertEquals(constraints.requiredNetworkType, wmConstant)
         }
-
     }
 }
