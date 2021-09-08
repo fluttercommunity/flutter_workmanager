@@ -135,6 +135,8 @@ sealed class WorkManagerCall {
     }
 
     object Unknown : WorkManagerCall()
+
+    class Failed(val code: String) : WorkManagerCall()
 }
 
 private enum class TaskType(val minimumBackOffDelay: Long) {
@@ -167,10 +169,14 @@ object Extractor {
     fun extractWorkManagerCallFromRawMethodName(call: MethodCall): WorkManagerCall =
         when (PossibleWorkManagerCall.fromRawMethodName(call.method)) {
             PossibleWorkManagerCall.INITIALIZE -> {
-                WorkManagerCall.Initialize(
-                    call.argument<Long>(INITIALIZE_TASK_CALL_HANDLE_KEY)!!,
-                    call.argument<Boolean>(INITIALIZE_TASK_IS_IN_DEBUG_MODE_KEY)!!
-                )
+                val handle = call.argument<Number>(INITIALIZE_TASK_CALL_HANDLE_KEY)?.toLong()
+                val inDebugMode = call.argument<Boolean>(INITIALIZE_TASK_IS_IN_DEBUG_MODE_KEY)
+
+                if (handle == null || inDebugMode == null) {
+                    WorkManagerCall.Failed("Invalid parameters passed")
+                } else {
+                    WorkManagerCall.Initialize(handle, inDebugMode)
+                }
             }
             PossibleWorkManagerCall.REGISTER_ONE_OFF_TASK -> {
                 WorkManagerCall.RegisterTask.OneOffTask(
@@ -247,7 +253,10 @@ object Extractor {
         call.argument<Int>(REGISTER_TASK_INITIAL_DELAY_SECONDS_KEY)?.toLong()
             ?: defaultInitialDelaySeconds
 
-    private fun extractBackoffPolicyConfigFromCall(call: MethodCall, taskType: TaskType): BackoffPolicyTaskConfig? {
+    private fun extractBackoffPolicyConfigFromCall(
+        call: MethodCall,
+        taskType: TaskType
+    ): BackoffPolicyTaskConfig? {
         if (call.argument<String?>(REGISTER_TASK_BACK_OFF_POLICY_TYPE_KEY) == null) {
             return null
         }

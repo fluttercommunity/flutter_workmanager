@@ -1,3 +1,8 @@
+
+# next
+
+* Android: Use `Number` type for specifying the callback handler key & convert to Long
+
 # 0.5.0-dev.6
 
 * Resolves issues on iOS which prevented native calls from being parsed correctly.
