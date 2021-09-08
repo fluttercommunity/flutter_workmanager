@@ -12,9 +12,9 @@ dependencies:
     sdk: flutter
 
 dev_dependencies:
-  flutter_test:
+  integration_test:
     sdk: flutter
-  integration_test: 
+  flutter_test:
     sdk: flutter
 
   workmanager:

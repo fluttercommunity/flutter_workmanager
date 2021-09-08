@@ -3,6 +3,12 @@ import Flutter
 import UIKit
 import os
 
+extension String {
+    var lowercasingFirst: String {
+        return prefix(1).lowercased() + dropFirst()
+    }
+}
+
 public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
 
     static let identifier = "be.tramckrijte.workmanager"
@@ -16,14 +22,14 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
 
         struct Methods {
             struct Initialize {
-                static let name = "\(Initialize.self)"
+                static let name = "\(Initialize.self)".lowercasingFirst
                 enum Arguments: String {
                     case isInDebugMode
                     case callbackHandle
                 }
             }
             struct RegisterOneOffTask {
-                static let name = "\(RegisterOneOffTask.self)"
+                static let name = "\(RegisterOneOffTask.self)".lowercasingFirst
                 enum Arguments: String {
                     case initialDelaySeconds
                     case networkType

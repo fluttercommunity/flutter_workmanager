@@ -49,8 +49,8 @@ jobs:
         with:
           channel: 'stable'
       # Run flutter integrate tests
-      - name: Run Flutter Driver tests
-        run: cd example && flutter drive --driver=test_driver/integration_test.dart integration_test/workmanager_test.dart
+      - name: Run Flutter integration tests
+        run: cd example && flutter test integration_test/workmanager_integration_test.dart
 
 
   drive_android:
@@ -75,4 +75,4 @@ jobs:
           target: ${{ matrix.target }}
           arch: x86_64
           profile: Nexus 6
-          script: cd example && flutter drive --driver=test_driver/integration_test.dart integration_test/workmanager_test.dart
+          script: cd example && flutter test integration_test/workmanager_integration_test.dart
