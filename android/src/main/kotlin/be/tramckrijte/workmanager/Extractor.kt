@@ -1,6 +1,7 @@
 package be.tramckrijte.workmanager
 
 import android.os.Build
+import androidx.annotation.VisibleForTesting
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -281,7 +282,8 @@ object Extractor {
         )
     }
 
-    private fun extractConstraintConfigFromCall(call: MethodCall): Constraints {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    fun extractConstraintConfigFromCall(call: MethodCall): Constraints {
         fun extractNetworkTypeFromCall(call: MethodCall) =
             try {
                 NetworkType.valueOf(
