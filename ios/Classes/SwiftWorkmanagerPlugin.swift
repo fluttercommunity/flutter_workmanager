@@ -184,15 +184,19 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
             }
 
         case (ForegroundMethodChannel.Methods.CancelAllTasks.name, let .some(arguments)):
-            BGTaskScheduler.shared.cancelAllTaskRequests()
+            if #available(iOS 13.0, *) {
+                BGTaskScheduler.shared.cancelAllTaskRequests()
+            }
 
         case (ForegroundMethodChannel.Methods.CancelTaskByUniqueName.name, let .some(arguments)):
-            let method = ForegroundMethodChannel.Methods.CancelTaskByUniqueName.self
-            guard let identifier = arguments[method.Arguments.uniqueName.rawValue] as? String else {
-                result(WMPError.invalidParameters.asFlutterError)
-                return
+            if #available(iOS 13.0, *) {
+                let method = ForegroundMethodChannel.Methods.CancelTaskByUniqueName.self
+                guard let identifier = arguments[method.Arguments.uniqueName.rawValue] as? String else {
+                    result(WMPError.invalidParameters.asFlutterError)
+                    return
+                }
+                BGTaskScheduler.shared.cancel(identifier)
             }
-            BGTaskScheduler.shared.cancel(identifier)
 
         default:
             result(WMPError.unhandledMethod(call.method).asFlutterError)
