@@ -39,6 +39,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
             struct CancelAllTasks {
                 static let name = "\(CancelAllTasks.self)".lowercasingFirst
                 enum Arguments: String {
+                    case none
                 }
             }
             struct CancelTaskByUniqueName {
@@ -195,7 +196,7 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
                     result(WMPError.invalidParameters.asFlutterError)
                     return
                 }
-                BGTaskScheduler.shared.cancel(identifier)
+                BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: identifier)
             }
 
         default:
