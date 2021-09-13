@@ -226,8 +226,12 @@ class _MyAppState extends State<MyApp> {
                       frequency: Duration(hours: 1),
                     );
                   }),
-              PlatformEnabledButton(
-                platform: _Platform.android,
+              SizedBox(height: 16),
+              Text(
+                "Task cancellation",
+                style: Theme.of(context).textTheme.headline5,
+              ),
+              ElevatedButton(
                 child: Text("Cancel All"),
                 onPressed: () async {
                   await Workmanager().cancelAll();
