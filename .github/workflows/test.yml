@@ -26,6 +26,11 @@ jobs:
     needs: test
     steps:
       - uses: actions/checkout@v2
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: 'stable'
+      - name: build ios example
+        run: cd example && flutter build ios --debug --no-codesign
       - name: Run native iOS tests
         run: cd example/ios && xcodebuild -workspace Runner.xcworkspace -scheme Runner -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 12,OS=14.4' test
 
@@ -34,6 +39,9 @@ jobs:
     needs: test
     steps:
       - uses: actions/checkout@v2
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: 'stable'
       - name: Run native iOS tests
         run: cd example/android && gradle workmanager:test
 
