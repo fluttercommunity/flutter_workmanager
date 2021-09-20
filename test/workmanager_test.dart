@@ -14,6 +14,7 @@ Future<bool> testCallBackDispatcher(task, inputData) {
 void mySetUpWrapper() {
   GetIt.I<Workmanager>().initialize(testCallBackDispatcher);
   GetIt.I<Workmanager>().cancelAll();
+  GetIt.I<Workmanager>().cancelByUniqueName(Workmanager.iOSBackgroundProcessingTask);
 }
 
 @GenerateMocks([Workmanager])
@@ -33,11 +34,18 @@ void main() {
     setUpAll(() {
       GetIt.I.registerSingleton<Workmanager>(MockWorkmanager());
     });
-    test("It calls methods on the mocked class", () {
+    test("cancelAll - It calls methods on the mocked class", () {
       mySetUpWrapper();
 
       verify(GetIt.I<Workmanager>().initialize(testCallBackDispatcher));
       verify(GetIt.I<Workmanager>().cancelAll());
+    });
+
+    test("cancelByUniqueName - It calls methods on the mocked class", () {
+      mySetUpWrapper();
+
+      verify(GetIt.I<Workmanager>().initialize(testCallBackDispatcher));
+      verify(GetIt.I<Workmanager>().cancelByUniqueName(Workmanager.iOSBackgroundProcessingTask));
     });
   });
 }
