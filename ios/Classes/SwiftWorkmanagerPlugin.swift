@@ -188,6 +188,7 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
             if #available(iOS 13.0, *) {
                 BGTaskScheduler.shared.cancelAllTaskRequests()
             }
+            result(true)
 
         case (ForegroundMethodChannel.Methods.CancelTaskByUniqueName.name, let .some(arguments)):
             if #available(iOS 13.0, *) {
@@ -198,6 +199,7 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
                 }
                 BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: identifier)
             }
+            result(true)
 
         default:
             result(WMPError.unhandledMethod(call.method).asFlutterError)
