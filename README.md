@@ -46,7 +46,27 @@ The workmanager runs on a separate isolate from the main flutter isolate. Ensure
 
 ##### Debugging tips
 
-Wrap the code inside your `Workmanager().executeTask` in a `try and catch` in order to catch any exceptions thrown. 
+Wrap the code inside your `Workmanager().executeTask` in a `try and catch` in order to catch any exceptions thrown.
+
+```dart
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) {
+
+    int? totalExecutions;
+    final _sharedPreference = await SharedPreferences.getInstance(); //Initialize dependency
+
+    try { //add code execution
+      totalExecutions = _sharedPreference.getInt("totalExecutions");
+      _sharedPreference.setInt("totalExecutions", totalExecutions == null ? 1 : totalExecutions+1);
+    } catch(err) {
+      Logger().e(err.toString()); // Logger flutter package, prints error on the debug console
+      throw Exception(err);
+    }
+
+    return Future.value(true);
+  });
+}
+```
 
 Android tasks are identified using their `taskName`, whereas two default constants are provided for iOS background operations, depending on whether background fetch or BGTaskScheduler is used: `Workmanager.iOSBackgroundTask` & `Workmanager.iOSBackgroundProcessingTask`.
 
@@ -152,7 +172,7 @@ Workmanager().registerOneOffTask("1", "simpleTask", initialDelay: Duration(secon
   Constrains the type of network required for your work to run. For example, Connected.
 - RequiresBatteryNotLow
   When set to true, your work will not run if the device is in low battery mode.
-  **Enabling the battery saving mode on the device prevents the job from running**
+  **Enabling the battery saving mode on the android device prevents the job from running**
 - RequiresCharging
   When set to true, your work will only run when the device is charging.
 - RequiresDeviceIdle
