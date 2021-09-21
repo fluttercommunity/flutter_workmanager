@@ -42,8 +42,10 @@ void main() {
 
 > The `callbackDispatcher` needs to be either a static function or a top level function to be accessible as a Flutter entry point.
 
-The workmanager runs on a separate isolate from the main flutter isolate. Ensure to initialize all dependencies inside the `Workmanager().executeTask`. 
+The workmanager runs on a separate isolate from the main flutter isolate. Ensure to initialize all dependencies inside the `Workmanager().executeTask`.
+
 ##### Debugging tips
+
 Wrap the code inside your `Workmanager().executeTask` in a `try and catch` in order to catch any exceptions thrown. 
 
 Android tasks are identified using their `taskName`, whereas two default constants are provided for iOS background operations, depending on whether background fetch or BGTaskScheduler is used: `Workmanager.iOSBackgroundTask` & `Workmanager.iOSBackgroundProcessingTask`.
