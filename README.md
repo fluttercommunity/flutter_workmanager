@@ -169,7 +169,8 @@ Workmanager().registerOneOffTask("1", "simpleTask", initialDelay: Duration(secon
 > Not all constraints are mapped.
 
 - NetworkType
-  Constrains the type of network required for your work to run. For example, Connected.
+  Constrains the type of network required for your work to run. For example, Connected. 
+  On iOS you can "requireNetwork" but that's it. It does not allow configuration of unmetered, not_metered etc. All these network variables will be merged into requiresNetwork.
 - RequiresBatteryNotLow
   When set to true, your work will not run if the device is in low battery mode.
   **Enabling the battery saving mode on the android device prevents the job from running**
