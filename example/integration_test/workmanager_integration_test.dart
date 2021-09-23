@@ -38,7 +38,7 @@ void main() {
     final wm = Workmanager();
     await wm.initialize(callbackDispatcher);
     try {
-      wm.cancelAll();
+      await wm.cancelAll();
     } on PlatformException catch (e) {
       if (e.code !=
           'bgTaskSchedulingFailed(Error Domain=BGTaskSchedulerErrorDomain Code=1 "(null)") error') {
@@ -47,12 +47,13 @@ void main() {
     }
   }, skip: Platform.isIOS);
 
-  testWidgets('initialize & cancelByUniqueName - iOS', (WidgetTester tester) async {
+  testWidgets('initialize & cancelByUniqueName - iOS',
+      (WidgetTester tester) async {
     final wm = Workmanager();
     await wm.initialize(callbackDispatcher);
     try {
       await wm.registerOneOffTask('taskId', 'taskName');
-      wm.cancelByUniqueName('taskId');
+      await wm.cancelByUniqueName('taskId');
     } on PlatformException catch (e) {
       if (e.code !=
           'bgTaskSchedulingFailed(Error Domain=BGTaskSchedulerErrorDomain Code=1 "(null)") error') {
