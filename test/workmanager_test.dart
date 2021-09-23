@@ -14,7 +14,8 @@ Future<bool> testCallBackDispatcher(task, inputData) {
 void mySetUpWrapper() {
   GetIt.I<Workmanager>().initialize(testCallBackDispatcher);
   GetIt.I<Workmanager>().cancelAll();
-  GetIt.I<Workmanager>().cancelByUniqueName(Workmanager.iOSBackgroundProcessingTask);
+  GetIt.I<Workmanager>()
+      .cancelByUniqueName(Workmanager.iOSBackgroundProcessingTask);
 }
 
 @GenerateMocks([Workmanager])
@@ -45,7 +46,8 @@ void main() {
       mySetUpWrapper();
 
       verify(GetIt.I<Workmanager>().initialize(testCallBackDispatcher));
-      verify(GetIt.I<Workmanager>().cancelByUniqueName(Workmanager.iOSBackgroundProcessingTask));
+      verify(GetIt.I<Workmanager>()
+          .cancelByUniqueName(Workmanager.iOSBackgroundProcessingTask));
     });
   });
 }
