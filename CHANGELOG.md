@@ -1,4 +1,6 @@
+# 0.5.0-dev.8
 
+* iOS: Add implementations for cancelCall and cancelByUniqueName
 # 0.5.0-dev.7
 
 * Android: Use `Number` type for specifying the callback handler key & convert to Long

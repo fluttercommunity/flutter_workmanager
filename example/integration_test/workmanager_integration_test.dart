@@ -33,4 +33,32 @@ void main() {
       }
     }
   }, skip: !Platform.isIOS);
+
+  testWidgets('initialize & cancelAll - iOS', (WidgetTester tester) async {
+    final wm = Workmanager();
+    await wm.initialize(callbackDispatcher);
+    try {
+      await wm.cancelAll();
+    } on PlatformException catch (e) {
+      if (e.code !=
+          'bgTaskSchedulingFailed(Error Domain=BGTaskSchedulerErrorDomain Code=1 "(null)") error') {
+        rethrow;
+      }
+    }
+  }, skip: Platform.isIOS);
+
+  testWidgets('initialize & cancelByUniqueName - iOS',
+      (WidgetTester tester) async {
+    final wm = Workmanager();
+    await wm.initialize(callbackDispatcher);
+    try {
+      await wm.registerOneOffTask('taskId', 'taskName');
+      await wm.cancelByUniqueName('taskId');
+    } on PlatformException catch (e) {
+      if (e.code !=
+          'bgTaskSchedulingFailed(Error Domain=BGTaskSchedulerErrorDomain Code=1 "(null)") error') {
+        rethrow;
+      }
+    }
+  }, skip: Platform.isIOS);
 }

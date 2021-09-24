@@ -36,6 +36,18 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
                     case requiresCharging
                 }
             }
+            struct CancelAllTasks {
+                static let name = "\(CancelAllTasks.self)".lowercasingFirst
+                enum Arguments: String {
+                    case none
+                }
+            }
+            struct CancelTaskByUniqueName {
+                static let name = "\(CancelTaskByUniqueName.self)".lowercasingFirst
+                enum Arguments: String {
+                    case uniqueName
+                }
+            }
         }
     }
 
@@ -171,6 +183,24 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
             } else {
                 result(WMPError.unhandledMethod(call.method).asFlutterError)
             }
+
+        case (ForegroundMethodChannel.Methods.CancelAllTasks.name, let .none):
+            if #available(iOS 13.0, *) {
+                BGTaskScheduler.shared.cancelAllTaskRequests()
+            }
+            result(true)
+
+        case (ForegroundMethodChannel.Methods.CancelTaskByUniqueName.name, let .some(arguments)):
+            if #available(iOS 13.0, *) {
+                let method = ForegroundMethodChannel.Methods.CancelTaskByUniqueName.self
+                guard let identifier = arguments[method.Arguments.uniqueName.rawValue] as? String else {
+                    result(WMPError.invalidParameters.asFlutterError)
+                    return
+                }
+                BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: identifier)
+            }
+            result(true)
+
         default:
             result(WMPError.unhandledMethod(call.method).asFlutterError)
             return
