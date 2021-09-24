@@ -28,6 +28,8 @@ jobs:
       - uses: subosito/flutter-action@v1
         with:
           channel: 'stable'
+      - name: Build iOS App
+        run: cd example && flutter build ios --debug --no-codesign
       - name: Run native iOS tests
         run: cd example/ios && xcodebuild -workspace Runner.xcworkspace -scheme Runner -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 12,OS=14.4' test
 
@@ -38,6 +40,8 @@ jobs:
       - uses: subosito/flutter-action@v1
         with:
           channel: 'stable'
+      - name: Build Android App
+        run: cd example && flutter build apk --debug
       - name: Run native Android tests
         run: cd example/android && gradle workmanager:test
 
@@ -69,7 +73,7 @@ jobs:
           channel: 'stable'
       # Run flutter integrate tests
       - name: Run Flutter integration tests
-        run: cd example && flutter build ios --debug --no-codesign && flutter test integration_test/workmanager_integration_test.dart
+        run: cd example && flutter test integration_test/workmanager_integration_test.dart
 
 
   drive_android:
@@ -93,4 +97,4 @@ jobs:
           target: ${{ matrix.target }}
           arch: x86_64
           profile: Nexus 6
-          script: cd example && flutter build apk --debug && flutter test integration_test/workmanager_integration_test.dart
+          script: cd example && flutter test integration_test/workmanager_integration_test.dart
