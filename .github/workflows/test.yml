@@ -21,6 +21,30 @@ jobs:
           flutter pub get
           flutter test
 
+  native_ios_tests:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: 'stable'
+      - name: Build iOS App
+        run: cd example && flutter build ios --debug --no-codesign
+      - name: Run native iOS tests
+        run: cd example/ios && xcodebuild -workspace Runner.xcworkspace -scheme Runner -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 12,OS=14.4' test
+
+  native_android_tests:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: 'stable'
+      - name: Build Android App
+        run: cd example && flutter build apk --debug
+      - name: Run native Android tests
+        run: cd example/android && gradle workmanager:test
+
   drive_ios:
     strategy:
       matrix:
@@ -29,7 +53,6 @@ jobs:
           - "iPhone 11 Pro (14.4)"
       fail-fast: false
     runs-on: macos-latest
-    needs: test
     steps:
       - name: List all simulators
         run: xcrun instruments -s
@@ -62,7 +85,6 @@ jobs:
         api-level: [29]
         # api-level: [21, 29]
         target: [default]
-    needs: test
     steps:
       - uses: actions/checkout@v2
       - uses: subosito/flutter-action@v1

@@ -1,8 +1,9 @@
 
-# next
+# 0.5.0-dev.7
 
 * Android: Use `Number` type for specifying the callback handler key & convert to Long
 * Android: Bump WorkManager dependency to 2.6.0
+* iOS: Restore correct NetworkType parser which did not set `requiresNetworkConnectivity` correctly.
 
 # 0.5.0-dev.6
 

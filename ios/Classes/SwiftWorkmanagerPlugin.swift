@@ -150,8 +150,8 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
                 let requiresCharging = arguments[method.Arguments.requiresCharging.rawValue] as? Bool ?? false
 
                 var requiresNetworkConnectivity = false
-                if let networkTypeInput = arguments[method.Arguments.initialDelaySeconds.rawValue] as? String,
-                   let networkType = NetworkType(rawValue: networkTypeInput),
+                if let networkTypeInput = arguments[method.Arguments.networkType.rawValue] as? String,
+                   let networkType = NetworkType(fromDart: networkTypeInput),
                    networkType == .connected || networkType == .metered {
                     requiresNetworkConnectivity = true
                 }

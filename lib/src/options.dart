@@ -32,6 +32,12 @@ enum NetworkType {
 
   /// An unmetered network connection is required for this work.
   unmetered,
+
+  /// A temporarily unmetered Network. This capability will be set for
+  /// networks that are generally metered, but are currently unmetered.
+  ///
+  /// Android API 30+
+  temporarily_unmetered,
 }
 
 /// An enumeration of backoff policies when retrying work.
