@@ -69,7 +69,7 @@ jobs:
           channel: 'stable'
       # Run flutter integrate tests
       - name: Run Flutter integration tests
-        run: cd example && flutter test integration_test/workmanager_integration_test.dart
+        run: cd example && flutter build ios --debug --no-codesign && flutter test integration_test/workmanager_integration_test.dart
 
 
   drive_android:
@@ -93,4 +93,4 @@ jobs:
           target: ${{ matrix.target }}
           arch: x86_64
           profile: Nexus 6
-          script: cd example && flutter test integration_test/workmanager_integration_test.dart
+          script: cd example && flutter build apk --debug && flutter test integration_test/workmanager_integration_test.dart
