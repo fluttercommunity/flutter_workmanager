@@ -95,150 +95,152 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: Text("Flutter WorkManager Example"),
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Text(
-                "Plugin initialization",
-                style: Theme.of(context).textTheme.headline5,
-              ),
-              ElevatedButton(
-                child: Text("Start the Flutter background service"),
-                onPressed: () {
-                  Workmanager().initialize(
-                    callbackDispatcher,
-                    isInDebugMode: true,
-                  );
-                },
-              ),
-              SizedBox(height: 16),
-              Text(
-                "BG Processing Tasks (iOS only)",
-                style: Theme.of(context).textTheme.headline5,
-              ),
-              //This task runs once.
-              //Most likely this will trigger immediately
-              PlatformEnabledButton(
-                platform: _Platform.ios,
-                child: Text("Perform a BG Task"),
-                onPressed: () {
-                  Workmanager().registerOneOffTask(
-                    "1",
-                    simpleTaskKey,
-                    inputData: <String, dynamic>{
-                      'int': 1,
-                      'bool': true,
-                      'double': 1.0,
-                      'string': 'string',
-                      'array': [1, 2, 3],
-                    },
-                  );
-                },
-              ),
-
-              Text(
-                "One Off Tasks (Android only)",
-                style: Theme.of(context).textTheme.headline5,
-              ),
-              //This task runs once.
-              //Most likely this will trigger immediately
-              PlatformEnabledButton(
-                platform: _Platform.android,
-                child: Text("Register OneOff Task"),
-                onPressed: () {
-                  Workmanager().registerOneOffTask(
-                    "1",
-                    simpleTaskKey,
-                    inputData: <String, dynamic>{
-                      'int': 1,
-                      'bool': true,
-                      'double': 1.0,
-                      'string': 'string',
-                      'array': [1, 2, 3],
-                    },
-                  );
-                },
-              ),
-              PlatformEnabledButton(
-                platform: _Platform.android,
-                child: Text("Register rescheduled Task"),
-                onPressed: () {
-                  Workmanager().registerOneOffTask(
-                    "1-rescheduled",
-                    rescheduledTaskKey,
-                    inputData: <String, dynamic>{
-                      'key': Random().nextInt(64000),
-                    },
-                  );
-                },
-              ),
-              PlatformEnabledButton(
-                platform: _Platform.android,
-                child: Text("Register failed Task"),
-                onPressed: () {
-                  Workmanager().registerOneOffTask(
-                    "1-failed",
-                    failedTaskKey,
-                  );
-                },
-              ),
-              //This task runs once
-              //This wait at least 10 seconds before running
-              PlatformEnabledButton(
-                  platform: _Platform.android,
-                  child: Text("Register Delayed OneOff Task"),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Text(
+                  "Plugin initialization",
+                  style: Theme.of(context).textTheme.headline5,
+                ),
+                ElevatedButton(
+                  child: Text("Start the Flutter background service"),
+                  onPressed: () {
+                    Workmanager().initialize(
+                      callbackDispatcher,
+                      isInDebugMode: true,
+                    );
+                  },
+                ),
+                SizedBox(height: 16),
+                Text(
+                  "BG Processing Tasks (iOS only)",
+                  style: Theme.of(context).textTheme.headline5,
+                ),
+                //This task runs once.
+                //Most likely this will trigger immediately
+                PlatformEnabledButton(
+                  platform: _Platform.ios,
+                  child: Text("Perform a BG Task"),
                   onPressed: () {
                     Workmanager().registerOneOffTask(
-                      "2",
-                      simpleDelayedTask,
-                      initialDelay: Duration(seconds: 10),
+                      "1",
+                      simpleTaskKey,
+                      inputData: <String, dynamic>{
+                        'int': 1,
+                        'bool': true,
+                        'double': 1.0,
+                        'string': 'string',
+                        'array': [1, 2, 3],
+                      },
                     );
-                  }),
-              SizedBox(height: 8),
-              Text(
-                "Periodic Tasks (Android only)",
-                style: Theme.of(context).textTheme.headline5,
-              ),
-              //This task runs periodically
-              //It will wait at least 10 seconds before its first launch
-              //Since we have not provided a frequency it will be the default 15 minutes
-              PlatformEnabledButton(
+                  },
+                ),
+
+                Text(
+                  "One Off Tasks (Android only)",
+                  style: Theme.of(context).textTheme.headline5,
+                ),
+                //This task runs once.
+                //Most likely this will trigger immediately
+                PlatformEnabledButton(
                   platform: _Platform.android,
-                  child: Text("Register Periodic Task"),
+                  child: Text("Register OneOff Task"),
                   onPressed: () {
-                    Workmanager().registerPeriodicTask(
-                      "3",
-                      simplePeriodicTask,
-                      initialDelay: Duration(seconds: 10),
+                    Workmanager().registerOneOffTask(
+                      "1",
+                      simpleTaskKey,
+                      inputData: <String, dynamic>{
+                        'int': 1,
+                        'bool': true,
+                        'double': 1.0,
+                        'string': 'string',
+                        'array': [1, 2, 3],
+                      },
                     );
-                  }),
-              //This task runs periodically
-              //It will run about every hour
-              PlatformEnabledButton(
+                  },
+                ),
+                PlatformEnabledButton(
                   platform: _Platform.android,
-                  child: Text("Register 1 hour Periodic Task"),
+                  child: Text("Register rescheduled Task"),
                   onPressed: () {
-                    Workmanager().registerPeriodicTask(
-                      "5",
-                      simplePeriodic1HourTask,
-                      frequency: Duration(hours: 1),
+                    Workmanager().registerOneOffTask(
+                      "1-rescheduled",
+                      rescheduledTaskKey,
+                      inputData: <String, dynamic>{
+                        'key': Random().nextInt(64000),
+                      },
                     );
-                  }),
-              SizedBox(height: 16),
-              Text(
-                "Task cancellation",
-                style: Theme.of(context).textTheme.headline5,
-              ),
-              ElevatedButton(
-                child: Text("Cancel All"),
-                onPressed: () async {
-                  await Workmanager().cancelAll();
-                  print('Cancel all tasks completed');
-                },
-              ),
-            ],
+                  },
+                ),
+                PlatformEnabledButton(
+                  platform: _Platform.android,
+                  child: Text("Register failed Task"),
+                  onPressed: () {
+                    Workmanager().registerOneOffTask(
+                      "1-failed",
+                      failedTaskKey,
+                    );
+                  },
+                ),
+                //This task runs once
+                //This wait at least 10 seconds before running
+                PlatformEnabledButton(
+                    platform: _Platform.android,
+                    child: Text("Register Delayed OneOff Task"),
+                    onPressed: () {
+                      Workmanager().registerOneOffTask(
+                        "2",
+                        simpleDelayedTask,
+                        initialDelay: Duration(seconds: 10),
+                      );
+                    }),
+                SizedBox(height: 8),
+                Text(
+                  "Periodic Tasks (Android only)",
+                  style: Theme.of(context).textTheme.headline5,
+                ),
+                //This task runs periodically
+                //It will wait at least 10 seconds before its first launch
+                //Since we have not provided a frequency it will be the default 15 minutes
+                PlatformEnabledButton(
+                    platform: _Platform.android,
+                    child: Text("Register Periodic Task"),
+                    onPressed: () {
+                      Workmanager().registerPeriodicTask(
+                        "3",
+                        simplePeriodicTask,
+                        initialDelay: Duration(seconds: 10),
+                      );
+                    }),
+                //This task runs periodically
+                //It will run about every hour
+                PlatformEnabledButton(
+                    platform: _Platform.android,
+                    child: Text("Register 1 hour Periodic Task"),
+                    onPressed: () {
+                      Workmanager().registerPeriodicTask(
+                        "5",
+                        simplePeriodic1HourTask,
+                        frequency: Duration(hours: 1),
+                      );
+                    }),
+                SizedBox(height: 16),
+                Text(
+                  "Task cancellation",
+                  style: Theme.of(context).textTheme.headline5,
+                ),
+                ElevatedButton(
+                  child: Text("Cancel All"),
+                  onPressed: () async {
+                    await Workmanager().cancelAll();
+                    print('Cancel all tasks completed');
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),
