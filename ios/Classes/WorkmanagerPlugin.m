@@ -16,4 +16,10 @@
     [SwiftWorkmanagerPlugin setPluginRegistrantCallback:callback];
 }
 
++ (void)registerTaskWithIdentifier:(NSString *) taskIdentifier {
+    if (@available(iOS 13, *)) {
+        [SwiftWorkmanagerPlugin registerTaskWithIdentifier:taskIdentifier];
+    }
+}
+
 @end

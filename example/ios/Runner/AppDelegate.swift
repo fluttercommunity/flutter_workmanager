@@ -19,6 +19,8 @@ import workmanager
             // This will make other plugins available during a background operation.
             GeneratedPluginRegistrant.register(with: registry)
         }
+            
+        WorkmanagerPlugin.registerTask(withIdentifier: "vn.newwave.custom-task-identifier")
 
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
 

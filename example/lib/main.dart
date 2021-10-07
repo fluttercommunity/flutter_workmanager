@@ -126,7 +126,7 @@ class _MyAppState extends State<MyApp> {
                   child: Text("Perform a BG Task"),
                   onPressed: () {
                     Workmanager().registerOneOffTask(
-                      "1",
+                      "vn.newwave.custom-task-identifier",
                       simpleTaskKey,
                       inputData: <String, dynamic>{
                         'int': 1,
@@ -150,7 +150,7 @@ class _MyAppState extends State<MyApp> {
                   child: Text("Register OneOff Task"),
                   onPressed: () {
                     Workmanager().registerOneOffTask(
-                      "1",
+                       "vn.newwave.custom-task-identifier",
                       simpleTaskKey,
                       inputData: <String, dynamic>{
                         'int': 1,
