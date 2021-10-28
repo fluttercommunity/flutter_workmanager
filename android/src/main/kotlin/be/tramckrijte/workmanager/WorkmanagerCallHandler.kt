@@ -1,7 +1,14 @@
 package be.tramckrijte.workmanager
 
 import android.content.Context
-import androidx.work.*
+import androidx.work.Constraints
+import androidx.work.Data
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequest
+import androidx.work.OutOfQuotaPolicy
+import androidx.work.PeriodicWorkRequest
+import androidx.work.WorkManager
 import be.tramckrijte.workmanager.BackgroundWorker.Companion.DART_TASK_KEY
 import be.tramckrijte.workmanager.BackgroundWorker.Companion.IS_IN_DEBUG_MODE_KEY
 import be.tramckrijte.workmanager.BackgroundWorker.Companion.PAYLOAD_KEY
@@ -68,15 +75,15 @@ private object RegisterTaskHandler : CallHandler<WorkManagerCall.RegisterTask> {
             result.error(
                 "1",
                 "You have not properly initialized the Flutter WorkManager Package. " +
-                        "You should ensure you have called the 'initialize' function first! " +
-                        "Example: \n" +
-                        "\n" +
-                        "`Workmanager().initialize(\n" +
-                        "  callbackDispatcher,\n" +
-                        " )`" +
-                        "\n" +
-                        "\n" +
-                        "The `callbackDispatcher` is a top level function. See example in repository.",
+                    "You should ensure you have called the 'initialize' function first! " +
+                    "Example: \n" +
+                    "\n" +
+                    "`Workmanager().initialize(\n" +
+                    "  callbackDispatcher,\n" +
+                    " )`" +
+                    "\n" +
+                    "\n" +
+                    "The `callbackDispatcher` is a top level function. See example in repository.",
                 null
             )
             return

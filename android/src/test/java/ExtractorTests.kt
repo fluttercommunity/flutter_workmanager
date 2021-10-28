@@ -11,7 +11,8 @@ class ExtractorTests {
         val all = mapOf(
             null to null,
             "drop_work_request" to OutOfQuotaPolicy.DROP_WORK_REQUEST,
-            "run_as_non_expedited_work_request" to OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST,
+            "run_as_non_expedited_work_request" to
+                OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST,
         )
 
         all.forEach { (dartString, wmConstant) ->
