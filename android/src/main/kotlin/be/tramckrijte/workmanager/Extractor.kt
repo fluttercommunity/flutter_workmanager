@@ -2,13 +2,7 @@ package be.tramckrijte.workmanager
 
 import android.os.Build
 import androidx.annotation.VisibleForTesting
-import androidx.work.BackoffPolicy
-import androidx.work.Constraints
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.ExistingWorkPolicy
-import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequest
-import androidx.work.PeriodicWorkRequest
+import androidx.work.*
 import be.tramckrijte.workmanager.WorkManagerCall.CancelTask.ByTag.KEYS.UNREGISTER_TASK_TAG_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.CancelTask.ByUniqueName.KEYS.UNREGISTER_TASK_UNIQUE_NAME_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.Initialize.KEYS.INITIALIZE_TASK_CALL_HANDLE_KEY
@@ -24,6 +18,7 @@ import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TAS
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_INITIAL_DELAY_SECONDS_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_IS_IN_DEBUG_MODE_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_NAME_VALUE_KEY
+import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_OUT_OF_QUOTA_POLICY_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_PAYLOAD_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_TAG_KEY
 import be.tramckrijte.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_UNIQUE_NAME_KEY
@@ -33,6 +28,7 @@ import kotlin.math.max
 
 val defaultBackOffPolicy = BackoffPolicy.EXPONENTIAL
 val defaultNetworkType = NetworkType.NOT_REQUIRED
+val defaultOutOfQuotaPolicy: OutOfQuotaPolicy? = null
 val defaultOneOffExistingWorkPolicy = ExistingWorkPolicy.KEEP
 val defaultPeriodExistingWorkPolicy = ExistingPeriodicWorkPolicy.KEEP
 val defaultConstraints: Constraints = Constraints.NONE
@@ -86,6 +82,7 @@ sealed class WorkManagerCall {
 
             const val REGISTER_TASK_BACK_OFF_POLICY_TYPE_KEY = "backoffPolicyType"
             const val REGISTER_TASK_BACK_OFF_POLICY_DELAY_MILLIS_KEY = "backoffDelayInMilliseconds"
+            const val REGISTER_TASK_OUT_OF_QUOTA_POLICY_KEY = "outOfQuotaPolicy"
             const val REGISTER_TASK_PAYLOAD_KEY = "inputData"
         }
 
@@ -98,6 +95,7 @@ sealed class WorkManagerCall {
             override val initialDelaySeconds: Long,
             override val constraintsConfig: Constraints,
             val backoffPolicyConfig: BackoffPolicyTaskConfig?,
+            val outOfQuotaPolicy: OutOfQuotaPolicy?,
             override val payload: String? = null
         ) : RegisterTask()
 
@@ -111,6 +109,7 @@ sealed class WorkManagerCall {
             override val initialDelaySeconds: Long,
             override val constraintsConfig: Constraints,
             val backoffPolicyConfig: BackoffPolicyTaskConfig?,
+            val outOfQuotaPolicy: OutOfQuotaPolicy?,
             override val payload: String? = null
         ) : RegisterTask() {
             companion object KEYS {
@@ -188,6 +187,7 @@ object Extractor {
                     existingWorkPolicy = extractExistingWorkPolicyFromCall(call),
                     initialDelaySeconds = extractInitialDelayFromCall(call),
                     constraintsConfig = extractConstraintConfigFromCall(call),
+                    outOfQuotaPolicy = extractOutOfQuotaPolicyFromCall(call),
                     backoffPolicyConfig = extractBackoffPolicyConfigFromCall(
                         call,
                         TaskType.ONE_OFF
@@ -209,6 +209,7 @@ object Extractor {
                         call,
                         TaskType.PERIODIC
                     ),
+                    outOfQuotaPolicy = extractOutOfQuotaPolicyFromCall(call),
                     payload = extractPayload(call)
                 )
             }
@@ -280,6 +281,17 @@ object Extractor {
             requestedBackoffDelay,
             minimumBackOffDelay
         )
+    }
+
+    @VisibleForTesting
+    fun extractOutOfQuotaPolicyFromCall(call: MethodCall): OutOfQuotaPolicy? {
+        try {
+            return OutOfQuotaPolicy.valueOf(
+                call.argument<String>(REGISTER_TASK_OUT_OF_QUOTA_POLICY_KEY)!!.uppercase()
+            )
+        } catch (ignored: Exception) {
+            return defaultOutOfQuotaPolicy
+        }
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)

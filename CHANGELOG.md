@@ -2,6 +2,7 @@
 
 * iOS: Add implementations for cancelCall and cancelByUniqueName
 * Android: Bump to workmanager 2.7.0 to support Android 12
+* Android: Add support for expedited background work (a `OutOfQuotaPolicy` needs to be specified)
 
 # 0.5.0-dev.7
 

@@ -40,6 +40,19 @@ enum NetworkType {
   temporarily_unmetered,
 }
 
+/// An enumeration of policies that help determine out of quota behavior for expedited jobs.
+///
+/// Only supported on Android.
+enum OutOfQuotaPolicy {
+  /// When the app does not have any expedited job quota, the expedited work request will
+  /// fallback to a regular work request.
+  run_as_non_expedited_work_request,
+
+  /// When the app does not have any expedited job quota, the expedited work request will
+  /// we dropped and no work requests are enqueued.
+  drop_work_request,
+}
+
 /// An enumeration of backoff policies when retrying work.
 /// These policies are used when you have a return ListenableWorker.Result.retry() from a worker to determine the correct backoff time.
 /// Backoff policies are set in WorkRequest.Builder.setBackoffCriteria(BackoffPolicy, long, TimeUnit) or one of its variants.

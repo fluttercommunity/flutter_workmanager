@@ -1,13 +1,7 @@
 package be.tramckrijte.workmanager
 
 import android.content.Context
-import androidx.work.Constraints
-import androidx.work.Data
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequest
-import androidx.work.PeriodicWorkRequest
-import androidx.work.WorkManager
+import androidx.work.*
 import be.tramckrijte.workmanager.BackgroundWorker.Companion.DART_TASK_KEY
 import be.tramckrijte.workmanager.BackgroundWorker.Companion.IS_IN_DEBUG_MODE_KEY
 import be.tramckrijte.workmanager.BackgroundWorker.Companion.PAYLOAD_KEY
@@ -74,15 +68,15 @@ private object RegisterTaskHandler : CallHandler<WorkManagerCall.RegisterTask> {
             result.error(
                 "1",
                 "You have not properly initialized the Flutter WorkManager Package. " +
-                    "You should ensure you have called the 'initialize' function first! " +
-                    "Example: \n" +
-                    "\n" +
-                    "`Workmanager().initialize(\n" +
-                    "  callbackDispatcher,\n" +
-                    " )`" +
-                    "\n" +
-                    "\n" +
-                    "The `callbackDispatcher` is a top level function. See example in repository.",
+                        "You should ensure you have called the 'initialize' function first! " +
+                        "Example: \n" +
+                        "\n" +
+                        "`Workmanager().initialize(\n" +
+                        "  callbackDispatcher,\n" +
+                        " )`" +
+                        "\n" +
+                        "\n" +
+                        "The `callbackDispatcher` is a top level function. See example in repository.",
                 null
             )
             return
@@ -113,6 +107,7 @@ private object RegisterTaskHandler : CallHandler<WorkManagerCall.RegisterTask> {
             initialDelaySeconds = convertedCall.initialDelaySeconds,
             constraintsConfig = convertedCall.constraintsConfig,
             backoffPolicyConfig = convertedCall.backoffPolicyConfig,
+            outOfQuotaPolicy = convertedCall.outOfQuotaPolicy,
             payload = convertedCall.payload
         )
     }
@@ -131,6 +126,7 @@ private object RegisterTaskHandler : CallHandler<WorkManagerCall.RegisterTask> {
             initialDelaySeconds = convertedCall.initialDelaySeconds,
             constraintsConfig = convertedCall.constraintsConfig,
             backoffPolicyConfig = convertedCall.backoffPolicyConfig,
+            outOfQuotaPolicy = convertedCall.outOfQuotaPolicy,
             payload = convertedCall.payload
         )
     }
@@ -185,6 +181,7 @@ object WM {
         existingWorkPolicy: ExistingWorkPolicy = defaultOneOffExistingWorkPolicy,
         initialDelaySeconds: Long = defaultInitialDelaySeconds,
         constraintsConfig: Constraints = defaultConstraints,
+        outOfQuotaPolicy: OutOfQuotaPolicy? = defaultOutOfQuotaPolicy,
         backoffPolicyConfig: BackoffPolicyTaskConfig?
     ) {
         val oneOffTaskRequest = OneTimeWorkRequest.Builder(BackgroundWorker::class.java)
@@ -200,7 +197,10 @@ object WM {
                     )
                 }
             }
-            .apply { tag?.let(::addTag) }
+            .apply {
+                tag?.let(::addTag)
+                outOfQuotaPolicy?.let(::setExpedited)
+            }
             .build()
         context.workManager()
             .enqueueUniqueWork(uniqueName, existingWorkPolicy, oneOffTaskRequest)
@@ -217,6 +217,7 @@ object WM {
         existingWorkPolicy: ExistingPeriodicWorkPolicy = defaultPeriodExistingWorkPolicy,
         initialDelaySeconds: Long = defaultInitialDelaySeconds,
         constraintsConfig: Constraints = defaultConstraints,
+        outOfQuotaPolicy: OutOfQuotaPolicy? = defaultOutOfQuotaPolicy,
         backoffPolicyConfig: BackoffPolicyTaskConfig?
     ) {
         val periodicTaskRequest =
@@ -237,7 +238,10 @@ object WM {
                         )
                     }
                 }
-                .apply { tag?.let(::addTag) }
+                .apply {
+                    tag?.let(::addTag)
+                    outOfQuotaPolicy?.let(::setExpedited)
+                }
                 .build()
         context.workManager()
             .enqueueUniquePeriodicWork(uniqueName, existingWorkPolicy, periodicTaskRequest)

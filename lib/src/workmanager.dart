@@ -180,6 +180,7 @@ class Workmanager {
     final Constraints? constraints,
     final BackoffPolicy? backoffPolicy,
     final Duration backoffPolicyDelay = Duration.zero,
+    final OutOfQuotaPolicy? outOfQuotaPolicy,
     final Map<String, dynamic>? inputData,
   }) async =>
       await _foregroundChannel.invokeMethod(
@@ -194,6 +195,7 @@ class Workmanager {
           constraints: constraints,
           backoffPolicy: backoffPolicy,
           backoffPolicyDelay: backoffPolicyDelay,
+          outOfQuotaPolicy: outOfQuotaPolicy,
           inputData: inputData,
         ),
       );
@@ -214,6 +216,7 @@ class Workmanager {
     final Constraints? constraints,
     final BackoffPolicy? backoffPolicy,
     final Duration backoffPolicyDelay = Duration.zero,
+    final OutOfQuotaPolicy? outOfQuotaPolicy,
     final Map<String, dynamic>? inputData,
   }) async =>
       await _foregroundChannel.invokeMethod(
@@ -229,6 +232,7 @@ class Workmanager {
           constraints: constraints,
           backoffPolicy: backoffPolicy,
           backoffPolicyDelay: backoffPolicyDelay,
+          outOfQuotaPolicy: outOfQuotaPolicy,
           inputData: inputData,
         ),
       );
@@ -266,6 +270,7 @@ class JsonMapperHelper {
     final Constraints? constraints,
     final BackoffPolicy? backoffPolicy,
     final Duration? backoffPolicyDelay,
+    final OutOfQuotaPolicy? outOfQuotaPolicy,
     final Map<String, dynamic>? inputData,
   }) {
     if (inputData != null) {
@@ -303,6 +308,7 @@ class JsonMapperHelper {
       "requiresStorageNotLow": constraints?.requiresStorageNotLow,
       "backoffPolicyType": _enumToString(backoffPolicy),
       "backoffDelayInMilliseconds": backoffPolicyDelay?.inMilliseconds,
+      "outOfQuotaPolicy": _enumToString(outOfQuotaPolicy),
       "inputData": inputData == null ? null : jsonEncode(inputData),
     };
   }
