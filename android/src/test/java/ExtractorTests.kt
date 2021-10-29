@@ -1,10 +1,29 @@
 import androidx.work.NetworkType
+import androidx.work.OutOfQuotaPolicy
 import be.tramckrijte.workmanager.Extractor
 import io.flutter.plugin.common.MethodCall
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class ExtractorTests {
+    @Test
+    fun shouldParseOutOfQuotaPolicyFromCall() {
+        val all = mapOf(
+            null to null,
+            "drop_work_request" to OutOfQuotaPolicy.DROP_WORK_REQUEST,
+            "run_as_non_expedited_work_request" to
+                OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST
+        )
+
+        all.forEach { (dartString, wmConstant) ->
+            val call = MethodCall(
+                "",
+                mapOf("outOfQuotaPolicy" to dartString)
+            )
+            assertEquals(Extractor.extractOutOfQuotaPolicyFromCall(call), wmConstant)
+        }
+    }
+
     @Test
     fun shouldParseNetworkTypeFromCall() {
         val all = mapOf(
