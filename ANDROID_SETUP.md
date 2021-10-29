@@ -1,7 +1,20 @@
+# Update build.gradle
+
+Make sure that your `kotlin_version to `1.4.0` or greater:
+
+```
+buildscript {
+    ext.kotlin_version = '1.4.+'
+    repositories {
+        google()
+        mavenCentral()
+    }
+    // ...
+```
+
 # Check your AndroidManifest.xml   
 
 Check if you have the following in your `AndroidManifest.xml` file.  
-You don't have to do anything else.    
 
 ```xml
 <meta-data
