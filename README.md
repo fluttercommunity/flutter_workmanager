@@ -166,19 +166,19 @@ Workmanager().registerOneOffTask("1", "simpleTask", initialDelay: Duration(secon
 
 ## Constraints
 
-> Not all constraints are mapped.
+> Constraints are mapped at best effort to each platform. Android's WorkManager supports most of the specific constraints, whereas iOS tasks are limited.
 
 - NetworkType
   Constrains the type of network required for your work to run. For example, Connected. 
-  On iOS you can "requireNetwork" but that's it. It does not allow configuration of unmetered, not_metered etc. All these network variables will be merged into requiresNetwork.
-- RequiresBatteryNotLow
+  The `NetworkType` lists various network conditions. `.connected` & `.metered` will be mapped to [`requiresNetworkConnectivity`](https://developer.apple.com/documentation/backgroundtasks/bgprocessingtaskrequest/3142242-requiresnetworkconnectivity) on iOS.
+- RequiresBatteryNotLow (Android only)
   When set to true, your work will not run if the device is in low battery mode.
   **Enabling the battery saving mode on the android device prevents the job from running**
 - RequiresCharging
   When set to true, your work will only run when the device is charging.
-- RequiresDeviceIdle
+- RequiresDeviceIdle (Android only)
   When set to true, this requires the user’s device to be idle before the work will run. This can be useful for running batched operations that might otherwise have a - negative performance impact on other apps running actively on the user’s device.
-- RequiresStorageNotLow
+- RequiresStorageNotLow (Android only)
   When set to true, your work will not run if the user’s storage space on the device is too low.
 
 ```dart
