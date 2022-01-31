@@ -53,19 +53,9 @@ jobs:
       fail-fast: false
     runs-on: macos-latest
     steps:
-      # - name: List all simulators
-      #   run: xctrace list devices
-      # get UUID  simulator and boot a simulator on mac from  command line
-      - name: Start Simulator
-        run: |
-          UDID=$(
-            xcrun simctl list devices | grep '${{ matrix.device }} (' | grep -v unavailable | sed -n 's/.*\(([^()]*)\) \(([^()]*)\)/\1/p' | sed -e 's/(//g' -e 's/)//g' | head -n1
-          )
-          # UDID=$(
-          #   xctrace list devices |
-          #   grep '${{ matrix.device }} Simulator' | grep -v 'Watch' | sed  's/.*(\(.*\))/\1/' | head -n1
-          # )
-          xcrun simctl boot "${UDID:?No Simulator with this name found}"
+      - uses: futureware-tech/simulator-action@v1
+        with:
+          model: '${{ matrix.device }}'
       - uses: actions/checkout@v2
       - uses: subosito/flutter-action@v1
         with:
