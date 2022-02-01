@@ -145,16 +145,14 @@ private object UnregisterTaskHandler : CallHandler<WorkManagerCall.CancelTask> {
         convertedCall: WorkManagerCall.CancelTask,
         result: MethodChannel.Result
     ) {
-        try {
-            when (convertedCall) {
-                is WorkManagerCall.CancelTask.ByUniqueName -> WM.cancelByUniqueName(
-                    context,
-                    convertedCall.uniqueName
-                )
-                is WorkManagerCall.CancelTask.ByTag -> WM.cancelByTag(context, convertedCall.tag)
-                WorkManagerCall.CancelTask.All -> WM.cancelAll(context)
-            }
-        } finally {}
+        when (convertedCall) {
+            is WorkManagerCall.CancelTask.ByUniqueName -> WM.cancelByUniqueName(
+                context,
+                convertedCall.uniqueName
+            )
+            is WorkManagerCall.CancelTask.ByTag -> WM.cancelByTag(context, convertedCall.tag)
+            WorkManagerCall.CancelTask.All -> WM.cancelAll(context)
+        }
         result.success()
     }
 }

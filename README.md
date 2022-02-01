@@ -68,7 +68,7 @@ void callbackDispatcher() {
 }
 ```
 
-Android tasks are identified using their `taskName`, whereas two default constants are provided for iOS background operations, depending on whether background fetch or BGTaskScheduler is used: `Workmanager.iOSBackgroundTask` & `Workmanager.iOSBackgroundProcessingTask`.
+Most of tasks are identified using their `taskName` on both Android and iOS. However, there is an exception for iOS background fetch: `Workmanager.iOSBackgroundTask`, a constant for iOS background fetch task
 
 ---
 
@@ -111,15 +111,15 @@ Workmanager().registerOneOffTask(
 WorkmanagerPlugin.registerTask(withIdentifier: "task-identifier")
 ```
 
-- We must also define your `task-identifier` in `info.plist` file
+- We must also define your `task-identifier`s in `info.plist` file
 
 ```
 <dict>
   ....
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
-		<string>workmanager.background.task</string>
-		<string>task-identifier</string>
+		<string>task-identifier-1</string>
+		<string>task-identifier-2</string>
 	</array>
   ....
 </dict>
