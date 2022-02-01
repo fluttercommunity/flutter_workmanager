@@ -150,25 +150,29 @@ class _MyAppState extends State<MyApp> {
                 //It will wait at least 10 seconds before its first launch
                 //Since we have not provided a frequency it will be the default 15 minutes
                 ElevatedButton(
-                    child: Text("Register Periodic Task"),
-                    onPressed: () {
-                      Workmanager().registerPeriodicTask(
-                        simplePeriodicTask,
-                        simplePeriodicTask,
-                        initialDelay: Duration(seconds: 10),
-                      );
-                    }),
+                    child: Text("Register Periodic Task (Android)"),
+                    onPressed: Platform.isAndroid
+                        ? () {
+                            Workmanager().registerPeriodicTask(
+                              simplePeriodicTask,
+                              simplePeriodicTask,
+                              initialDelay: Duration(seconds: 10),
+                            );
+                          }
+                        : null),
                 //This task runs periodically
                 //It will run about every hour
                 ElevatedButton(
-                    child: Text("Register 1 hour Periodic Task"),
-                    onPressed: () {
-                      Workmanager().registerPeriodicTask(
-                        simplePeriodicTask,
-                        simplePeriodic1HourTask,
-                        frequency: Duration(hours: 1),
-                      );
-                    }),
+                    child: Text("Register 1 hour Periodic Task (Android)"),
+                    onPressed: Platform.isAndroid
+                        ? () {
+                            Workmanager().registerPeriodicTask(
+                              simplePeriodicTask,
+                              simplePeriodic1HourTask,
+                              frequency: Duration(hours: 1),
+                            );
+                          }
+                        : null),
                 SizedBox(height: 16),
                 Text(
                   "Task cancellation",
