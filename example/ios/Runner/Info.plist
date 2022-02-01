@@ -4,8 +4,12 @@
 <dict>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
-		<string>workmanager.background.task</string>
-		<string>vn.newwave.custom-task-identifier</string>
+		<string>simpleTask</string>
+		<string>rescheduledTask</string>
+		<string>failedTask</string>
+		<string>simpleDelayedTask</string>
+		<string>simplePeriodicTask</string>
+		<string>simplePeriodic1HourTask</string>
 	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>

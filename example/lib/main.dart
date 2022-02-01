@@ -55,10 +55,6 @@ void callbackDispatcher() {
         print(
             "You can access other plugins in the background, for example Directory.getTemporaryDirectory(): $tempPath");
         break;
-      case Workmanager.iOSBackgroundProcessingTask:
-        print("The iOS Background processing task was called");
-        await Future.delayed(Duration(seconds: 2));
-        break;
     }
 
     return Future.value(true);
@@ -68,23 +64,6 @@ void callbackDispatcher() {
 class MyApp extends StatefulWidget {
   @override
   _MyAppState createState() => _MyAppState();
-}
-
-enum _Platform { android, ios }
-
-class PlatformEnabledButton extends ElevatedButton {
-  final _Platform platform;
-
-  PlatformEnabledButton({
-    required this.platform,
-    required Widget child,
-    required VoidCallback onPressed,
-  }) : super(
-            child: child,
-            onPressed: (Platform.isAndroid && platform == _Platform.android ||
-                    Platform.isIOS && platform == _Platform.ios)
-                ? onPressed
-                : null);
 }
 
 class _MyAppState extends State<MyApp> {
@@ -115,42 +94,14 @@ class _MyAppState extends State<MyApp> {
                   },
                 ),
                 SizedBox(height: 16),
-                Text(
-                  "BG Processing Tasks (iOS only)",
-                  style: Theme.of(context).textTheme.headline5,
-                ),
-                //This task runs once.
-                //Most likely this will trigger immediately
-                PlatformEnabledButton(
-                  platform: _Platform.ios,
-                  child: Text("Perform a BG Task"),
-                  onPressed: () {
-                    Workmanager().registerOneOffTask(
-                      "vn.newwave.custom-task-identifier",
-                      simpleTaskKey,
-                      inputData: <String, dynamic>{
-                        'int': 1,
-                        'bool': true,
-                        'double': 1.0,
-                        'string': 'string',
-                        'array': [1, 2, 3],
-                      },
-                    );
-                  },
-                ),
 
-                Text(
-                  "One Off Tasks (Android only)",
-                  style: Theme.of(context).textTheme.headline5,
-                ),
                 //This task runs once.
                 //Most likely this will trigger immediately
-                PlatformEnabledButton(
-                  platform: _Platform.android,
+                ElevatedButton(
                   child: Text("Register OneOff Task"),
                   onPressed: () {
                     Workmanager().registerOneOffTask(
-                       "vn.newwave.custom-task-identifier",
+                      simpleTaskKey,
                       simpleTaskKey,
                       inputData: <String, dynamic>{
                         'int': 1,
@@ -162,12 +113,11 @@ class _MyAppState extends State<MyApp> {
                     );
                   },
                 ),
-                PlatformEnabledButton(
-                  platform: _Platform.android,
+                ElevatedButton(
                   child: Text("Register rescheduled Task"),
                   onPressed: () {
                     Workmanager().registerOneOffTask(
-                      "1-rescheduled",
+                      rescheduledTaskKey,
                       rescheduledTaskKey,
                       inputData: <String, dynamic>{
                         'key': Random().nextInt(64000),
@@ -175,54 +125,46 @@ class _MyAppState extends State<MyApp> {
                     );
                   },
                 ),
-                PlatformEnabledButton(
-                  platform: _Platform.android,
+                ElevatedButton(
                   child: Text("Register failed Task"),
                   onPressed: () {
                     Workmanager().registerOneOffTask(
-                      "1-failed",
+                      failedTaskKey,
                       failedTaskKey,
                     );
                   },
                 ),
                 //This task runs once
                 //This wait at least 10 seconds before running
-                PlatformEnabledButton(
-                    platform: _Platform.android,
+                ElevatedButton(
                     child: Text("Register Delayed OneOff Task"),
                     onPressed: () {
                       Workmanager().registerOneOffTask(
-                        "2",
+                        simpleDelayedTask,
                         simpleDelayedTask,
                         initialDelay: Duration(seconds: 10),
                       );
                     }),
                 SizedBox(height: 8),
-                Text(
-                  "Periodic Tasks (Android only)",
-                  style: Theme.of(context).textTheme.headline5,
-                ),
                 //This task runs periodically
                 //It will wait at least 10 seconds before its first launch
                 //Since we have not provided a frequency it will be the default 15 minutes
-                PlatformEnabledButton(
-                    platform: _Platform.android,
+                ElevatedButton(
                     child: Text("Register Periodic Task"),
                     onPressed: () {
                       Workmanager().registerPeriodicTask(
-                        "3",
+                        simplePeriodicTask,
                         simplePeriodicTask,
                         initialDelay: Duration(seconds: 10),
                       );
                     }),
                 //This task runs periodically
                 //It will run about every hour
-                PlatformEnabledButton(
-                    platform: _Platform.android,
+                ElevatedButton(
                     child: Text("Register 1 hour Periodic Task"),
                     onPressed: () {
                       Workmanager().registerPeriodicTask(
-                        "5",
+                        simplePeriodicTask,
                         simplePeriodic1HourTask,
                         frequency: Duration(hours: 1),
                       );
