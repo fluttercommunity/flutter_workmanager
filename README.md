@@ -68,7 +68,10 @@ void callbackDispatcher() {
 }
 ```
 
-Most of tasks are identified using their `taskName` on both Android and iOS. However, there is an exception for iOS background fetch: `Workmanager.iOSBackgroundTask`, a constant for iOS background fetch task
+Android tasks are identified using their `taskName`.
+iOS tasks are identitied using their `taskIdentifier`.
+
+However, there is an exception for iOS background fetch: `Workmanager.iOSBackgroundTask`, a constant for iOS background fetch task.
 
 ---
 
@@ -84,7 +87,7 @@ On Android, the `BackoffPolicy` will configure how `WorkManager` is going to ret
 
 Refer to the example app for a successful, retrying and a failed task.
 
-# Customisation (iOS - BGTaskScheduler only)
+# iOS speicific setup and note
 
 iOS supports **One off tasks** with a few basic constraints:
 
@@ -102,6 +105,26 @@ Workmanager().registerOneOffTask(
   inputData: ... // fully supported
 );
 ```
+
+You MUST amend your `AppDelegate.swift` and `Info.plist` file to register your task ID.
+
+- AppDelegate.swift
+```
+WorkmanagerPlugin.registerTask(withIdentifier: "task-identifier")
+```
+
+- Info.plist
+```
+<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>task-identifier</string>
+  </array>
+</key>
+```
+
+NOTE: 
+- Every custom task ID has to be registered as above
+- Please refer the sample app for reference
 
 **NOTE**
 
