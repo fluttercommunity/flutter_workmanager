@@ -106,50 +106,6 @@ Workmanager().registerOneOffTask(
 );
 ```
 
-You MUST amend your `AppDelegate.swift` and `Info.plist` file to register your task ID.
-
-- AppDelegate.swift
-```
-WorkmanagerPlugin.registerTask(withIdentifier: "task-identifier")
-```
-
-- Info.plist
-```
-<key>BGTaskSchedulerPermittedIdentifiers</key>
-	<array>
-		<string>task-identifier</string>
-  </array>
-</key>
-```
-
-NOTE: 
-- Every custom task ID has to be registered as above
-- Please refer the sample app for reference
-
-**NOTE**
-
-- We have to register in ApplicationDelegate class as below example
-
-```swift
-WorkmanagerPlugin.registerTask(withIdentifier: "task-identifier")
-```
-
-- We must also define your `task-identifier`s in `info.plist` file
-
-```
-<dict>
-  ....
-	<key>BGTaskSchedulerPermittedIdentifiers</key>
-	<array>
-		<string>task-identifier-1</string>
-		<string>task-identifier-2</string>
-	</array>
-  ....
-</dict>
-```
-
-- The task identifier should be prefixed with app bundle id
-
 For more information see the [BGTaskScheduler documentation](https://developer.apple.com/documentation/backgroundtasks).
 
 # Customisation (Android)
