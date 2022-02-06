@@ -1,3 +1,7 @@
+# next
+
+* Android: Remove jetifier from example
+
 # 0.5.0-dev.8
 
 * iOS: Add implementations for cancelCall and cancelByUniqueName
