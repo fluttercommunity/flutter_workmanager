@@ -20,6 +20,7 @@ import workmanager
             GeneratedPluginRegistrant.register(with: registry)
         }
 
+        WorkmanagerPlugin.registerTask(withIdentifier: "taskId")
         WorkmanagerPlugin.registerTask(withIdentifier: "simpleTask")
 		WorkmanagerPlugin.registerTask(withIdentifier: "rescheduledTask")
 		WorkmanagerPlugin.registerTask(withIdentifier: "failedTask")

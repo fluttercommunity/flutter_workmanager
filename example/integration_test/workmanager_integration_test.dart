@@ -26,6 +26,7 @@ void main() {
     await wm.initialize(callbackDispatcher);
     try {
       await wm.registerOneOffTask('taskId', 'taskName');
+      await wm.cancelAll();
     } on PlatformException catch (e) {
       if (e.code !=
           'bgTaskSchedulingFailed(Error Domain=BGTaskSchedulerErrorDomain Code=1 "(null)") error') {
