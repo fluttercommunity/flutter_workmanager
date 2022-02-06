@@ -9,12 +9,14 @@ import 'package:workmanager/workmanager.dart';
 
 void main() => runApp(MyApp());
 
-const simpleTaskKey = "simpleTask";
-const rescheduledTaskKey = "rescheduledTask";
-const failedTaskKey = "failedTask";
-const simpleDelayedTask = "simpleDelayedTask";
-const simplePeriodicTask = "simplePeriodicTask";
-const simplePeriodic1HourTask = "simplePeriodic1HourTask";
+const simpleTaskKey = "be.tramckrijte.workmanagerExample.simpleTask";
+const rescheduledTaskKey = "be.tramckrijte.workmanagerExample.rescheduledTask";
+const failedTaskKey = "be.tramckrijte.workmanagerExample.failedTask";
+const simpleDelayedTask = "be.tramckrijte.workmanagerExample.simpleDelayedTask";
+const simplePeriodicTask =
+    "be.tramckrijte.workmanagerExample.simplePeriodicTask";
+const simplePeriodic1HourTask =
+    "be.tramckrijte.workmanagerExample.simplePeriodic1HourTask";
 
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {

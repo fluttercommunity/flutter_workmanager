@@ -22,37 +22,21 @@ This will add the **UIBackgroundModes** key to your project's `Info.plist`:
 </array>
 ```
 
-Additionally, you must configure the background task identifiers. The default identifier is `workmanager.background.task` in the host Apps Info.plist:
-
-``` xml
-<key>BGTaskSchedulerPermittedIdentifiers</key>
-<array>
-	<string>workmanager.background.task</string>
-</array>
-</plist>
-```
-
-
-You MUST amend your `AppDelegate.swift` and `Info.plist` file to register your task ID.
+You **MUST** amend your `AppDelegate.swift` and `Info.plist` file to register your task ID.
 
 - AppDelegate.swift
-```
+``` swift
 WorkmanagerPlugin.registerTask(withIdentifier: "task-identifier")
 ```
 
 - Info.plist
-```
+``` xml
 <key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>task-identifier</string>
   </array>
 </key>
 ```
-
-**NOTE: **
-- Every custom task ID has to be registered as above
-- Please refer the sample app for reference
-- The task identifier should be prefixed with app bundle id
 
 And will set the correct *SystemCapabilities* for your target in the `project.pbxproj` file:
 

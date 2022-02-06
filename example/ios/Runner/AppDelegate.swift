@@ -20,13 +20,13 @@ import workmanager
             GeneratedPluginRegistrant.register(with: registry)
         }
 
-        WorkmanagerPlugin.registerTask(withIdentifier: "taskId")
-        WorkmanagerPlugin.registerTask(withIdentifier: "simpleTask")
-		WorkmanagerPlugin.registerTask(withIdentifier: "rescheduledTask")
-		WorkmanagerPlugin.registerTask(withIdentifier: "failedTask")
-		WorkmanagerPlugin.registerTask(withIdentifier: "simpleDelayedTask")
-		WorkmanagerPlugin.registerTask(withIdentifier: "simplePeriodicTask")
-		WorkmanagerPlugin.registerTask(withIdentifier: "simplePeriodic1HourTask")
+        WorkmanagerPlugin.registerTask(withIdentifier: "be.tramckrijte.workmanagerExample.taskId")
+        WorkmanagerPlugin.registerTask(withIdentifier: "be.tramckrijte.workmanagerExample.simpleTask")
+		WorkmanagerPlugin.registerTask(withIdentifier: "be.tramckrijte.workmanagerExample.rescheduledTask")
+		WorkmanagerPlugin.registerTask(withIdentifier: "be.tramckrijte.workmanagerExample.failedTask")
+		WorkmanagerPlugin.registerTask(withIdentifier: "be.tramckrijte.workmanagerExample.simpleDelayedTask")
+		WorkmanagerPlugin.registerTask(withIdentifier: "be.tramckrijte.workmanagerExample.simplePeriodicTask")
+		WorkmanagerPlugin.registerTask(withIdentifier: "be.tramckrijte.workmanagerExample.simplePeriodic1HourTask")
         
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
 
