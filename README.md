@@ -35,7 +35,10 @@ void main() {
     callbackDispatcher, // The top level function, aka callbackDispatcher
     isInDebugMode: true // If enabled it will post a notification whenever the task is running. Handy for debugging tasks
   );
-  Workmanager().registerOneOffTask("1", "simpleTask"); //Android only (see below)
+  Workmanager().registerOneOffTask("1", "simpleTask"); // Android and 'iOS Processing task' (see options below)
+  if (Platform.isIOS) {
+    Workmanager().registerAppRefreshTask(initialDelay: const Duration(minutes: 15), frequency: const Duration(minutes: 60)); // iOS Only
+  }
   runApp(MyApp());
 }
 ```
@@ -86,7 +89,8 @@ Refer to the example app for a successful, retrying and a failed task.
 
 # Customisation (iOS - BGTaskScheduler only)
 
-iOS supports **One off tasks** with a few basic constraints:
+iOS supports **One off tasks** with a few basic constraints 
+(Note on iOS this is for long-running Processing tasks run every 1-2 days):
 
 ```dart
 Workmanager().registerOneOffTask(
@@ -99,11 +103,18 @@ Workmanager().registerOneOffTask(
     // require external power
     requiresCharging: true,
   ),
-  inputData: ... // fully supported
+  inputData: ... // Android Only
 );
 ```
 
 Tasks registered this way will appear in the callback dispatcher using as `Workmanager.iOSBackgroundProcessingTask`.
+
+```dart
+Workmanager().registerAppRefreshTask( // iOS only
+  initialDelay: const Duration(minutes: 15), // 'Suggested' initial delay, won't start sooner than this. Default: Duration.zero 
+  frequency: const Duration(minutes: 60) // 'Suggested' frequency to run after initial execution. If Duration.zero, will not repeat execution. Defalut: Duration.zero 
+);
+```
 
 For more information see the [BGTaskScheduler documentation](https://developer.apple.com/documentation/backgroundtasks).
 

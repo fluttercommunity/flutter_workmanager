@@ -155,7 +155,7 @@ class Workmanager {
   /// Schedule a one off task
   /// A [uniqueName] is required so only one task can be registered.
   /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler]
-  /// The [inputData] is the input data for task. Valid value types are: int, bool, double, String and their list
+  /// The [inputData] is the input data for task. Android Only. Valid value types are: int, bool, double, String and their list
   Future<void> registerOneOffTask(
     /// Only supported on Android.
     final String uniqueName,
@@ -197,6 +197,27 @@ class Workmanager {
           backoffPolicyDelay: backoffPolicyDelay,
           outOfQuotaPolicy: outOfQuotaPolicy,
           inputData: inputData,
+        ),
+      );
+
+  /// Schedule an iOS BGAppRefreshTask
+  Future<void> registerAppRefreshTask({
+
+    /// Configures an initial delay.
+    ///
+    /// The delay configured here is not guaranteed. The underlying system may
+    /// decide to schedule the task a lot later.
+    final Duration initialDelay = Duration.zero,
+
+    /// Frequency to repeat task after initial execution. Duration.zero does not repeat.
+    final Duration frequency = Duration.zero,
+  }) async =>
+      await _foregroundChannel.invokeMethod(
+        "registerAppRefreshTask",
+        JsonMapperHelper.toRegisterAppRefreshMethodArgument(
+          isInDebugMode: _isInDebugMode,
+          initialDelay: initialDelay,
+          frequency: frequency
         ),
       );
 
@@ -310,6 +331,19 @@ class JsonMapperHelper {
       "backoffDelayInMilliseconds": backoffPolicyDelay?.inMilliseconds,
       "outOfQuotaPolicy": _enumToString(outOfQuotaPolicy),
       "inputData": inputData == null ? null : jsonEncode(inputData),
+    };
+  }
+
+  @visibleForTesting
+  static Map<String, Object?> toRegisterAppRefreshMethodArgument({
+    final bool isInDebugMode = false,
+    final Duration? initialDelay,
+    final Duration? frequency
+  }) {
+    return {
+      "isInDebugMode": isInDebugMode,
+      "initialDelaySeconds": initialDelay?.inSeconds,
+      "refreshFrequencySeconds": frequency?.inSeconds
     };
   }
 

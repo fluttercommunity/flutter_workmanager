@@ -14,7 +14,9 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     static let identifier = "be.tramckrijte.workmanager"
 
     static let defaultBGProcessingTaskIdentifier = "workmanager.background.task"
-
+    static let defaultBGAppRefreshTaskIdentifier = "workmanager.background.refresh.task"
+    var bgRefreshTaskFrequency = 0.0
+    
     private static var flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?
 
     private struct ForegroundMethodChannel {
@@ -36,6 +38,15 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
                     case requiresCharging
                 }
             }
+
+            struct RegisterAppRefreshTask {
+                static let name = "\(RegisterAppRefreshTask.self)".lowercasingFirst
+                enum Arguments: String {
+                    case initialDelaySeconds
+                    case refreshFrequencySeconds
+                }
+            }
+
             struct CancelAllTasks {
                 static let name = "\(CancelAllTasks.self)".lowercasingFirst
                 enum Arguments: String {
@@ -77,6 +88,51 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
         operationQueue.addOperation(operation)
     }
 
+    @available(iOS 13.0, *)
+    private func scheduleAppRefresh() {
+        let request = BGAppRefreshTaskRequest(identifier: SwiftWorkmanagerPlugin.defaultBGAppRefreshTaskIdentifier)
+
+       request.earliestBeginDate = Date(timeIntervalSinceNow: bgRefreshTaskFrequency * 60)
+
+       do {
+          try BGTaskScheduler.shared.submit(request)
+       } catch {
+          print("Could not schedule app refresh: \(error)")
+       }
+    }
+
+    @available(iOS 13.0, *)
+    private func handleAppRefresh(task: BGAppRefreshTask) {
+       print("handleAppRefresh()", task.identifier)
+        
+        if (bgRefreshTaskFrequency > 0) {
+            // Schedule a new refresh task.
+            scheduleAppRefresh()
+        }
+
+       let operationQueue = OperationQueue()
+
+       // Create an operation that performs the main part of the background task.
+       let operation = BackgroundTaskOperation(
+           task.identifier,
+           flutterPluginRegistrantCallback: SwiftWorkmanagerPlugin.flutterPluginRegistrantCallback
+       )
+
+       // Provide the background task with an expiration handler that cancels the operation.
+       task.expirationHandler = {
+          operation.cancel()
+       }
+
+       // Inform the system that the background task is complete
+       // when the operation completes.
+       operation.completionBlock = {
+          task.setTaskCompleted(success: !operation.isCancelled)
+       }
+
+       // Start the operation.
+       operationQueue.addOperation(operation)
+    }
+
     public override func application(_ application: UIApplication,
                                      didFinishLaunchingWithOptions launchOptions: [AnyHashable: Any] = [:]) -> Bool {
         if #available(iOS 13.0, *) {
@@ -87,6 +143,10 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
                 if let task = task as? BGProcessingTask {
                     self.handleBGProcessingTask(task)
                 }
+            }
+
+            BGTaskScheduler.shared.register(forTaskWithIdentifier: SwiftWorkmanagerPlugin.defaultBGAppRefreshTaskIdentifier, using: nil) { task in
+                 self.handleAppRefresh(task: task as! BGAppRefreshTask)
             }
         }
 
@@ -128,24 +188,49 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
             UserDefaultsHelper.storeIsDebug(isInDebug)
             result(true)
 
-        case (ForegroundMethodChannel.Methods.RegisterOneOffTask.name, let .some(arguments)):
-            if !validateCallbackHandle() {
-                result(
-                    FlutterError(
-                        code: "1",
-                        message: "You have not properly initialized the Flutter WorkManager Package. " +
-                            "You should ensure you have called the 'initialize' function first! " +
-                            "Example: \n" +
-                            "\n" +
-                            "`Workmanager().initialize(\n" +
-                            "  callbackDispatcher,\n" +
-                            " )`" +
-                            "\n" +
-                            "\n" +
-                            "The `callbackDispatcher` is a top level function. See example in repository.",
-                        details: nil
-                    )
+        case (ForegroundMethodChannel.Methods.RegisterAppRefreshTask.name, let .some(arguments)):
+            print("ForegroundMethodChannel.Methods.RegisterAppRefreshTask")
+            if !validateCallbackHandle(result: result) {
+                return
+            }
+
+            if #available(iOS 13.0, *) {
+                let method = ForegroundMethodChannel.Methods.RegisterAppRefreshTask.self
+                guard let initialDelaySeconds =
+                        arguments[method.Arguments.initialDelaySeconds.rawValue] as? Int64 else {
+                    result(WMPError.invalidParameters.asFlutterError)
+                    return
+                }
+
+                guard let regreshFrequencySeconds =
+                        arguments[method.Arguments.refreshFrequencySeconds.rawValue] as? Int64 else {
+                    result(WMPError.invalidParameters.asFlutterError)
+                    return
+                }
+
+                // save this, can't store in task
+                bgRefreshTaskFrequency = Double(regreshFrequencySeconds)
+                
+                let request = BGAppRefreshTaskRequest(
+                    identifier: SwiftWorkmanagerPlugin.defaultBGAppRefreshTaskIdentifier
                 )
+
+                request.earliestBeginDate = Date(timeIntervalSinceNow: Double(initialDelaySeconds))
+
+                do {
+                    try BGTaskScheduler.shared.submit(request)
+                    result(true)
+                } catch {
+                    result(WMPError.bgTaskSchedulingFailed(error).asFlutterError)
+                }
+
+                return
+            } else {
+                result(WMPError.unhandledMethod(call.method).asFlutterError)
+            }
+
+        case (ForegroundMethodChannel.Methods.RegisterOneOffTask.name, let .some(arguments)):
+            if !validateCallbackHandle(result: result) {
                 return
             }
 
@@ -207,8 +292,27 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
         }
     }
 
-    private func validateCallbackHandle() -> Bool {
-        return UserDefaultsHelper.getStoredCallbackHandle() != nil
+    private func validateCallbackHandle(result: @escaping FlutterResult) -> Bool {
+        let valid = UserDefaultsHelper.getStoredCallbackHandle() != nil
+        if (!valid) {
+            result(
+                FlutterError(
+                    code: "1",
+                    message: "You have not properly initialized the Flutter WorkManager Package. " +
+                        "You should ensure you have called the 'initialize' function first! " +
+                        "Example: \n" +
+                        "\n" +
+                        "`Workmanager().initialize(\n" +
+                        "  callbackDispatcher,\n" +
+                        " )`" +
+                        "\n" +
+                        "\n" +
+                        "The `callbackDispatcher` is a top level function. See example in repository.",
+                    details: nil
+                )
+            )
+        }
+        return valid
     }
 }
 
