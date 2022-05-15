@@ -48,5 +48,5 @@ jobs:
         run: |
           flutter pub get
           flutter pub publish -n
-          pub global activate tuneup
-          pub global run tuneup check
+          flutter pub global activate tuneup
+          flutter pub global run tuneup check
