@@ -87,7 +87,7 @@ On Android, the `BackoffPolicy` will configure how `WorkManager` is going to ret
 
 Refer to the example app for a successful, retrying and a failed task.
 
-# iOS speicific setup and note
+# iOS specific setup and note
 
 iOS supports **One off tasks** with a few basic constraints:
 

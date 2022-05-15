@@ -105,6 +105,7 @@ class Workmanager {
   ///  });
   /// }
   /// ```
+  @Deprecated('Use custom iOS task names. This property will be removed.')
   static const String iOSBackgroundProcessingTask =
       "workmanager.background.task";
 
