@@ -7,6 +7,8 @@ import 'package:workmanager/src/workmanager.dart';
 
 import 'workmanager_test.mocks.dart';
 
+const testTaskName = 'ios-background-task-name';
+
 Future<bool> testCallBackDispatcher(task, inputData) {
   return Future.value(true);
 }
@@ -14,8 +16,7 @@ Future<bool> testCallBackDispatcher(task, inputData) {
 void mySetUpWrapper() {
   GetIt.I<Workmanager>().initialize(testCallBackDispatcher);
   GetIt.I<Workmanager>().cancelAll();
-  GetIt.I<Workmanager>()
-      .cancelByUniqueName(Workmanager.iOSBackgroundProcessingTask);
+  GetIt.I<Workmanager>().cancelByUniqueName(testTaskName);
 }
 
 @GenerateMocks([Workmanager])
@@ -46,8 +47,7 @@ void main() {
       mySetUpWrapper();
 
       verify(GetIt.I<Workmanager>().initialize(testCallBackDispatcher));
-      verify(GetIt.I<Workmanager>()
-          .cancelByUniqueName(Workmanager.iOSBackgroundProcessingTask));
+      verify(GetIt.I<Workmanager>().cancelByUniqueName(testTaskName));
     });
   });
 }

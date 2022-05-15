@@ -12,7 +12,7 @@ import 'options.dart';
 ///
 /// [taskName] Returns the value you provided when registering the task.
 /// iOS will pass [Workmanager.iOSBackgroundTask] (for background-fetch) or
-/// [Workmanager.iOSBackgroundProcessingTask] for BGTaskScheduler based tasks.
+/// custom task IDs for BGTaskScheduler based tasks.
 ///
 /// The behavior for retries is different on each platform:
 /// - Android: return `false` from the this method will reschedule the work
@@ -105,6 +105,7 @@ class Workmanager {
   ///  });
   /// }
   /// ```
+  @Deprecated('Use custom iOS task names. This property will be removed.')
   static const String iOSBackgroundProcessingTask =
       "workmanager.background.task";
 

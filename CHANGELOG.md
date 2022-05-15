@@ -3,6 +3,7 @@
 * Android: Remove jetifier from example
 * Restore compatibility with Flutter 3.0.0, thank you @Cwiesen and @sunalwaysknows
 * Replaces `pedantic` checks with `flutter_lints`
+* Ability to specify custom tasks (and custom background work) for iOS was added. Thank you @tuyen-vuduc
 
 # 0.5.0-dev.8
 
