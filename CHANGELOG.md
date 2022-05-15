@@ -1,4 +1,4 @@
-# next
+# 0.5.0
 
 * Android: Remove jetifier from example
 * Restore compatibility with Flutter 3.0.0, thank you @Cwiesen and @sunalwaysknows
