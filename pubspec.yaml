@@ -10,7 +10,6 @@ environment:
   flutter: ">=2.5.0"
 
 dependencies:
-  pedantic: ^1.11.0
   flutter:
     sdk: flutter
 
@@ -21,6 +20,7 @@ dev_dependencies:
   get_it: ^6.1.1
   flutter_test:
     sdk: flutter
+  flutter_lints: ^2.0.1
 
 flutter:
   plugin:
