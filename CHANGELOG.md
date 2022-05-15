@@ -2,6 +2,7 @@
 
 * Android: Remove jetifier from example
 * Restore compatibility with Flutter 3.0.0
+* Replaces `pedantic` checks with `flutter_lints`
 
 # 0.5.0-dev.8
 
