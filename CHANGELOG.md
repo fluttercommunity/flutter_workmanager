@@ -1,3 +1,7 @@
+# next
+
+* Call DartPluginRegistrant.ensureInitialized when isolate is starting
+
 # 0.5.0
 
 * Android: Remove jetifier from example

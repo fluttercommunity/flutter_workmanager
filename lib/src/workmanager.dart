@@ -119,6 +119,8 @@ class Workmanager {
   /// A helper function so you only need to implement a [BackgroundTaskHandler]
   void executeTask(final BackgroundTaskHandler backgroundTask) {
     WidgetsFlutterBinding.ensureInitialized();
+    DartPluginRegistrant.ensureInitialized();
+
     _backgroundChannel.setMethodCallHandler((call) async {
       final inputData = call.arguments["be.tramckrijte.workmanager.INPUT_DATA"];
       return backgroundTask(
