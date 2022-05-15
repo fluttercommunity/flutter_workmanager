@@ -4,7 +4,13 @@
 <dict>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
-		<string>workmanager.background.task</string>
+		<string>be.tramckrijte.workmanagerExample.taskId</string>
+		<string>be.tramckrijte.workmanagerExample.simpleTask</string>
+		<string>be.tramckrijte.workmanagerExample.rescheduledTask</string>
+		<string>be.tramckrijte.workmanagerExample.failedTask</string>
+		<string>be.tramckrijte.workmanagerExample.simpleDelayedTask</string>
+		<string>be.tramckrijte.workmanagerExample.simplePeriodicTask</string>
+		<string>be.tramckrijte.workmanagerExample.simplePeriodic1HourTask</string>
 	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>

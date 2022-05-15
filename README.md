@@ -35,7 +35,7 @@ void main() {
     callbackDispatcher, // The top level function, aka callbackDispatcher
     isInDebugMode: true // If enabled it will post a notification whenever the task is running. Handy for debugging tasks
   );
-  Workmanager().registerOneOffTask("1", "simpleTask"); //Android only (see below)
+  Workmanager().registerOneOffTask("task-identifier", "simpleTask");
   runApp(MyApp());
 }
 ```
@@ -68,7 +68,10 @@ void callbackDispatcher() {
 }
 ```
 
-Android tasks are identified using their `taskName`, whereas two default constants are provided for iOS background operations, depending on whether background fetch or BGTaskScheduler is used: `Workmanager.iOSBackgroundTask` & `Workmanager.iOSBackgroundProcessingTask`.
+Android tasks are identified using their `taskName`.
+iOS tasks are identitied using their `taskIdentifier`.
+
+However, there is an exception for iOS background fetch: `Workmanager.iOSBackgroundTask`, a constant for iOS background fetch task.
 
 ---
 
@@ -84,13 +87,13 @@ On Android, the `BackoffPolicy` will configure how `WorkManager` is going to ret
 
 Refer to the example app for a successful, retrying and a failed task.
 
-# Customisation (iOS - BGTaskScheduler only)
+# iOS speicific setup and note
 
 iOS supports **One off tasks** with a few basic constraints:
 
 ```dart
 Workmanager().registerOneOffTask(
-  "1", // Ignored on iOS
+  "task-identifier",
   simpleTaskKey, // Ignored on iOS
   initialDelay: Duration(minutes: 30),
   constraints: Constraints(
@@ -102,8 +105,6 @@ Workmanager().registerOneOffTask(
   inputData: ... // fully supported
 );
 ```
-
-Tasks registered this way will appear in the callback dispatcher using as `Workmanager.iOSBackgroundProcessingTask`.
 
 For more information see the [BGTaskScheduler documentation](https://developer.apple.com/documentation/backgroundtasks).
 
@@ -119,14 +120,14 @@ Two kinds of background tasks can be registered :
 ```dart
 // One off task registration
 Workmanager().registerOneOffTask(
-    "1",
+    "oneoff-task-identifier", 
     "simpleTask"
 );
 
 // Periodic task registration
 Workmanager().registerPeriodicTask(
-    "2",
-    "simplePeriodicTask",
+    "periodic-task-identifier", 
+    "simplePeriodicTask", 
     // When no frequency is provided the default 15 minutes is set.
     // Minimum frequency is 15 min. Android will automatically change your frequency to 15 min if you have configured a lower frequency.
     frequency: Duration(hours: 1),
