@@ -9,7 +9,7 @@ import Foundation
 
 enum BackgroundMode {
     case backgroundFetch
-    case backgroundTask(identifier: String)
+    case backgroundTask(identifier: String, inputData: String?)
 
     var flutterThreadlabelPrefix: String {
         switch self {
@@ -20,12 +20,15 @@ enum BackgroundMode {
         }
     }
 
-    var onResultSendArguments: [String: String] {
+    var onResultSendArguments: [String: String?] {
         switch self {
         case .backgroundFetch:
             return ["\(SwiftWorkmanagerPlugin.identifier).DART_TASK": "iOSPerformFetch"]
-        case .backgroundTask(let identifier):
-            return ["\(SwiftWorkmanagerPlugin.identifier).DART_TASK": identifier]
+        case .backgroundTask(let identifier, let inputData):
+            return [
+            "\(SwiftWorkmanagerPlugin.identifier).DART_TASK": identifier,
+            "\(SwiftWorkmanagerPlugin.identifier).INPUT_DATA": inputData,
+            ]
         }
     }
 }
