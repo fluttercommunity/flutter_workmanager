@@ -23,6 +23,7 @@ See sample folder for a complete working example.
 Before registering any task, the WorkManager plugin must be initialized.
 
 ```dart
+@pragma('vm:entry-point') // Mandatory if the App is obfuscated or using Flutter 3.1+
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) {
     print("Native called background task: $backgroundTask"); //simpleTask will be emitted here.
