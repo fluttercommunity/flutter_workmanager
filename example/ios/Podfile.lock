@@ -31,10 +31,10 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
   integration_test: a1e7d09bd98eca2fc37aefd79d4f41ad37bdbbe5
-  path_provider_ios: 7d7ce634493af4477d156294792024ec3485acd5
-  shared_preferences_ios: aef470a42dc4675a1cdd50e3158b42e3d1232b32
+  path_provider_ios: 14f3d2fd28c4fdb42f44e0f751d12861c43cee02
+  shared_preferences_ios: 548a61f8053b9b8a49ac19c1ffbc8b92c50d68ad
   workmanager: 0afdcf5628bbde6924c21af7836fed07b42e30e6
 
 PODFILE CHECKSUM: 4784286582a31f30520c9182366f5a57f403a29a
 
-COCOAPODS: 1.11.2
+COCOAPODS: 1.11.3

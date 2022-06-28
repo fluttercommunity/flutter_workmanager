@@ -1,6 +1,13 @@
 # next
 
+* Documentation and example update to fix (#374) WorkManager not working when App is obfuscated or using Flutter 3.1+
+
+# 0.5.0
+
 * Android: Remove jetifier from example
+* Restore compatibility with Flutter 3.0.0, thank you @Cwiesen and @sunalwaysknows
+* Replaces `pedantic` checks with `flutter_lints`
+* Ability to specify custom tasks (and custom background work) for iOS was added. Thank you @tuyen-vuduc
 
 # 0.5.0-dev.8
 

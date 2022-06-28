@@ -10,13 +10,12 @@ extension String {
 }
 
 public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
-
     static let identifier = "be.tramckrijte.workmanager"
 
     static let defaultBGProcessingTaskIdentifier = "workmanager.background.task"
     static let defaultBGAppRefreshTaskIdentifier = "workmanager.background.refresh.task"
     var bgRefreshTaskFrequency = 0.0
-    
+
     private static var flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?
 
     private struct ForegroundMethodChannel {
@@ -33,6 +32,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
             struct RegisterOneOffTask {
                 static let name = "\(RegisterOneOffTask.self)".lowercasingFirst
                 enum Arguments: String {
+                    case uniqueName
                     case initialDelaySeconds
                     case networkType
                     case requiresCharging
@@ -63,7 +63,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     }
 
     @available(iOS 13.0, *)
-    private func handleBGProcessingTask(_ task: BGProcessingTask) {
+    private static func handleBGProcessingTask(_ task: BGProcessingTask) {
         let operationQueue = OperationQueue()
 
         // Create an operation that performs the main part of the background task
@@ -104,7 +104,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     @available(iOS 13.0, *)
     private func handleAppRefresh(task: BGAppRefreshTask) {
        print("handleAppRefresh()", task.identifier)
-        
+
         if (bgRefreshTaskFrequency > 0) {
             // Schedule a new refresh task.
             scheduleAppRefresh()
@@ -133,15 +133,15 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
        operationQueue.addOperation(operation)
     }
 
-    public override func application(_ application: UIApplication,
-                                     didFinishLaunchingWithOptions launchOptions: [AnyHashable: Any] = [:]) -> Bool {
+    @objc
+    public static func registerTask(withIdentifier identifier: String) {
         if #available(iOS 13.0, *) {
             BGTaskScheduler.shared.register(
-                forTaskWithIdentifier: SwiftWorkmanagerPlugin.defaultBGProcessingTaskIdentifier,
+                forTaskWithIdentifier: identifier,
                 using: nil
             ) { task in
                 if let task = task as? BGProcessingTask {
-                    self.handleBGProcessingTask(task)
+                    handleBGProcessingTask(task)
                 }
             }
 
@@ -149,8 +149,6 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
                  self.handleAppRefresh(task: task as! BGAppRefreshTask)
             }
         }
-
-        return true
     }
 }
 
@@ -210,7 +208,7 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
 
                 // save this, can't store in task
                 bgRefreshTaskFrequency = Double(regreshFrequencySeconds)
-                
+
                 let request = BGAppRefreshTaskRequest(
                     identifier: SwiftWorkmanagerPlugin.defaultBGAppRefreshTaskIdentifier
                 )
@@ -241,8 +239,13 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
                     result(WMPError.invalidParameters.asFlutterError)
                     return
                 }
+                guard let identifier =
+                        arguments[method.Arguments.uniqueName.rawValue] as? String else {
+                    result(WMPError.invalidParameters.asFlutterError)
+                    return
+                }
                 let request = BGProcessingTaskRequest(
-                    identifier: SwiftWorkmanagerPlugin.defaultBGProcessingTaskIdentifier
+                    identifier: identifier
                 )
                 let requiresCharging = arguments[method.Arguments.requiresCharging.rawValue] as? Bool ?? false
 
@@ -269,7 +272,7 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
                 result(WMPError.unhandledMethod(call.method).asFlutterError)
             }
 
-        case (ForegroundMethodChannel.Methods.CancelAllTasks.name, let .none):
+        case (ForegroundMethodChannel.Methods.CancelAllTasks.name, .none):
             if #available(iOS 13.0, *) {
                 BGTaskScheduler.shared.cancelAllTaskRequests()
             }

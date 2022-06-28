@@ -23,6 +23,7 @@ See sample folder for a complete working example.
 Before registering any task, the WorkManager plugin must be initialized.
 
 ```dart
+@pragma('vm:entry-point') // Mandatory if the App is obfuscated or using Flutter 3.1+
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) {
     print("Native called background task: $backgroundTask"); //simpleTask will be emitted here.
@@ -71,7 +72,10 @@ void callbackDispatcher() {
 }
 ```
 
-Android tasks are identified using their `taskName`, whereas two default constants are provided for iOS background operations, depending on whether background fetch or BGTaskScheduler is used: `Workmanager.iOSBackgroundTask` & `Workmanager.iOSBackgroundProcessingTask`.
+Android tasks are identified using their `taskName`.
+iOS tasks are identitied using their `taskIdentifier`.
+
+However, there is an exception for iOS background fetch: `Workmanager.iOSBackgroundTask`, a constant for iOS background fetch task.
 
 ---
 
@@ -87,14 +91,14 @@ On Android, the `BackoffPolicy` will configure how `WorkManager` is going to ret
 
 Refer to the example app for a successful, retrying and a failed task.
 
-# Customisation (iOS - BGTaskScheduler only)
+# iOS specific setup and note
 
 iOS supports **One off tasks** with a few basic constraints 
 (Note on iOS this is for long-running Processing tasks run every 1-2 days):
 
 ```dart
 Workmanager().registerOneOffTask(
-  "1", // Ignored on iOS
+  "task-identifier",
   simpleTaskKey, // Ignored on iOS
   initialDelay: Duration(minutes: 30),
   constraints: Constraints(
@@ -130,14 +134,14 @@ Two kinds of background tasks can be registered :
 ```dart
 // One off task registration
 Workmanager().registerOneOffTask(
-    "1",
+    "oneoff-task-identifier", 
     "simpleTask"
 );
 
 // Periodic task registration
 Workmanager().registerPeriodicTask(
-    "2",
-    "simplePeriodicTask",
+    "periodic-task-identifier", 
+    "simplePeriodicTask", 
     // When no frequency is provided the default 15 minutes is set.
     // Minimum frequency is 15 min. Android will automatically change your frequency to 15 min if you have configured a lower frequency.
     frequency: Duration(hours: 1),
