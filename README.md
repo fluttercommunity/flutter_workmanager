@@ -36,7 +36,7 @@ void main() {
     callbackDispatcher, // The top level function, aka callbackDispatcher
     isInDebugMode: true // If enabled it will post a notification whenever the task is running. Handy for debugging tasks
   );
-  Workmanager().registerOneOffTask("1", "simpleTask"); // Android and 'iOS Processing task' (see options below)
+  Workmanager().registerOneOffTask("task-identifier", "simpleTask"); // Android and 'iOS Processing task' (see options below)
   if (Platform.isIOS) {
     Workmanager().registerAppRefreshTask(initialDelay: const Duration(minutes: 15), frequency: const Duration(minutes: 60)); // iOS Only
   }
@@ -98,7 +98,7 @@ iOS supports **One off tasks** with a few basic constraints
 
 ```dart
 Workmanager().registerOneOffTask(
-  "task-identifier",
+  "task-identifier", // Ignored on iOS
   simpleTaskKey, // Ignored on iOS
   initialDelay: Duration(minutes: 30),
   constraints: Constraints(
@@ -107,7 +107,7 @@ Workmanager().registerOneOffTask(
     // require external power
     requiresCharging: true,
   ),
-  inputData: ... // Android Only
+  inputData: ... // Android Only ?
 );
 ```
 
