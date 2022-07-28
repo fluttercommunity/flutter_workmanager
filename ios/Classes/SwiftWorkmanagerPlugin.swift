@@ -11,10 +11,12 @@ extension String {
 
 public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     static let identifier = "be.tramckrijte.workmanager"
-
-    static let defaultBGProcessingTaskIdentifier = "workmanager.background.task"
+    
+    // note: this must also be in info.plist - see key: BGTaskSchedulerPermittedIdentifiers
     static let defaultBGAppRefreshTaskIdentifier = "workmanager.background.refresh.task"
-    var bgRefreshTaskFrequency = 0.0
+    
+    // gets set when task is scheduled. If value is 0.0 it doesn't Repeat
+    static var bgRefreshTaskFrequency = 0.0
 
     private static var flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?
 
@@ -89,7 +91,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     }
 
     @available(iOS 13.0, *)
-    private func scheduleAppRefresh() {
+    private static func scheduleAppRefresh() {
         let request = BGAppRefreshTaskRequest(identifier: SwiftWorkmanagerPlugin.defaultBGAppRefreshTaskIdentifier)
 
        request.earliestBeginDate = Date(timeIntervalSinceNow: bgRefreshTaskFrequency * 60)
@@ -102,7 +104,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     }
 
     @available(iOS 13.0, *)
-    private func handleAppRefresh(task: BGAppRefreshTask) {
+    private static func handleAppRefresh(task: BGAppRefreshTask) {
        print("handleAppRefresh()", task.identifier)
 
         if (bgRefreshTaskFrequency > 0) {
@@ -145,8 +147,9 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
                 }
             }
 
+            // just using the static identifier for now.
             BGTaskScheduler.shared.register(forTaskWithIdentifier: SwiftWorkmanagerPlugin.defaultBGAppRefreshTaskIdentifier, using: nil) { task in
-                 self.handleAppRefresh(task: task as! BGAppRefreshTask)
+                handleAppRefresh(task: task as! BGAppRefreshTask)
             }
         }
     }
@@ -188,7 +191,7 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
 
         case (ForegroundMethodChannel.Methods.RegisterAppRefreshTask.name, let .some(arguments)):
             print("ForegroundMethodChannel.Methods.RegisterAppRefreshTask")
-            if !validateCallbackHandle(result: result) {
+            if !SwiftWorkmanagerPlugin.validateCallbackHandle(result: result) {
                 return
             }
 
@@ -200,14 +203,14 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
                     return
                 }
 
-                guard let regreshFrequencySeconds =
+                guard let refreshFrequencySeconds =
                         arguments[method.Arguments.refreshFrequencySeconds.rawValue] as? Int64 else {
                     result(WMPError.invalidParameters.asFlutterError)
                     return
                 }
 
                 // save this, can't store in task
-                bgRefreshTaskFrequency = Double(regreshFrequencySeconds)
+                SwiftWorkmanagerPlugin.bgRefreshTaskFrequency = Double(refreshFrequencySeconds)
 
                 let request = BGAppRefreshTaskRequest(
                     identifier: SwiftWorkmanagerPlugin.defaultBGAppRefreshTaskIdentifier
@@ -228,7 +231,7 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
             }
 
         case (ForegroundMethodChannel.Methods.RegisterOneOffTask.name, let .some(arguments)):
-            if !validateCallbackHandle(result: result) {
+            if !SwiftWorkmanagerPlugin.validateCallbackHandle(result: result) {
                 return
             }
 
@@ -295,7 +298,7 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
         }
     }
 
-    private func validateCallbackHandle(result: @escaping FlutterResult) -> Bool {
+    private static func validateCallbackHandle(result: @escaping FlutterResult) -> Bool {
         let valid = UserDefaultsHelper.getStoredCallbackHandle() != nil
         if (!valid) {
             result(
