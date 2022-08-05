@@ -35,7 +35,6 @@ WorkmanagerPlugin.registerTask(withIdentifier: "task-identifier")
 	<array>
 		<string>task-identifier</string>
   </array>
-</key>
 ```
 
 And will set the correct *SystemCapabilities* for your target in the `project.pbxproj` file:
