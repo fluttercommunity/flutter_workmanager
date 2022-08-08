@@ -26,6 +26,10 @@ You **MUST** amend your `AppDelegate.swift` and `Info.plist` file to register yo
 
 - AppDelegate.swift
 ``` swift
+import workmanager
+```
+
+``` swift
 WorkmanagerPlugin.registerTask(withIdentifier: "task-identifier")
 ```
 
