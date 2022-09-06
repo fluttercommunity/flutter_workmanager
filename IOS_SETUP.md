@@ -26,6 +26,10 @@ You **MUST** amend your `AppDelegate.swift` and `Info.plist` file to register yo
 
 - AppDelegate.swift
 ``` swift
+import workmanager
+```
+
+``` swift
 WorkmanagerPlugin.registerTask(withIdentifier: "task-identifier")
 ```
 
@@ -35,7 +39,6 @@ WorkmanagerPlugin.registerTask(withIdentifier: "task-identifier")
 	<array>
 		<string>task-identifier</string>
   </array>
-</key>
 ```
 
 And will set the correct *SystemCapabilities* for your target in the `project.pbxproj` file:
