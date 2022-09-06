@@ -128,6 +128,7 @@ When the WorkManager plugin receives a `background fetch` event,  it will start 
 Here is an example of a Flutter entrypoint called `callbackDispatcher`:
 
 ```dart
+@pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) {
     switch (task) {

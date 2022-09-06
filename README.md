@@ -50,6 +50,7 @@ The workmanager runs on a separate isolate from the main flutter isolate. Ensure
 Wrap the code inside your `Workmanager().executeTask` in a `try and catch` in order to catch any exceptions thrown.
 
 ```dart
+@pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) {
 

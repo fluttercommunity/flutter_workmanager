@@ -35,6 +35,7 @@ typedef BackgroundTaskHandler = Future<bool> Function(
 /// Initialize the plugin first
 ///
 /// ```
+/// @pragma('vm:entry-point')
 /// void callbackDispatcher() {
 ///   Workmanager().executeTask((taskName, inputData) {
 ///     switch(taskName) {
@@ -76,6 +77,7 @@ class Workmanager {
   /// Use this constant inside your callbackDispatcher to identify when an iOS Background Fetch occurred.
   ///
   /// ```
+  /// @pragma('vm:entry-point')
   /// void callbackDispatcher() {
   ///   Workmanager().executeTask((taskName, inputData) {
   ///      switch (taskName) {
@@ -93,6 +95,7 @@ class Workmanager {
   /// Use this constant inside your callbackDispatcher to identify when an iOS Background Processing via BGTaskScheduler occurred.
   ///
   /// ```
+  /// @pragma('vm:entry-point')
   /// void callbackDispatcher() {
   ///   Workmanager().executeTask((taskName, inputData) {
   ///      switch (taskName) {
@@ -119,6 +122,8 @@ class Workmanager {
   /// A helper function so you only need to implement a [BackgroundTaskHandler]
   void executeTask(final BackgroundTaskHandler backgroundTask) {
     WidgetsFlutterBinding.ensureInitialized();
+    DartPluginRegistrant.ensureInitialized();
+
     _backgroundChannel.setMethodCallHandler((call) async {
       final inputData = call.arguments["be.tramckrijte.workmanager.INPUT_DATA"];
       return backgroundTask(

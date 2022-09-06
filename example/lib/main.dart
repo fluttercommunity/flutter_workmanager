@@ -18,7 +18,8 @@ const simplePeriodicTask =
 const simplePeriodic1HourTask =
     "be.tramckrijte.workmanagerExample.simplePeriodic1HourTask";
 
-@pragma('vm:entry-point') // Mandatory if the App is obfuscated or using Flutter 3.1+
+@pragma(
+    'vm:entry-point') // Mandatory if the App is obfuscated or using Flutter 3.1+
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     switch (task) {
