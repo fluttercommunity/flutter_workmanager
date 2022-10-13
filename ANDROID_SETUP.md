@@ -1,6 +1,6 @@
 # Update build.gradle
 
-Make sure that your `kotlin_version to `1.5.0` or greater:
+Make sure that your kotlin_version to `1.5.0` or greater:
 
 ```
 buildscript {
