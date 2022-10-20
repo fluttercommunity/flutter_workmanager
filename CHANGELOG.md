@@ -1,4 +1,4 @@
-# next
+# 0.5.1
 
 * Call DartPluginRegistrant.ensureInitialized when isolate is starting
 * Documentation and example update to fix (#374) WorkManager not working when App is obfuscated or using Flutter 3.1+
