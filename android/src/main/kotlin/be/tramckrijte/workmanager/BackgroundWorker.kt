@@ -5,7 +5,6 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import androidx.concurrent.futures.CallbackToFutureAdapter
-import androidx.concurrent.futures.ResolvableFuture
 import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
 import com.google.common.util.concurrent.ListenableFuture
@@ -16,7 +15,6 @@ import io.flutter.embedding.engine.plugins.shim.ShimPluginRegistry
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.view.FlutterCallbackInformation
-import kotlinx.coroutines.flow.callbackFlow
 import java.util.Random
 
 /***
@@ -61,7 +59,7 @@ class BackgroundWorker(
 
     private var completer: CallbackToFutureAdapter.Completer<Result>? = null
 
-    private var resolvableFuture = CallbackToFutureAdapter.getFuture<Result> { completer ->
+    private var resolvableFuture = CallbackToFutureAdapter.getFuture { completer ->
         this.completer = completer
         null
     }

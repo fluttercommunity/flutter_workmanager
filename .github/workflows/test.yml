@@ -31,7 +31,7 @@ jobs:
       - name: Build iOS App
         run: cd example && flutter build ios --debug --no-codesign
       - name: Run native iOS tests
-        run: cd example/ios && xcodebuild -workspace Runner.xcworkspace -scheme Runner -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 12,OS=15.2' test
+        run: cd example/ios && xcodebuild -workspace Runner.xcworkspace -scheme Runner -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 12,OS=16.0' test
 
   native_android_tests:
     runs-on: macos-latest
@@ -90,6 +90,4 @@ jobs:
         with:
           api-level: ${{ matrix.api-level }}
           target: ${{ matrix.target }}
-          arch: x86_64
-          profile: Nexus 6
           script: cd example && flutter test integration_test/workmanager_integration_test.dart
