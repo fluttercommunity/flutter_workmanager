@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.concurrent.futures.ResolvableFuture
 import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
@@ -15,6 +16,7 @@ import io.flutter.embedding.engine.plugins.shim.ShimPluginRegistry
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.view.FlutterCallbackInformation
+import kotlinx.coroutines.flow.callbackFlow
 import java.util.Random
 
 /***
@@ -56,7 +58,13 @@ class BackgroundWorker(
     private var engine: FlutterEngine? = null
 
     private var startTime: Long = 0
-    private val resolvableFuture = ResolvableFuture.create<Result>()
+
+    private var completer: CallbackToFutureAdapter.Completer<Result>? = null
+
+    private var resolvableFuture = CallbackToFutureAdapter.getFuture<Result> { completer ->
+        this.completer = completer
+        null
+    }
 
     override fun startWork(): ListenableFuture<Result> {
         startTime = System.currentTimeMillis()
@@ -129,7 +137,7 @@ class BackgroundWorker(
         // No result indicates we were signalled to stop by WorkManager.  The result is already
         // STOPPED, so no need to resolve another one.
         if (result != null) {
-            resolvableFuture.set(result)
+            this.completer?.set(result)
         }
 
         // If stopEngine is called from `onStopped`, it may not be from the main thread.
