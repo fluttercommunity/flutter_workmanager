@@ -1,6 +1,14 @@
 excluded:
   - example/ios/Pods
+  - example/ios/Classes/SwiftWorkmanagerPlugin.swift
   - Pods
 included:
   - .symlinks/plugins/workmanager/ios
+line_length:
+  warning: 200
+  error: 250
+function_body_length:
+  warning: 300
+  error: 500
+
 

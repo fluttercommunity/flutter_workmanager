@@ -19,7 +19,14 @@ import workmanager
             // This will make other plugins available during a background operation.
             GeneratedPluginRegistrant.register(with: registry)
         }
-
+        //All launch handlers must be registered before application finishes launching
+        //set these identifiers in info.plist
+        //example
+        //<key>BGTaskSchedulerPermittedIdentifiers</key>
+        //  	<array>
+        //  		<string>be.tramckrijte.workmanagerExample.taskId</string>
+        //  	</array>
+        //
         WorkmanagerPlugin.registerTask(withIdentifier: "be.tramckrijte.workmanagerExample.taskId")
         WorkmanagerPlugin.registerTask(withIdentifier: "be.tramckrijte.workmanagerExample.simpleTask")
 		WorkmanagerPlugin.registerTask(withIdentifier: "be.tramckrijte.workmanagerExample.rescheduledTask")
@@ -27,6 +34,7 @@ import workmanager
 		WorkmanagerPlugin.registerTask(withIdentifier: "be.tramckrijte.workmanagerExample.simpleDelayedTask")
 		WorkmanagerPlugin.registerTask(withIdentifier: "be.tramckrijte.workmanagerExample.simplePeriodicTask")
 		WorkmanagerPlugin.registerTask(withIdentifier: "be.tramckrijte.workmanagerExample.simplePeriodic1HourTask")
+		WorkmanagerPlugin.registerPeriodicTask( withIdentifier: "app.workmanagerExample.iOSBackgroundAppRefresh")
 
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
 

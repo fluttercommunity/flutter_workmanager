@@ -8,20 +8,26 @@
 import Foundation
 
 enum BackgroundMode {
+    case backgroundAppRefresh(identifier: String)
     case backgroundFetch
     case backgroundTask(identifier: String)
 
     var flutterThreadlabelPrefix: String {
         switch self {
+        case .backgroundAppRefresh:
+            return "\(SwiftWorkmanagerPlugin.identifier).BackgroundAppRefresh"
         case .backgroundFetch:
             return "\(SwiftWorkmanagerPlugin.identifier).BackgroundFetch"
         case .backgroundTask:
             return "\(SwiftWorkmanagerPlugin.identifier).BGTaskScheduler"
+
         }
     }
 
     var onResultSendArguments: [String: String] {
         switch self {
+        case .backgroundAppRefresh:
+            return ["\(SwiftWorkmanagerPlugin.identifier).DART_TASK": "iOSBackgroundAppRefresh"]
         case .backgroundFetch:
             return ["\(SwiftWorkmanagerPlugin.identifier).DART_TASK": "iOSPerformFetch"]
         case .backgroundTask(let identifier):

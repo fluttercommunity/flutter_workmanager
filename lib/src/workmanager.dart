@@ -84,6 +84,9 @@ class Workmanager {
   ///        case Workmanager.iOSBackgroundTask:
   ///          stderr.writeln("The iOS background fetch was triggered");
   ///          break;
+  ///        case Workmanager.iOSBackgroundAppRefresh:
+  ///          stderr.writeln("The iOS backgroundAppRefresh was triggered");
+  ///           break;
   ///      }
   ///
   ///      return Future.value(true);
@@ -91,6 +94,7 @@ class Workmanager {
   /// }
   /// ```
   static const String iOSBackgroundTask = "iOSPerformFetch";
+  static const String iOSBackgroundAppRefresh = "iOSBackgroundAppRefresh";
 
   /// Use this constant inside your callbackDispatcher to identify when an iOS Background Processing via BGTaskScheduler occurred.
   ///
@@ -108,7 +112,8 @@ class Workmanager {
   ///  });
   /// }
   /// ```
-  @Deprecated('Use custom iOS task names. This property will be removed.')
+  @Deprecated(
+      'Use custom iOS task names. Set keys in info.plist This property will be removed.')
   static const String iOSBackgroundProcessingTask =
       "workmanager.background.task";
 
@@ -206,7 +211,7 @@ class Workmanager {
         ),
       );
 
-  /// Schedules a periodic task that will run every provided [frequency].
+  /// Schedules a periodic task that will run (if iOS random depending on iOS)  provided [frequency].
   /// A [uniqueName] is required so only one task can be registered.
   /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler]
   /// a [frequency] is not required and will be defaulted to 15 minutes if not provided.

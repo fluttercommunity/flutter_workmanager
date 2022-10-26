@@ -10,4 +10,12 @@
  */
 + (void)registerTaskWithIdentifier:(NSString *) taskIdentifier;
 
+/**
+ * Register a custom task identifier to be iOS Background Task /executed later on.
+ * @author Lars Huth
+ *
+ * @param taskIdentifier The identifier of the custom task. Must be set in info.plist
+ */
++ (void)registerPeriodicTaskWithIdentifier:(NSString *) taskIdentifier;
+
 @end

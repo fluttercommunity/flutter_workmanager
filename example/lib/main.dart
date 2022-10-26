@@ -17,6 +17,8 @@ const simplePeriodicTask =
     "be.tramckrijte.workmanagerExample.simplePeriodicTask";
 const simplePeriodic1HourTask =
     "be.tramckrijte.workmanagerExample.simplePeriodic1HourTask";
+const iOSBackgroundAppRefresh =
+    "app.workmanagerExample.iOSBackgroundAppRefresh";
 
 @pragma(
     'vm:entry-point') // Mandatory if the App is obfuscated or using Flutter 3.1+
@@ -56,11 +58,18 @@ void callbackDispatcher() {
         print("The iOS background fetch was triggered");
         Directory? tempDir = await getTemporaryDirectory();
         String? tempPath = tempDir.path;
+        sleep(Duration(seconds: 55));
         print(
             "You can access other plugins in the background, for example Directory.getTemporaryDirectory(): $tempPath");
         break;
+      case Workmanager.iOSBackgroundAppRefresh:
+        //maximum duration 29seconds - App could perhaps killed by iOS when it takes a longer time than 30 seconds for BGAppRefresh included native work
+        print("The iOSBackgroundAppRefresh was triggered");
+        sleep(Duration(seconds: 11)); // sleep as sample
+        // test on debugger - pause debugger in xcode and enter in terminal:
+        // e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"app.workmanagerExample.iOSBackgroundAppRefresh"]
+        break;
     }
-
     return Future.value(true);
   });
 }
@@ -71,6 +80,8 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  bool workmanagerInitialized = false;
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -91,10 +102,13 @@ class _MyAppState extends State<MyApp> {
                 ElevatedButton(
                   child: Text("Start the Flutter background service"),
                   onPressed: () {
-                    Workmanager().initialize(
-                      callbackDispatcher,
-                      isInDebugMode: true,
-                    );
+                    if (!workmanagerInitialized) {
+                      Workmanager().initialize(
+                        callbackDispatcher,
+                        isInDebugMode: true,
+                      );
+                      workmanagerInitialized = true;
+                    }
                   },
                 ),
                 SizedBox(height: 16),
@@ -104,6 +118,13 @@ class _MyAppState extends State<MyApp> {
                 ElevatedButton(
                   child: Text("Register OneOff Task"),
                   onPressed: () {
+                    if (!workmanagerInitialized) {
+                      Workmanager().initialize(
+                        callbackDispatcher,
+                        isInDebugMode: true,
+                      );
+                      workmanagerInitialized = true;
+                    }
                     Workmanager().registerOneOffTask(
                       simpleTaskKey,
                       simpleTaskKey,
@@ -118,31 +139,50 @@ class _MyAppState extends State<MyApp> {
                   },
                 ),
                 ElevatedButton(
-                  child: Text("Register rescheduled Task"),
-                  onPressed: () {
-                    Workmanager().registerOneOffTask(
-                      rescheduledTaskKey,
-                      rescheduledTaskKey,
-                      inputData: <String, dynamic>{
-                        'key': Random().nextInt(64000),
-                      },
-                    );
-                  },
-                ),
+                    child: Text("Register rescheduled Task"),
+                    onPressed: () {
+                      if (!workmanagerInitialized) {
+                        Workmanager().initialize(
+                          callbackDispatcher,
+                          isInDebugMode: true,
+                        );
+                        workmanagerInitialized = true;
+                      }
+                      Workmanager().registerOneOffTask(
+                        rescheduledTaskKey,
+                        rescheduledTaskKey,
+                        inputData: <String, dynamic>{
+                          'key': Random().nextInt(64000),
+                        },
+                      );
+                    }),
                 ElevatedButton(
-                  child: Text("Register failed Task"),
-                  onPressed: () {
-                    Workmanager().registerOneOffTask(
-                      failedTaskKey,
-                      failedTaskKey,
-                    );
-                  },
-                ),
+                    child: Text("Register failed Task"),
+                    onPressed: () {
+                      if (!workmanagerInitialized) {
+                        Workmanager().initialize(
+                          callbackDispatcher,
+                          isInDebugMode: true,
+                        );
+                        workmanagerInitialized = true;
+                      }
+                      Workmanager().registerOneOffTask(
+                        failedTaskKey,
+                        failedTaskKey,
+                      );
+                    }),
                 //This task runs once
                 //This wait at least 10 seconds before running
                 ElevatedButton(
                     child: Text("Register Delayed OneOff Task"),
                     onPressed: () {
+                      if (!workmanagerInitialized) {
+                        Workmanager().initialize(
+                          callbackDispatcher,
+                          isInDebugMode: true,
+                        );
+                        workmanagerInitialized = true;
+                      }
                       Workmanager().registerOneOffTask(
                         simpleDelayedTask,
                         simpleDelayedTask,
@@ -157,10 +197,40 @@ class _MyAppState extends State<MyApp> {
                     child: Text("Register Periodic Task (Android)"),
                     onPressed: Platform.isAndroid
                         ? () {
+                            if (!workmanagerInitialized) {
+                              Workmanager().initialize(
+                                callbackDispatcher,
+                                isInDebugMode: true,
+                              );
+                              workmanagerInitialized = true;
+                            }
                             Workmanager().registerPeriodicTask(
                               simplePeriodicTask,
                               simplePeriodicTask,
                               initialDelay: Duration(seconds: 10),
+                            );
+                          }
+                        : null),
+                //This task runs periodically dependening on iOS - there is no safe timing - see Apple doc
+                //Since we have not provided a frequency it will be the default 2 minutes
+                //register name in info.plist <key>BGTaskSchedulerPermittedIdentifiers</key>
+                //register name in iOS - Appdelegate
+                ElevatedButton(
+                    child:
+                        Text("Register Periodic Backgound App Refresh (iOS)"),
+                    onPressed: Platform.isIOS
+                        ? () {
+                            if (!workmanagerInitialized) {
+                              Workmanager().initialize(
+                                callbackDispatcher,
+                                isInDebugMode: true,
+                              );
+                              workmanagerInitialized = true;
+                            }
+                            Workmanager().registerPeriodicTask(
+                              iOSBackgroundAppRefresh,
+                              iOSBackgroundAppRefresh,
+                              initialDelay: Duration(seconds: 10), //ignored
                             );
                           }
                         : null),
@@ -170,6 +240,13 @@ class _MyAppState extends State<MyApp> {
                     child: Text("Register 1 hour Periodic Task (Android)"),
                     onPressed: Platform.isAndroid
                         ? () {
+                            if (!workmanagerInitialized) {
+                              Workmanager().initialize(
+                                callbackDispatcher,
+                                isInDebugMode: true,
+                              );
+                              workmanagerInitialized = true;
+                            }
                             Workmanager().registerPeriodicTask(
                               simplePeriodicTask,
                               simplePeriodic1HourTask,
