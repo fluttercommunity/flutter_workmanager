@@ -21,9 +21,9 @@ func checkBackgroundRefreshAuthorisation(result:@escaping FlutterResult) -> Back
         result(
             FlutterError(
                 code: "103",
-                message: "BGAppRefreshTask - You have no iOS background refresh permissions. " +
+                message: "BGAppRefreshTask - You have perhaps no iOS background refresh permissions. " +
                 "\n" +
-                "BackgroundRefreshStatus is denied\n" +
+                "BackgroundRefreshStatus is unknown\n" +
                 "\n" +
                 "Workmanager asked on initialize function for background permissions - when user accepted this you can set a periodic background task",
                 details: nil

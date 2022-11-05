@@ -231,6 +231,8 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
             print("Requested BackgroundProcessingTask  \(identifier)")
         } catch {
             print("Couldn't schedule app BackgroundProcessingTask identifier:\(identifier) error:\(error.localizedDescription)")
+            print("On BGTaskSchedulerErrorDomain error 1 - please run on real device")
+            print("On BGTaskSchedulerErrorDomain error 3 - check registered names")
         }
     }
 }
