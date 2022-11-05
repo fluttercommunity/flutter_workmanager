@@ -7,7 +7,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  //added MaterialApp for showdialog
+  runApp(MaterialApp(home: MyApp()));
+}
 
 const simpleTaskKey = "be.tramckrijte.workmanagerExample.simpleTask";
 const rescheduledTaskKey = "be.tramckrijte.workmanagerExample.rescheduledTask";
@@ -101,7 +104,35 @@ class _MyAppState extends State<MyApp> {
                 ),
                 ElevatedButton(
                   child: Text("Start the Flutter background service"),
-                  onPressed: () {
+                  onPressed: () async {
+                    if (Platform.isIOS) {
+                      //here you can check whether background refresh is activated in iOS settings
+                      var hasPermissions = await Workmanager()
+                          .checkBackgroundRefreshPermission();
+                      if (hasPermissions !=
+                          BackgroundAuthorisationState.available) {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: new Text("No permissions alert"),
+                              content: new Text(
+                                  "no background refresh permissions!!!"),
+                              actions: <Widget>[
+                                new TextButton(
+                                  child: new Text(
+                                      "Status is " + hasPermissions.name),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                        return;
+                      }
+                    }
                     if (!workmanagerInitialized) {
                       Workmanager().initialize(
                         callbackDispatcher,
@@ -217,9 +248,9 @@ class _MyAppState extends State<MyApp> {
                 //register name in iOS - Appdelegate
                 ElevatedButton(
                     child:
-                        Text("Register Periodic Backgound App Refresh (iOS)"),
+                        Text("Register Periodic Background App Refresh (iOS)"),
                     onPressed: Platform.isIOS
-                        ? () {
+                        ? () async {
                             if (!workmanagerInitialized) {
                               Workmanager().initialize(
                                 callbackDispatcher,
@@ -227,7 +258,7 @@ class _MyAppState extends State<MyApp> {
                               );
                               workmanagerInitialized = true;
                             }
-                            Workmanager().registerPeriodicTask(
+                            await Workmanager().registerPeriodicTask(
                               iOSBackgroundAppRefresh,
                               iOSBackgroundAppRefresh,
                               initialDelay: Duration(seconds: 10), //ignored

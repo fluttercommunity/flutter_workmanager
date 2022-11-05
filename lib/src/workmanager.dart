@@ -163,6 +163,35 @@ class Workmanager {
     }
   }
 
+  ///iOS implementation
+  ///checks whether user or parental control avoids background refresh
+  ///
+  Future<BackgroundAuthorisationState>
+      checkBackgroundRefreshPermission() async {
+    try {
+      var result = await _foregroundChannel.invokeMethod<Object>(
+        'checkBackgroundRefreshPermission',
+        JsonMapperHelper.toInitializeMethodArgument(
+            isInDebugMode: _isInDebugMode,
+            callbackHandle:
+                0), //must provide an argument for switch statement on Swift
+      );
+      switch (result.toString()) {
+        case 'available':
+          return BackgroundAuthorisationState.available;
+        case 'denied':
+          return BackgroundAuthorisationState.denied;
+        case 'restricted':
+          return BackgroundAuthorisationState.restricted;
+        case 'unknown':
+          return BackgroundAuthorisationState.unknown;
+      }
+    } catch (e) {
+      print("Could not retrieve BackgroundAuthorisationState " + e.toString());
+    }
+    return BackgroundAuthorisationState.unknown;
+  }
+
   /// Schedule a one off task
   /// A [uniqueName] is required so only one task can be registered.
   /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler]

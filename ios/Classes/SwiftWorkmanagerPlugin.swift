@@ -12,6 +12,7 @@ extension String {
 public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     static let identifier = "be.tramckrijte.workmanager"
     
+    private var _isInitalized = false;
     private static var flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?
     
     private struct ForegroundMethodChannel {
@@ -24,6 +25,9 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
                     case isInDebugMode
                     case callbackHandle
                 }
+            }
+            struct CheckBackgroundRefreshPermission {
+                static let name = "\(CheckBackgroundRefreshPermission.self)".lowercasingFirst
             }
             struct RegisterOneOffTask {
                 static let name = "\(RegisterOneOffTask.self)".lowercasingFirst
@@ -87,15 +91,15 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     @available(iOS 13.0, *)
     public static func handleAppRefresh(task: BGAppRefreshTask) {
         guard let callbackHandle = UserDefaultsHelper.getStoredCallbackHandle(),
-            let flutterCallbackInformation = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)
-            else {
-                logError("[\(String(describing: self))] \(WMPError.workmanagerNotInitialized.message)")
-                return
+              let flutterCallbackInformation = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)
+        else {
+            logError("[\(String(describing: self))] \(WMPError.workmanagerNotInitialized.message)")
+            return
         }
-
+        
         let taskSessionStart = Date()
         let taskSessionIdentifier = UUID()
-
+        
         let debugHelper = DebugNotificationHelper(taskSessionIdentifier)
         debugHelper.showStartBGRefreshNotification(
             startDate: taskSessionStart,
@@ -105,11 +109,11 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
         ///TODO get seconds
         scheduleAppRefresh(withIdentifier: task.identifier,earliestbeginInSeconds: 120)
         let semaphore = DispatchSemaphore(value: 0)
-
+        
         DispatchQueue.main.async {
             let worker = BackgroundWorker(mode: .backgroundAppRefresh(identifier: self.identifier),
                                           flutterPluginRegistrantCallback: self.flutterPluginRegistrantCallback)
-
+            
             worker.performBackgroundRequest { _ in
                 semaphore.signal()
             }
@@ -117,7 +121,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
         //timeout after 29seconds ,max execution time is 30seconds
         //-> 1 second for dispatching and other stuff (Flutter Messenger etc)
         let dispatchResult = semaphore.wait(timeout:DispatchTime.now()+29)
-      
+        
         print("handleAppRefresh \(dispatchResult)")
         debugHelper.showCompletedBGRefreshNotification(
             completedDate: Date(),
@@ -131,7 +135,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     @objc
     public static func registerBackgroundProcessingTask(taskIdentifier identifier: String){
         if #available(iOS 13.0, *) {
-         print("Workmanager - registerBackgroundProcessingTask withIdentifier \(identifier)")
+            print("Workmanager - registerBackgroundProcessingTask withIdentifier \(identifier)")
             BGTaskScheduler.shared.register(
                 forTaskWithIdentifier: identifier,
                 using: nil
@@ -159,24 +163,24 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     
     @objc
     public static func registerBackgroundProcessingTaskScheduler(withIdentifier identifier: String,
-                                                        earliestBeginInSeconds begin:Double,
-                                                        requiresNetworkConnectivity:Bool,
-                                                        requiresExternalPower:Bool) {
+                                                                 earliestBeginInSeconds begin:Double,
+                                                                 requiresNetworkConnectivity:Bool,
+                                                                 requiresExternalPower:Bool) {
         if #available(iOS 13.0, *) {
             print("Workmanager - registerBackgroundProcessingTaskScheduler withIdentifier \(identifier)")
             scheduleBackgroundProcessingTask(withIdentifier: identifier, earliestBeginInSeconds: begin, requiresNetworkConnectivity:requiresNetworkConnectivity, requiresExternalPower: requiresExternalPower)
-
-           //set notificationhandler on app did enter background
-           //NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: nil
-           // ) { (notification) in
-           //     //schedule scheduleBackgroundProcessingTask
-           //     scheduleBackgroundProcessingTask(withIdentifier: identifier, earliestbeginInSeconds: begin, requiresNetworkConnectivity:requiresNetworkConnectivity, requiresExternalPower: requiresExternalPower)
-           //  }
-           }
-
+            
+            //set notificationhandler on app did enter background
+            //NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: nil
+            // ) { (notification) in
+            //     //schedule scheduleBackgroundProcessingTask
+            //     scheduleBackgroundProcessingTask(withIdentifier: identifier, earliestbeginInSeconds: begin, requiresNetworkConnectivity:requiresNetworkConnectivity, requiresExternalPower: requiresExternalPower)
+            //  }
+        }
+        
     }
     
-
+    
     
     @objc
     public static func registerAppRefreshTaskScheduler(withIdentifier identifier: String, earliestbeginInSeconds begin:Double) {
@@ -190,7 +194,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
             }
         }
     }
-  
+    
     static func callback(_: UIBackgroundFetchResult){
     }
     
@@ -255,9 +259,19 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
     //function_body_length:
     //warning: 300
     //error: 500
+    // swiftlint:disable:next cyclomatic_complexity
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch (call.method, call.arguments as? [AnyHashable: Any]) {
         case (ForegroundMethodChannel.Methods.Initialize.name, let .some(arguments)):
+            if _isInitalized {
+                result(WMPError.workmanagerIsAlreadyInitialized)
+                return
+            }
+            let backgroundRefreshAvailable = checkBackgroundRefreshAuthorisation(result:result)
+            if (backgroundRefreshAvailable != BackgroundAuthorisationState.available){
+                UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!, options: [:], completionHandler: nil)
+                return
+            }
             let method = ForegroundMethodChannel.Methods.Initialize.self
             guard let isInDebug = arguments[method.Arguments.isInDebugMode.rawValue] as? Bool,
                   let handle = arguments[method.Arguments.callbackHandle.rawValue] as? Int64 else {
@@ -267,34 +281,19 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
             
             UserDefaultsHelper.storeCallbackHandle(handle)
             UserDefaultsHelper.storeIsDebug(isInDebug)
-            result(true)
+            return
+        case (ForegroundMethodChannel.Methods.CheckBackgroundRefreshPermission.name, .some(_)):
+            _=checkBackgroundRefreshAuthorisation(result:result)
             return
             //register bgAppRefreshTask for less than 30 seconds backgroundtime
         case (ForegroundMethodChannel.Methods.RegisterPeriodicTask.name, let .some(arguments)):
-            print("Registering Periodic Task background (BGAppRefreshTask)")
-            if !validateCallbackHandle() {
-                result(
-                    FlutterError(
-                        code: "1",
-                        message: "RegisterPeriodicTask - You have not properly initialized the Flutter WorkManager Package. " +
-                        "You should ensure you have called the 'initialize' function first! " +
-                        "Example: \n" +
-                        "\n" +
-                        "`Workmanager().initialize(\n" +
-                        "  callbackDispatcher,\n" +
-                        " )`" +
-                        "\n" +
-                        "\n" +
-                        "The `callbackDispatcher` is a top level function. See example in repository.",
-                        details: nil
-                    )
-                )
+            print("Registering periodic task in background (BGAppRefreshTask)")
+            if !validateCallbackHandle(result:result) {
                 return
             }
             
             if #available(iOS 13.0, *) {
                 let method = ForegroundMethodChannel.Methods.RegisterPeriodicTask.self
-                
                 guard let identifier =
                         arguments[method.Arguments.uniqueName.rawValue] as? String else {
                     result(WMPError.invalidParameters.asFlutterError)
@@ -307,7 +306,7 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
                 }
                 //task will scheduled when app goes to background
                 SwiftWorkmanagerPlugin.registerAppRefreshTaskScheduler(withIdentifier:identifier, earliestbeginInSeconds: Double(initialDelaySeconds))
-                print("Registered \(identifier)")
+                print("Registered PeriodicTask \(identifier)")
                 result(true)
                 return;
                 
@@ -318,23 +317,7 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
             //register processingtask for more than 30 seconds backgroundtime
         case (ForegroundMethodChannel.Methods.RegisterOneOffTask.name, let .some(arguments)):
             print("Registering OneOffTask  (BackgroundProcessingTask)")
-            if !validateCallbackHandle() {
-                result(
-                    FlutterError(
-                        code: "1",
-                        message: "You have not properly initialized the Flutter WorkManager Package. " +
-                        "You should ensure you have called the 'initialize' function first! " +
-                        "Example: \n" +
-                        "\n" +
-                        "`Workmanager().initialize(\n" +
-                        "  callbackDispatcher,\n" +
-                        " )`" +
-                        "\n" +
-                        "\n" +
-                        "The `callbackDispatcher` is a top level function. See example in repository.",
-                        details: nil
-                    )
-                )
+            if !validateCallbackHandle(result:result) {
                 return
             }
             
@@ -390,9 +373,35 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
         }
     }
     
-    private func validateCallbackHandle() -> Bool {
-        return UserDefaultsHelper.getStoredCallbackHandle() != nil
+    ///Checks wether getStoredCallbackHandle is set
+    ///Returns true wenn initilized
+    ///if false result contains errormessage
+    private func validateCallbackHandle(result: @escaping FlutterResult) -> Bool {
+        if UserDefaultsHelper.getStoredCallbackHandle() == nil{
+            result(
+                FlutterError(
+                    code: "1",
+                    message: "You have not properly initialized the Flutter WorkManager Package. " +
+                    "You should ensure you have called the 'initialize' function first! " +
+                    "Example: \n" +
+                    "\n" +
+                    "`Workmanager().initialize(\n" +
+                    "  callbackDispatcher,\n" +
+                    " )`" +
+                    "\n" +
+                    "\n" +
+                    "The `callbackDispatcher` is a top level function. See example in repository.",
+                    details: nil
+                )
+            )
+            return false;
+        }
+        return  true;
     }
+    
+    
+    
+    
 }
 
 // MARK: - AppDelegate conformance
