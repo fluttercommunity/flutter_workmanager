@@ -6,7 +6,7 @@
 //
 import Foundation
 
-func checkBackgroundRefreshAuthorisation(result:@escaping FlutterResult) -> BackgroundAuthorisationState{
+func checkBackgroundRefreshAuthorisation(result: @escaping FlutterResult) -> BackgroundAuthorisationState {
     switch UIApplication.shared.backgroundRefreshStatus {
     case .available:
         result(BackgroundAuthorisationState.available.rawValue)
@@ -33,25 +33,24 @@ func checkBackgroundRefreshAuthorisation(result:@escaping FlutterResult) -> Back
     }
 }
 
-func requestBackgroundAuthorisation(){
-    //request for authorisation
+func requestBackgroundAuthorisation() {
+    // request for authorisation
     UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
 }
 
-enum BackgroundAuthorisationState:String
-{
+enum BackgroundAuthorisationState: String {
     /// iOS Setting Backgroundwork is enabled.
     case available
-    
+
     /// iOS Setting Backgroundwork is disabled in settings. You shoud request for permissions call requestBackgroundAuthorisation only once and respect users choice
     case denied
-    
+
     /// iOS Setting is under parental control etc. Can't be changed by user
     case restricted
-    
+
     /// unknown state
     case unknown
-    
+
     /// Convenience constructor to build a [BackgroundAutorisationState] from a Dart enum.
     init?(fromDart: String) {
         self.init(rawValue: fromDart.camelCased(with: "_"))

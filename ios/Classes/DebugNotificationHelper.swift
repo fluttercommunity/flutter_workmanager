@@ -48,10 +48,10 @@ class DebugNotificationHelper {
                                                      body: message,
                                                      icon: result == .newData ? .success : .failure)
     }
-    
+
     func showStartBGRefreshNotification(startDate: Date,
-                                    callBackHandle: Int64,
-                                    callbackInfo: FlutterCallbackInformation
+                                        callBackHandle: Int64,
+                                        callbackInfo: FlutterCallbackInformation
     ) {
         let message =
             """
@@ -68,8 +68,8 @@ class DebugNotificationHelper {
     }
 
     func showCompletedBGRefreshNotification(completedDate: Date,
-                                        result: UIBackgroundFetchResult,
-                                        elapsedTime: TimeInterval) {
+                                            result: UIBackgroundFetchResult,
+                                            elapsedTime: TimeInterval) {
         let message =
             """
         Perform BGRefresh completed:
@@ -82,9 +82,9 @@ class DebugNotificationHelper {
                                                      icon: result == .newData ? .success : .failure)
     }
 
-    ///Show a notification for iOS Debugging
+    /// Show a notification for iOS Debugging
     func showDebugNotification (completedDate: Date,
-                                    content: String
+                                content: String
     ) {
         DebugNotificationHelper.scheduleNotification(identifier: identifier.uuidString,
                                                      title: completedDate.formatted(),

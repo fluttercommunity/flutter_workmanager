@@ -35,9 +35,7 @@ enum WMPError: Error {
         case .bgTaskSchedulingFailed(let error):
             return """
                 Scheduling the task using BGTaskScheduler has failed.
-
                 This may be due to too many tasks being scheduled but not run.
-
                 See the error for details: \(error).
                 """
         case .workmanagerNotInitialized:

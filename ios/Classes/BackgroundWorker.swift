@@ -56,11 +56,11 @@ class BackgroundWorker {
     @discardableResult
     func performBackgroundRequest(_ completionHandler: @escaping (UIBackgroundFetchResult) -> Void) -> Bool {
         guard let callbackHandle = UserDefaultsHelper.getStoredCallbackHandle(),
-            let flutterCallbackInformation = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)
-            else {
-                logError("[\(String(describing: self))] \(WMPError.workmanagerNotInitialized.message)")
-                completionHandler(.failed)
-                return false
+              let flutterCallbackInformation = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)
+        else {
+            logError("[\(String(describing: self))] \(WMPError.workmanagerNotInitialized.message)")
+            completionHandler(.failed)
+            return false
         }
 
         let taskSessionStart = Date()

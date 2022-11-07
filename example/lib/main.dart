@@ -69,7 +69,7 @@ void callbackDispatcher() {
         //maximum duration 29seconds - App could perhaps killed by iOS when it takes a longer time than 30 seconds for BGAppRefresh included native work
         print("The iOSBackgroundAppRefresh was triggered");
         sleep(Duration(seconds: 11)); // sleep as sample
-        // test on debugger - pause debugger in xcode and enter in terminal:
+        // test on debugger - pause debugger in xcode and enter in terminal ( Connected with real device )
         // e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"app.workmanagerExample.iOSBackgroundAppRefresh"]
         break;
     }
@@ -203,7 +203,7 @@ class _MyAppState extends State<MyApp> {
                       );
                     }),
                 //This task runs once
-                //This wait at least 10 seconds before running
+                //This wait at least 120 seconds before running
                 ElevatedButton(
                     child: Text("Register Delayed OneOff Task"),
                     onPressed: () {
@@ -217,12 +217,12 @@ class _MyAppState extends State<MyApp> {
                       Workmanager().registerOneOffTask(
                         simpleDelayedTask,
                         simpleDelayedTask,
-                        initialDelay: Duration(seconds: 10),
+                        initialDelay: Duration(seconds: 120),
                       );
                     }),
                 SizedBox(height: 8),
                 //This task runs periodically
-                //It will wait at least 10 seconds before its first launch
+                //It will wait at least 120 seconds before its first launch
                 //Since we have not provided a frequency it will be the default 15 minutes
                 ElevatedButton(
                     child: Text("Register Periodic Task (Android)"),
@@ -238,7 +238,7 @@ class _MyAppState extends State<MyApp> {
                             Workmanager().registerPeriodicTask(
                               simplePeriodicTask,
                               simplePeriodicTask,
-                              initialDelay: Duration(seconds: 10),
+                              initialDelay: Duration(seconds: 120),
                             );
                           }
                         : null),
@@ -261,7 +261,7 @@ class _MyAppState extends State<MyApp> {
                             await Workmanager().registerPeriodicTask(
                               iOSBackgroundAppRefresh,
                               iOSBackgroundAppRefresh,
-                              initialDelay: Duration(seconds: 10), //ignored
+                              initialDelay: Duration(seconds: 120), //ignored
                             );
                           }
                         : null),

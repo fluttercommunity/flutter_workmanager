@@ -92,7 +92,6 @@ private extension UIImage {
             throw ImageError.cannotRepresentAsPNG(self)
         }
         try imageData.write(to: fileURL)
-
         return fileURL
     }
 
