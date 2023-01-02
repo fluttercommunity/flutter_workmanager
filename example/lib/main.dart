@@ -27,50 +27,65 @@ const iOSBackgroundAppRefresh =
     'vm:entry-point') // Mandatory if the App is obfuscated or using Flutter 3.1+
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
+    final prefs = await SharedPreferences.getInstance();
     switch (task) {
       case simpleTaskKey:
+        sleep(Duration(seconds: 22)); // sleep as sample
         print("$simpleTaskKey was executed. inputData = $inputData");
-        final prefs = await SharedPreferences.getInstance();
         prefs.setBool("test", true);
         print("Bool from prefs: ${prefs.getBool("test")}");
+        prefs.setString(
+            "simpleTaskKey", (DateTime.now().toString()) + ' data:$inputData');
         break;
       case rescheduledTaskKey:
         final key = inputData!['key']!;
-        final prefs = await SharedPreferences.getInstance();
+        prefs.setString("rescheduledTaskKey", DateTime.now().toString());
         if (prefs.containsKey('unique-$key')) {
           print('has been running before, task is successful');
           return true;
         } else {
-          await prefs.setBool('unique-$key', true);
+          prefs.setBool('unique-$key', true);
           print('reschedule task');
           return false;
         }
       case failedTaskKey:
         print('failed task');
+        prefs.setString("failedTask", DateTime.now().toString());
         return Future.error('failed');
       case simpleDelayedTask:
         print("$simpleDelayedTask was executed");
+        prefs.setString("simpleDelayedTask", DateTime.now().toString());
         break;
       case simplePeriodicTask:
         print("$simplePeriodicTask was executed");
+        prefs.setString("simplePeriodicTask", DateTime.now().toString());
         break;
       case simplePeriodic1HourTask:
         print("$simplePeriodic1HourTask was executed");
+        prefs.setString("simplePeriodic1HourTask", DateTime.now().toString());
         break;
       case Workmanager.iOSBackgroundTask:
         print("The iOS background fetch was triggered");
+        sleep(Duration(seconds: 34)); // sleep as sample
         Directory? tempDir = await getTemporaryDirectory();
         String? tempPath = tempDir.path;
-        sleep(Duration(seconds: 55));
         print(
             "You can access other plugins in the background, for example Directory.getTemporaryDirectory(): $tempPath");
+        prefs.setString(
+            Workmanager.iOSBackgroundTask, DateTime.now().toString());
         break;
       case Workmanager.iOSBackgroundAppRefresh:
         //maximum duration 29seconds - App could perhaps killed by iOS when it takes a longer time than 30 seconds for BGAppRefresh included native work
-        print("The iOSBackgroundAppRefresh was triggered");
-        sleep(Duration(seconds: 11)); // sleep as sample
+        print("The iOS-BackgroundAppRefresh was triggered");
+        sleep(Duration(seconds: 14)); // sleep as sample
+        prefs.setString(
+            Workmanager.iOSBackgroundAppRefresh, DateTime.now().toString());
         // test on debugger - pause debugger in xcode and enter in terminal ( Connected with real device )
+        // pause app and enter in Terminal:
         // e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"app.workmanagerExample.iOSBackgroundAppRefresh"]
+        // then resume app
+        //expire earlier
+        //e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateExpirationForTaskWithIdentifier:@"app.workmanagerExample.iOSBackgroundAppRefresh"]
         break;
     }
     return Future.value(true);
@@ -82,8 +97,45 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   bool workmanagerInitialized = false;
+  String _prefsString = "empty";
+  String _lastResumed = DateTime.now().toString();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.paused) {
+      //app switched to Background
+    }
+    if (state == AppLifecycleState.resumed) {
+      //app came back to Foreground sett infotext as example for iOS
+      ///TODO implement Android
+      final prefs = await SharedPreferences.getInstance();
+      var prefKeys = prefs.getKeys();
+      var prefsString = "";
+      for (var key in prefKeys) {
+        prefsString +=
+            key.toString() + " : " + prefs.get(key).toString() + "\n";
+      }
+      setState(() {
+        _lastResumed = DateTime.now().toString();
+        _prefsString = prefsString;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -297,6 +349,12 @@ class _MyAppState extends State<MyApp> {
                     print('Cancel all tasks completed');
                   },
                 ),
+                //show entries in prefs on app resume
+                Text("SharedPrefs Values(executed timestamps):\n" +
+                    _prefsString +
+                    "\n" +
+                    "Last-app resumed at: " +
+                    _lastResumed)
               ],
             ),
           ),
