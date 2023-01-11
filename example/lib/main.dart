@@ -49,7 +49,7 @@ void callbackDispatcher() {
           sleep(Duration(seconds: 2));
           return Future.value(true);
         }
-        final key = inputData!['key']!;
+        final key = inputData['key']!;
         prefs.setString("rescheduledTaskKey", DateTime.now().toString());
         if (prefs.containsKey('unique-$key')) {
           print('has been running before, task is successful');
@@ -58,7 +58,6 @@ void callbackDispatcher() {
           prefs.setBool('unique-$key', true); //perhaps not working on iOS
           print('reschedule task');
           return Future.value(true);
-          ;
         }
       case failedTaskKey:
         print('failed task');
