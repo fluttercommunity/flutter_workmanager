@@ -9,82 +9,51 @@ import Foundation
 import UserNotifications
 
 class DebugNotificationHelper {
-
     private let identifier: UUID
 
     init(_ identifier: UUID) {
         self.identifier = identifier
     }
 
-    func showStartFetchNotification(startDate: Date,
-                                    callBackHandle: Int64,
-                                    callbackInfo: FlutterCallbackInformation
+    func showStartFetchNotification(
+        startDate: Date,
+        callBackHandle: Int64,
+        callbackInfo: FlutterCallbackInformation
     ) {
         let message =
             """
-        Starting Dart/Flutter with following params:
-         • callBackName: '\(callbackInfo.callbackName ?? "not found")'
-         • callbackClassName: '\(callbackInfo.callbackClassName ?? "not found")'
-         • callbackLibraryPath: '\(callbackInfo.callbackLibraryPath ?? "not found")'
-         • callbackHandle: '\(callBackHandle)'
-        """
+            Starting Dart/Flutter with following params:
+             • callBackName: '\(callbackInfo.callbackName ?? "not found")'
+             • callbackClassName: '\(callbackInfo.callbackClassName ?? "not found")'
+             • callbackLibraryPath: '\(callbackInfo.callbackLibraryPath ?? "not found")'
+             • callbackHandle: '\(callBackHandle)'
+            """
         DebugNotificationHelper.scheduleNotification(identifier: identifier.uuidString,
                                                      title: startDate.formatted(),
                                                      body: message,
                                                      icon: .startWork)
     }
 
-    func showCompletedFetchNotification(completedDate: Date,
+    func showCompletedFetchNotification(identifier: String,
+                                        completedDate: Date,
                                         result: UIBackgroundFetchResult,
                                         elapsedTime: TimeInterval) {
         let message =
             """
-        Perform backgroundworkerfetch completed:
-         • Elapsed time: \(elapsedTime.formatToSeconds())
-         • Result: UIBackgroundFetchResult.\(result)
-        """
-        DebugNotificationHelper.scheduleNotification(identifier: identifier.uuidString,
-                                                     title: completedDate.formatted(),
-                                                     body: message,
-                                                     icon: result == .newData ? .success : .failure)
-    }
-
-    func showStartBGRefreshNotification(startDate: Date,
-                                        callBackHandle: Int64,
-                                        callbackInfo: FlutterCallbackInformation
-    ) {
-        let message =
+            Perform backgroundworkerfetch completed:
+             • Identifier: '\(identifier)'
+             • Elapsed time: \(elapsedTime.formatToSeconds())
+             • Result: UIBackgroundFetchResult.\(result)
             """
-        Starting Dart/Flutter BGAppRefresh with following params:
-         • callBackName: '\(callbackInfo.callbackName ?? "not found")'
-         • callbackClassName: '\(callbackInfo.callbackClassName ?? "not found")'
-         • callbackLibraryPath: '\(callbackInfo.callbackLibraryPath ?? "not found")'
-         • callbackHandle: '\(callBackHandle)'
-        """
-        DebugNotificationHelper.scheduleNotification(identifier: identifier.uuidString,
-                                                     title: startDate.formatted(),
-                                                     body: message,
-                                                     icon: .startWork)
-    }
-
-    func showCompletedBGRefreshNotification(completedDate: Date,
-                                            result: UIBackgroundFetchResult,
-                                            elapsedTime: TimeInterval) {
-        let message =
-            """
-        Perform BGRefresh completed:
-         • Elapsed time: \(elapsedTime.formatToSeconds())
-         • Result: UIBackgroundFetchResult.\(result)
-        """
-        DebugNotificationHelper.scheduleNotification(identifier: identifier.uuidString,
+        DebugNotificationHelper.scheduleNotification(identifier: identifier,
                                                      title: completedDate.formatted(),
                                                      body: message,
                                                      icon: result == .newData ? .success : .failure)
     }
 
     /// Show a notification for iOS Debugging
-    func showDebugNotification (completedDate: Date,
-                                content: String
+    func showDebugNotification(completedDate: Date,
+                               content: String
     ) {
         DebugNotificationHelper.scheduleNotification(identifier: identifier.uuidString,
                                                      title: completedDate.formatted(),
@@ -103,7 +72,7 @@ class DebugNotificationHelper {
             return
         }
 
-        UNUserNotificationCenter.current().requestAuthorization(options: [.sound, .alert]) { (_, _) in }
+        UNUserNotificationCenter.current().requestAuthorization(options: [.sound, .alert]) { _, _ in }
         let notificationRequest = createNotificationRequest(
             identifier: identifier,
             threadIdentifier: SwiftWorkmanagerPlugin.identifier,
@@ -112,7 +81,6 @@ class DebugNotificationHelper {
             icon: icon
         )
         UNUserNotificationCenter.current().add(notificationRequest, withCompletionHandler: nil)
-
     }
 
     private static func createNotificationRequest(identifier: String,
@@ -140,5 +108,4 @@ class DebugNotificationHelper {
     private static var logPrefix: String {
         return "\(String(describing: SwiftWorkmanagerPlugin.self)) - \(DebugNotificationHelper.self)"
     }
-
 }

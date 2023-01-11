@@ -12,6 +12,7 @@
 		<string>be.tramckrijte.workmanagerExample.simplePeriodicTask</string>
 		<string>be.tramckrijte.workmanagerExample.simplePeriodic1HourTask</string>
 		<string>app.workmanagerExample.iOSBackgroundAppRefresh</string>
+		<string>app.workmanagerExample.iOSBackgroundProcessingTask</string>
 	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>

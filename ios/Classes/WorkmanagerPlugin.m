@@ -18,13 +18,19 @@
 
 + (void)registerTaskWithIdentifier:(NSString *) taskIdentifier {
     if (@available(iOS 13, *)) {
-        [SwiftWorkmanagerPlugin registerBackgroundProcessingTaskWithTaskIdentifier:taskIdentifier];
+        [SwiftWorkmanagerPlugin registerBGProcessingTaskWithIdentifier:taskIdentifier];
     }
 }
 
 + (void)registerPeriodicTaskWithIdentifier:(NSString *)taskIdentifier{
     if (@available(iOS 13, *)) {
         [SwiftWorkmanagerPlugin registerAppRefreshTaskWithIdentifier:taskIdentifier];
+    }
+}
+
++ (void)registerBGProcessingTaskWithIdentifier:(NSString *) taskIdentifier{
+    if (@available(iOS 13, *)) {
+        [SwiftWorkmanagerPlugin registerBGProcessingTaskWithIdentifier:taskIdentifier];
     }
 }
 
