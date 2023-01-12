@@ -173,6 +173,7 @@ class Workmanager {
   }
 
   /// Schedule a one off task
+  /// starts on iOS immediately with a timeout of 29 secs in background
   /// A [uniqueName] is required so only one task can be registered.
   /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler]
   /// The [inputData] is the input data for task. Valid value types are: int, bool, double, String and their list
@@ -263,7 +264,7 @@ class Workmanager {
             requiresCharging: requiresCharging),
       );
 
-  /// Schedules a periodic task that will run (if iOS randomly started depending on iOS)  provided [frequency].
+  /// Schedules a repeated periodic task that (if iOS randomly started depending on iOS)
   /// A [uniqueName] is required so only one task can be registered.
   /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler]
   /// a [frequency] is not required and will be defaulted to 15 minutes if not provided.

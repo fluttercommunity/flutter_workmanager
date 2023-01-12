@@ -34,8 +34,9 @@ void callbackDispatcher() {
     print("callbackDispatcher for $task called");
     await LogHelper.LogBGTask(data: "callbackDispatcher for $task called");
     final prefs = await SharedPreferences
-        .getInstance(); //only working on Android ?! isolates on is has incorrect results.
+        .getInstance(); //only working on Android ?! isolates on iOS has incorrect results.
     switch (task) {
+      //simpleTaskKey:rescheduledTaskKey:failedTaskKey starts on iOS immediately with a timeout of 30 secs in background
       case simpleTaskKey:
         sleep(Duration(seconds: 12)); // sleep as sample
         print("$simpleTaskKey was executed. inputData = $inputData");
