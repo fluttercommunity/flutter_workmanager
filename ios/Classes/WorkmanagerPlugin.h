@@ -10,4 +10,21 @@
  */
 + (void)registerTaskWithIdentifier:(NSString *) taskIdentifier;
 
+/**
+ * Register a custom task identifier as  iOS BGAppRefresh Task executed randomly in future.
+ * @author Lars Huth
+ *
+ * @param taskIdentifier The identifier of the custom task. Must be set in info.plist
+ */
++ (void)registerPeriodicTaskWithIdentifier:(NSString *) taskIdentifier;
+
+/**
+ * Register a custom task identifier as iOS BackgroundProcessingTask executed randomly in future.
+ * @author Lars Huth
+ *
+ * @param taskIdentifier The identifier of the custom task. Must be set in info.plist
+ */
++ (void)registerBGProcessingTaskWithIdentifier:(NSString *) taskIdentifier;
+
+
 @end

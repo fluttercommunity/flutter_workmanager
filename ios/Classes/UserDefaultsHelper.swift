@@ -25,7 +25,7 @@ struct UserDefaultsHelper {
     // MARK: callbackHandle
 
     static func storeCallbackHandle(_ handle: Int64) {
-       store(handle, key: .callbackHandle)
+        store(handle, key: .callbackHandle)
     }
 
     static func getStoredCallbackHandle() -> Int64? {

@@ -1,6 +1,9 @@
 excluded:
   - example/ios/Pods
+  - example/ios/Classes/SwiftWorkmanagerPlugin.swift
   - Pods
 included:
   - .symlinks/plugins/workmanager/ios
+
+
 
