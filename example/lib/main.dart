@@ -7,7 +7,15 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  // Initialize Flutter widget binding.
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Workmanager.
+  Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
+
+  runApp(MyApp());
+}
 
 const simpleTaskKey = "be.tramckrijte.workmanagerExample.simpleTask";
 const rescheduledTaskKey = "be.tramckrijte.workmanagerExample.rescheduledTask";
