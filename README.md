@@ -26,7 +26,7 @@ Before registering any task, the WorkManager plugin must be initialized.
 @pragma('vm:entry-point') // Mandatory if the App is obfuscated or using Flutter 3.1+
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) {
-    print("Native called background task: $backgroundTask"); //simpleTask will be emitted here.
+    print("Native called background task: $task"); // simpleTask will be emitted here.
     return Future.value(true);
   });
 }
@@ -52,14 +52,14 @@ Wrap the code inside your `Workmanager().executeTask` in a `try and catch` in or
 ```dart
 @pragma('vm:entry-point')
 void callbackDispatcher() {
-  Workmanager().executeTask((task, inputData) {
+  Workmanager().executeTask((task, inputData) async {
 
     int? totalExecutions;
-    final _sharedPreference = await SharedPreferences.getInstance(); //Initialize dependency
+    final _sharedPreference = await SharedPreferences.getInstance(); // Initialize dependency
 
-    try { //add code execution
+    try { // add code execution
       totalExecutions = _sharedPreference.getInt("totalExecutions");
-      _sharedPreference.setInt("totalExecutions", totalExecutions == null ? 1 : totalExecutions+1);
+      await _sharedPreference.setInt("totalExecutions", totalExecutions == null ? 1 : totalExecutions+1);
     } catch(err) {
       Logger().e(err.toString()); // Logger flutter package, prints error on the debug console
       throw Exception(err);
@@ -207,11 +207,11 @@ Add some input data for your task. Valid value types are: `int`, `bool`, `double
     "1",
     "simpleTask",
     inputData: {
-    'int': 1,
-    'bool': true,
-    'double': 1.0,
-    'string': 'string',
-    'array': [1, 2, 3],
+      'int': 1,
+      'bool': true,
+      'double': 1.0,
+      'string': 'string',
+      'array': [1, 2, 3],
     },
 );
 ```
