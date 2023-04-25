@@ -319,6 +319,7 @@ void main() {
       [
         [ExistingWorkPolicy.keep, "keep"],
         [ExistingWorkPolicy.append, "append"],
+        [ExistingWorkPolicy.update, "update"],
         [ExistingWorkPolicy.replace, "replace"],
       ].forEach((existingWorkPolicy) {
         test("for workpolicy ${existingWorkPolicy.first}", () {

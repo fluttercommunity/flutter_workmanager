@@ -3,6 +3,9 @@ enum ExistingWorkPolicy {
   /// If there is existing pending (uncompleted) work with the same unique name, append the newly-specified work as a child of all the leaves of that work sequence.
   append,
 
+  /// If there is existing pending (uncompleted) work with the same unique name, it will be updated the new specification.
+  update,
+
   /// If there is existing pending (uncompleted) work with the same unique name, do nothing.
   keep,
 
