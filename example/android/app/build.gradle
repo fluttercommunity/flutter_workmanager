@@ -32,9 +32,6 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
     }
 
-    lintOptions {
-        disable 'InvalidPackage'
-    }
 
     defaultConfig {
         applicationId "dev.fluttercommunity.workmanager.example"
@@ -51,6 +48,12 @@ android {
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig signingConfigs.debug
         }
+    }
+
+    namespace 'dev.fluttercommunity.workmanager.example'
+
+    lint {
+        disable 'InvalidPackage'
     }
 }
 
