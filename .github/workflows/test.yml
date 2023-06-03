@@ -8,14 +8,12 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-
-      - uses: subosito/flutter-action@v1
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-
       - name: Test
         run: |
           flutter pub get
@@ -24,19 +22,19 @@ jobs:
   native_ios_tests:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: subosito/flutter-action@v1
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
       - name: Build iOS App
         run: cd example && flutter build ios --debug --no-codesign
       - name: Run native iOS tests
-        run: cd example/ios && xcodebuild -workspace Runner.xcworkspace -scheme Runner -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 12,OS=16.0' test
+        run: cd example/ios && xcodebuild -workspace Runner.xcworkspace -scheme Runner -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 12,OS=16.2' test
 
   native_android_tests:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-java@v1
         with:
           java-version: 11
@@ -59,8 +57,8 @@ jobs:
       - uses: futureware-tech/simulator-action@v1
         with:
           model: '${{ matrix.device }}'
-      - uses: actions/checkout@v2
-      - uses: subosito/flutter-action@v1
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
       # Run flutter integrate tests
@@ -78,11 +76,11 @@ jobs:
         # api-level: [21, 29]
         target: [default]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-java@v1
         with:
           java-version: 11
-      - uses: subosito/flutter-action@v1
+      - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
       - name: Run Flutter Driver tests
