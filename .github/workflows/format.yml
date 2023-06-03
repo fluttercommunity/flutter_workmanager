@@ -8,7 +8,7 @@ on:
 
 jobs:
   format_dart:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: subosito/flutter-action@v2
@@ -36,7 +36,7 @@ jobs:
         uses: norio-nomura/action-swiftlint@3.2.1
 
   publishable:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: subosito/flutter-action@v2
