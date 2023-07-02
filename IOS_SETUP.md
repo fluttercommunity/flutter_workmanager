@@ -30,6 +30,7 @@ import workmanager
 ```
 
 ``` swift
+// In AppDelegate.application method
 WorkmanagerPlugin.registerTask(withIdentifier: "task-identifier")
 ```
 
