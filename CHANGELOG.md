@@ -1,3 +1,7 @@
+# next
+
+* Android: Migrate away from ResolvableFuture (#399).
+
 # 0.5.1
 
 * Call DartPluginRegistrant.ensureInitialized when isolate is starting

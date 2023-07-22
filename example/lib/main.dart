@@ -183,7 +183,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               children: <Widget>[
                 Text(
                   "Plugin initialization",
-                  style: Theme.of(context).textTheme.headline5,
+                  style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 ElevatedButton(
                   child: Text("Start the Flutter background service"),
@@ -375,7 +375,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                 SizedBox(height: 16),
                 Text(
                   "Task cancellation",
-                  style: Theme.of(context).textTheme.headline5,
+                  style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 ElevatedButton(
                   child: Text("Cancel All"),

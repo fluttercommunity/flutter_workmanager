@@ -8,10 +8,10 @@ on:
 
 jobs:
   format_dart:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: subosito/flutter-action@v1
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
       - name: Format
@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: "checkout"
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: "ktlint"
         uses: "vroy/gha-kotlin-linter@v1"
@@ -31,16 +31,15 @@ jobs:
   format_swift:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: GitHub Action for SwiftLint
         uses: norio-nomura/action-swiftlint@3.2.1
 
   publishable:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-
-      - uses: subosito/flutter-action@v1
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
 
