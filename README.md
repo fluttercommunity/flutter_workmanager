@@ -4,13 +4,13 @@
 Our fork to original repo just integrates a PR which was not merged yet was good in solving issues on iOS.
 After PR integration, here is how our fork works:
 
-registerOneOffTask
+- registerOneOffTask
 Now starts immediately on both android and iOS. On iOS it lasts only 29sec.
 
-registeriOSBackgroundProcessingTask
+- registeriOSBackgroundProcessingTask
 Long running oneoff background task to be used specifically on iOS. It last more than 29sec but doesnt start immediately.
 
-registerPeriodicTask
+- registerPeriodicTask
 This is for a scheduled task on both android and iOS. It's a 29sec task on iOS, but doesn't start immediately.
 
 
