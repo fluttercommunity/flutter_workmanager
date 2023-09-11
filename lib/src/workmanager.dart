@@ -81,36 +81,18 @@ class Workmanager {
   /// void callbackDispatcher() {
   ///   Workmanager().executeTask((taskName, inputData) {
   ///      switch (taskName) {
-  ///        case Workmanager.iOSBackgroundTask:
+  ///        case Workmanager.iOSBackgroundProcessingTask:
   ///          stderr.writeln("The iOS background fetch was triggered");
   ///          break;
+  ///        case Workmanager.iOSBackgroundAppRefresh:
+  ///          stderr.writeln("The iOS backgroundAppRefresh was triggered");
+  ///           break;
   ///      }
   ///
   ///      return Future.value(true);
   ///  });
   /// }
   /// ```
-  static const String iOSBackgroundTask = "iOSPerformFetch";
-
-  /// Use this constant inside your callbackDispatcher to identify when an iOS Background Processing via BGTaskScheduler occurred.
-  ///
-  /// ```
-  /// @pragma('vm:entry-point')
-  /// void callbackDispatcher() {
-  ///   Workmanager().executeTask((taskName, inputData) {
-  ///      switch (taskName) {
-  ///        case Workmanager.iOSBackgroundProcessingTask:
-  ///          stderr.writeln("A iOS BG processing task was initiated.");
-  ///          break;
-  ///      }
-  ///
-  ///      return Future.value(true);
-  ///  });
-  /// }
-  /// ```
-  @Deprecated('Use custom iOS task names. This property will be removed.')
-  static const String iOSBackgroundProcessingTask =
-      "workmanager.background.task";
 
   static bool _isInDebugMode = false;
 
@@ -118,6 +100,9 @@ class Workmanager {
       "be.tramckrijte.workmanager/background_channel_work_manager");
   MethodChannel _foregroundChannel = const MethodChannel(
       "be.tramckrijte.workmanager/foreground_channel_work_manager");
+
+  static const BACKGROUND_APPREFRESH_TASK_NAME = "iOSBackgroundAppRefresh";
+  static const BACKGROUND_PROCESSING_TASK_NAME = "iOSBackgroundProcessingTask";
 
   /// A helper function so you only need to implement a [BackgroundTaskHandler]
   void executeTask(final BackgroundTaskHandler backgroundTask) {
@@ -158,7 +143,37 @@ class Workmanager {
     }
   }
 
+  ///iOS implementation
+  ///checks whether user or parental control avoids background refresh
+  ///
+  Future<BackgroundAuthorisationState>
+      checkBackgroundRefreshPermission() async {
+    try {
+      var result = await _foregroundChannel.invokeMethod<Object>(
+        'checkBackgroundRefreshPermission',
+        JsonMapperHelper.toInitializeMethodArgument(
+            isInDebugMode: _isInDebugMode,
+            callbackHandle:
+                0), //must provide an argument for switch statement on Swift
+      );
+      switch (result.toString()) {
+        case 'available':
+          return BackgroundAuthorisationState.available;
+        case 'denied':
+          return BackgroundAuthorisationState.denied;
+        case 'restricted':
+          return BackgroundAuthorisationState.restricted;
+        case 'unknown':
+          return BackgroundAuthorisationState.unknown;
+      }
+    } catch (e) {
+      print("Could not retrieve BackgroundAuthorisationState " + e.toString());
+    }
+    return BackgroundAuthorisationState.unknown;
+  }
+
   /// Schedule a one off task
+  /// starts on iOS immediately with a timeout of 29 secs in background
   /// A [uniqueName] is required so only one task can be registered.
   /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler]
   /// The [inputData] is the input data for task. Valid value types are: int, bool, double, String and their list
@@ -181,6 +196,12 @@ class Workmanager {
     /// decide to schedule the ask a lot later.
     final Duration initialDelay = Duration.zero,
 
+    /// set required [NetworkType] only iOS
+    final NetworkType? networkType = NetworkType.not_required,
+
+    ///set if charging is needed
+    final bool? requiresCharging = false,
+
     /// Fully supported on Android, but only partially supported on iOS.
     /// See [Constraints] for details.
     final Constraints? constraints,
@@ -202,11 +223,48 @@ class Workmanager {
           backoffPolicy: backoffPolicy,
           backoffPolicyDelay: backoffPolicyDelay,
           outOfQuotaPolicy: outOfQuotaPolicy,
+          networkType: networkType,
+          requiresCharging: requiresCharging,
           inputData: inputData,
         ),
       );
 
-  /// Schedules a periodic task that will run every provided [frequency].
+  /// Schedule a BackgroundProcessingTask only for iOS
+  /// This can be a long running Task on iOS longer than 30seconds
+  /// See Apples documentation https://developer.apple.com/documentation/backgroundtasks
+  Future<void> registeriOSBackgroundProcessingTask(
+    final String uniqueName,
+    final String taskName, {
+
+    /// set required [NetworkType] only iOS
+    final NetworkType? networkType = NetworkType.not_required,
+
+    ///set if charging is needed
+    final bool? requiresCharging = false,
+
+    /// Only partially supported on iOS.
+    /// See [Constraints] for details.
+    final Constraints? constraints,
+    final BackoffPolicy? backoffPolicy,
+    final Duration backoffPolicyDelay = Duration.zero,
+    final OutOfQuotaPolicy? outOfQuotaPolicy,
+    final Map<String, dynamic>? inputData,
+  }) async =>
+      await _foregroundChannel.invokeMethod(
+        "registeriOSBackgroundProcessingTask",
+        JsonMapperHelper.toRegisterMethodArgument(
+            isInDebugMode: _isInDebugMode,
+            uniqueName: uniqueName,
+            taskName: taskName,
+            constraints: constraints,
+            backoffPolicy: backoffPolicy,
+            backoffPolicyDelay: backoffPolicyDelay,
+            outOfQuotaPolicy: outOfQuotaPolicy,
+            networkType: networkType,
+            requiresCharging: requiresCharging),
+      );
+
+  /// Schedules a repeated periodic task that (if iOS randomly started depending on iOS)
   /// A [uniqueName] is required so only one task can be registered.
   /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler]
   /// a [frequency] is not required and will be defaulted to 15 minutes if not provided.
@@ -223,6 +281,8 @@ class Workmanager {
     final BackoffPolicy? backoffPolicy,
     final Duration backoffPolicyDelay = Duration.zero,
     final OutOfQuotaPolicy? outOfQuotaPolicy,
+    final NetworkType? networkType = NetworkType.not_required,
+    final bool? requiresCharging = false,
     final Map<String, dynamic>? inputData,
   }) async =>
       await _foregroundChannel.invokeMethod(
@@ -239,6 +299,8 @@ class Workmanager {
           backoffPolicy: backoffPolicy,
           backoffPolicyDelay: backoffPolicyDelay,
           outOfQuotaPolicy: outOfQuotaPolicy,
+          networkType: networkType,
+          requiresCharging: requiresCharging,
           inputData: inputData,
         ),
       );
@@ -277,6 +339,8 @@ class JsonMapperHelper {
     final BackoffPolicy? backoffPolicy,
     final Duration? backoffPolicyDelay,
     final OutOfQuotaPolicy? outOfQuotaPolicy,
+    NetworkType? networkType,
+    bool? requiresCharging,
     final Map<String, dynamic>? inputData,
   }) {
     if (inputData != null) {

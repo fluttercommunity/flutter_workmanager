@@ -13,6 +13,7 @@ enum WMPError: Error {
     case unhandledMethod(_ methodName: String)
     case unexpectedMethodArguments(_ argumentsDescription: String)
     case workmanagerNotInitialized
+    case workmanagerIsAlreadyInitialized
     case bgTaskSchedulingFailed(_ error: Error)
 
     var code: String {
@@ -29,12 +30,12 @@ enum WMPError: Error {
             return "Unhandled method \(methodName)"
         case .unexpectedMethodArguments(let argumentsDescription):
             return "Unexpected call arguments \(argumentsDescription)"
+        case .workmanagerIsAlreadyInitialized:
+            return "Workmanager was initialized once. It can not initilized a second time"
         case .bgTaskSchedulingFailed(let error):
             return """
                 Scheduling the task using BGTaskScheduler has failed.
-
                 This may be due to too many tasks being scheduled but not run.
-
                 See the error for details: \(error).
                 """
         case .workmanagerNotInitialized:

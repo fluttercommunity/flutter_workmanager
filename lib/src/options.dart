@@ -67,6 +67,22 @@ enum BackoffPolicy {
   linear
 }
 
+/// await Workmanager().checkBackgroundRefreshPermission(); to check these permissions
+/// requestBackgroundAuthorisation only once and respect users choice
+enum BackgroundAuthorisationState {
+  /// iOS Setting Backgroundwork is enabled.
+  available,
+
+  /// iOS Setting Backgroundwork is disabled in settings. You shoud request for permissions call
+  denied,
+
+  /// iOS Setting is under parental control etc. Can't be changed by user
+  restricted,
+
+  ///unknown state
+  unknown
+}
+
 /// A specification of the requirements that need to be met before a WorkRequest can run.
 /// By default, WorkRequests do not have any requirements and can run immediately.
 /// By adding requirements, you can make sure that work only runs in certain situations -
