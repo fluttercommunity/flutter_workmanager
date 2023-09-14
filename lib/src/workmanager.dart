@@ -264,7 +264,7 @@ class Workmanager {
             requiresCharging: requiresCharging),
       );
 
-  /// Schedules a repeated periodic task that (if iOS randomly started depending on iOS)
+  /// Schedules a periodic task that will run every provided [frequency], on iOS it is not guaranteed when or how often it will run.
   /// A [uniqueName] is required so only one task can be registered.
   /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler]
   /// a [frequency] is not required and will be defaulted to 15 minutes if not provided.

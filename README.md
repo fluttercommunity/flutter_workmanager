@@ -84,7 +84,7 @@ void callbackDispatcher() {
 ```
 
 Android tasks are identified using their `taskName`.
-iOS tasks are identitied using their `taskIdentifier`.
+iOS tasks are identified using their `taskIdentifier`.
 
 However, there is an exception for iOS background fetch: `Workmanager.iOSBackgroundTask`, a constant for iOS background fetch task.
 
@@ -105,65 +105,46 @@ Refer to the example app for a successful, retrying and a failed task.
 
 # iOS specific setup and note
 
-Initialize Workmanager only one once
-You can use the background app refresh only on a real device
+Initialize Workmanager only once.
+Background app refresh can only be tested on a real device, it cannot be tested on a simulator.
 
 iOS supports **One off tasks** with a few basic constraints:
 
 ```dart
-Workmanager
-(
-).registerOneOffTask
-("task-identifier
-"
-,
-simpleTaskKey, // Ignored on iOS
-initialDelay: Duration
-(
-minutes: 30
-)
-,
-constraints: Constraints
-(
-// connected or metered mark the task as requiring internet
-networkType: NetworkType.connected,
-// require external power
-requiresCharging: true
-,
-)
-,
-inputData: ... // fully supported
+Workmanager().registerOneOffTask(
+  "task-identifier",
+  "simpleTaskKey", // Ignored on iOS
+  initialDelay: Duration(minutes: 30),
+  constraints: Constraints(
+    // Connected or metered mark the task as requiring internet
+    networkType: NetworkType.connected,
+    // Require a powered/charging device
+    requiresCharging: true,
+  ),
+  inputData: ..., // fully supported
 );
 ```
 
-And alternative supports **PeriodicTask** with maximum 29sec execution time (see example).
-Look also
-at <a href="https://developer.apple.com/documentation/uikit/app_and_environment/scenes/preparing_your_ui_to_run_in_the_background/using_background_tasks_to_update_your_app">
-Apple's documentation</a>
+iOS supports **Periodic tasks** with maximum 29sec execution time (see example).
+For more information see the [Apple Docs](https://developer.apple.com/documentation/uikit/app_and_environment/scenes/preparing_your_ui_to_run_in_the_background/using_background_tasks_to_update_your_app).
 
 ```dart
-
-const iOSBackgroundAppRefresh =
-        "app.workmanagerExample.iOSBackgroundAppRefresh";
-Workmanager
-(
-).registerPeriodicTask
-(
-iOSBackgroundAppRefresh,iOSBackgroundAppRefresh,initialDelay: Duration
-(
-seconds: 10
-)
-, //ignored
+const iOSBackgroundAppRefresh = "app.workmanagerExample.iOSBackgroundAppRefresh";
+Workmanager().registerPeriodicTask(
+  iOSBackgroundAppRefresh,
+  iOSBackgroundAppRefresh,
+  initialDelay: Duration(seconds: 10), // Ignored  on iOS
 );
 ```
+
+For more information see the [BGAppRefreshTask](https://developer.apple.com/documentation/backgroundtasks/bgapprefreshtask).
 
 Get permissions for iOS BackgroundRefresh - see example
 
 ```dart
-  if (Platform.isIOS) {
-//here you can check whether background refresh is activated in iOS settings
-var hasPermissions = await Workmanager()
-        .checkBackgroundRefreshPermission();
+if (Platform.isIOS) {
+// Here you can check whether background refresh is activated in iOS settings
+var hasPermissions = await Workmanager().checkBackgroundRefreshPermission();
 if (hasPermissions != BackgroundAuthorisationState.available){...}
 }
 
