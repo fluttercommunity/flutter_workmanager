@@ -31,7 +31,7 @@ enum WMPError: Error {
         case .unexpectedMethodArguments(let argumentsDescription):
             return "Unexpected call arguments \(argumentsDescription)"
         case .workmanagerIsAlreadyInitialized:
-            return "Workmanager was initialized once. It can not initilized a second time"
+            return "Workmanager already initialized, it should not be initialized again"
         case .bgTaskSchedulingFailed(let error):
             return """
                 Scheduling the task using BGTaskScheduler has failed.

@@ -12,7 +12,6 @@ extension String {
 public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     static let identifier = "be.tramckrijte.workmanager"
 
-    private var _isInitalized = false
     private static var flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?
 
     private struct ForegroundMethodChannel {
@@ -79,7 +78,10 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
 
     @available(iOS 13.0, *)
     private static func handleBGProcessingTask(_ task: BGProcessingTask) {
-        NSLog("Workmanagerplugin handle handleBGProcessingTask")
+        let isInDebug = UserDefaultsHelper.getIsDebug()
+        if isInDebug {
+            logInfo("WorkmanagerPlugin handle handleBGProcessingTask")
+        }
         let operationQueue = OperationQueue()
 
         // Create an operation that performs the main part of the background task
@@ -88,7 +90,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
             inputData: "", //no data
             flutterPluginRegistrantCallback: SwiftWorkmanagerPlugin.flutterPluginRegistrantCallback,
             backgroundMode: .backgroundProcessingTask,
-            isInDebug: UserDefaultsHelper.getIsDebug()
+            isInDebug: isInDebug
         )
 
         // Provide an expiration handler for the background task
@@ -110,7 +112,10 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     @objc
     @available(iOS 13.0, *)
     public static func handleAppRefresh(task: BGAppRefreshTask) {
-        NSLog("Workmanagerplugin handle BGAppRefreshTask")
+        let isInDebug = UserDefaultsHelper.getIsDebug()
+        if isInDebug {
+            logInfo("WorkmanagerPlugin handle BGAppRefreshTask")
+        }
         guard let callbackHandle = UserDefaultsHelper.getStoredCallbackHandle(),
               let _ = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)
         else {
@@ -118,10 +123,9 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
             return
         }
 
-        /// Could improved _ seconds are ignored on refresh //important to reschedule
+        // TODO Improve seconds are ignored on refresh, important to reschedule
         scheduleAppRefresh(taskIdentifier: task.identifier, earliestBeginInSeconds: 120)
 
-        NSLog("Workmanagerplugin handle BGAppRefreshTask")
         let operationQueue = OperationQueue()
         // Create an operation that performs the main part of the background task
         let operation = BackgroundTaskOperation(
@@ -129,7 +133,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
             inputData: "",
             flutterPluginRegistrantCallback: SwiftWorkmanagerPlugin.flutterPluginRegistrantCallback,
             backgroundMode: .backgroundAppRefresh,
-            isInDebug: UserDefaultsHelper.getIsDebug()
+            isInDebug: isInDebug
         )
 
         // Provide an expiration handler for the background task
@@ -141,7 +145,9 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
         // Inform the system that the background task is complete
         // when the operation completes
         operation.completionBlock = {
-            NSLog("Workmanagerplugin handle BGAppRefreshTask completed")
+            if isInDebug {
+                logInfo("WorkmanagerPlugin handle BGAppRefreshTask completed")
+            }
             task.setTaskCompleted(success: !operation.isCancelled)
         }
 
@@ -152,10 +158,13 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
 
     /// Initialisation for all Tasks
 
+    /// Immediately start a background fetch with 29sec timeout - specification by iOS
     @available(iOS 13.0, *)
-    /// Immedately start a background fetch with 29sec timeout - specification by iOS
     public static func startOnOffTask(identifier: String, taskIdentifier: UIBackgroundTaskIdentifier, inputData:String, delaySeconds: Int64) {
-        NSLog("Workmanagerplugin immedately startOnOffTask alias iOS backgroundFetch started - timeout after 30sec.")
+        let isInDebug = UserDefaultsHelper.getIsDebug()
+        if isInDebug {
+            logInfo("WorkmanagerPlugin immediately startOneOffTask")
+        }
 
         let operationQueue = OperationQueue()
         // Create an operation that performs the main part of the background task
@@ -164,12 +173,14 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
             inputData: inputData,
             flutterPluginRegistrantCallback: SwiftWorkmanagerPlugin.flutterPluginRegistrantCallback,
             backgroundMode: .backgroundOnOffTask(identifier: identifier),
-            isInDebug: UserDefaultsHelper.getIsDebug()
+            isInDebug: isInDebug
         )
 
         // Inform the system that the task is complete when the operation completes
         operation.completionBlock = {
-            NSLog("Background task ended \(identifier) : ID:\(taskIdentifier).")
+            if isInDebug {
+                logInfo("Background task ended \(identifier) : ID:\(taskIdentifier).")
+            }
             UIApplication.shared.endBackgroundTask(taskIdentifier)
         }
 
@@ -184,7 +195,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     @objc
     public static func registerAppRefreshTask(withIdentifier identifier: String) {
         if #available(iOS 13.0, *) {
-            print("Workmanager - registerAppRefreshTask withIdentifier \(identifier)")
+            logInfo("Workmanager - registerAppRefreshTask withIdentifier \(identifier)")
 
             BGTaskScheduler.shared.register(
                 forTaskWithIdentifier: identifier,
@@ -203,13 +214,12 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
         taskIdentifier identifier: String,
         earliestBeginInSeconds begin: Double) {
         if #available(iOS 13.0, *) {
-            print("Workmanager - registerAppRefreshTaskScheduler withIdentifier \(identifier)")
-            // schedule on app did enter background
+            logInfo("Workmanager - registerAppRefreshTaskScheduler withIdentifier \(identifier)")
+            // Schedule on app did enter background
             NotificationCenter.default.addObserver(
                 forName: UIApplication.didEnterBackgroundNotification,
                 object: nil, queue: nil
             ) { _ in
-                // schedule apprefresh
                 scheduleAppRefresh(taskIdentifier: identifier, earliestBeginInSeconds: begin)
             }
         }
@@ -223,21 +233,21 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
         request.earliestBeginDate = Date(timeIntervalSinceNow: begin)
         do {
             try BGTaskScheduler.shared.submit(request)
-            print("scheduleAppRefresh workmanager (re)scheduled app refresh \(identifier)")
+            logInfo("scheduleAppRefresh workmanager (re)scheduled app refresh \(identifier)")
         } catch {
-            print("Couldn't schedule app refresh \(error.localizedDescription)")
+            logInfo("Couldn't schedule app refresh \(error.localizedDescription)")
             return
         }
     }
 
-    /// First register names for BGProcessingTask called by WorkmangerPlugin.m
+    /// First register names for BGProcessingTask called by WorkmanagerPlugin.m
     /// This happens on registering
     /// you must register task names before app finishes launching in AppDelegate --> else there is an error thrown
     /// After that you can call [registerProcessingTaskScheduler] which schedules task in background
     @objc
     public static func registerBGProcessingTask(withIdentifier identifier: String) {
         if #available(iOS 13.0, *) {
-            print("Workmanager - registerBackgroundProcessingTask withIdentifier \(identifier)")
+            logInfo("Workmanager - registerProcessingTask withIdentifier \(identifier)")
             BGTaskScheduler.shared.register(
                 forTaskWithIdentifier: identifier,
                 using: nil
@@ -257,16 +267,14 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
                                                                  requiresNetworkConnectivity: Bool,
                                                                  requiresExternalPower: Bool) {
         if #available(iOS 13.0, *) {
-            // avoid XCode line length issue in notificationcenterobserver maxx 200 chars line length
             let network = requiresNetworkConnectivity
             let extPower = requiresExternalPower
-            print("Workmanager - registerBackgroundProcessingTaskScheduler withIdentifier \(uniqueTaskIdentifier)")
+            logInfo("Workmanager - registerProcessingTaskScheduler withIdentifier \(uniqueTaskIdentifier)")
 
             NotificationCenter.default.addObserver(
                 forName: UIApplication.didEnterBackgroundNotification,
                 object: nil, queue: nil
             ) { _ in
-                // schedule apprefresh
                 scheduleBackgroundProcessingTask(withIdentifier: uniqueTaskIdentifier, earliestBeginInSeconds: begin, requiresNetworkConnectivity: network, requiresExternalPower: extPower)
             }
         }
@@ -289,11 +297,10 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
         request.requiresExternalPower = requiresExternalPower
         do {
             try BGTaskScheduler.shared.submit(request)
-            print("Requested BackgroundProcessingTask  \(uniqueTaskIdentifier)")
+            logInfo("Requested BackgroundProcessingTask  \(uniqueTaskIdentifier)")
         } catch {
-            print("Couldn't schedule app BackgroundProcessingTask identifier:\(uniqueTaskIdentifier) error:\(error.localizedDescription)")
-            print("On BGTaskSchedulerErrorDomain error 1 - please run on real device")
-            print("On BGTaskSchedulerErrorDomain error 3 - check registered names")
+            logInfo("Couldn't schedule app BackgroundProcessingTask identifier:\(uniqueTaskIdentifier) error:\(error.localizedDescription)")
+            logInfo("Possible issues can be: running on a simulator instead of a real device, or the task name is not registered")
         }
     }
 
@@ -328,16 +335,12 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
             _ = checkBackgroundRefreshAuthorisation(result: result)
             return
         case (ForegroundMethodChannel.Methods.RegisterPeriodicTask.name, let .some(arguments)):
-            // register bgAppRefreshTask for less than 30 seconds backgroundtime
             registerPeriodicTask(arguments: arguments, result: result)
             return
         case (ForegroundMethodChannel.Methods.RegisterOneOffTask.name, let .some(arguments)):
-            // register processingtask for less  than 30 seconds backgroundtime
-            // Task starts immedatly
             registerOneOffTask(arguments: arguments, result: result)
             return
         case (ForegroundMethodChannel.Methods.RegisteriOSBackgroundProcessingTask.name, let .some(arguments)):
-            // register long running iOs BGProcessingtask for more than 30 seconds backgroundtime
             registerBackgroundProcessingTask(arguments: arguments, result: result)
             return
         case (ForegroundMethodChannel.Methods.CancelAllTasks.name, .none):
@@ -353,16 +356,13 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
     }
 
     private func initialize(arguments: [AnyHashable: Any], result: @escaping FlutterResult) {
-        if _isInitalized {
-            result(WMPError.workmanagerIsAlreadyInitialized)
-            return
-        }
         #if targetEnvironment(simulator)
-            print("Workmanager Info: Please run on real device!" +
-                "No backgroundtask is automatic called in the simulator!!")
+            logInfo("Workmanager Info: Should be run on a real device," +
+                "background tasks might not run on simulators.")
         #endif
         let backgroundRefreshAvailable = checkBackgroundRefreshAuthorisation(result: result)
         if backgroundRefreshAvailable != BackgroundAuthorisationState.available {
+            // TODO what is the rationale of opening App settings without a message to user? instead it should be done by the calling App not this plugin
             UIApplication.shared.open(URL(
                 string: UIApplication.openSettingsURLString)!,
             options: [:],
@@ -380,7 +380,7 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
     }
 
     private func registerPeriodicTask(arguments: [AnyHashable: Any], result: @escaping FlutterResult) {
-        print("Registering periodic task in background (BGAppRefreshTask)")
+        logInfo("Registering periodic task in background (BGAppRefreshTask)")
         if !validateCallbackHandle(result: result) {
             return
         }
@@ -394,11 +394,11 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
             }
             let initialDelaySeconds =
                 arguments[method.Arguments.initialDelaySeconds.rawValue] as? Int64 ?? 0
-            // task will scheduled when app goes to background
+            // Task will be scheduled when app goes to background
             SwiftWorkmanagerPlugin.registerAppRefreshTaskScheduler(
                 taskIdentifier: uniqueTaskIdentifier,
                 earliestBeginInSeconds: Double(initialDelaySeconds))
-            print("Registered PeriodicTask \(uniqueTaskIdentifier) , callbackId \(uniqueTaskIdentifier.lowercasingFirst) delaySeconds \(initialDelaySeconds)")
+            logInfo("Registered PeriodicTask \(uniqueTaskIdentifier) , callbackId \(uniqueTaskIdentifier.lowercasingFirst) delaySeconds \(initialDelaySeconds)")
             result(true)
             return
         } else {
@@ -409,7 +409,7 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
     }
 
     private func registerOneOffTask(arguments: [AnyHashable: Any], result: @escaping FlutterResult) {
-        print("Registering OneOffTask")
+        logInfo("Registering OneOffTask")
         if !validateCallbackHandle(result: result) {
             return
         }
@@ -436,7 +436,7 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
 
 
             taskIdentifier = UIApplication.shared.beginBackgroundTask(withName: uniqueTaskIdentifier, expirationHandler: {
-                // Code to handle if takes way too long
+                // Code to handle if it takes way too long
                 UIApplication.shared.endBackgroundTask(taskIdentifier)
             })
             SwiftWorkmanagerPlugin.startOnOffTask(identifier: callBackIdentifier,
@@ -444,11 +444,11 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
                                                   inputData: inputData ?? "",
                                                   delaySeconds: delaySeconds)
             result(true)
-            print("Registered OnOffTask \(uniqueTaskIdentifier) , callbackId \(uniqueTaskIdentifier.lowercasingFirst)")
+            logInfo("Registered OneOffTask \(uniqueTaskIdentifier) , callbackId \(uniqueTaskIdentifier.lowercasingFirst)")
             return
         } else {
             result(FlutterError(code: "99",
-                                message: "RegisterPeriodicTask is not registered",
+                                message: "registerOneOffTask is not registered",
                                 details: "iOS Version lower than 13.0"))
         }
     }
@@ -476,14 +476,14 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
                 requiresNetwork = true
             }
 
-            // task will scheduled by iOS when app goes to background
             SwiftWorkmanagerPlugin.registerBackgroundProcessingTaskScheduler(
+            // Task will be scheduled by OS when app goes to background
                 uniqueTaskIdentifier: uniqueTaskIdentifier,
                 earliestBeginInSeconds: delaySeconds,
                 requiresNetworkConnectivity: requiresCharging,
                 requiresExternalPower: requiresNetwork)
             result(true)
-            print("Registered BackgroundProcessingTask \(uniqueTaskIdentifier) , callbackId \(uniqueTaskIdentifier.lowercasingFirst)")
+            logInfo("Registered BackgroundProcessingTask \(uniqueTaskIdentifier) , callbackId \(uniqueTaskIdentifier.lowercasingFirst)")
 
             return
         } else {
@@ -512,9 +512,8 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
         result(true)
     }
 
-    /// Checks wether getStoredCallbackHandle is set
-    /// Returns true wenn initilized
-    /// if false result contains errormessage
+    /// Checks whether getStoredCallbackHandle is set.
+    /// Returns true when initialized, if false result contains error message.
     private func validateCallbackHandle(result: @escaping FlutterResult) -> Bool {
         if UserDefaultsHelper.getStoredCallbackHandle() == nil {
             result(
