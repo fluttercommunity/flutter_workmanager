@@ -354,7 +354,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                               workmanagerInitialized = true;
                             }
                             await Workmanager()
-                                .registeriOSBackgroundProcessingTask(
+                                .registerProcessingTask(
                                     iOSBackgroundProcessingTask,
                                     iOSBackgroundProcessingTask);
                           }

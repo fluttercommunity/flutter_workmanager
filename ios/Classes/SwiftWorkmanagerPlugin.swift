@@ -40,8 +40,8 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
                 }
             }
 
-            struct RegisteriOSBackgroundProcessingTask {
-                static let name = "\(RegisteriOSBackgroundProcessingTask.self)".lowercasingFirst
+            struct RegisterProcessingTask {
+                static let name = "\(RegisterProcessingTask.self)".lowercasingFirst
                 enum Arguments: String {
                     case taskName
                     case uniqueName
@@ -160,7 +160,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
 
     /// Immediately start a background fetch with 29sec timeout - specification by iOS
     @available(iOS 13.0, *)
-    public static func startOnOffTask(identifier: String, taskIdentifier: UIBackgroundTaskIdentifier, inputData:String, delaySeconds: Int64) {
+    public static func startOneOffTask(identifier: String, taskIdentifier: UIBackgroundTaskIdentifier, inputData:String, delaySeconds: Int64) {
         let isInDebug = UserDefaultsHelper.getIsDebug()
         if isInDebug {
             logInfo("WorkmanagerPlugin immediately startOneOffTask")
@@ -172,7 +172,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
             identifier,
             inputData: inputData,
             flutterPluginRegistrantCallback: SwiftWorkmanagerPlugin.flutterPluginRegistrantCallback,
-            backgroundMode: .backgroundOnOffTask(identifier: identifier),
+            backgroundMode: .backgroundOneOffTask(identifier: identifier),
             isInDebug: isInDebug
         )
 
@@ -262,7 +262,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     @objc
     /// Registers a long running BackgroundProcessingTask - randomly started by iOS when app in background
     /// Task will scheduled when app goes to background
-    public static func registerBackgroundProcessingTaskScheduler(uniqueTaskIdentifier: String,
+    public static func registerProcessingTaskScheduler(uniqueTaskIdentifier: String,
                                                                  earliestBeginInSeconds begin: Double,
                                                                  requiresNetworkConnectivity: Bool,
                                                                  requiresExternalPower: Bool) {
@@ -282,7 +282,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
 
     @objc
     /// Schedules a long running BackgroundProcessingTask - randomly started by iOS when app in background
-    /// Called by UIApplication.didEnterBackgroundNotification in [registerBackgroundProcessingTaskScheduler]
+    /// Called by UIApplication.didEnterBackgroundNotification in [registerProcessingTaskScheduler]
     @available(iOS 13.0, *)
     private static func scheduleBackgroundProcessingTask(
         withIdentifier uniqueTaskIdentifier: String,
@@ -340,8 +340,8 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
         case (ForegroundMethodChannel.Methods.RegisterOneOffTask.name, let .some(arguments)):
             registerOneOffTask(arguments: arguments, result: result)
             return
-        case (ForegroundMethodChannel.Methods.RegisteriOSBackgroundProcessingTask.name, let .some(arguments)):
-            registerBackgroundProcessingTask(arguments: arguments, result: result)
+        case (ForegroundMethodChannel.Methods.RegisterProcessingTask.name, let .some(arguments)):
+            registerProcessingTask(arguments: arguments, result: result)
             return
         case (ForegroundMethodChannel.Methods.CancelAllTasks.name, .none):
             cancelAllTasks(result: result)
@@ -439,7 +439,7 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
                 // Code to handle if it takes way too long
                 UIApplication.shared.endBackgroundTask(taskIdentifier)
             })
-            SwiftWorkmanagerPlugin.startOnOffTask(identifier: callBackIdentifier,
+            SwiftWorkmanagerPlugin.startOneOffTask(identifier: callBackIdentifier,
                                                   taskIdentifier: taskIdentifier,
                                                   inputData: inputData ?? "",
                                                   delaySeconds: delaySeconds)
@@ -453,13 +453,13 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
         }
     }
 
-    private func registerBackgroundProcessingTask(arguments: [AnyHashable: Any], result: @escaping FlutterResult) {
-        print("Registering backgroundProcessingTask")
+    private func registerProcessingTask(arguments: [AnyHashable: Any], result: @escaping FlutterResult) {
+        logInfo("Registering backgroundProcessingTask")
         if !validateCallbackHandle(result: result) {
             return
         }
         if #available(iOS 13.0, *) {
-            let method = ForegroundMethodChannel.Methods.RegisteriOSBackgroundProcessingTask.self
+            let method = ForegroundMethodChannel.Methods.RegisterProcessingTask.self
             guard let uniqueTaskIdentifier =
                 arguments[method.Arguments.uniqueName.rawValue] as? String else {
                 result(WMPError.invalidParameters.asFlutterError)
@@ -476,8 +476,8 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
                 requiresNetwork = true
             }
 
-            SwiftWorkmanagerPlugin.registerBackgroundProcessingTaskScheduler(
             // Task will be scheduled by OS when app goes to background
+            SwiftWorkmanagerPlugin.registerProcessingTaskScheduler(
                 uniqueTaskIdentifier: uniqueTaskIdentifier,
                 earliestBeginInSeconds: delaySeconds,
                 requiresNetworkConnectivity: requiresCharging,

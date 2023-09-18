@@ -230,6 +230,7 @@ class Workmanager {
   /// Schedule a background long running task, currently only available on iOS.
   /// It can take longer than 30 seconds, to be used for tasks that might be time-consuming, such as downloading a large file or synchronizing data.
   /// See Apple docs https://developer.apple.com/documentation/uikit/app_and_environment/scenes/preparing_your_ui_to_run_in_the_background/using_background_tasks_to_update_your_app
+  Future<void> registerProcessingTask(
     final String uniqueName,
     final String taskName, {
     /// set required [NetworkType] only iOS
@@ -247,7 +248,7 @@ class Workmanager {
     final Map<String, dynamic>? inputData,
   }) async =>
       await _foregroundChannel.invokeMethod(
-        "registeriOSBackgroundProcessingTask",
+        "registerProcessingTask",
         JsonMapperHelper.toRegisterMethodArgument(
             isInDebugMode: _isInDebugMode,
             uniqueName: uniqueName,

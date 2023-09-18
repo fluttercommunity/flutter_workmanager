@@ -6,7 +6,7 @@ After PR integration, here is how our fork works:
 
 - registerOneOffTask: Starts immediately on both android and iOS. On iOS it lasts only 29sec.
 
-- registeriOSBackgroundProcessingTask: Long running oneoff background task to be used specifically on iOS. It last more than 29sec but doesnt start immediately.
+- registerProcessingTask: Long running one off background task to be used specifically on iOS. It last more than 29sec but doesnt start immediately.
 
 - registerPeriodicTask: This is for a scheduled task on both android and iOS. It's a 29sec task on iOS, but doesn't start immediately.
 

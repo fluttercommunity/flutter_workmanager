@@ -10,7 +10,7 @@ import Foundation
 enum BackgroundMode {
     case backgroundAppRefresh
     case backgroundProcessingTask
-    case backgroundOnOffTask(identifier: String)
+    case backgroundOneOffTask(identifier: String)
 
     var flutterThreadlabelPrefix: String {
         switch self {
@@ -18,8 +18,8 @@ enum BackgroundMode {
             return "\(SwiftWorkmanagerPlugin.identifier).BackgroundAppRefreshTask"
         case .backgroundProcessingTask:
             return "\(SwiftWorkmanagerPlugin.identifier).BackgroundProcessingTask"
-        case .backgroundOnOffTask:
-            return "\(SwiftWorkmanagerPlugin.identifier).OnOffTask"
+        case .backgroundOneOffTask:
+            return "\(SwiftWorkmanagerPlugin.identifier).OneOffTask"
         }
     }
 
@@ -29,7 +29,7 @@ enum BackgroundMode {
             return ["\(SwiftWorkmanagerPlugin.identifier).DART_TASK": "iOSBackgroundAppRefresh"]
         case .backgroundProcessingTask:
             return ["\(SwiftWorkmanagerPlugin.identifier).DART_TASK": "iOSBackgroundProcessingTask"]
-        case let .backgroundOnOffTask(identifier):
+        case let .backgroundOneOffTask(identifier):
             return ["\(SwiftWorkmanagerPlugin.identifier).DART_TASK": identifier]
         }
     }
