@@ -77,7 +77,6 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
         }
     }
 
-    ///Handlers
     @available(iOS 13.0, *)
     private static func handleBGProcessingTask(_ task: BGProcessingTask) {
         NSLog("Workmanagerplugin handle handleBGProcessingTask")
@@ -179,11 +178,10 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
         // Create an operation that performs the main part of the background task.
     }
 
-    ///
-    @objc
-    /// First register names for  BGAppRefresh
-    /// you must register tasknames before app finishes launching in appdelegate --> else there is an error thrown
+    /// First register names for [BGAppRefresh].
+    /// You must register task names before app finishes launching in AppDelegate.
     /// After that you can call [registerAppRefreshTaskScheduler] which schedules task in background
+    @objc
     public static func registerAppRefreshTask(withIdentifier identifier: String) {
         if #available(iOS 13.0, *) {
             print("Workmanager - registerAppRefreshTask withIdentifier \(identifier)")
@@ -234,8 +232,8 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
 
     /// First register names for BGProcessingTask called by WorkmangerPlugin.m
     /// This happens on registering
-    /// you must register tasknames before app finishes launching in appdelegate --> else there is an error thrown
-    /// After that you can call [registerBackgroundProcessingTaskScheduler] which schedules task in background
+    /// you must register task names before app finishes launching in AppDelegate --> else there is an error thrown
+    /// After that you can call [registerProcessingTaskScheduler] which schedules task in background
     @objc
     public static func registerBGProcessingTask(withIdentifier identifier: String) {
         if #available(iOS 13.0, *) {

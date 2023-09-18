@@ -53,11 +53,11 @@ typedef BackgroundTaskHandler = Future<bool> Function(
 /// ```
 ///
 /// You can schedule a specific iOS task using:
-/// - `Workmanager#registerOneOffTask()`
+/// - `Workmanager.registerOneOffTask()`
 /// Please read the documentation on limitations for background processing on iOS.
 ///
 /// You can now schedule Android tasks using:
-/// - `Workmanager#registerOneOffTask()` or `Workmanager#registerPeriodicTask`
+/// - `Workmanager.registerOneOffTask()` or `Workmanager.registerPeriodicTask()`
 ///
 /// iOS periodic task is automatically scheduled if you setup the plugin properly.
 class Workmanager {
@@ -143,18 +143,17 @@ class Workmanager {
     }
   }
 
-  ///iOS implementation
-  ///checks whether user or parental control avoids background refresh
-  ///
+  /// Checks whether user or parental control restricts background refresh.
+  /// Only available on iOS.
   Future<BackgroundAuthorisationState>
       checkBackgroundRefreshPermission() async {
     try {
       var result = await _foregroundChannel.invokeMethod<Object>(
         'checkBackgroundRefreshPermission',
         JsonMapperHelper.toInitializeMethodArgument(
-            isInDebugMode: _isInDebugMode,
-            callbackHandle:
-                0), //must provide an argument for switch statement on Swift
+          isInDebugMode: _isInDebugMode,
+          callbackHandle: 0,
+        ),
       );
       switch (result.toString()) {
         case 'available':
@@ -172,8 +171,8 @@ class Workmanager {
     return BackgroundAuthorisationState.unknown;
   }
 
-  /// Schedule a one off task
-  /// starts on iOS immediately with a timeout of 29 secs in background
+  /// Schedule a one off task.
+  /// On iOS immediately starts with a timeout of 29 secs in background.
   /// A [uniqueName] is required so only one task can be registered.
   /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler]
   /// The [inputData] is the input data for task. Valid value types are: int, bool, double, String and their list
@@ -183,7 +182,6 @@ class Workmanager {
 
     /// Only supported on Android.
     final String taskName, {
-
     /// Only supported on Android.
     final String? tag,
 
@@ -229,13 +227,11 @@ class Workmanager {
         ),
       );
 
-  /// Schedule a BackgroundProcessingTask only for iOS
-  /// This can be a long running Task on iOS longer than 30seconds
-  /// See Apples documentation https://developer.apple.com/documentation/backgroundtasks
-  Future<void> registeriOSBackgroundProcessingTask(
+  /// Schedule a background long running task, currently only available on iOS.
+  /// It can take longer than 30 seconds, to be used for tasks that might be time-consuming, such as downloading a large file or synchronizing data.
+  /// See Apple docs https://developer.apple.com/documentation/uikit/app_and_environment/scenes/preparing_your_ui_to_run_in_the_background/using_background_tasks_to_update_your_app
     final String uniqueName,
     final String taskName, {
-
     /// set required [NetworkType] only iOS
     final NetworkType? networkType = NetworkType.not_required,
 
