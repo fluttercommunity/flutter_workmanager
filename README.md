@@ -133,7 +133,7 @@ const iOSBackgroundAppRefresh = "be.tramckrijte.workmanagerExample.iOSBackground
 Workmanager().registerPeriodicTask(
   iOSBackgroundAppRefresh,
   iOSBackgroundAppRefresh,
-  initialDelay: Duration(seconds: 10), // Ignored  on iOS
+  initialDelay: Duration(seconds: 10),
 );
 ```
 

@@ -77,7 +77,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     }
 
     @available(iOS 13.0, *)
-    private static func handleBGProcessingTask(_ task: BGProcessingTask) {
+    private static func handleBGProcessingTask(identifier: String, task: BGProcessingTask) {
         let isInDebug = UserDefaultsHelper.getIsDebug()
         if isInDebug {
             logInfo("WorkmanagerPlugin handle handleBGProcessingTask")
@@ -89,7 +89,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
             task.identifier,
             inputData: "", //no data
             flutterPluginRegistrantCallback: SwiftWorkmanagerPlugin.flutterPluginRegistrantCallback,
-            backgroundMode: .backgroundProcessingTask,
+            backgroundMode: .backgroundProcessingTask(identifier: identifier),
             isInDebug: isInDebug
         )
 
@@ -111,7 +111,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
 
     @objc
     @available(iOS 13.0, *)
-    public static func handleAppRefresh(task: BGAppRefreshTask) {
+    public static func handleAppRefresh(identifier: String, task: BGAppRefreshTask) {
         let isInDebug = UserDefaultsHelper.getIsDebug()
         if isInDebug {
             logInfo("WorkmanagerPlugin handle BGAppRefreshTask")
@@ -132,7 +132,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
             task.identifier,
             inputData: "",
             flutterPluginRegistrantCallback: SwiftWorkmanagerPlugin.flutterPluginRegistrantCallback,
-            backgroundMode: .backgroundAppRefresh,
+            backgroundMode: .backgroundAppRefresh(identifier: identifier),
             isInDebug: isInDebug
         )
 
@@ -202,7 +202,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
                 using: nil
             ) { task in
                 if let task = task as? BGAppRefreshTask {
-                    handleAppRefresh(task: task)
+                    handleAppRefresh(identifier: identifier, task: task)
                 }
             }
         }
@@ -228,8 +228,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     @objc
     @available(iOS 13.0, *)
     private static func scheduleAppRefresh(taskIdentifier identifier: String, earliestBeginInSeconds begin: Double) {
-        let request = BGAppRefreshTaskRequest(
-            identifier: identifier)
+        let request = BGAppRefreshTaskRequest(identifier: identifier)
         request.earliestBeginDate = Date(timeIntervalSinceNow: begin)
         do {
             try BGTaskScheduler.shared.submit(request)
@@ -253,7 +252,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
                 using: nil
             ) { task in
                 if let task = task as? BGProcessingTask {
-                    handleBGProcessingTask(task)
+                    handleBGProcessingTask(identifier: identifier, task: task)
                 }
             }
         }

@@ -101,6 +101,7 @@ class Workmanager {
   MethodChannel _foregroundChannel = const MethodChannel(
       "be.tramckrijte.workmanager/foreground_channel_work_manager");
 
+  // TODO remove these and convert to user named tasks, and change above example
   static const BACKGROUND_APPREFRESH_TASK_NAME = "iOSBackgroundAppRefresh";
   static const BACKGROUND_PROCESSING_TASK_NAME = "iOSBackgroundProcessingTask";
 

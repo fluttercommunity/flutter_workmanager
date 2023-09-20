@@ -72,7 +72,7 @@ void callbackDispatcher() {
       case simplePeriodic1HourTask:
         print("$simplePeriodic1HourTask was executed");
         break;
-      case Workmanager.BACKGROUND_APPREFRESH_TASK_NAME:
+      case iOSBackgroundAppRefresh:
         // Currently fixed value, can't change at the moment - see [BackgroundMode.onResultSendArguments].
         // To test, follow the instructions on https://developer.apple.com/documentation/backgroundtasks/starting_and_terminating_tasks_during_development
         // and https://github.com/fluttercommunity/flutter_workmanager/blob/main/IOS_SETUP.md
@@ -81,7 +81,7 @@ void callbackDispatcher() {
         print(
             "You can access other plugins in the background, for example Directory.getTemporaryDirectory(): $tempPath");
         break;
-      case Workmanager.BACKGROUND_PROCESSING_TASK_NAME:
+      case iOSBackgroundProcessingTask:
         // Currently fixed value, can't change at the moment - see [BackgroundMode.onResultSendArguments].
         // To test, follow the instructions on https://developer.apple.com/documentation/backgroundtasks/starting_and_terminating_tasks_during_development
         // and https://github.com/fluttercommunity/flutter_workmanager/blob/main/IOS_SETUP.md

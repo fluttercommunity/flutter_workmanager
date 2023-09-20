@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
 
+// TODO delete this file, it is not needed
 ///Helper to write events to a local file, because SharedPrefs doesn't sync datas between isolated
 class LogHelper {
   static const String _backgroundTaskLogFileName = "iOSBackgroundTask.log";
