@@ -123,8 +123,9 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
             return
         }
 
-        // TODO Improve seconds are ignored on refresh, important to reschedule
-        scheduleAppRefresh(taskIdentifier: task.identifier, earliestBeginInSeconds: 120)
+        // Reschedule no earlier than 15 minutes from now. TODO interval should be configurable
+        // probably through AppDelegate.swift WorkmanagerPlugin.registerPeriodicTask
+        scheduleAppRefresh(taskIdentifier: task.identifier, earliestBeginInSeconds: 15 * 60)
 
         let operationQueue = OperationQueue()
         // Create an operation that performs the main part of the background task
@@ -136,14 +137,12 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
             isInDebug: isInDebug
         )
 
-        // Provide an expiration handler for the background task
-        // that cancels the operation
+        // Provide an expiration handler for the background task that cancels the operation
         task.expirationHandler = {
             operation.cancel()
         }
 
-        // Inform the system that the background task is complete
-        // when the operation completes
+        // Inform the system that the background task is complete when the operation completes
         operation.completionBlock = {
             if isInDebug {
                 logInfo("WorkmanagerPlugin handle BGAppRefreshTask completed")
@@ -261,10 +260,12 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     @objc
     /// Registers a long running BackgroundProcessingTask - randomly started by iOS when app in background
     /// Task will scheduled when app goes to background
-    public static func registerProcessingTaskScheduler(uniqueTaskIdentifier: String,
-                                                                 earliestBeginInSeconds begin: Double,
-                                                                 requiresNetworkConnectivity: Bool,
-                                                                 requiresExternalPower: Bool) {
+    public static func registerProcessingTaskScheduler(
+        uniqueTaskIdentifier: String,
+        earliestBeginInSeconds begin: Double,
+        requiresNetworkConnectivity: Bool,
+        requiresExternalPower: Bool
+    ) {
         if #available(iOS 13.0, *) {
             let network = requiresNetworkConnectivity
             let extPower = requiresExternalPower

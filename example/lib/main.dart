@@ -296,7 +296,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                           }
                         : null),
                 // This task runs periodically depending on iOS - there is no safe timing - see Apple doc
-                // Since we have not provided a frequency it will be the default 2 minutes
+                // Currently we cannot provide frequency for iOS, hence it will be
+                // minimum 15 minutes after which iOS will reschedule
                 ElevatedButton(
                   child: Text("Register Periodic Background App Refresh (iOS)"),
                   onPressed: Platform.isIOS
@@ -307,7 +308,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                           }
                           await Workmanager().registerPeriodicTask(
                               iOSBackgroundAppRefresh, iOSBackgroundAppRefresh,
-                              initialDelay: Duration(seconds: 10), //ignored
+                              initialDelay: Duration(seconds: 10),
                               inputData: <String, dynamic>{} //ignored on iOS
                               );
                         }
