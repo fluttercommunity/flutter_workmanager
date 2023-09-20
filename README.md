@@ -125,11 +125,11 @@ Workmanager().registerOneOffTask(
 );
 ```
 
-iOS supports **Periodic tasks** with maximum 29sec execution time (see example).
+iOS supports **Periodic tasks** with maximum 29 seconds.
 For more information see the [Apple Docs](https://developer.apple.com/documentation/uikit/app_and_environment/scenes/preparing_your_ui_to_run_in_the_background/using_background_tasks_to_update_your_app).
 
 ```dart
-const iOSBackgroundAppRefresh = "app.workmanagerExample.iOSBackgroundAppRefresh";
+const iOSBackgroundAppRefresh = "be.tramckrijte.workmanagerExample.iOSBackgroundAppRefresh";
 Workmanager().registerPeriodicTask(
   iOSBackgroundAppRefresh,
   iOSBackgroundAppRefresh,
@@ -138,6 +138,19 @@ Workmanager().registerPeriodicTask(
 ```
 
 For more information see the [BGAppRefreshTask](https://developer.apple.com/documentation/backgroundtasks/bgapprefreshtask).
+
+iOS supports **Processing tasks** which can run for more than 30 seconds.
+Processing tasks are for long processes like data processing and app maintenance. Processing tasks can run for minutes, but the system can interrupt these.
+Processing tasks run only when the device is idle. iOS terminates any background processing tasks running when the user starts using the device. However background refresh tasks aren’t affected.
+For more information see the [Apple Docs](https://developer.apple.com/documentation/backgroundtasks/bgprocessingtask)
+
+```dart
+const iOSBackgroundProcessingTask = "be.tramckrijte.workmanagerExample.iOSBackgroundProcessingTask";
+Workmanager().registerProcessingTask(
+  iOSBackgroundProcessingTask,
+  iOSBackgroundProcessingTask,
+);
+```
 
 Get permissions for iOS BackgroundRefresh - see example
 

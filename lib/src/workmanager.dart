@@ -228,8 +228,16 @@ class Workmanager {
       );
 
   /// Schedule a background long running task, currently only available on iOS.
-  /// It can take longer than 30 seconds, to be used for tasks that might be time-consuming, such as downloading a large file or synchronizing data.
+  ///
+  /// Processing tasks are for long processes like data processing and app maintenance.
+  /// Processing tasks can run for minutes, but the system can interrupt these.
+  /// Processing tasks run only when the device is idle. iOS terminates any
+  /// background processing tasks running when the user starts using the device.
+  /// However background refresh tasks aren’t affected.
+  ///
+  ///
   /// See Apple docs https://developer.apple.com/documentation/uikit/app_and_environment/scenes/preparing_your_ui_to_run_in_the_background/using_background_tasks_to_update_your_app
+  /// https://developer.apple.com/documentation/backgroundtasks/bgprocessingtask
   Future<void> registerProcessingTask(
     final String uniqueName,
     final String taskName, {

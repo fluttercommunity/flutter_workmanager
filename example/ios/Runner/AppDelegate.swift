@@ -36,8 +36,8 @@ import workmanager
 		WorkmanagerPlugin.registerTask(withIdentifier: "be.tramckrijte.workmanagerExample.simplePeriodic1HourTask")*/
 
 		//important to register backgroundprocessingtask in Runner/AppDelegate and info.plist
-		WorkmanagerPlugin.registerPeriodicTask(withIdentifier: "app.workmanagerExample.iOSBackgroundAppRefresh")
-        WorkmanagerPlugin.registerBGProcessingTask(withIdentifier:  "app.workmanagerExample.iOSBackgroundProcessingTask")
+		WorkmanagerPlugin.registerPeriodicTask(withIdentifier: "be.tramckrijte.workmanagerExample.iOSBackgroundAppRefresh")
+        WorkmanagerPlugin.registerBGProcessingTask(withIdentifier:  "be.tramckrijte.workmanagerExample.iOSBackgroundProcessingTask")
 
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
 
