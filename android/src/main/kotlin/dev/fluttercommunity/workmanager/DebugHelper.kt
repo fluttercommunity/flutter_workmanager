@@ -1,4 +1,4 @@
-package be.tramckrijte.workmanager
+package dev.fluttercommunity.workmanager
 
 import android.app.NotificationChannel
 import android.app.NotificationManager

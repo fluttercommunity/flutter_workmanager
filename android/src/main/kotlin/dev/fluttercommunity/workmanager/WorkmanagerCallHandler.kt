@@ -1,4 +1,4 @@
-package be.tramckrijte.workmanager
+package dev.fluttercommunity.workmanager
 
 import android.content.Context
 import androidx.work.Constraints
@@ -9,9 +9,9 @@ import androidx.work.OneTimeWorkRequest
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
-import be.tramckrijte.workmanager.BackgroundWorker.Companion.DART_TASK_KEY
-import be.tramckrijte.workmanager.BackgroundWorker.Companion.IS_IN_DEBUG_MODE_KEY
-import be.tramckrijte.workmanager.BackgroundWorker.Companion.PAYLOAD_KEY
+import dev.fluttercommunity.workmanager.BackgroundWorker.Companion.DART_TASK_KEY
+import dev.fluttercommunity.workmanager.BackgroundWorker.Companion.IS_IN_DEBUG_MODE_KEY
+import dev.fluttercommunity.workmanager.BackgroundWorker.Companion.PAYLOAD_KEY
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import java.util.concurrent.TimeUnit

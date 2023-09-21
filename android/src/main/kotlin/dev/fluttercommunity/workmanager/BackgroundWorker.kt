@@ -1,4 +1,4 @@
-package be.tramckrijte.workmanager
+package dev.fluttercommunity.workmanager
 
 import android.content.Context
 import android.os.Handler

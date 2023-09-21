@@ -1,6 +1,6 @@
 import androidx.work.NetworkType
 import androidx.work.OutOfQuotaPolicy
-import be.tramckrijte.workmanager.Extractor
+import dev.fluttercommunity.workmanager.Extractor
 import io.flutter.plugin.common.MethodCall
 import org.junit.Assert.assertEquals
 import org.junit.Test
