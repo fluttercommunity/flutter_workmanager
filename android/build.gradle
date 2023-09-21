@@ -2,7 +2,7 @@ group 'dev.fluttercommunity.workmanager'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.7.10'
+    ext.kotlin_version = '1.8.10'
     repositories {
         google()
         mavenCentral()
@@ -30,12 +30,11 @@ android {
         namespace 'dev.fluttercommunity.workmanager'
     }
 
-    compileSdkVersion 33
-
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
     }
     defaultConfig {
+        compileSdk 33
         minSdkVersion 19
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
