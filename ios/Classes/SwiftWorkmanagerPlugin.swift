@@ -360,15 +360,6 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
             logInfo("Workmanager Info: Should be run on a real device," +
                 "background tasks might not run on simulators.")
         #endif
-        let backgroundRefreshAvailable = checkBackgroundRefreshAuthorisation(result: result)
-        if backgroundRefreshAvailable != BackgroundAuthorisationState.available {
-            // TODO what is the rationale of opening App settings without a message to user? instead it should be done by the calling App not this plugin
-            UIApplication.shared.open(URL(
-                string: UIApplication.openSettingsURLString)!,
-            options: [:],
-            completionHandler: nil)
-            return
-        }
         let method = ForegroundMethodChannel.Methods.Initialize.self
         guard let isInDebug = arguments[method.Arguments.isInDebugMode.rawValue] as? Bool,
               let handle = arguments[method.Arguments.callbackHandle.rawValue] as? Int64 else {
@@ -377,6 +368,7 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
         }
         UserDefaultsHelper.storeCallbackHandle(handle)
         UserDefaultsHelper.storeIsDebug(isInDebug)
+        result(true)
     }
 
     private func registerPeriodicTask(arguments: [AnyHashable: Any], result: @escaping FlutterResult) {
