@@ -10,6 +10,7 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequest
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.PeriodicWorkRequest
+import androidx.work.WorkRequest
 import dev.fluttercommunity.workmanager.WorkManagerCall.CancelTask.ByTag.KEYS.UNREGISTER_TASK_TAG_KEY
 import dev.fluttercommunity.workmanager.WorkManagerCall.CancelTask.ByUniqueName.KEYS.UNREGISTER_TASK_UNIQUE_NAME_KEY
 import dev.fluttercommunity.workmanager.WorkManagerCall.Initialize.KEYS.INITIALIZE_TASK_CALL_HANDLE_KEY
@@ -147,8 +148,8 @@ sealed class WorkManagerCall {
 }
 
 private enum class TaskType(val minimumBackOffDelay: Long) {
-    ONE_OFF(OneTimeWorkRequest.MIN_BACKOFF_MILLIS),
-    PERIODIC(PeriodicWorkRequest.MIN_BACKOFF_MILLIS)
+    ONE_OFF(WorkRequest.MIN_BACKOFF_MILLIS),
+    PERIODIC(WorkRequest.MIN_BACKOFF_MILLIS)
 }
 
 object Extractor {
