@@ -10,7 +10,7 @@ jobs:
   format_dart:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: "checkout"
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: "ktlint"
         uses: "vroy/gha-kotlin-linter@v1"
@@ -31,14 +31,14 @@ jobs:
   format_swift:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: GitHub Action for SwiftLint
         uses: norio-nomura/action-swiftlint@3.2.1
 
   publishable:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
