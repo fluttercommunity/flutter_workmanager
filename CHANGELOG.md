@@ -1,5 +1,7 @@
 # next
 
+* Android: Bump to workmanager 2.8.1
+* Android: Move to Android Gradle Plugin 8.x
 * Android: Migrate away from ResolvableFuture (#399).
 
 # 0.5.1
