@@ -10,7 +10,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
@@ -22,7 +22,7 @@ jobs:
   native_ios_tests:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
@@ -34,10 +34,10 @@ jobs:
   native_android_tests:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: 17
       - uses: subosito/flutter-action@v1
         with:
           channel: 'stable'
@@ -57,7 +57,7 @@ jobs:
       - uses: futureware-tech/simulator-action@v1
         with:
           model: '${{ matrix.device }}'
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
@@ -76,10 +76,10 @@ jobs:
         # api-level: [21, 29]
         target: [default]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: 17
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'

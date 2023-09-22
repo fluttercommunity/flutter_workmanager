@@ -1,4 +1,4 @@
-package be.tramckrijte.workmanager
+package dev.fluttercommunity.workmanager
 
 import android.content.Context
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -47,7 +47,7 @@ class WorkmanagerPlugin : FlutterPlugin {
         @Deprecated(message = "Use the Android v2 embedding method.")
         @JvmStatic
         fun setPluginRegistrantCallback(pluginRegistryCallback: PluginRegistry.PluginRegistrantCallback) {
-            WorkmanagerPlugin.pluginRegistryCallback = pluginRegistryCallback
+            Companion.pluginRegistryCallback = pluginRegistryCallback
         }
     }
 }
