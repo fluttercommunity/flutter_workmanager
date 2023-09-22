@@ -25,9 +25,9 @@ enum BackgroundMode {
 
     var onResultSendArguments: [String: String] {
         switch self {
-        case .backgroundAppRefresh(identifier):
+        case let .backgroundAppRefresh(identifier):
             return ["\(SwiftWorkmanagerPlugin.identifier).DART_TASK": identifier]
-        case .backgroundProcessingTask(identifier):
+        case let .backgroundProcessingTask(identifier):
             return ["\(SwiftWorkmanagerPlugin.identifier).DART_TASK": identifier]
         case let .backgroundOneOffTask(identifier):
             return ["\(SwiftWorkmanagerPlugin.identifier).DART_TASK": identifier]

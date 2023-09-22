@@ -531,17 +531,17 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
 }
 
 // MARK: - AppDelegate conformance
-
-extension SwiftWorkmanagerPlugin {
-    override public func application(
-        _ application: UIApplication,
-        performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
-    ) -> Bool {
-        let worker = BackgroundWorker(
-            mode: .backgroundProcessingTask,
-            inputData: "", 
-            flutterPluginRegistrantCallback: SwiftWorkmanagerPlugin.flutterPluginRegistrantCallback
-        )
-        return worker.performBackgroundRequest(completionHandler)
-    }
-}
+// TODO this is temporarily commented, it might be needed for background fetch on iOS 12 and lower
+// extension SwiftWorkmanagerPlugin {
+//     override public func application(
+//         _ application: UIApplication,
+//         performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+//     ) -> Bool {
+//         let worker = BackgroundWorker(
+//             mode: .backgroundProcessingTask,
+//             inputData: "",
+//             flutterPluginRegistrantCallback: SwiftWorkmanagerPlugin.flutterPluginRegistrantCallback
+//         )
+//         return worker.performBackgroundRequest(completionHandler)
+//     }
+// }
