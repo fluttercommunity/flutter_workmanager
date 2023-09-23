@@ -1,5 +1,7 @@
 # next
 
+* Android: Removed jetifier
+* Android: Removed V1 plugin APIs - this is now a Android V2 plugin only
 * Android: Bump to workmanager 2.8.1
 * Android: Move to Android Gradle Plugin 8.x
 * Android: Migrate away from ResolvableFuture (#399).
