@@ -101,3 +101,22 @@ class Constraints {
     this.requiresStorageNotLow,
   });
 }
+
+/// An enum of Background App Refresh states.
+/// On iOS user can disable Background App Refresh permission any time, hence
+/// background tasks should only be run if user has granted the permission.
+/// [Workmanager().checkBackgroundRefreshPermission()] can be used to check the
+/// permission.
+enum BackgroundRefreshPermissionState {
+  /// Background app refresh is enabled in iOS Setting
+  available,
+
+  /// Background app refresh is disabled in iOS Setting. Permission should be requested from user
+  denied,
+
+  /// iOS Setting is under parental control etc. Can't be changed by user
+  restricted,
+
+  /// Unknown state
+  unknown
+}

@@ -81,36 +81,18 @@ class Workmanager {
   /// void callbackDispatcher() {
   ///   Workmanager().executeTask((taskName, inputData) {
   ///      switch (taskName) {
-  ///        case Workmanager.iOSBackgroundTask:
+  ///        case Workmanager.iOSBackgroundProcessingTask:
   ///          stderr.writeln("The iOS background fetch was triggered");
   ///          break;
+  ///        case Workmanager.iOSBackgroundAppRefresh:
+  ///          stderr.writeln("The iOS backgroundAppRefresh was triggered");
+  ///           break;
   ///      }
   ///
   ///      return Future.value(true);
   ///  });
   /// }
   /// ```
-  static const String iOSBackgroundTask = "iOSPerformFetch";
-
-  /// Use this constant inside your callbackDispatcher to identify when an iOS Background Processing via BGTaskScheduler occurred.
-  ///
-  /// ```
-  /// @pragma('vm:entry-point')
-  /// void callbackDispatcher() {
-  ///   Workmanager().executeTask((taskName, inputData) {
-  ///      switch (taskName) {
-  ///        case Workmanager.iOSBackgroundProcessingTask:
-  ///          stderr.writeln("A iOS BG processing task was initiated.");
-  ///          break;
-  ///      }
-  ///
-  ///      return Future.value(true);
-  ///  });
-  /// }
-  /// ```
-  @Deprecated('Use custom iOS task names. This property will be removed.')
-  static const String iOSBackgroundProcessingTask =
-      "workmanager.background.task";
 
   static bool _isInDebugMode = false;
 
@@ -158,7 +140,9 @@ class Workmanager {
     }
   }
 
-  /// Schedule a one off task
+  /// Schedule a one off task.
+  ///
+  /// On iOS immediately starts with a timeout of 30 seconds in background.
   /// A [uniqueName] is required so only one task can be registered.
   /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler]
   /// The [inputData] is the input data for task. Valid value types are: int, bool, double, String and their list
@@ -168,7 +152,6 @@ class Workmanager {
 
     /// Only supported on Android.
     final String taskName, {
-
     /// Only supported on Android.
     final String? tag,
 
@@ -207,11 +190,19 @@ class Workmanager {
       );
 
   /// Schedules a periodic task that will run every provided [frequency].
+  /// On iOS it is not guaranteed when or how often it will run, iOS will schedule
+  /// it as per user's App usage pattern.
+  ///
   /// A [uniqueName] is required so only one task can be registered.
   /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler]
   /// a [frequency] is not required and will be defaulted to 15 minutes if not provided.
   /// a [frequency] has a minimum of 15 min. Android will automatically change your frequency to 15 min if you have configured a lower frequency.
   /// The [inputData] is the input data for task. Valid value types are: int, bool, double, String and their list
+  ///
+  /// For iOS see Apple docs:
+  /// [iOS 13.0+ Using background tasks to update your app](https://developer.apple.com/documentation/uikit/app_and_environment/scenes/preparing_your_ui_to_run_in_the_background/using_background_tasks_to_update_your_app/)
+  ///
+  /// [iOS 13.0+ BGAppRefreshTask](https://developer.apple.com/documentation/backgroundtasks/bgapprefreshtask/)
   Future<void> registerPeriodicTask(
     final String uniqueName,
     final String taskName, {
@@ -242,6 +233,70 @@ class Workmanager {
           inputData: inputData,
         ),
       );
+
+  /// Schedule a background long running task, currently only available on iOS.
+  ///
+  /// Processing tasks are for long processes like data processing and app maintenance.
+  /// Processing tasks can run for minutes, but the system can interrupt these.
+  /// Processing tasks run only when the device is idle. iOS might terminate any
+  /// running background processing tasks when the user starts using the device.
+  /// However background refresh tasks aren’t affected.
+  ///
+  /// For iOS see Apple docs:
+  /// [iOS 13.0+ Using background tasks to update your app](https://developer.apple.com/documentation/uikit/app_and_environment/scenes/preparing_your_ui_to_run_in_the_background/using_background_tasks_to_update_your_app/)
+  ///
+  /// [iOS 13.0+ BGProcessingTask](https://developer.apple.com/documentation/backgroundtasks/bgprocessingtask/)
+  Future<void> registerProcessingTask(
+    final String uniqueName,
+    final String taskName, {
+    /// Only partially supported on iOS.
+    /// See [Constraints] for details.
+    final Constraints? constraints,
+    final BackoffPolicy? backoffPolicy,
+    final Duration backoffPolicyDelay = Duration.zero,
+    final OutOfQuotaPolicy? outOfQuotaPolicy,
+    final Map<String, dynamic>? inputData,
+  }) async =>
+      await _foregroundChannel.invokeMethod(
+        "registerProcessingTask",
+        JsonMapperHelper.toRegisterMethodArgument(
+            isInDebugMode: _isInDebugMode,
+            uniqueName: uniqueName,
+            taskName: taskName,
+            constraints: constraints,
+            backoffPolicy: backoffPolicy,
+            backoffPolicyDelay: backoffPolicyDelay,
+            outOfQuotaPolicy: outOfQuotaPolicy),
+      );
+
+  /// Checks whether user or parental control restricts background refresh.
+  /// Only available on iOS.
+  Future<BackgroundRefreshPermissionState>
+      checkBackgroundRefreshPermission() async {
+    try {
+      var result = await _foregroundChannel.invokeMethod<Object>(
+        'checkBackgroundRefreshPermission',
+        JsonMapperHelper.toInitializeMethodArgument(
+          isInDebugMode: _isInDebugMode,
+          callbackHandle: 0,
+        ),
+      );
+      switch (result.toString()) {
+        case 'available':
+          return BackgroundRefreshPermissionState.available;
+        case 'denied':
+          return BackgroundRefreshPermissionState.denied;
+        case 'restricted':
+          return BackgroundRefreshPermissionState.restricted;
+        case 'unknown':
+          return BackgroundRefreshPermissionState.unknown;
+      }
+    } catch (e) {
+      print("Could not retrieve BackgroundRefreshPermissionState " +
+          e.toString());
+    }
+    return BackgroundRefreshPermissionState.unknown;
+  }
 
   /// Cancels a task by its [uniqueName]
   Future<void> cancelByUniqueName(final String uniqueName) async =>

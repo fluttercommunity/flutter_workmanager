@@ -1,5 +1,15 @@
 # Flutter Workmanager
 
+# Intro to this Fork
+The fork allows these tasks on iOS
+
+- registerOneOffTask: Starts immediately on both android and iOS. On iOS it might run for only 30 seconds due to iOS restrictions.
+
+- registerProcessingTask: Long running one off background task to be used specifically on iOS. It can be run for more than 30 seconds but doesn't start immediately, rather iOS might schedule it when device is idle and charging.
+
+- registerPeriodicTask: This is for a scheduled task on both android and iOS. On iOS it might run for only 30 seconds due to iOS restrictions, but doesn't start immediately, rather iOS will schedule it as per user's App usage pattern.
+
+
 [![pub package](https://img.shields.io/pub/v/workmanager.svg)](https://pub.dartlang.org/packages/workmanager)
 [![Build status](https://img.shields.io/cirrus/github/vrtdev/flutter_workmanager/master)](https://cirrus-ci.com/github/vrtdev/flutter_workmanager/)
 =======
@@ -73,7 +83,7 @@ void callbackDispatcher() {
 ```
 
 Android tasks are identified using their `taskName`.
-iOS tasks are identitied using their `taskIdentifier`.
+iOS tasks are identified using their `taskIdentifier`.
 
 However, there is an exception for iOS background fetch: `Workmanager.iOSBackgroundTask`, a constant for iOS background fetch task.
 
@@ -93,7 +103,11 @@ Refer to the example app for a successful, retrying and a failed task.
 
 # iOS specific setup and note
 
+Initialize Workmanager only once.
+Background app refresh can only be tested on a real device, it cannot be tested on a simulator.
+
 iOS supports **One off tasks** with a few basic constraints:
+**registerOneOffTask** starts immediately. On iOS it might run for only 30 seconds due to iOS restrictions.
 
 ```dart
 Workmanager().registerOneOffTask(
@@ -101,13 +115,56 @@ Workmanager().registerOneOffTask(
   simpleTaskKey, // Ignored on iOS
   initialDelay: Duration(minutes: 30),
   constraints: Constraints(
-    // connected or metered mark the task as requiring internet
+    // Connected or metered mark the task as requiring internet
     networkType: NetworkType.connected,
-    // require external power
+    // Require external power
     requiresCharging: true,
   ),
   inputData: ... // fully supported
 );
+```
+
+iOS supports **Periodic tasks**.
+**registerPeriodicTask** on iOS it might run for only 30 seconds due to iOS restrictions, but doesn't start immediately, rather iOS will schedule it as per user's App usage pattern.
+For more information see the [Apple Docs](https://developer.apple.com/documentation/uikit/app_and_environment/scenes/preparing_your_ui_to_run_in_the_background/using_background_tasks_to_update_your_app).
+
+```dart
+const iOSBackgroundAppRefresh = "be.tramckrijte.workmanagerExample.iOSBackgroundAppRefresh";
+Workmanager().registerPeriodicTask(
+  iOSBackgroundAppRefresh,
+  iOSBackgroundAppRefresh,
+  initialDelay: Duration(seconds: 10),
+);
+```
+
+For more information see the [BGAppRefreshTask](https://developer.apple.com/documentation/backgroundtasks/bgapprefreshtask).
+
+iOS supports **Processing tasks** which can run for more than 30 seconds.
+**registerProcessingTask** is a long running one off background task, currently only for iOS. It can be run for more than 30 seconds but doesn't start immediately, rather iOS might schedule it when device is idle and charging.
+Processing tasks are for long processes like data processing and app maintenance. Processing tasks can run for minutes, but the system can interrupt these.
+Processing tasks run only when the device is idle and there is also a possibility that it will only run if device is charging. iOS might terminate any running background processing tasks when the user starts using the device. However background app refresh tasks aren’t affected.
+For more information see the [Apple Docs](https://developer.apple.com/documentation/backgroundtasks/bgprocessingtask)
+
+```dart
+const iOSBackgroundProcessingTask = "be.tramckrijte.workmanagerExample.iOSBackgroundProcessingTask";
+Workmanager().registerProcessingTask(
+  iOSBackgroundProcessingTask,
+  iOSBackgroundProcessingTask,
+);
+```
+
+Check **Background App Refresh** permissions on iOS.
+On iOS user can disable Background App Refresh permission any time, hence background tasks should only be run if user has granted the permission.
+With Workmanager().checkBackgroundRefreshPermission() you can check whether background app refresh is enabled. If it is not enabled you might ask 
+the user to enable it in app settings.
+
+```dart
+if (Platform.isIOS) {
+  var hasPermissions = await Workmanager().checkBackgroundRefreshPermission();
+  if (hasPermissions != BackgroundRefreshPermissionState.available){
+    // Inform the user that background app refresh is disabled
+  }
+}
 ```
 
 For more information see the [BGTaskScheduler documentation](https://developer.apple.com/documentation/backgroundtasks).
