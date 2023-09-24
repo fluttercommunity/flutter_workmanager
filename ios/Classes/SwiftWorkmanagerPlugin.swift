@@ -85,7 +85,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
             task.identifier,
             inputData: "",
             flutterPluginRegistrantCallback: SwiftWorkmanagerPlugin.flutterPluginRegistrantCallback,
-            backgroundMode: .backgroundProcessingTask(identifier: identifier),
+            backgroundMode: .backgroundProcessingTask(identifier: identifier)
         )
 
         // Provide an expiration handler for the background task
@@ -124,7 +124,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
             task.identifier,
             inputData: "",
             flutterPluginRegistrantCallback: SwiftWorkmanagerPlugin.flutterPluginRegistrantCallback,
-            backgroundMode: .backgroundPeriodicTask(identifier: identifier),
+            backgroundMode: .backgroundPeriodicTask(identifier: identifier)
         )
 
         // Provide an expiration handler for the background task that cancels the operation
@@ -150,7 +150,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
             identifier,
             inputData: inputData,
             flutterPluginRegistrantCallback: SwiftWorkmanagerPlugin.flutterPluginRegistrantCallback,
-            backgroundMode: .backgroundOneOffTask(identifier: identifier),
+            backgroundMode: .backgroundOneOffTask(identifier: identifier)
         )
 
         // Inform the system that the task is complete when the operation completes

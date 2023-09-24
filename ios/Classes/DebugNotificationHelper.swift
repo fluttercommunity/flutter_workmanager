@@ -34,18 +34,16 @@ class DebugNotificationHelper {
                                                      icon: .startWork)
     }
 
-    func showCompletedFetchNotification(identifier: String,
-                                        completedDate: Date,
+    func showCompletedFetchNotification(completedDate: Date,
                                         result: UIBackgroundFetchResult,
                                         elapsedTime: TimeInterval) {
         let message =
             """
         Perform fetch completed:
-         • Identifier: '\(identifier)'
          • Elapsed time: \(elapsedTime.formatToSeconds())
          • Result: UIBackgroundFetchResult.\(result)
         """
-        DebugNotificationHelper.scheduleNotification(identifier: identifier,
+        DebugNotificationHelper.scheduleNotification(identifier: identifier.uuidString,
                                                      title: completedDate.formatted(),
                                                      body: message,
                                                      icon: result == .newData ? .success : .failure)
