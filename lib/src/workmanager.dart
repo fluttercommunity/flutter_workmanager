@@ -362,6 +362,11 @@ class Workmanager {
   /// Cancels all tasks
   Future<void> cancelAll() async =>
       await _foregroundChannel.invokeMethod("cancelAllTasks");
+
+  /// Prints details of un-executed scheduled tasks. To be used during development/debugging.
+  /// Currently only supported on iOS and only on iOS 13+.
+  Future<void> printScheduledTasks() async =>
+      await _foregroundChannel.invokeMethod("printScheduledTasks");
 }
 
 /// A helper object to convert the selected options to JSON format. Mainly for testability.

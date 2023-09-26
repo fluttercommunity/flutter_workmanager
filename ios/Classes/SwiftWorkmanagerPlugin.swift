@@ -73,6 +73,13 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
                     case uniqueName
                 }
             }
+
+            struct PrintScheduledTasks {
+                static let name = "\(PrintScheduledTasks.self)".lowercasingFirst
+                enum Arguments: String {
+                    case none
+                }
+            }
         }
     }
 
@@ -201,7 +208,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
         request.earliestBeginDate = Date(timeIntervalSinceNow: begin)
         do {
             try BGTaskScheduler.shared.submit(request)
-            logInfo("BGAppRefreshTask submitted \(identifier)")
+            logInfo("BGAppRefreshTask submitted \(identifier) earliestBeginInSeconds:\(begin)")
         } catch {
             logInfo("Could not schedule BGAppRefreshTask \(error.localizedDescription)")
             return
@@ -314,6 +321,9 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
             return
         case (ForegroundMethodChannel.Methods.CancelTaskByUniqueName.name, let .some(arguments)):
             cancelTaskByUniqueName(arguments: arguments, result: result)
+            return
+        case (ForegroundMethodChannel.Methods.PrintScheduledTasks.name, .none):
+            printScheduledTasks(result: result)
             return
         default:
             result(WMPError.unhandledMethod(call.method).asFlutterError)
@@ -486,6 +496,28 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
             return false
         }
         return true
+    }
+
+    /// Prints details of un-executed scheduled tasks. To be used during development/debugging
+    private func printScheduledTasks(result: @escaping FlutterResult) {
+        if #available(iOS 13.0, *) {
+            BGTaskScheduler.shared.getPendingTaskRequests { taskRequests in
+                if taskRequests.isEmpty {
+                    print("[BGTaskScheduler] There are no pending tasks")
+                    result(true)
+                    return
+                }
+                print("[BGTaskScheduler] Pending Tasks:")
+                for taskRequest in taskRequests {
+                    print("[BGTaskScheduler] Task Identifier: \(taskRequest.identifier) earliestBeginDate: \(taskRequest.earliestBeginDate?.formatted() ?? "")")
+                }
+                result(true)
+            }
+        } else {
+            result(FlutterError(code: "99",
+                                message: "printScheduledTasks is only supported on iOS 13+",
+                                details: "BGTaskScheduler.getPendingTaskRequests is only supported on iOS 13+"))
+        }
     }
 }
 
