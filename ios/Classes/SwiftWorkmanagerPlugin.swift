@@ -185,33 +185,19 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
         }
     }
 
-    /// Schedules an App Refresh task indirectly by adding a notification observer so that the task
-    /// will be scheduled when app enters background
-    @objc
-    public static func registerPeriodicTaskScheduler(
-        taskIdentifier identifier: String,
-        earliestBeginInSeconds begin: Double) {
-        if #available(iOS 13.0, *) {
-            NotificationCenter.default.addObserver(
-                forName: UIApplication.didEnterBackgroundNotification,
-                object: nil, queue: nil
-            ) { _ in
-                schedulePeriodicTask(taskIdentifier: identifier, earliestBeginInSeconds: begin)
-            }
-        }
-    }
-
     @objc
     @available(iOS 13.0, *)
     private static func schedulePeriodicTask(taskIdentifier identifier: String, earliestBeginInSeconds begin: Double) {
-        let request = BGAppRefreshTaskRequest(identifier: identifier)
-        request.earliestBeginDate = Date(timeIntervalSinceNow: begin)
-        do {
-            try BGTaskScheduler.shared.submit(request)
-            logInfo("BGAppRefreshTask submitted \(identifier) earliestBeginInSeconds:\(begin)")
-        } catch {
-            logInfo("Could not schedule BGAppRefreshTask \(error.localizedDescription)")
-            return
+        if #available(iOS 13.0, *) {
+            let request = BGAppRefreshTaskRequest(identifier: identifier)
+            request.earliestBeginDate = Date(timeIntervalSinceNow: begin)
+            do {
+                try BGTaskScheduler.shared.submit(request)
+                logInfo("BGAppRefreshTask submitted \(identifier) earliestBeginInSeconds:\(begin)")
+            } catch {
+                logInfo("Could not schedule BGAppRefreshTask \(error.localizedDescription)")
+                return
+            }
         }
     }
 
@@ -231,28 +217,6 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
         }
     }
 
-    /// Schedules a [BGProcessingTaskRequest] task indirectly by adding a notification observer so
-    /// that the task will be scheduled when app enters background
-    @objc
-    public static func registerProcessingTaskScheduler(
-        uniqueTaskIdentifier: String,
-        earliestBeginInSeconds begin: Double,
-        requiresNetworkConnectivity: Bool,
-        requiresExternalPower: Bool
-    ) {
-        if #available(iOS 13.0, *) {
-            let network = requiresNetworkConnectivity
-            let extPower = requiresExternalPower
-
-            NotificationCenter.default.addObserver(
-                forName: UIApplication.didEnterBackgroundNotification,
-                object: nil, queue: nil
-            ) { _ in
-                scheduleBackgroundProcessingTask(withIdentifier: uniqueTaskIdentifier, earliestBeginInSeconds: begin, requiresNetworkConnectivity: network, requiresExternalPower: extPower)
-            }
-        }
-    }
-
     /// Schedules a long running BackgroundProcessingTask
     @objc
     @available(iOS 13.0, *)
@@ -268,7 +232,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
         request.requiresExternalPower = requiresExternalPower
         do {
             try BGTaskScheduler.shared.submit(request)
-            logInfo("BGProcessingTask submitted \(uniqueTaskIdentifier)")
+            logInfo("BGProcessingTask submitted \(uniqueTaskIdentifier) earliestBeginInSeconds:\(begin)")
         } catch {
             logInfo("Could not schedule BGProcessingTask identifier:\(uniqueTaskIdentifier) error:\(error.localizedDescription)")
             logInfo("Possible issues can be: running on a simulator instead of a real device, or the task name is not registered")
@@ -402,8 +366,7 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
             let initialDelaySeconds =
                 arguments[method.Arguments.initialDelaySeconds.rawValue] as? Int64 ?? 0
 
-            // Task will be scheduled by OS when app goes to background
-            SwiftWorkmanagerPlugin.registerPeriodicTaskScheduler(
+            SwiftWorkmanagerPlugin.schedulePeriodicTask(
                 taskIdentifier: uniqueTaskIdentifier,
                 earliestBeginInSeconds: Double(initialDelaySeconds))
             result(true)
@@ -438,9 +401,8 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
                 requiresNetwork = true
             }
 
-            // Task will be scheduled by OS when app goes to background
-            SwiftWorkmanagerPlugin.registerProcessingTaskScheduler(
-                uniqueTaskIdentifier: uniqueTaskIdentifier,
+            SwiftWorkmanagerPlugin.scheduleBackgroundProcessingTask(
+                withIdentifier: uniqueTaskIdentifier,
                 earliestBeginInSeconds: delaySeconds,
                 requiresNetworkConnectivity: requiresCharging,
                 requiresExternalPower: requiresNetwork)
@@ -503,11 +465,11 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
         if #available(iOS 13.0, *) {
             BGTaskScheduler.shared.getPendingTaskRequests { taskRequests in
                 if taskRequests.isEmpty {
-                    print("[BGTaskScheduler] There are no pending tasks")
+                    print("[BGTaskScheduler] There are no scheduled tasks")
                     result(true)
                     return
                 }
-                print("[BGTaskScheduler] Pending Tasks:")
+                print("[BGTaskScheduler] Scheduled Tasks:")
                 for taskRequest in taskRequests {
                     print("[BGTaskScheduler] Task Identifier: \(taskRequest.identifier) earliestBeginDate: \(taskRequest.earliestBeginDate?.formatted() ?? "")")
                 }

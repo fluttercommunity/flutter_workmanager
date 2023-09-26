@@ -99,32 +99,9 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+class _MyAppState extends State<MyApp> {
   bool workmanagerInitialized = false;
   String _prefsString = "empty";
-  String _lastResumed = DateTime.now().toString();
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) async {
-    super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.resumed) {
-      // App came back from background to foreground
-      setState(() => _lastResumed = DateTime.now().toString());
-      _refreshStats();
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -296,14 +273,18 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                     print('Cancel all tasks completed');
                   },
                 ),
+                SizedBox(height: 15),
+                ElevatedButton(
+                  child: Text('Refresh stats'),
+                  onPressed: _refreshStats,
+                ),
                 SizedBox(height: 10),
-                GestureDetector(
-                  onTap: _refreshStats,
-                  child: SingleChildScrollView(
-                      child: Text(
-                    'Task run stats:\n$_prefsString\nTap here to refresh\n'
-                    'Last App resumed at: $_lastResumed',
-                  )),
+                SingleChildScrollView(
+                  child: Text(
+                    'Task run stats:\n'
+                    '${workmanagerInitialized ? '' : 'Workmanager not initialized'}'
+                    '\n$_prefsString',
+                  ),
                 ),
               ],
             ),
@@ -321,6 +302,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     _prefsString = '';
     for (final task in allTasks) {
       _prefsString = '$_prefsString \n$task:\n${prefs.getString(task)}\n';
+    }
+
+    if (Platform.isIOS) {
+      Workmanager().printScheduledTasks();
     }
 
     setState(() {});

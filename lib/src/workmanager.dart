@@ -227,9 +227,6 @@ class Workmanager {
   /// it as per user's App usage pattern, iOS might terminate the task or throttle
   /// it's frequency if it takes more than 30 seconds.
   ///
-  /// On iOS after calling this, the task is only scheduled when app goes to the
-  /// background, hence make sure to background the App at least once.
-  ///
   /// A [uniqueName] is required so only one task can be registered.
   /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler]
   /// a [frequency] is not required and will be defaulted to 15 minutes if not provided.
@@ -272,9 +269,6 @@ class Workmanager {
       );
 
   /// Schedule a background long running task, currently only available on iOS.
-  ///
-  /// On iOS after calling this, the task is only scheduled when app goes to the
-  /// background, hence make sure to background the App at least once.
   ///
   /// Processing tasks are for long processes like data processing and app maintenance.
   /// Processing tasks can run for minutes, but the system can interrupt these.
@@ -363,7 +357,9 @@ class Workmanager {
   Future<void> cancelAll() async =>
       await _foregroundChannel.invokeMethod("cancelAllTasks");
 
-  /// Prints details of un-executed scheduled tasks. To be used during development/debugging.
+  /// Prints details of un-executed scheduled tasks to console. To be used during
+  /// development/debugging.
+  ///
   /// Currently only supported on iOS and only on iOS 13+.
   Future<void> printScheduledTasks() async =>
       await _foregroundChannel.invokeMethod("printScheduledTasks");

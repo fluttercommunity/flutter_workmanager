@@ -133,7 +133,7 @@ For more information see [BGAppRefreshTask](https://developer.apple.com/document
 iOS supports **Processing tasks** only on iOS 13+ which can run for more than 30 seconds.
 `registerProcessingTask` is a long running one off background task, currently only for iOS. It can be run for more than 30 seconds but doesn't start immediately, rather iOS might schedule it when device is idle and charging.
 Processing tasks are for long processes like data processing and app maintenance. Processing tasks can run for minutes, but the system can interrupt these.
-Processing tasks run only when the device is idle and there is also a possibility that it will only run if device is charging. iOS might terminate any running background processing tasks when the user starts using the device. However background app refresh tasks aren’t affected.
+iOS might terminate any running background processing tasks when the user starts using the device.
 For more information see [BGProcessingTask](https://developer.apple.com/documentation/backgroundtasks/bgprocessingtask)
 
 ```dart
@@ -167,15 +167,15 @@ if (Platform.isIOS) {
 For more information see the [BGTaskScheduler documentation](https://developer.apple.com/documentation/backgroundtasks).
 
 ### Print scheduled tasks
-On iOS you can print pending scheduled tasks using `Workmanager().printScheduledTasks()`
-Which prints task details to console. To be used during development/debugging.
+On iOS you can print scheduled tasks using `Workmanager().printScheduledTasks()`
+It prints task details to console. To be used during development/debugging.
 Currently only supported on iOS and only on iOS 13+.
 
 ```dart
 if (Platform.isIOS) {
   Workmanager().printScheduledTasks();
   // Prints: [BGTaskScheduler] Task Identifier: iOSBackgroundAppRefresh earliestBeginDate: 2023.10.10 PM 11:10:12
-  // Or:     [BGTaskScheduler] There are no pending tasks
+  // Or:     [BGTaskScheduler] There are no scheduled tasks
 }
 ```
 
