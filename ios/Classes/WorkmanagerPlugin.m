@@ -16,6 +16,7 @@
     [SwiftWorkmanagerPlugin setPluginRegistrantCallback:callback];
 }
 
+// TODO this might not be needed anymore
 + (void)registerTaskWithIdentifier:(NSString *) taskIdentifier {
     if (@available(iOS 13, *)) {
         [SwiftWorkmanagerPlugin registerBGProcessingTaskWithIdentifier:taskIdentifier];
