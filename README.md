@@ -122,15 +122,16 @@ Workmanager().registerOneOffTask(
 
 ### Periodic tasks
 iOS supports two types of **Periodic tasks**:
-- On iOS 12 and lower you can use deprecated Background Fetch API, see [iOS Setup](https://github.com/fluttercommunity/flutter_workmanager/blob/master/IOS_SETUP.md)
+- On iOS 12 and lower you can use deprecated Background Fetch API, see [iOS Setup](./IOS_SETUP.md), even though the API is
+deprecated by iOS it still works on iOS 13+ as of writing this article
 
 - `registerPeriodicTask` is only supported on iOS 13+, it might run for only 30 seconds due to iOS restrictions, but doesn't start immediately, rather iOS will schedule it as per user's App usage pattern.
 
-> ⚠️ On iOS 13+, adding a `BGTaskSchedulerPermittedIdentifiers` key to the Info.plist disables the `performFetchWithCompletionHandler` and `setMinimumBackgroundFetchInterval`
+> ⚠️ On iOS 13+, adding a `BGTaskSchedulerPermittedIdentifiers` key to the Info.plist for new `BGTaskScheduler` API disables the `performFetchWithCompletionHandler` and `setMinimumBackgroundFetchInterval`
 methods, which means you cannot use both old Background Fetch and new `registerPeriodicTask` at the same time, you have to choose one based on your minimum iOS target version. 
 For details see [Apple Docs](https://developer.apple.com/documentation/uikit/app_and_environment/scenes/preparing_your_ui_to_run_in_the_background/using_background_tasks_to_update_your_app)
 
-First register the task in `AppDelegate.swift` unlike Android for iOS you have to set the frequency in `AppDelegate.swift`. The frequency is not guaranteed rather iOS will schedule it as per user's App usage pattern, iOS might take a few days to learn usage pattern. In reality frequency just means do not repeat the task before x seconds/minutes. If frequency is not provided it will default to 15 minutes.
+To use `registerPeriodicTask` first register the task in `Info.plist` and `AppDelegate.swift` [iOS Setup](./IOS_SETUP.md). Unlike Android, for iOS you have to set the frequency in `AppDelegate.swift`. The frequency is not guaranteed rather iOS will schedule it as per user's App usage pattern, iOS might take a few days to learn usage pattern. In reality frequency just means do not repeat the task before x seconds/minutes. If frequency is not provided it will default to 15 minutes.
 
 ```objc
 // Register a periodic task with 20 minutes frequency. The frequency is in seconds.
@@ -181,8 +182,8 @@ the user to enable it in app settings.
 
 ```dart
 if (Platform.isIOS) {
-  var hasPermissions = await Workmanager().checkBackgroundRefreshPermission();
-  if (hasPermissions != BackgroundRefreshPermissionState.available){
+  final hasPermission = await Workmanager().checkBackgroundRefreshPermission();
+  if (hasPermission != BackgroundRefreshPermissionState.available){
     // Inform the user that background app refresh is disabled
   }
 }

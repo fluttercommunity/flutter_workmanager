@@ -22,7 +22,7 @@ This will add the **UIBackgroundModes** key to your project's `Info.plist`:
 <array>
 	<string>processing</string>
 
-	<!-- If you need period tasks in iOS 13+ -->
+	<!-- If you need periodic tasks in iOS 13+ you need to enable Background Fetch as well -->
 	<string>fetch</string>
 </array>
 ```
@@ -38,7 +38,7 @@ import workmanager
 // In AppDelegate.application method
 WorkmanagerPlugin.registerBGProcessingTask(withIdentifier: "task-identifier")
 
-// If you need period tasks in iOS 13+
+// Register a periodic task in iOS 13+
 WorkmanagerPlugin.registerPeriodicTask(withIdentifier: "be.tramckrijte.workmanagerExample.iOSBackgroundAppRefresh", frequency: NSNumber(value: 20 * 60))
 ```
 
@@ -48,11 +48,11 @@ WorkmanagerPlugin.registerPeriodicTask(withIdentifier: "be.tramckrijte.workmanag
 <array>
 	<string>task-identifier</string>
 
-	<!-- If you need period tasks in iOS 13+ -->
+	<!-- Register a periodic task in iOS 13+ -->
 	<string>be.tramckrijte.workmanagerExample.iOSBackgroundAppRefresh</string>
 </array>
 ```
-> ⚠️ On iOS 13+, adding a `BGTaskSchedulerPermittedIdentifiers` key to the Info.plist disables the `performFetchWithCompletionHandler` and `setMinimumBackgroundFetchInterval`
+> ⚠️ On iOS 13+, adding a `BGTaskSchedulerPermittedIdentifiers` key to the Info.plist for new `BGTaskScheduler` API disables the `performFetchWithCompletionHandler` and `setMinimumBackgroundFetchInterval`
 methods, which means you cannot use both old Background Fetch and new `registerPeriodicTask` at the same time, you have to choose one based on your minimum iOS target version. 
 For details see [Apple Docs](https://developer.apple.com/documentation/uikit/app_and_environment/scenes/preparing_your_ui_to_run_in_the_background/using_background_tasks_to_update_your_app)
 
@@ -78,9 +78,9 @@ e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWith
 
 ## Enabling Background Fetch
 
-> ⚠️ Background fetch is one supported way to do background work on iOS with work manager
+> ⚠️ Background fetch is one supported way to do background work on iOS with work manager. Note that this API is deprecated starting iOS 13, however it still works on iOS 13+ as of writing this article
 
-> ⚠️ On iOS 13+, adding a `BGTaskSchedulerPermittedIdentifiers` key to the Info.plist disables the `performFetchWithCompletionHandler` and `setMinimumBackgroundFetchInterval`
+> ⚠️ On iOS 13+, adding a `BGTaskSchedulerPermittedIdentifiers` key to the Info.plist for new `BGTaskScheduler` API disables the `performFetchWithCompletionHandler` and `setMinimumBackgroundFetchInterval`
 methods, which means you cannot use both old Background Fetch and new `registerPeriodicTask` at the same time, you have to choose one based on your minimum iOS target version. 
 For details see [Apple Docs](https://developer.apple.com/documentation/uikit/app_and_environment/scenes/preparing_your_ui_to_run_in_the_background/using_background_tasks_to_update_your_app)
 
