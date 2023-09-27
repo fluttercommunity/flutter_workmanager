@@ -228,10 +228,11 @@ class Workmanager {
   /// it's frequency if it takes more than 30 seconds.
   ///
   /// A [uniqueName] is required so only one task can be registered.
-  /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler]
+  /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler], ignored on iOS where you should use [uniqueName].
   /// a [frequency] is not required and will be defaulted to 15 minutes if not provided.
   /// a [frequency] has a minimum of 15 min. Android will automatically change your frequency to 15 min if you have configured a lower frequency.
-  /// The [inputData] is the input data for task. Valid value types are: int, bool, double, String and their list
+  /// Unlike Android, you cannot set [frequency] for iOS here rather you have to set in `AppDelegate.swift` while registering the task.
+  /// The [inputData] is the input data for task. Valid value types are: int, bool, double, String and their list. It is not supported on iOS.
   ///
   /// For iOS see Apple docs:
   /// [iOS 13+ Using background tasks to update your app](https://developer.apple.com/documentation/uikit/app_and_environment/scenes/preparing_your_ui_to_run_in_the_background/using_background_tasks_to_update_your_app/)
@@ -283,24 +284,21 @@ class Workmanager {
   Future<void> registerProcessingTask(
     final String uniqueName,
     final String taskName, {
+    final Duration initialDelay = Duration.zero,
+
     /// Only partially supported on iOS.
     /// See [Constraints] for details.
     final Constraints? constraints,
-    final BackoffPolicy? backoffPolicy,
-    final Duration backoffPolicyDelay = Duration.zero,
-    final OutOfQuotaPolicy? outOfQuotaPolicy,
-    final Map<String, dynamic>? inputData,
   }) async =>
       await _foregroundChannel.invokeMethod(
         "registerProcessingTask",
         JsonMapperHelper.toRegisterMethodArgument(
-            isInDebugMode: _isInDebugMode,
-            uniqueName: uniqueName,
-            taskName: taskName,
-            constraints: constraints,
-            backoffPolicy: backoffPolicy,
-            backoffPolicyDelay: backoffPolicyDelay,
-            outOfQuotaPolicy: outOfQuotaPolicy),
+          isInDebugMode: _isInDebugMode,
+          uniqueName: uniqueName,
+          taskName: taskName,
+          initialDelay: initialDelay,
+          constraints: constraints,
+        ),
       );
 
   /// Check whether background app refresh is enabled. If it is not enabled you

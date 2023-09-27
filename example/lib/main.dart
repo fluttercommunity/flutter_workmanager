@@ -233,10 +233,11 @@ class _MyAppState extends State<MyApp> {
                             return;
                           }
                           await Workmanager().registerPeriodicTask(
-                              iOSBackgroundAppRefresh, iOSBackgroundAppRefresh,
-                              initialDelay: Duration(seconds: 10),
-                              inputData: <String, dynamic>{} //ignored on iOS
-                              );
+                            iOSBackgroundAppRefresh,
+                            iOSBackgroundAppRefresh,
+                            initialDelay: Duration(seconds: 10),
+                            inputData: <String, dynamic>{}, //ignored on iOS
+                          );
                         }
                       : null,
                 ),
@@ -257,6 +258,7 @@ class _MyAppState extends State<MyApp> {
                           await Workmanager().registerProcessingTask(
                             iOSBackgroundProcessingTask,
                             iOSBackgroundProcessingTask,
+                            initialDelay: Duration(seconds: 20),
                           );
                         }
                       : null,

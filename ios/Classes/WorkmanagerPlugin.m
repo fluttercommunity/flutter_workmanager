@@ -22,9 +22,9 @@
     }
 }
 
-+ (void)registerPeriodicTaskWithIdentifier:(NSString *)taskIdentifier{
++ (void)registerPeriodicTaskWithIdentifier:(NSString *)taskIdentifier frequency:(NSNumber *) frequency {
     if (@available(iOS 13, *)) {
-        [SwiftWorkmanagerPlugin registerPeriodicTaskWithIdentifier:taskIdentifier];
+        [SwiftWorkmanagerPlugin registerPeriodicTaskWithIdentifier:taskIdentifier frequency:frequency];
     }
 }
 

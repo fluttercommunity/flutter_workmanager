@@ -111,9 +111,8 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
         operationQueue.addOperation(operation)
     }
 
-    @objc
     @available(iOS 13.0, *)
-    public static func handlePeriodicTask(identifier: String, task: BGAppRefreshTask) {
+    public static func handlePeriodicTask(identifier: String, task: BGAppRefreshTask, earliestBeginInSeconds: Double?) {
         guard let callbackHandle = UserDefaultsHelper.getStoredCallbackHandle(),
               let _ = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)
         else {
@@ -121,9 +120,8 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
             return
         }
 
-        // Reschedule no earlier than 15 minutes from now. TODO interval should be configurable
-        // probably through AppDelegate.swift WorkmanagerPlugin.registerPeriodicTask
-        schedulePeriodicTask(taskIdentifier: task.identifier, earliestBeginInSeconds: 15 * 60)
+        // If frequency is not provided it will default to 15 minutes
+        schedulePeriodicTask(taskIdentifier: task.identifier, earliestBeginInSeconds: earliestBeginInSeconds ?? (15 * 60))
 
         let operationQueue = OperationQueue()
         // Create an operation that performs the main part of the background task
@@ -172,14 +170,19 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
     /// Registers [BGAppRefresh] task name for the given identifier.
     /// You must register task names before app finishes launching in AppDelegate.
     @objc
-    public static func registerPeriodicTask(withIdentifier identifier: String) {
+    public static func registerPeriodicTask(withIdentifier identifier: String, frequency: NSNumber?) {
         if #available(iOS 13.0, *) {
+            var frequencyInSeconds: Double?
+            if let frequencyValue = frequency {
+                frequencyInSeconds = frequencyValue.doubleValue
+            }
+
             BGTaskScheduler.shared.register(
                 forTaskWithIdentifier: identifier,
                 using: nil
             ) { task in
                 if let task = task as? BGAppRefreshTask {
-                    handlePeriodicTask(identifier: identifier, task: task)
+                    handlePeriodicTask(identifier: identifier, task: task, earliestBeginInSeconds: frequencyInSeconds)
                 }
             }
         }
@@ -324,11 +327,7 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
                 result(WMPError.invalidParameters.asFlutterError)
                 return
             }
-            guard let callBackIdentifier =
-                arguments[method.Arguments.taskName.rawValue] as? String else {
-                result(WMPError.invalidParameters.asFlutterError)
-                return
-            }
+
             var taskIdentifier: UIBackgroundTaskIdentifier = .invalid
             let inputData =
                     arguments[method.Arguments.inputData.rawValue] as? String
@@ -338,7 +337,7 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
                 // Mark the task as ended if time is expired, otherwise iOS might terminate and will throttle future executions
                 UIApplication.shared.endBackgroundTask(taskIdentifier)
             })
-            SwiftWorkmanagerPlugin.startOneOffTask(identifier: callBackIdentifier,
+            SwiftWorkmanagerPlugin.startOneOffTask(identifier: uniqueTaskIdentifier,
                                                   taskIdentifier: taskIdentifier,
                                                   inputData: inputData ?? "",
                                                   delaySeconds: delaySeconds)
@@ -364,11 +363,11 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
                 return
             }
             let initialDelaySeconds =
-                arguments[method.Arguments.initialDelaySeconds.rawValue] as? Int64 ?? 0
+                arguments[method.Arguments.initialDelaySeconds.rawValue] as? Double ?? 0.0
 
             SwiftWorkmanagerPlugin.schedulePeriodicTask(
                 taskIdentifier: uniqueTaskIdentifier,
-                earliestBeginInSeconds: Double(initialDelaySeconds))
+                earliestBeginInSeconds: initialDelaySeconds)
             result(true)
             return
         } else {
