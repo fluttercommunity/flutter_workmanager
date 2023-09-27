@@ -9,14 +9,20 @@ import Foundation
 
 enum BackgroundMode {
     case backgroundFetch
-    case backgroundTask(identifier: String)
+    case backgroundProcessingTask(identifier: String)
+    case backgroundPeriodicTask(identifier: String)
+    case backgroundOneOffTask(identifier: String)
 
     var flutterThreadlabelPrefix: String {
         switch self {
         case .backgroundFetch:
             return "\(SwiftWorkmanagerPlugin.identifier).BackgroundFetch"
-        case .backgroundTask:
-            return "\(SwiftWorkmanagerPlugin.identifier).BGTaskScheduler"
+        case .backgroundProcessingTask:
+            return "\(SwiftWorkmanagerPlugin.identifier).BackgroundProcessingTask"
+        case .backgroundPeriodicTask:
+            return "\(SwiftWorkmanagerPlugin.identifier).BackgroundPeriodicTask"
+        case .backgroundOneOffTask:
+            return "\(SwiftWorkmanagerPlugin.identifier).OneOffTask"
         }
     }
 
@@ -24,7 +30,11 @@ enum BackgroundMode {
         switch self {
         case .backgroundFetch:
             return ["\(SwiftWorkmanagerPlugin.identifier).DART_TASK": "iOSPerformFetch"]
-        case .backgroundTask(let identifier):
+        case let .backgroundProcessingTask(identifier):
+            return ["\(SwiftWorkmanagerPlugin.identifier).DART_TASK": identifier]
+        case let .backgroundPeriodicTask(identifier):
+            return ["\(SwiftWorkmanagerPlugin.identifier).DART_TASK": identifier]
+        case let .backgroundOneOffTask(identifier):
             return ["\(SwiftWorkmanagerPlugin.identifier).DART_TASK": identifier]
         }
     }
@@ -34,9 +44,11 @@ class BackgroundWorker {
 
     let backgroundMode: BackgroundMode
     let flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?
+    let inputData: String
 
-    init(mode: BackgroundMode, flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?) {
-        self.backgroundMode = mode
+    init(mode: BackgroundMode, inputData: String, flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?) {
+        backgroundMode = mode
+        self.inputData = inputData
         self.flutterPluginRegistrantCallback = flutterPluginRegistrantCallback
     }
 
@@ -90,14 +102,18 @@ class BackgroundWorker {
             flutterEngine = nil
         }
 
-        backgroundMethodChannel?.setMethodCallHandler { (call, result) in
+        backgroundMethodChannel?.setMethodCallHandler { call, result in
             switch call.method {
             case BackgroundChannel.initialized:
                 result(true)    // Agree to Flutter's method invocation
+                var arguments = self.backgroundMode.onResultSendArguments
+                if self.inputData != "" {
+                    arguments = arguments.merging(["be.tramckrijte.workmanager.INPUT_DATA": self.inputData]) { current, _ in current }
+                }
 
                 backgroundMethodChannel?.invokeMethod(
                     BackgroundChannel.onResultSendCommand,
-                    arguments: self.backgroundMode.onResultSendArguments,
+                    arguments:arguments,
                     result: { flutterResult in
                         cleanupFlutterResources()
                         let taskSessionCompleter = Date()
