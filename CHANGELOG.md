@@ -1,3 +1,8 @@
+# next
+
+* Android: Removed jetifier
+* Android: Removed V1 plugin APIs - this is now a Android V2 plugin only
+
 # 0.5.2
 
 * Android: Bump to workmanager 2.8.1
