@@ -101,3 +101,23 @@ class Constraints {
     this.requiresStorageNotLow,
   });
 }
+
+/// Background App Refresh permission states. Currently only available in iOS.
+///
+/// On iOS user can disable Background App Refresh permission anytime, hence
+/// background tasks can only run if user has granted the permission.
+/// [Workmanager().checkBackgroundRefreshPermission()] can be used to check the
+/// permission.
+enum BackgroundRefreshPermissionState {
+  /// Background app refresh is enabled in OS Setting
+  available,
+
+  /// Background app refresh is disabled in OS Setting. Permission should be requested from user
+  denied,
+
+  /// OS setting is under parental control etc. Can't be changed by user
+  restricted,
+
+  /// Unknown state
+  unknown
+}
