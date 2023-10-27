@@ -1,4 +1,4 @@
-# next
+# 0.5.2
 
 * Android: Bump to workmanager 2.8.1
 * Android: Move to Android Gradle Plugin 8.x
