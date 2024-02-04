@@ -243,6 +243,16 @@ class Workmanager {
         ),
       );
 
+  /// Checks whether a period task is scheduled by its [uniqueName].
+  ///
+  /// Scheduled means the work state is either ENQUEUED or RUNNING
+  Future<bool> isScheduledByUniqueName(final String uniqueName) async {
+   return await _foregroundChannel.invokeMethod(
+      "isScheduledByUniqueName",
+      {"uniqueName": uniqueName},
+    );
+  }
+
   /// Cancels a task by its [uniqueName]
   Future<void> cancelByUniqueName(final String uniqueName) async =>
       await _foregroundChannel.invokeMethod(
