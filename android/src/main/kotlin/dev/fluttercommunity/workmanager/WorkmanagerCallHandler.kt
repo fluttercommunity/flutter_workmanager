@@ -232,8 +232,8 @@ object WM {
                 BackgroundWorker::class.java,
                 frequencyInSeconds,
                 TimeUnit.SECONDS,
-                300,
-                TimeUnit.SECONDS
+                15,
+                TimeUnit.MINUTES
             )
                 .setInputData(buildTaskInputData(dartTask, isInDebugMode, payload))
                 .setInitialDelay(initialDelaySeconds, TimeUnit.SECONDS)
