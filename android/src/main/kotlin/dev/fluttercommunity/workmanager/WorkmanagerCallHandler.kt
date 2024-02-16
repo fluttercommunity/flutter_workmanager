@@ -231,6 +231,8 @@ object WM {
             PeriodicWorkRequest.Builder(
                 BackgroundWorker::class.java,
                 frequencyInSeconds,
+                TimeUnit.SECONDS,
+                300,
                 TimeUnit.SECONDS
             )
                 .setInputData(buildTaskInputData(dartTask, isInDebugMode, payload))
