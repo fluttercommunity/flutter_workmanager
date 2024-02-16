@@ -30,6 +30,7 @@ import dev.fluttercommunity.workmanager.WorkManagerCall.RegisterTask.KEYS.REGIST
 import dev.fluttercommunity.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_PAYLOAD_KEY
 import dev.fluttercommunity.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_TAG_KEY
 import dev.fluttercommunity.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_UNIQUE_NAME_KEY
+import dev.fluttercommunity.workmanager.WorkManagerCall.RegisterTask.PeriodicTask.KEYS.PERIODIC_FLEX_INTERVAL_SECONDS_KEY
 import dev.fluttercommunity.workmanager.WorkManagerCall.RegisterTask.PeriodicTask.KEYS.PERIODIC_TASK_FREQUENCY_SECONDS_KEY
 import io.flutter.plugin.common.MethodCall
 import kotlin.math.max
@@ -44,6 +45,8 @@ const val defaultInitialDelaySeconds = 0L
 const val defaultRequestedBackoffDelay = 0L
 const val defaultPeriodicRefreshFrequencyInSeconds =
     PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS / 1000
+const val defaultFlexIntervalInSeconds =
+    PeriodicWorkRequest.MIN_PERIODIC_FLEX_MILLIS / 1000
 const val logTag = "Extractor"
 
 data class BackoffPolicyTaskConfig(
@@ -114,6 +117,7 @@ sealed class WorkManagerCall {
             override val tag: String? = null,
             val existingWorkPolicy: ExistingPeriodicWorkPolicy,
             val frequencyInSeconds: Long,
+            val flexIntervalInSeconds: Long,
             override val initialDelaySeconds: Long,
             override val constraintsConfig: Constraints,
             val backoffPolicyConfig: BackoffPolicyTaskConfig?,
@@ -122,6 +126,7 @@ sealed class WorkManagerCall {
         ) : RegisterTask() {
             companion object KEYS {
                 const val PERIODIC_TASK_FREQUENCY_SECONDS_KEY = "frequency"
+                const val PERIODIC_FLEX_INTERVAL_SECONDS_KEY = "flexInterval"
             }
         }
     }
@@ -210,6 +215,7 @@ object Extractor {
                     taskName = call.argument<String>(REGISTER_TASK_NAME_VALUE_KEY)!!,
                     frequencyInSeconds = extractFrequencySecondsFromCall(call),
                     tag = call.argument<String>(REGISTER_TASK_TAG_KEY),
+                    flexIntervalInSeconds =extractFlexIntervalSecondsFromCall(call) ,
                     existingWorkPolicy = extractExistingPeriodicWorkPolicyFromCall(call),
                     initialDelaySeconds = extractInitialDelayFromCall(call),
                     constraintsConfig = extractConstraintConfigFromCall(call),
@@ -258,6 +264,10 @@ object Extractor {
     private fun extractFrequencySecondsFromCall(call: MethodCall) =
         call.argument<Int>(PERIODIC_TASK_FREQUENCY_SECONDS_KEY)?.toLong()
             ?: defaultPeriodicRefreshFrequencyInSeconds
+
+    private fun extractFlexIntervalSecondsFromCall(call: MethodCall) =
+        call.argument<Int>(PERIODIC_FLEX_INTERVAL_SECONDS_KEY)?.toLong()
+            ?: defaultFlexIntervalInSeconds
 
     private fun extractInitialDelayFromCall(call: MethodCall) =
         call.argument<Int>(REGISTER_TASK_INITIAL_DELAY_SECONDS_KEY)?.toLong()
