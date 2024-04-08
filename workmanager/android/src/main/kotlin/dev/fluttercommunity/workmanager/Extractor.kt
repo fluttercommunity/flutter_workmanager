@@ -13,6 +13,7 @@ import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkRequest
 import dev.fluttercommunity.workmanager.WorkManagerCall.CancelTask.ByTag.KEYS.UNREGISTER_TASK_TAG_KEY
 import dev.fluttercommunity.workmanager.WorkManagerCall.CancelTask.ByUniqueName.KEYS.UNREGISTER_TASK_UNIQUE_NAME_KEY
+import dev.fluttercommunity.workmanager.WorkManagerCall.IsScheduled.ByUniqueName.KEYS.IS_SCHEDULED_UNIQUE_NAME_KEY
 import dev.fluttercommunity.workmanager.WorkManagerCall.Initialize.KEYS.INITIALIZE_TASK_CALL_HANDLE_KEY
 import dev.fluttercommunity.workmanager.WorkManagerCall.Initialize.KEYS.INITIALIZE_TASK_IS_IN_DEBUG_MODE_KEY
 import dev.fluttercommunity.workmanager.WorkManagerCall.RegisterTask.KEYS.REGISTER_TASK_BACK_OFF_POLICY_DELAY_MILLIS_KEY
@@ -131,6 +132,14 @@ sealed class WorkManagerCall {
         }
     }
 
+    sealed class IsScheduled : WorkManagerCall() {
+        data class ByUniqueName(val uniqueName: String) : IsScheduled() {
+            companion object KEYS {
+                const val IS_SCHEDULED_UNIQUE_NAME_KEY = "uniqueName"
+            }
+        }
+    }
+
     sealed class CancelTask : WorkManagerCall() {
         data class ByUniqueName(val uniqueName: String) : CancelTask() {
             companion object KEYS {
@@ -163,6 +172,8 @@ object Extractor {
 
         REGISTER_ONE_OFF_TASK("registerOneOffTask"),
         REGISTER_PERIODIC_TASK("registerPeriodicTask"),
+
+        IS_SCHEDULED_BY_UNIQUE_NAME("isScheduledByUniqueName"),
 
         CANCEL_TASK_BY_UNIQUE_NAME("cancelTaskByUniqueName"),
         CANCEL_TASK_BY_TAG("cancelTaskByTag"),
@@ -225,6 +236,12 @@ object Extractor {
                     ),
                     outOfQuotaPolicy = extractOutOfQuotaPolicyFromCall(call),
                     payload = extractPayload(call)
+                )
+            }
+
+            PossibleWorkManagerCall.IS_SCHEDULED_BY_UNIQUE_NAME -> {
+                WorkManagerCall.IsScheduled.ByUniqueName(
+                    call.argument(IS_SCHEDULED_UNIQUE_NAME_KEY)!!
                 )
             }
 
