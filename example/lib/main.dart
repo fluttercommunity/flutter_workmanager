@@ -217,6 +217,7 @@ class _MyAppState extends State<MyApp> {
                             Workmanager().registerPeriodicTask(
                               simplePeriodic1HourTask,
                               simplePeriodic1HourTask,
+                              flexInterval: Duration(minutes: 15),
                               frequency: Duration(hours: 1),
                             );
                           }
