@@ -148,7 +148,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
 
     /// Immediately starts a one off task
     @available(iOS 13.0, *)
-    public static func startOneOffTask(identifier: String, taskIdentifier: UIBackgroundTaskIdentifier, inputData:String, delaySeconds: Int64) {
+    public static func startOneOffTask(identifier: String, taskIdentifier: UIBackgroundTaskIdentifier, inputData: String, delaySeconds: Int64) {
         let operationQueue = OperationQueue()
         // Create an operation that performs the main part of the background task
         let operation = BackgroundTaskOperation(
@@ -331,7 +331,6 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
             var taskIdentifier: UIBackgroundTaskIdentifier = .invalid
             let inputData =
                     arguments[method.Arguments.inputData.rawValue] as? String
-
 
             taskIdentifier = UIApplication.shared.beginBackgroundTask(withName: uniqueTaskIdentifier, expirationHandler: {
                 // Mark the task as ended if time is expired, otherwise iOS might terminate and will throttle future executions

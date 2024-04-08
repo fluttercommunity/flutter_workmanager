@@ -113,7 +113,7 @@ class BackgroundWorker {
 
                 backgroundMethodChannel?.invokeMethod(
                     BackgroundChannel.onResultSendCommand,
-                    arguments:arguments,
+                    arguments: arguments,
                     result: { flutterResult in
                         cleanupFlutterResources()
                         let taskSessionCompleter = Date()
