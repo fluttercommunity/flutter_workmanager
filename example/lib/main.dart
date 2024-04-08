@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 
@@ -124,11 +125,9 @@ class _MyAppState extends State<MyApp> {
                   child: Text("Start the Flutter background service"),
                   onPressed: () async {
                     if (Platform.isIOS) {
-                      final hasPermission = await Workmanager()
-                          .checkBackgroundRefreshPermission();
-                      if (hasPermission !=
-                          BackgroundRefreshPermissionState.available) {
-                        _showNoPermission(context, hasPermission);
+                      final status = await Permission.backgroundRefresh.status;
+                      if (status != PermissionStatus.granted) {
+                        _showNoPermission(context, status);
                         return;
                       }
                     }
@@ -352,8 +351,7 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  void _showNoPermission(
-      BuildContext context, BackgroundRefreshPermissionState hasPermission) {
+  void _showNoPermission(BuildContext context, PermissionStatus hasPermission) {
     showDialog(
       context: context,
       builder: (BuildContext context) {

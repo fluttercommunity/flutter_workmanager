@@ -6,8 +6,9 @@ environment:
   sdk: ">=2.18.0 <4.0.0"
 
 dependencies:
-  path_provider: ^2.0.11
-  shared_preferences: ^2.2.1
+  path_provider: 
+  shared_preferences: 
+  permission_handler: 
   flutter:
     sdk: flutter
   workmanager: 
