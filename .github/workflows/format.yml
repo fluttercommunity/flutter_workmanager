@@ -47,6 +47,7 @@ jobs:
 
       - name: publish checks
         run: |
+          cd workmanager
           flutter pub get
           flutter pub publish -n
           flutter pub global activate tuneup
