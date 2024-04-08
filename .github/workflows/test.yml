@@ -16,6 +16,7 @@ jobs:
           channel: 'stable'
       - name: Test
         run: |
+          cd workmanager
           flutter pub get
           flutter test
 
