@@ -1,4 +1,0 @@
-# melos_managed_dependency_overrides: workmanager
-dependency_overrides:
-  workmanager:
-    path: ../workmanager

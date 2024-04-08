@@ -15,3 +15,6 @@ doc/api/*/
 .fvm
 *.iml
 .dccache
+
+
+pubspec_overrides.yaml
