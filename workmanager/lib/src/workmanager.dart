@@ -278,13 +278,14 @@ class Workmanager {
   /// Checks whether a period task is scheduled by its [uniqueName].
   ///
   /// Scheduled means the work state is either ENQUEUED or RUNNING
-  /// 
+  ///
   /// Only available on Android.
   Future<bool> isScheduledByUniqueName(final String uniqueName) async {
-   return await _foregroundChannel.invokeMethod(
+    return await _foregroundChannel.invokeMethod(
       "isScheduledByUniqueName",
       {"uniqueName": uniqueName},
     );
+  }
 
   /// Schedule a background long running task, currently only available on iOS.
   ///
@@ -424,7 +425,7 @@ class JsonMapperHelper {
       "taskName": taskName,
       "tag": tag,
       "frequency": frequency?.inSeconds,
-      "flexInterval":flexInterval?.inSeconds,
+      "flexInterval": flexInterval?.inSeconds,
       "existingWorkPolicy": _enumToString(existingWorkPolicy),
       "initialDelaySeconds": initialDelay?.inSeconds,
       "networkType": _enumToString(constraints?.networkType),
