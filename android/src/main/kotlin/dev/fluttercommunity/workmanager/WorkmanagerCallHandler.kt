@@ -8,6 +8,7 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.PeriodicWorkRequest
+import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import dev.fluttercommunity.workmanager.BackgroundWorker.Companion.DART_TASK_KEY
 import dev.fluttercommunity.workmanager.BackgroundWorker.Companion.IS_IN_DEBUG_MODE_KEY
@@ -32,6 +33,11 @@ class WorkmanagerCallHandler(private val ctx: Context) : MethodChannel.MethodCal
                 result
             )
             is WorkManagerCall.RegisterTask -> RegisterTaskHandler.handle(
+                ctx,
+                extractedCall,
+                result
+            )
+            is WorkManagerCall.IsScheduled -> IsScheduledHandler.handle(
                 ctx,
                 extractedCall,
                 result
@@ -137,6 +143,23 @@ private object RegisterTaskHandler : CallHandler<WorkManagerCall.RegisterTask> {
             outOfQuotaPolicy = convertedCall.outOfQuotaPolicy,
             payload = convertedCall.payload
         )
+    }
+}
+
+private object IsScheduledHandler : CallHandler<WorkManagerCall.IsScheduled> {
+    override fun handle(
+        context: Context,
+        convertedCall: WorkManagerCall.IsScheduled,
+        result: MethodChannel.Result
+    ) {
+        when (convertedCall) {
+            is WorkManagerCall.IsScheduled.ByUniqueName -> {
+                val workInfos = WM.getWorkInfoByUniqueName(context, convertedCall.uniqueName).get()
+                val scheduled = workInfos.isNotEmpty()
+                        && workInfos.all { it.state == WorkInfo.State.ENQUEUED || it.state == WorkInfo.State.RUNNING }
+                return result.success(scheduled)
+            }
+        }
     }
 }
 
@@ -273,6 +296,9 @@ object WM {
             }
             .build()
     }
+
+    fun getWorkInfoByUniqueName(context: Context, uniqueWorkName: String) =
+        context.workManager().getWorkInfosForUniqueWork(uniqueWorkName)
 
     fun cancelByUniqueName(context: Context, uniqueWorkName: String) =
         context.workManager().cancelUniqueWork(uniqueWorkName)

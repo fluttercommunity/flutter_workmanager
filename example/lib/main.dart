@@ -141,7 +141,11 @@ class _MyAppState extends State<MyApp> {
                     }
                   },
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: 8),
+                Text(
+                  "Register task",
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
 
                 //This task runs once.
                 //Most likely this will trigger immediately
@@ -194,6 +198,10 @@ class _MyAppState extends State<MyApp> {
                       );
                     }),
                 SizedBox(height: 8),
+                Text(
+                  "Register periodic task (android only)",
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
                 //This task runs periodically
                 //It will wait at least 10 seconds before its first launch
                 //Since we have not provided a frequency it will be the default 15 minutes
@@ -265,6 +273,17 @@ class _MyAppState extends State<MyApp> {
                       : null,
                 ),
                 SizedBox(height: 16),
+                ElevatedButton(
+                    child: Text("isscheduled (Android)"),
+                    onPressed: Platform.isAndroid
+                        ? () async {
+                            final workInfo = await Workmanager().isScheduledByUniqueName(
+                              simplePeriodicTask,
+                            );
+                            print('isscheduled = $workInfo');
+                          }
+                        : null),
+                SizedBox(height: 8),
                 Text(
                   "Task cancellation",
                   style: Theme.of(context).textTheme.headlineSmall,
