@@ -48,7 +48,7 @@ void main() {
             'uniqueName': 'uniqueName',
             'taskName': 'taskName',
             'tag': null,
-            'flexInterval':null,
+            'flexInterval': null,
             'frequency': null,
             'existingWorkPolicy': null,
             'initialDelaySeconds': null,
@@ -189,7 +189,6 @@ void main() {
             'tag': null,
             'frequency': null,
             'flexInterval': null,
-
             'existingWorkPolicy': null,
             'initialDelaySeconds': 1,
             'networkType': 'connected',
@@ -218,7 +217,6 @@ void main() {
             'tag': null,
             'frequency': null,
             'flexInterval': null,
-
             'existingWorkPolicy': null,
             'initialDelaySeconds': 1,
             'networkType': 'metered',
@@ -241,7 +239,6 @@ void main() {
             'tag': null,
             'frequency': null,
             'flexInterval': null,
-
             'existingWorkPolicy': null,
             'initialDelaySeconds': 1,
             'networkType': 'metered',
@@ -270,7 +267,6 @@ void main() {
             'tag': null,
             'frequency': null,
             'flexInterval': null,
-
             'existingWorkPolicy': null,
             'initialDelaySeconds': 1,
             'networkType': 'not_roaming',
@@ -299,7 +295,6 @@ void main() {
             'tag': null,
             'frequency': null,
             'flexInterval': null,
-
             'existingWorkPolicy': null,
             'initialDelaySeconds': 1,
             'networkType': 'unmetered',
@@ -354,7 +349,6 @@ void main() {
               'tag': null,
               'frequency': null,
               'flexInterval': null,
-
               'existingWorkPolicy': existingWorkPolicy[1],
               'initialDelaySeconds': 1,
               'networkType': null,
