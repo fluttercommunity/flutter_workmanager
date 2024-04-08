@@ -37,9 +37,9 @@ android {
 
     defaultConfig {
         applicationId "dev.fluttercommunity.workmanager.example"
-        compileSdk 33
+        compileSdk 34
         minSdkVersion 19
-        targetSdkVersion 33
+        targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

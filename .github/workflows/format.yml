@@ -16,17 +16,19 @@ jobs:
           channel: 'stable'
       - name: Format
         run: |
-          flutter format --set-exit-if-changed .
+          dart format --set-exit-if-changed .
 
   format_kotlin:
     runs-on: ubuntu-latest
 
     steps:
       - name: "checkout"
-      - uses: actions/checkout@v4
+        uses: actions/checkout@v4
 
-      - name: "ktlint"
-        uses: "vroy/gha-kotlin-linter@v1"
+      - name: ktlint
+        uses: ScaCap/action-ktlint@master
+        with:
+          github_token: ${{ secrets.github_token }}
 
   format_swift:
     runs-on: ubuntu-latest
@@ -45,6 +47,7 @@ jobs:
 
       - name: publish checks
         run: |
+          cd workmanager
           flutter pub get
           flutter pub publish -n
           flutter pub global activate tuneup

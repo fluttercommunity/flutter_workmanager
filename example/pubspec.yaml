@@ -10,15 +10,13 @@ dependencies:
   shared_preferences: ^2.2.1
   flutter:
     sdk: flutter
+  workmanager: 
 
 dev_dependencies:
   integration_test:
     sdk: flutter
   flutter_test:
     sdk: flutter
-
-  workmanager:
-    path: ../
 
 flutter:
   uses-material-design: true

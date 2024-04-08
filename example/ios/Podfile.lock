@@ -14,8 +14,8 @@ PODS:
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
-  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/ios`)
-  - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/ios`)
+  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
+  - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - workmanager (from `.symlinks/plugins/workmanager/ios`)
 
 EXTERNAL SOURCES:
@@ -24,19 +24,19 @@ EXTERNAL SOURCES:
   integration_test:
     :path: ".symlinks/plugins/integration_test/ios"
   path_provider_foundation:
-    :path: ".symlinks/plugins/path_provider_foundation/ios"
+    :path: ".symlinks/plugins/path_provider_foundation/darwin"
   shared_preferences_foundation:
-    :path: ".symlinks/plugins/shared_preferences_foundation/ios"
+    :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
   workmanager:
     :path: ".symlinks/plugins/workmanager/ios"
 
 SPEC CHECKSUMS:
-  Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
-  integration_test: a1e7d09bd98eca2fc37aefd79d4f41ad37bdbbe5
-  path_provider_foundation: c68054786f1b4f3343858c1e1d0caaded73f0be9
-  shared_preferences_foundation: 986fc17f3d3251412d18b0265f9c64113a8c2472
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  integration_test: 13825b8a9334a850581300559b8839134b124670
+  path_provider_foundation: 29f094ae23ebbca9d3d0cec13889cd9060c0e943
+  shared_preferences_foundation: 5b919d13b803cadd15ed2dc053125c68730e5126
   workmanager: 0afdcf5628bbde6924c21af7836fed07b42e30e6
 
-PODFILE CHECKSUM: 1f97605dfe28dbf01a36d8763312d21d5d00222c
+PODFILE CHECKSUM: b63d507eb7cc768afa26646638aaf07f371f6370
 
-COCOAPODS: 1.12.0
+COCOAPODS: 1.14.3

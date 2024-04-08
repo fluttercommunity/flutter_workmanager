@@ -21,16 +21,14 @@ void mySetUpWrapper() {
 
 @GenerateMocks([Workmanager])
 void main() {
-  group(
-      "singleton pattern",
-      () => {
-            test("It always return the same workmanager instance", () {
-              final workmanager = Workmanager();
-              final workmanager2 = Workmanager();
+  group("singleton pattern", () {
+    test("It always return the same workmanager instance", () {
+      final workmanager = Workmanager();
+      final workmanager2 = Workmanager();
 
-              expect(workmanager == workmanager2, true);
-            })
-          });
+      expect(workmanager == workmanager2, true);
+    });
+  });
 
   group("mocked workmanager", () {
     setUpAll(() {

@@ -23,7 +23,7 @@ import workmanager
         WorkmanagerPlugin.registerBGProcessingTask(withIdentifier: "be.tramckrijte.workmanagerExample.taskId")
         WorkmanagerPlugin.registerBGProcessingTask(withIdentifier: "be.tramckrijte.workmanagerExample.rescheduledTask")
         WorkmanagerPlugin.registerBGProcessingTask(withIdentifier: "be.tramckrijte.workmanagerExample.simpleDelayedTask")
-        WorkmanagerPlugin.registerBGProcessingTask(withIdentifier:  "be.tramckrijte.workmanagerExample.iOSBackgroundProcessingTask")
+        WorkmanagerPlugin.registerBGProcessingTask(withIdentifier: "be.tramckrijte.workmanagerExample.iOSBackgroundProcessingTask")
 
         // When this task is scheduled from dart it will run with minimum 20 minute frequency. The
         // frequency is not guaranteed rather iOS will schedule it as per user's App usage pattern.
