@@ -11,7 +11,6 @@ import com.google.common.util.concurrent.ListenableFuture
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.embedding.engine.loader.FlutterLoader
-import io.flutter.embedding.engine.plugins.shim.ShimPluginRegistry
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.view.FlutterCallbackInformation
@@ -24,9 +23,8 @@ import java.util.Random
  */
 class BackgroundWorker(
     applicationContext: Context,
-    private val workerParams: WorkerParameters
+    private val workerParams: WorkerParameters,
 ) : ListenableWorker(applicationContext, workerParams), MethodChannel.MethodCallHandler {
-
     private lateinit var backgroundChannel: MethodChannel
 
     companion object {
@@ -59,10 +57,11 @@ class BackgroundWorker(
 
     private var completer: CallbackToFutureAdapter.Completer<Result>? = null
 
-    private var resolvableFuture = CallbackToFutureAdapter.getFuture { completer ->
-        this.completer = completer
-        null
-    }
+    private var resolvableFuture =
+        CallbackToFutureAdapter.getFuture { completer ->
+            this.completer = completer
+            null
+        }
 
     override fun startWork(): ListenableFuture<Result> {
         startTime = System.currentTimeMillis()
@@ -76,7 +75,7 @@ class BackgroundWorker(
         flutterLoader.ensureInitializationCompleteAsync(
             applicationContext,
             null,
-            Handler(Looper.getMainLooper())
+            Handler(Looper.getMainLooper()),
         ) {
             val callbackHandle = SharedPreferenceHelper.getCallbackHandle(applicationContext)
             val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle)
@@ -90,7 +89,7 @@ class BackgroundWorker(
                     payload,
                     callbackHandle,
                     callbackInfo,
-                    dartBundlePath
+                    dartBundlePath,
                 )
             }
 
@@ -102,8 +101,8 @@ class BackgroundWorker(
                     DartExecutor.DartCallback(
                         applicationContext.assets,
                         dartBundlePath,
-                        callbackInfo
-                    )
+                        callbackInfo,
+                    ),
                 )
             }
         }
@@ -125,7 +124,7 @@ class BackgroundWorker(
                 dartTask,
                 payload,
                 fetchDuration,
-                result ?: Result.failure()
+                result ?: Result.failure(),
             )
         }
 
@@ -142,7 +141,10 @@ class BackgroundWorker(
         }
     }
 
-    override fun onMethodCall(call: MethodCall, r: MethodChannel.Result) {
+    override fun onMethodCall(
+        call: MethodCall,
+        r: MethodChannel.Result,
+    ) {
         when (call.method) {
             BACKGROUND_CHANNEL_INITIALIZED ->
                 backgroundChannel.invokeMethod(
@@ -156,7 +158,7 @@ class BackgroundWorker(
                         override fun error(
                             errorCode: String,
                             errorMessage: String?,
-                            errorDetails: Any?
+                            errorDetails: Any?,
                         ) {
                             Log.e(TAG, "errorCode: $errorCode, errorMessage: $errorMessage")
                             stopEngine(Result.failure())
@@ -166,7 +168,7 @@ class BackgroundWorker(
                             val wasSuccessFul = receivedResult?.let { it as Boolean? } == true
                             stopEngine(if (wasSuccessFul) Result.success() else Result.retry())
                         }
-                    }
+                    },
                 )
         }
     }
