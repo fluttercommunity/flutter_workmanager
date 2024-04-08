@@ -114,6 +114,7 @@ private object RegisterTaskHandler : CallHandler<WorkManagerCall.RegisterTask> {
             uniqueName = convertedCall.uniqueName,
             dartTask = convertedCall.taskName,
             tag = convertedCall.tag,
+            flexIntervalInSeconds = convertedCall.flexIntervalInSeconds,
             frequencyInSeconds = convertedCall.frequencyInSeconds,
             isInDebugMode = convertedCall.isInDebugMode,
             existingWorkPolicy = convertedCall.existingWorkPolicy,
@@ -243,6 +244,7 @@ object WM {
         payload: String? = null,
         tag: String? = null,
         frequencyInSeconds: Long = defaultPeriodicRefreshFrequencyInSeconds,
+        flexIntervalInSeconds:Long = defaultFlexIntervalInSeconds,
         isInDebugMode: Boolean = false,
         existingWorkPolicy: ExistingPeriodicWorkPolicy = defaultPeriodExistingWorkPolicy,
         initialDelaySeconds: Long = defaultInitialDelaySeconds,
@@ -254,6 +256,8 @@ object WM {
             PeriodicWorkRequest.Builder(
                 BackgroundWorker::class.java,
                 frequencyInSeconds,
+                TimeUnit.SECONDS,
+                flexIntervalInSeconds,
                 TimeUnit.SECONDS
             )
                 .setInputData(buildTaskInputData(dartTask, isInDebugMode, payload))
