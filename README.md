@@ -54,7 +54,7 @@ Wrap the code inside your `Workmanager().executeTask` in a `try and catch` in or
 ```dart
 @pragma('vm:entry-point')
 void callbackDispatcher() {
-  Workmanager().executeTask((task, inputData) {
+  Workmanager().executeTask((task, inputData) async {
 
     int? totalExecutions;
     final _sharedPreference = await SharedPreferences.getInstance(); //Initialize dependency
