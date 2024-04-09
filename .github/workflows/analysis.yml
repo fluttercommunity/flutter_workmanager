@@ -10,3 +10,4 @@ jobs:
         with:
           # Required:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
+          relativePath: workmanager/
