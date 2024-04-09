@@ -47,6 +47,8 @@ jobs:
 
       - name: publish checks
         run: |
+          dart pub get
+          melos bootstrap
           cd workmanager
           flutter pub get
           flutter pub publish -n

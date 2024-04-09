@@ -20,6 +20,8 @@ jobs:
 
       - name: build
         run: |
+          dart pub get
+          melos bootstrap
           cd example && flutter build apk --debug
 
   example_ios:
@@ -32,4 +34,6 @@ jobs:
 
       - name: build
         run: |
+          dart pub get
+          melos bootstrap
           cd example && flutter build ios --debug --no-codesign
