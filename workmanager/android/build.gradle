@@ -1,19 +1,6 @@
 group 'dev.fluttercommunity.workmanager'
 version '1.0-SNAPSHOT'
 
-buildscript {
-    ext.kotlin_version = '1.9.23'
-    repositories {
-        google()
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:8.0.2'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
-}
-
 rootProject.allprojects {
     repositories {
         mavenCentral()
@@ -55,8 +42,6 @@ android {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-
     def work_version = "2.9.0"
     implementation "androidx.work:work-runtime:$work_version"
     implementation "androidx.concurrent:concurrent-futures:1.1.0"
