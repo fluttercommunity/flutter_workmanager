@@ -319,42 +319,6 @@ class Workmanager {
         ),
       );
 
-  /// Check whether background app refresh is enabled. If it is not enabled you
-  /// might ask the user to enable it in app settings.
-  ///
-  /// On iOS user can disable Background App Refresh permission anytime, hence
-  /// background tasks can only run if user has granted the permission. Parental
-  /// controls can also restrict it.
-  ///
-  /// Only available on iOS.
-  Future<BackgroundRefreshPermissionState>
-      checkBackgroundRefreshPermission() async {
-    try {
-      var result = await _foregroundChannel.invokeMethod<Object>(
-        'checkBackgroundRefreshPermission',
-        JsonMapperHelper.toInitializeMethodArgument(
-          isInDebugMode: _isInDebugMode,
-          callbackHandle: 0,
-        ),
-      );
-      switch (result.toString()) {
-        case 'available':
-          return BackgroundRefreshPermissionState.available;
-        case 'denied':
-          return BackgroundRefreshPermissionState.denied;
-        case 'restricted':
-          return BackgroundRefreshPermissionState.restricted;
-        case 'unknown':
-          return BackgroundRefreshPermissionState.unknown;
-      }
-    } catch (e) {
-      // TODO not sure it's a good idea to handle and print a message
-      print("Could not retrieve BackgroundRefreshPermissionState " +
-          e.toString());
-    }
-    return BackgroundRefreshPermissionState.unknown;
-  }
-
   /// Cancels a task by its [uniqueName]
   Future<void> cancelByUniqueName(final String uniqueName) async =>
       await _foregroundChannel.invokeMethod(

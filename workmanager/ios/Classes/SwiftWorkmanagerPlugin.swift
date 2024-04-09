@@ -26,10 +26,6 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
                 }
             }
 
-            struct CheckBackgroundRefreshPermission {
-                static let name = "\(CheckBackgroundRefreshPermission.self)".lowercasingFirst
-            }
-
             struct RegisterOneOffTask {
                 static let name = "\(RegisterOneOffTask.self)".lowercasingFirst
                 enum Arguments: String {
@@ -270,9 +266,6 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
         switch (call.method, call.arguments as? [AnyHashable: Any]) {
         case (ForegroundMethodChannel.Methods.Initialize.name, let .some(arguments)):
             initialize(arguments: arguments, result: result)
-            return
-        case (ForegroundMethodChannel.Methods.CheckBackgroundRefreshPermission.name, .some):
-            _ = checkBackgroundRefreshPermission(result: result)
             return
         case (ForegroundMethodChannel.Methods.RegisterOneOffTask.name, let .some(arguments)):
             registerOneOffTask(arguments: arguments, result: result)

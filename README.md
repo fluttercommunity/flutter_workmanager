@@ -176,16 +176,16 @@ Workmanager().registerProcessingTask(
 ```
 
 ### Background App Refresh permission
-On iOS user can disable `Background App Refresh` permission anytime, hence background tasks can only run if user has granted the permission.
-With `Workmanager.checkBackgroundRefreshPermission` you can check whether background app refresh is enabled. If it is not enabled you might ask 
-the user to enable it in app settings.
 
-```dart
-if (Platform.isIOS) {
-  final hasPermission = await Workmanager().checkBackgroundRefreshPermission();
-  if (hasPermission != BackgroundRefreshPermissionState.available){
-    // Inform the user that background app refresh is disabled
-  }
+On iOS user can disable `Background App Refresh` permission anytime, hence background tasks can only run if user has granted the permission.
+
+Use `permision_handler` to check for the permission:
+
+``` dart
+final status = await Permission.backgroundRefresh.status;
+if (status != PermissionStatus.granted) {
+  _showNoPermission(context, status);
+  return;
 }
 ```
 
