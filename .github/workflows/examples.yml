@@ -20,7 +20,7 @@ jobs:
 
       - name: build
         run: |
-          dart pub get
+          dart pub global activate melos
           melos bootstrap
           cd example && flutter build apk --debug
 
@@ -34,6 +34,6 @@ jobs:
 
       - name: build
         run: |
-          dart pub get
+          dart pub global activate melos
           melos bootstrap
           cd example && flutter build ios --debug --no-codesign
