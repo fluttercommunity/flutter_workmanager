@@ -11,7 +11,6 @@ import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.core.app.NotificationCompat
 import androidx.work.ForegroundInfo
 import androidx.work.ListenableWorker
-import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.google.common.util.concurrent.ListenableFuture
 import io.flutter.embedding.engine.FlutterEngine
@@ -74,10 +73,6 @@ class BackgroundWorker(
     private fun createForegroundInfo(
         setForegroundOptions: SetForeground
     ): ForegroundInfo {
-        // This PendingIntent can be used to cancel the worker
-        val intent = WorkManager.getInstance(applicationContext)
-            .createCancelPendingIntent(getId())
-
         // Create a Notification channel if necessary
         createNotificationChannel(
             setForegroundOptions.notificationChannelId,
@@ -91,9 +86,6 @@ class BackgroundWorker(
             .setContentText(setForegroundOptions.notificationDescription)
             .setOngoing(true)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
-            // Add the cancel action to the notification which can
-            // be used to cancel the worker
-            .addAction(android.R.drawable.ic_delete, "Cancel", intent)
             .build()
 
         return ForegroundInfo(
@@ -103,7 +95,7 @@ class BackgroundWorker(
         )
     }
 
-    fun createNotificationChannel(id: String, name: String, description: String, importance: Int) {
+    private fun createNotificationChannel(id: String, name: String, description: String, importance: Int) {
         // Create a Notification channel
         // Notification channels are only available in OREO and higher.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -192,7 +184,7 @@ class BackgroundWorker(
         }
     }
 
-    fun onBackgroundChannelInitialized() {
+    private fun onBackgroundChannelInitialized() {
         backgroundChannel.invokeMethod(
             "onResultSend",
             mapOf(DART_TASK_KEY to dartTask, PAYLOAD_KEY to payload),
@@ -218,7 +210,7 @@ class BackgroundWorker(
         )
     }
 
-    fun onSetForeground(setForegroundOptions: SetForeground) {
+    private fun onSetForeground(setForegroundOptions: SetForeground) {
         setForegroundAsync(createForegroundInfo(setForegroundOptions))
     }
 
