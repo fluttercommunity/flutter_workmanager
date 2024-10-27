@@ -1,4 +1,4 @@
-group 'dev.fluttercommunity.workmanager'
+group 'com.mishmashtech.workmanager'
 version '1.0-SNAPSHOT'
 
 rootProject.allprojects {
@@ -14,7 +14,7 @@ apply plugin: 'kotlin-android'
 android {
     // Conditional for compatibility with AGP <4.2.
     if (project.android.hasProperty("namespace")) {
-        namespace 'dev.fluttercommunity.workmanager'
+        namespace 'com.mishmashtech.workmanager'
     }
 
     sourceSets {
@@ -29,22 +29,22 @@ android {
         disable 'InvalidPackage'
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlinOptions {
         tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-            kotlinOptions.jvmTarget = "1.8"
+            kotlinOptions.jvmTarget = "17"
         }
     }
 
 }
 
 dependencies {
-    def work_version = "2.9.0"
+    def work_version = "2.9.1"
     implementation "androidx.work:work-runtime:$work_version"
-    implementation "androidx.concurrent:concurrent-futures:1.1.0"
+    implementation "androidx.concurrent:concurrent-futures:1.2.0"
 
     testImplementation 'junit:junit:4.13.2'
 }
