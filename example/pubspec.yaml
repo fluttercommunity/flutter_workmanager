@@ -11,7 +11,10 @@ dependencies:
   permission_handler: 
   flutter:
     sdk: flutter
-  workmanager: 
+  workmanager:
+    git:
+      url: https://github.com/mishmashtechnologies/flutter_workmanager
+      ref: main
 
 dev_dependencies:
   integration_test:

@@ -224,7 +224,6 @@ class _MyAppState extends State<MyApp> {
                             Workmanager().registerPeriodicTask(
                               simplePeriodic1HourTask,
                               simplePeriodic1HourTask,
-                              flexInterval: Duration(minutes: 15),
                               frequency: Duration(hours: 1),
                             );
                           }
@@ -263,7 +262,7 @@ class _MyAppState extends State<MyApp> {
                             _showNotInitialized();
                             return;
                           }
-                          await Workmanager().registerProcessingTask(
+                          await Workmanager().registerOneOffTask(
                             iOSBackgroundProcessingTask,
                             iOSBackgroundProcessingTask,
                             initialDelay: Duration(seconds: 20),
