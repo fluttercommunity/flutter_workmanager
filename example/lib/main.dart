@@ -276,7 +276,7 @@ class _MyAppState extends State<MyApp> {
                     onPressed: Platform.isAndroid
                         ? () async {
                             final workInfo =
-                                await Workmanager().isScheduledByUniqueName(
+                                await Workmanager().(
                               simplePeriodicTask,
                             );
                             print('isscheduled = $workInfo');

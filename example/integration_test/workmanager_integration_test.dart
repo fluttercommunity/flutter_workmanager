@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:workmanager/workmanager.dart';
+import 'package:workmanager_workspace/workmanager.dart';
 
 @pragma('vm:entry-point')
 void callbackDispatcher() {
