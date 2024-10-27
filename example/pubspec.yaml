@@ -12,9 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
   workmanager:
-    git:
-      url: https://github.com/mishmashtechnologies/flutter_workmanager
-      ref: main
+    path: ../workmanager
 
 dev_dependencies:
   integration_test:
