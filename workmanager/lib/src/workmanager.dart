@@ -82,9 +82,9 @@ class Workmanager {
 
   static final Workmanager _instance = Workmanager._internal(
       const MethodChannel(
-          "be.tramckrijte.workmanager/background_channel_work_manager"),
+          "com.mishmashtech.workmanager/background_channel_work_manager"),
       const MethodChannel(
-          "be.tramckrijte.workmanager/foreground_channel_work_manager"));
+          "com.mishmashtech.workmanager/foreground_channel_work_manager"));
 
   /// Use this constant inside your callbackDispatcher to identify when an iOS Background Fetch occurred.
   ///
@@ -127,9 +127,9 @@ class Workmanager {
   static bool _isInDebugMode = false;
 
   MethodChannel _backgroundChannel = const MethodChannel(
-      "be.tramckrijte.workmanager/background_channel_work_manager");
+      "com.mishmashtech.workmanager/background_channel_work_manager");
   MethodChannel _foregroundChannel = const MethodChannel(
-      "be.tramckrijte.workmanager/foreground_channel_work_manager");
+      "com.mishmashtech.workmanager/foreground_channel_work_manager");
 
   /// A helper function so you only need to implement a [BackgroundTaskHandler]
   void executeTask(final BackgroundTaskHandler backgroundTask) {
@@ -137,9 +137,9 @@ class Workmanager {
     DartPluginRegistrant.ensureInitialized();
 
     _backgroundChannel.setMethodCallHandler((call) async {
-      final inputData = call.arguments["be.tramckrijte.workmanager.INPUT_DATA"];
+      final inputData = call.arguments["com.mishmashtech.workmanager.INPUT_DATA"];
       return backgroundTask(
-        call.arguments["be.tramckrijte.workmanager.DART_TASK"],
+        call.arguments["com.mishmashtech.workmanager.DART_TASK"],
         inputData == null ? null : jsonDecode(inputData),
       );
     });

@@ -135,12 +135,12 @@ To use `registerPeriodicTask` first register the task in `Info.plist` and `AppDe
 
 ```objc
 // Register a periodic task with 20 minutes frequency. The frequency is in seconds.
-WorkmanagerPlugin.registerPeriodicTask(withIdentifier: "be.tramckrijte.workmanagerExample.iOSBackgroundAppRefresh", frequency: NSNumber(value: 20 * 60))
+WorkmanagerPlugin.registerPeriodicTask(withIdentifier: "com.mishmashtech.workmanagerExample.iOSBackgroundAppRefresh", frequency: NSNumber(value: 20 * 60))
 ```
 
 Then schedule the task from your App
 ```dart
-const iOSBackgroundAppRefresh = "be.tramckrijte.workmanagerExample.iOSBackgroundAppRefresh";
+const iOSBackgroundAppRefresh = "com.mishmashtech.workmanagerExample.iOSBackgroundAppRefresh";
 Workmanager().registerPeriodicTask(
   iOSBackgroundAppRefresh,
   iOSBackgroundAppRefresh,
@@ -161,7 +161,7 @@ iOS might terminate any running background processing tasks when the user starts
 For more information see [BGProcessingTask](https://developer.apple.com/documentation/backgroundtasks/bgprocessingtask)
 
 ```dart
-const iOSBackgroundProcessingTask = "be.tramckrijte.workmanagerExample.iOSBackgroundProcessingTask";
+const iOSBackgroundProcessingTask = "com.mishmashtech.workmanagerExample.iOSBackgroundProcessingTask";
 Workmanager().registerProcessingTask(
   iOSBackgroundProcessingTask,
   iOSBackgroundProcessingTask,

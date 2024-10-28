@@ -10,18 +10,18 @@ import 'package:workmanager/workmanager.dart';
 
 void main() => runApp(MaterialApp(home: MyApp()));
 
-const simpleTaskKey = "be.tramckrijte.workmanagerExample.simpleTask";
-const rescheduledTaskKey = "be.tramckrijte.workmanagerExample.rescheduledTask";
-const failedTaskKey = "be.tramckrijte.workmanagerExample.failedTask";
-const simpleDelayedTask = "be.tramckrijte.workmanagerExample.simpleDelayedTask";
+const simpleTaskKey = "com.mishmashtech.workmanagerExample.simpleTask";
+const rescheduledTaskKey = "com.mishmashtech.workmanagerExample.rescheduledTask";
+const failedTaskKey = "com.mishmashtech.workmanagerExample.failedTask";
+const simpleDelayedTask = "com.mishmashtech.workmanagerExample.simpleDelayedTask";
 const simplePeriodicTask =
-    "be.tramckrijte.workmanagerExample.simplePeriodicTask";
+    "com.mishmashtech.workmanagerExample.simplePeriodicTask";
 const simplePeriodic1HourTask =
-    "be.tramckrijte.workmanagerExample.simplePeriodic1HourTask";
+    "com.mishmashtech.workmanagerExample.simplePeriodic1HourTask";
 const iOSBackgroundAppRefresh =
-    "be.tramckrijte.workmanagerExample.iOSBackgroundAppRefresh";
+    "com.mishmashtech.workmanagerExample.iOSBackgroundAppRefresh";
 const iOSBackgroundProcessingTask =
-    "be.tramckrijte.workmanagerExample.iOSBackgroundProcessingTask";
+    "com.mishmashtech.workmanagerExample.iOSBackgroundProcessingTask";
 
 final List<String> allTasks = [
   simpleTaskKey,

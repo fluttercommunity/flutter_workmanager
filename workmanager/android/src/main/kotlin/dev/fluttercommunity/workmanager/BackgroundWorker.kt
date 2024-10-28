@@ -30,12 +30,12 @@ class BackgroundWorker(
     companion object {
         const val TAG = "BackgroundWorker"
 
-        const val PAYLOAD_KEY = "be.tramckrijte.workmanager.INPUT_DATA"
-        const val DART_TASK_KEY = "be.tramckrijte.workmanager.DART_TASK"
-        const val IS_IN_DEBUG_MODE_KEY = "be.tramckrijte.workmanager.IS_IN_DEBUG_MODE_KEY"
+        const val PAYLOAD_KEY = "com.mishmashtech.workmanager.INPUT_DATA"
+        const val DART_TASK_KEY = "com.mishmashtech.workmanager.DART_TASK"
+        const val IS_IN_DEBUG_MODE_KEY = "com.mishmashtech.workmanager.IS_IN_DEBUG_MODE_KEY"
 
         const val BACKGROUND_CHANNEL_NAME =
-            "be.tramckrijte.workmanager/background_channel_work_manager"
+            "com.mishmashtech.workmanager/background_channel_work_manager"
         const val BACKGROUND_CHANNEL_INITIALIZED = "backgroundChannelInitialized"
 
         private val flutterLoader = FlutterLoader()

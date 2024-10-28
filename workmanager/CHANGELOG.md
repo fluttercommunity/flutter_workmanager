@@ -219,7 +219,7 @@
     ```xml
     <manifest xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
-        package="be.tramckrijte.workmanager_example">
+        package="com.mishmashtech.workmanager_example">
     
         <!-- io.flutter.app.FlutterApplication is an android.app.Application that
              calls FlutterMain.startInitialization(this); in its onCreate method.

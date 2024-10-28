@@ -4,15 +4,15 @@
 <dict>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
-		<string>be.tramckrijte.workmanagerExample.taskId</string>
-		<string>be.tramckrijte.workmanagerExample.simpleTask</string>
-		<string>be.tramckrijte.workmanagerExample.rescheduledTask</string>
-		<string>be.tramckrijte.workmanagerExample.failedTask</string>
-		<string>be.tramckrijte.workmanagerExample.simpleDelayedTask</string>
-		<string>be.tramckrijte.workmanagerExample.simplePeriodicTask</string>
-		<string>be.tramckrijte.workmanagerExample.simplePeriodic1HourTask</string>
-		<string>be.tramckrijte.workmanagerExample.iOSBackgroundAppRefresh</string>
-		<string>be.tramckrijte.workmanagerExample.iOSBackgroundProcessingTask</string>
+		<string>com.mishmashtech.workmanagerExample.taskId</string>
+		<string>com.mishmashtech.workmanagerExample.simpleTask</string>
+		<string>com.mishmashtech.workmanagerExample.rescheduledTask</string>
+		<string>com.mishmashtech.workmanagerExample.failedTask</string>
+		<string>com.mishmashtech.workmanagerExample.simpleDelayedTask</string>
+		<string>com.mishmashtech.workmanagerExample.simplePeriodicTask</string>
+		<string>com.mishmashtech.workmanagerExample.simplePeriodic1HourTask</string>
+		<string>com.mishmashtech.workmanagerExample.iOSBackgroundAppRefresh</string>
+		<string>com.mishmashtech.workmanagerExample.iOSBackgroundProcessingTask</string>
 	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>

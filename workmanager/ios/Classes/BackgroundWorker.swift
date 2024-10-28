@@ -108,7 +108,7 @@ class BackgroundWorker {
                 result(true)    // Agree to Flutter's method invocation
                 var arguments = self.backgroundMode.onResultSendArguments
                 if self.inputData != "" {
-                    arguments = arguments.merging(["be.tramckrijte.workmanager.INPUT_DATA": self.inputData]) { current, _ in current }
+                    arguments = arguments.merging(["com.mishmashtech.workmanager.INPUT_DATA": self.inputData]) { current, _ in current }
                 }
 
                 backgroundMethodChannel?.invokeMethod(
