@@ -345,3 +345,33 @@ Workmanager().cancelByUniqueName("<MyTask>");
 ```dart
 Workmanager().cancelAll();
 ```
+
+
+# Building project
+
+Project was migrated to [Melos](https://pub.dev/packages/melos) so build steps has changed.
+
+1. Install melos
+
+```
+dart pub global activate melos
+```
+
+2. In project root bootstrap
+
+```
+melos bootstrap
+```
+
+3. Get packages
+
+```
+melos run get
+```
+
+Now you should be able to run example project
+
+```
+cd example
+flutter run
+```
