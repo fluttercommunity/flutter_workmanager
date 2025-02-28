@@ -26,7 +26,7 @@ class WorkmanagerPlugin : FlutterPlugin, MethodCallHandler {
     }
 
     override fun onMethodCall(call: MethodCall, result: Result) {
-        workmanagerCallHandler?.handle(call, result)
+        workmanagerCallHandler?.onMethodCall(call, result)
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
