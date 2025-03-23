@@ -14,14 +14,10 @@ const simpleTaskKey = "be.tramckrijte.workmanagerExample.simpleTask";
 const rescheduledTaskKey = "be.tramckrijte.workmanagerExample.rescheduledTask";
 const failedTaskKey = "be.tramckrijte.workmanagerExample.failedTask";
 const simpleDelayedTask = "be.tramckrijte.workmanagerExample.simpleDelayedTask";
-const simplePeriodicTask =
-    "be.tramckrijte.workmanagerExample.simplePeriodicTask";
-const simplePeriodic1HourTask =
-    "be.tramckrijte.workmanagerExample.simplePeriodic1HourTask";
-const iOSBackgroundAppRefresh =
-    "be.tramckrijte.workmanagerExample.iOSBackgroundAppRefresh";
-const iOSBackgroundProcessingTask =
-    "be.tramckrijte.workmanagerExample.iOSBackgroundProcessingTask";
+const simplePeriodicTask = "be.tramckrijte.workmanagerExample.simplePeriodicTask";
+const simplePeriodic1HourTask = "be.tramckrijte.workmanagerExample.simplePeriodic1HourTask";
+const iOSBackgroundAppRefresh = "be.tramckrijte.workmanagerExample.iOSBackgroundAppRefresh";
+const iOSBackgroundProcessingTask = "be.tramckrijte.workmanagerExample.iOSBackgroundProcessingTask";
 
 final List<String> allTasks = [
   simpleTaskKey,
@@ -224,7 +220,6 @@ class _MyAppState extends State<MyApp> {
                             Workmanager().registerPeriodicTask(
                               simplePeriodic1HourTask,
                               simplePeriodic1HourTask,
-                              flexInterval: Duration(minutes: 15),
                               frequency: Duration(hours: 1),
                             );
                           }
@@ -263,7 +258,7 @@ class _MyAppState extends State<MyApp> {
                             _showNotInitialized();
                             return;
                           }
-                          await Workmanager().registerProcessingTask(
+                          await Workmanager().registerOneOffTask(
                             iOSBackgroundProcessingTask,
                             iOSBackgroundProcessingTask,
                             initialDelay: Duration(seconds: 20),
@@ -276,11 +271,10 @@ class _MyAppState extends State<MyApp> {
                     child: Text("isscheduled (Android)"),
                     onPressed: Platform.isAndroid
                         ? () async {
-                            final workInfo =
-                                await Workmanager().isScheduledByUniqueName(
-                              simplePeriodicTask,
-                            );
-                            print('isscheduled = $workInfo');
+                            // final workInfo = await Workmanager().isScheduledByUniqueName(
+                            //   simplePeriodicTask,
+                            // );
+                            // print('isscheduled = $workInfo');
                           }
                         : null),
                 SizedBox(height: 8),
@@ -327,7 +321,7 @@ class _MyAppState extends State<MyApp> {
     }
 
     if (Platform.isIOS) {
-      Workmanager().printScheduledTasks();
+      // Workmanager().printScheduledTasks();
     }
 
     setState(() {});
