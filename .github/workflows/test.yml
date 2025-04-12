@@ -68,7 +68,7 @@ jobs:
 
 
   drive_android:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     #creates a build matrix for your jobs
     strategy:
       #set of different configurations of the virtual environment.
@@ -78,6 +78,11 @@ jobs:
         target: [default]
     steps:
       - uses: actions/checkout@v4
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
       - uses: actions/setup-java@v1
         with:
           java-version: 17
