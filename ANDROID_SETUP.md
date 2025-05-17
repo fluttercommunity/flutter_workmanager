@@ -11,6 +11,21 @@ Check if you have the following in your `AndroidManifest.xml` file.
 Ideally you should have this, if not follow the [upgrade guide](https://github.com/flutter/flutter/wiki/Upgrading-pre-1.12-Android-projects).  
 If for some reason you can't upgrade yet we still support the [older way of embedding](ANDROID_SETUP_V1.md):
 
+In your `pubspec.yaml` file, add:
+```yaml 
+dependencies:
+  workmanager:
+    git:
+      url: https://github.com/fluttercommunity/flutter_workmanager.git
+      path: workmanager
+      ref: main
+ ```
+ instead of 
+```yaml
+dependencies:
+  workmanager: ^0.5.2
+```
+
 # How to Debug my background job
 
 Debugging a background task can be difficult, Android decides when is the best time to run.  
