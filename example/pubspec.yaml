@@ -11,7 +11,12 @@ dependencies:
   permission_handler: 
   flutter:
     sdk: flutter
+  # Remember to change the workmanager dependency back to pub.dev whenever workmanager is released to pub.dev again
   workmanager: 
+    git: 
+      url: https://github.com/fluttercommunity/flutter_workmanager.git
+      ref: main
+      path: ./workmanager
 
 dev_dependencies:
   integration_test:

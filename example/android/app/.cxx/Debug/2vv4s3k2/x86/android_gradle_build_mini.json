@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "/Users/techconfidant/development/flutter/packages/flutter_tools/gradle/src/main/groovy/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/Users/techconfidant/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/Users/techconfidant/Documents/projects/flutter_workmanager/example/android/app/.cxx/Debug/2vv4s3k2/x86",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/Users/techconfidant/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/Users/techconfidant/Documents/projects/flutter_workmanager/example/android/app/.cxx/Debug/2vv4s3k2/x86",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}
