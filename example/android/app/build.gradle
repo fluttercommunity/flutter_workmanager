@@ -36,7 +36,7 @@ android {
     defaultConfig {
         applicationId "dev.fluttercommunity.workmanager.example"
         compileSdk 34
-        minSdkVersion 19
+        minSdkVersion flutter.minSdkVersion
         targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName

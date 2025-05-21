@@ -1,5 +1,8 @@
 package dev.fluttercommunity.workmanager
 
+import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
