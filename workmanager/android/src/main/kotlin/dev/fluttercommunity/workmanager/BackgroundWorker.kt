@@ -11,13 +11,13 @@ import com.google.common.util.concurrent.ListenableFuture
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.embedding.engine.loader.FlutterLoader
+import io.flutter.embedding.engine.loader.FlutterCallbackInformation
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
-import io.flutter.view.FlutterCallbackInformation
 import java.util.Random
 
-/***
- * A simple worker that will post your input back to your Flutter application.
+/**
+ * A simple worker that posts your input back to your Flutter application.
  *
  * It will block the background thread until a value of either true or false is received back from Flutter code.
  */
@@ -25,6 +25,7 @@ class BackgroundWorker(
     applicationContext: Context,
     private val workerParams: WorkerParameters,
 ) : ListenableWorker(applicationContext, workerParams), MethodChannel.MethodCallHandler {
+
     private lateinit var backgroundChannel: MethodChannel
 
     companion object {
@@ -41,13 +42,13 @@ class BackgroundWorker(
         private val flutterLoader = FlutterLoader()
     }
 
-    private val payload
+    private val payload: String?
         get() = workerParams.inputData.getString(PAYLOAD_KEY)
 
-    private val dartTask
+    private val dartTask: String
         get() = workerParams.inputData.getString(DART_TASK_KEY)!!
 
-    private val isInDebug
+    private val isInDebug: Boolean
         get() = workerParams.inputData.getBoolean(IS_IN_DEBUG_MODE_KEY, false)
 
     private val randomThreadIdentifier = Random().nextInt()
@@ -75,7 +76,7 @@ class BackgroundWorker(
         flutterLoader.ensureInitializationCompleteAsync(
             applicationContext,
             null,
-            Handler(Looper.getMainLooper()),
+            Handler(Looper.getMainLooper())
         ) {
             val callbackHandle = SharedPreferenceHelper.getCallbackHandle(applicationContext)
             val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle)
@@ -89,7 +90,7 @@ class BackgroundWorker(
                     payload,
                     callbackHandle,
                     callbackInfo,
-                    dartBundlePath,
+                    dartBundlePath
                 )
             }
 
@@ -101,8 +102,8 @@ class BackgroundWorker(
                     DartExecutor.DartCallback(
                         applicationContext.assets,
                         dartBundlePath,
-                        callbackInfo,
-                    ),
+                        callbackInfo
+                    )
                 )
             }
         }
@@ -124,17 +125,16 @@ class BackgroundWorker(
                 dartTask,
                 payload,
                 fetchDuration,
-                result ?: Result.failure(),
+                result ?: Result.failure()
             )
         }
 
-        // No result indicates we were signalled to stop by WorkManager.  The result is already
-        // STOPPED, so no need to resolve another one.
+        // If a result is provided, complete the future.
         if (result != null) {
             this.completer?.set(result)
         }
 
-        // If stopEngine is called from `onStopped`, it may not be from the main thread.
+        // Ensure engine is destroyed on the main thread.
         Handler(Looper.getMainLooper()).post {
             engine?.destroy()
             engine = null
@@ -165,10 +165,10 @@ class BackgroundWorker(
                         }
 
                         override fun success(receivedResult: Any?) {
-                            val wasSuccessFul = receivedResult?.let { it as Boolean? } == true
-                            stopEngine(if (wasSuccessFul) Result.success() else Result.retry())
+                            val wasSuccessful = receivedResult as? Boolean == true
+                            stopEngine(if (wasSuccessful) Result.success() else Result.retry())
                         }
-                    },
+                    }
                 )
         }
     }
