@@ -6,7 +6,7 @@
 
 Flutter WorkManager is a wrapper around [Android's WorkManager](https://developer.android.com/topic/libraries/architecture/workmanager), [iOS' performFetchWithCompletionHandler](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1623125-application) and [iOS BGAppRefreshTask](https://developer.apple.com/documentation/backgroundtasks/bgapprefreshtask), effectively enabling headless execution of Dart code in the background.
 
-For iOS users, please watch this video  on a general introduction to background processing: https://developer.apple.com/videos/play/wwdc2019/707 ( and old link for [Background execution demystified (WWDC 2020)](https://devstreaming-cdn.apple.com/videos/wwdc/2020/10063/3/2E1C3BA0-2643-4330-A5B2-3A9878453987/wwdc2020_10063_hd.mp4). All of the constraints discussed in the video also apply to this plugin.
+For iOS users, please watch this video  on a general introduction to background processing: https://developer.apple.com/videos/play/wwdc2019/707. All of the constraints discussed in the video also apply to this plugin.
 
 This is especially useful to run periodic tasks, such as fetching remote data on a regular basis.
 
