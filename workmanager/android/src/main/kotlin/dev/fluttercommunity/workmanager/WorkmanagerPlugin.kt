@@ -5,6 +5,11 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodChannel
 
+/**
+ * A Flutter plugin that provides a foreground channel for workmanager operations.
+ *
+ * This implementation uses Flutter's v2 embedding API.
+ */
 class WorkmanagerPlugin : FlutterPlugin {
     private var methodChannel: MethodChannel? = null
     private var workmanagerCallHandler: WorkmanagerCallHandler? = null
