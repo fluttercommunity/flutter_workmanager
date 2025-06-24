@@ -16,9 +16,7 @@ jobs:
           channel: 'stable'
       - name: Format
         run: |
-          echo "=== Git status before formatting ==="
-          git status --porcelain
-          echo "=== Checking if files need formatting ==="
+          flutter pub get
           dart format --set-exit-if-changed .
 
   format_kotlin:
