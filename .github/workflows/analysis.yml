@@ -14,6 +14,31 @@ jobs:
           channel: "stable"
           cache: true
       - uses: bluefireteam/melos-action@v3
+      - name: Debug package state
+        run: |
+          echo "=== Current working directory ==="
+          pwd
+          echo "=== Root directory contents ==="
+          ls -la
+          echo "=== Checking ${{ matrix.package }} directory ==="
+          cd ${{ matrix.package }}
+          pwd
+          ls -la
+          echo "=== pubspec.yaml contents ==="
+          cat pubspec.yaml
+          echo "=== pubspec_overrides.yaml exists? ==="
+          if [ -f pubspec_overrides.yaml ]; then
+            echo "YES - pubspec_overrides.yaml exists"
+            cat pubspec_overrides.yaml
+          else
+            echo "NO - pubspec_overrides.yaml does not exist"
+          fi
+          echo "=== .pub-cache directory ==="
+          ls -la .pub-cache/ || echo "No .pub-cache directory"
+          echo "=== .dart_tool directory ==="
+          ls -la .dart_tool/ || echo "No .dart_tool directory"
+          echo "=== Flutter pub deps ==="
+          flutter pub deps || echo "Flutter pub deps failed"
       - uses: axel-op/dart-package-analyzer@v3
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
