@@ -13,10 +13,14 @@ jobs:
         with:
           channel: "stable"
           cache: true
+      - name: Verify Flutter and Dart are available
+        run: |
+          flutter --version
+          dart --version
       - name: bootstrap
         run: |
           dart pub global activate melos
-          melos bootstrap
+          melos bootstrap --sdk-path auto
       - uses: axel-op/dart-package-analyzer@v3
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}

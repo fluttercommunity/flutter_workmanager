@@ -18,42 +18,10 @@ dependencies:
   workmanager_ios: ^0.8.0
 ```
 
-## iOS setup
+## Documentation
 
-For iOS background processing, you need to configure your app properly. 
-For detailed setup instructions, see the [iOS setup documentation][ios_setup].
-
-## Features
-
-This iOS implementation supports:
-
-- **One-off tasks**: Execute background tasks once using BGTaskScheduler (iOS 13+)
-- **Periodic tasks**: Execute background tasks using BGAppRefreshTask (iOS 13+) or Background Fetch
-- **Processing tasks**: Execute long-running background tasks using BGProcessingTask (iOS 13+)
-- **Task cancellation**: Cancel individual tasks or all tasks
-- **Task constraints**: Network and charging requirements (iOS 13+)
-- **Task scheduling info**: Print information about scheduled tasks (iOS 13+)
-
-## Limitations
-
-- **iOS 13+ required**: BGTaskScheduler features require iOS 13 or later
-- **Tags not supported**: `cancelByTag` operations are not available on iOS
-- **No scheduling status**: `isScheduledByUniqueName` is not supported on iOS
-- **Background execution limits**: iOS strictly limits background execution time and frequency
-- **System scheduling**: iOS determines when tasks actually run based on user behavior and system resources
-
-## Background execution on iOS
-
-Please note that iOS has strict limitations on background execution:
-
-- Background tasks are scheduled by the system and may not run immediately
-- The system considers user behavior patterns when scheduling background work
-- Tasks may be throttled or denied if the app is used infrequently
-- Background App Refresh must be enabled by the user for your app
-
-For more information, see Apple's [Background Tasks documentation][apple_background_tasks].
+For detailed setup instructions, usage examples, and platform-specific information, 
+please refer to the main [`workmanager`][workmanager] package documentation.
 
 [workmanager]: https://pub.dartlang.org/packages/workmanager
 [federated_plugin_docs]: https://flutter.dev/go/federated-plugins
-[ios_setup]: https://github.com/fluttercommunity/flutter_workmanager/blob/main/IOS_SETUP.md
-[apple_background_tasks]: https://developer.apple.com/documentation/backgroundtasks
