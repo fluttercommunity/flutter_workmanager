@@ -13,8 +13,6 @@ dependencies:
     sdk: flutter
   workmanager: 
 
-dependency_overrides:
-  path_provider_windows: ^2.3.0
 
 dev_dependencies:
   integration_test:
