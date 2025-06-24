@@ -6,7 +6,7 @@
 * iOS: Add Privacy Manifest for App Store compliance by @navaronbracke (from PR #555)
 * iOS: Replace print statements with proper os_log for better logging
 * iOS: printScheduledTasks now returns String instead of void by @yarith28 (from PR #585)
-* iOS: Add Swift Package Manager support for future Flutter compatibility
+* iOS: Add Swift Package Manager support for future Flutter compatibility (Package.swift)
 
 # 0.7.0
 

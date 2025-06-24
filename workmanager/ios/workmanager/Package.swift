@@ -12,13 +12,13 @@ let package = Package(
         .library(name: "workmanager", targets: ["workmanager"])
     ],
     dependencies: [
-        .package(url: "https://github.com/flutter/engine", from: "0.0.0")
+        // No explicit Flutter dependencies needed - handled by Flutter's SPM integration
     ],
     targets: [
         .target(
             name: "workmanager",
             dependencies: [
-                .product(name: "Flutter", package: "engine")
+                // Flutter framework will be automatically available
             ],
             resources: [
                 .process("Resources")
