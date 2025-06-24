@@ -18,7 +18,7 @@ jobs:
       - name: Install melos
         run: dart pub global activate melos
       - name: Bootstrap packages
-        run: melos bootstrap
+        run: melos bootstrap --sdk-path auto
       - name: Test
         run: |
           cd workmanager
@@ -35,7 +35,7 @@ jobs:
       - name: Install melos
         run: dart pub global activate melos
       - name: Bootstrap packages
-        run: melos bootstrap
+        run: melos bootstrap --sdk-path auto
       - name: Build iOS App
         run: cd example && flutter build ios --debug --no-codesign
       - name: Run native iOS tests
@@ -56,11 +56,14 @@ jobs:
       - name: Install melos
         run: dart pub global activate melos
       - name: Bootstrap packages
-        run: melos bootstrap
+        run: melos bootstrap --sdk-path auto
       - name: Build Android App
         run: cd example && flutter build apk --debug
       - name: Run native Android tests
-        run: cd example/android && ./gradlew :workmanager_android:test
+        run: |
+          cd example/android
+          ./gradlew projects
+          ./gradlew test
 
   drive_ios:
     strategy:
@@ -81,7 +84,7 @@ jobs:
       - name: Install melos
         run: dart pub global activate melos
       - name: Bootstrap packages
-        run: melos bootstrap
+        run: melos bootstrap --sdk-path auto
       # Run flutter integrate tests
       - name: Run Flutter integration tests
         run: cd example && flutter test integration_test/workmanager_integration_test.dart
@@ -114,7 +117,7 @@ jobs:
       - name: Install melos
         run: dart pub global activate melos
       - name: Bootstrap packages
-        run: melos bootstrap
+        run: melos bootstrap --sdk-path auto
       - name: Run Flutter Driver tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -123,4 +126,8 @@ jobs:
           arch: x86_64
           disk-size: 6000M
           heap-size: 600M
-          script: cd example && flutter test integration_test/workmanager_integration_test.dart
+          script: |
+            cd example
+            flutter doctor -v
+            flutter pub get
+            flutter test integration_test/workmanager_integration_test.dart --verbose

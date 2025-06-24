@@ -53,7 +53,7 @@ void main() {
         rethrow;
       }
     }
-  }, skip: Platform.isIOS);
+  }, skip: !Platform.isIOS);
 
   testWidgets('initialize & cancelByUniqueName - iOS',
       (WidgetTester tester) async {
@@ -73,5 +73,5 @@ void main() {
         rethrow;
       }
     }
-  }, skip: Platform.isIOS);
+  }, skip: !Platform.isIOS);
 }
