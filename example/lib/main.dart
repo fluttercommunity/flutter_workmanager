@@ -10,18 +10,18 @@ import 'package:workmanager/workmanager.dart';
 
 void main() => runApp(MaterialApp(home: MyApp()));
 
-const simpleTaskKey = "be.tramckrijte.workmanagerExample.simpleTask";
-const rescheduledTaskKey = "be.tramckrijte.workmanagerExample.rescheduledTask";
-const failedTaskKey = "be.tramckrijte.workmanagerExample.failedTask";
-const simpleDelayedTask = "be.tramckrijte.workmanagerExample.simpleDelayedTask";
+const simpleTaskKey = "dev.fluttercommunity.workmanagerExample.simpleTask";
+const rescheduledTaskKey = "dev.fluttercommunity.workmanagerExample.rescheduledTask";
+const failedTaskKey = "dev.fluttercommunity.workmanagerExample.failedTask";
+const simpleDelayedTask = "dev.fluttercommunity.workmanagerExample.simpleDelayedTask";
 const simplePeriodicTask =
-    "be.tramckrijte.workmanagerExample.simplePeriodicTask";
+    "dev.fluttercommunity.workmanagerExample.simplePeriodicTask";
 const simplePeriodic1HourTask =
-    "be.tramckrijte.workmanagerExample.simplePeriodic1HourTask";
+    "dev.fluttercommunity.workmanagerExample.simplePeriodic1HourTask";
 const iOSBackgroundAppRefresh =
-    "be.tramckrijte.workmanagerExample.iOSBackgroundAppRefresh";
+    "dev.fluttercommunity.workmanagerExample.iOSBackgroundAppRefresh";
 const iOSBackgroundProcessingTask =
-    "be.tramckrijte.workmanagerExample.iOSBackgroundProcessingTask";
+    "dev.fluttercommunity.workmanagerExample.iOSBackgroundProcessingTask";
 
 final List<String> allTasks = [
   simpleTaskKey,

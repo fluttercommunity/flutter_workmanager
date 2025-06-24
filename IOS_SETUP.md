@@ -39,7 +39,7 @@ import workmanager
 WorkmanagerPlugin.registerBGProcessingTask(withIdentifier: "task-identifier")
 
 // Register a periodic task in iOS 13+
-WorkmanagerPlugin.registerPeriodicTask(withIdentifier: "be.tramckrijte.workmanagerExample.iOSBackgroundAppRefresh", frequency: NSNumber(value: 20 * 60))
+WorkmanagerPlugin.registerPeriodicTask(withIdentifier: "dev.fluttercommunity.workmanagerExample.iOSBackgroundAppRefresh", frequency: NSNumber(value: 20 * 60))
 ```
 
 - Info.plist
@@ -49,7 +49,7 @@ WorkmanagerPlugin.registerPeriodicTask(withIdentifier: "be.tramckrijte.workmanag
 	<string>task-identifier</string>
 
 	<!-- Register a periodic task in iOS 13+ -->
-	<string>be.tramckrijte.workmanagerExample.iOSBackgroundAppRefresh</string>
+	<string>dev.fluttercommunity.workmanagerExample.iOSBackgroundAppRefresh</string>
 </array>
 ```
 > ⚠️ On iOS 13+, adding a `BGTaskSchedulerPermittedIdentifiers` key to the Info.plist for new `BGTaskScheduler` API disables the `performFetchWithCompletionHandler` and `setMinimumBackgroundFetchInterval`

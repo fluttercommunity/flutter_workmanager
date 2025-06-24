@@ -20,7 +20,7 @@ void main() {
     final wm = Workmanager();
     await wm.initialize(callbackDispatcher);
     await wm.registerOneOffTask(
-      'be.tramckrijte.workmanagerExample.taskId',
+      'dev.fluttercommunity.workmanagerExample.taskId',
       'taskName',
     );
   }, skip: !Platform.isAndroid);
@@ -30,7 +30,7 @@ void main() {
     await wm.initialize(callbackDispatcher);
     try {
       await wm.registerOneOffTask(
-        'be.tramckrijte.workmanagerExample.taskId',
+        'dev.fluttercommunity.workmanagerExample.taskId',
         'taskName',
       );
       await wm.cancelAll();
@@ -61,11 +61,11 @@ void main() {
     await wm.initialize(callbackDispatcher);
     try {
       await wm.registerOneOffTask(
-        'be.tramckrijte.workmanagerExample.taskId',
+        'dev.fluttercommunity.workmanagerExample.taskId',
         'taskName',
       );
       await wm.cancelByUniqueName(
-        'be.tramckrijte.workmanagerExample.taskId',
+        'dev.fluttercommunity.workmanagerExample.taskId',
       );
     } on PlatformException catch (e) {
       if (e.code !=
