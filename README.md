@@ -19,6 +19,33 @@ In order for background work to be scheduled correctly you should follow the And
 - [Android Setup](https://github.com/fluttercommunity/flutter_workmanager/blob/master/ANDROID_SETUP.md)
 - [iOS Setup](https://github.com/fluttercommunity/flutter_workmanager/blob/master/IOS_SETUP.md)
 
+## Publishing (For Maintainers)
+
+This project uses a federated plugin architecture with multiple packages. To publish updates:
+
+1. **Update versions** in all `pubspec.yaml` files:
+   - `workmanager/pubspec.yaml`
+   - `workmanager_platform_interface/pubspec.yaml` 
+   - `workmanager_android/pubspec.yaml`
+   - `workmanager_ios/pubspec.yaml`
+
+2. **Publish packages in order**:
+   ```bash
+   # 1. Publish platform interface first
+   cd workmanager_platform_interface && dart pub publish
+   
+   # 2. Publish platform implementations
+   cd ../workmanager_android && dart pub publish
+   cd ../workmanager_ios && dart pub publish
+   
+   # 3. Publish main package last
+   cd ../workmanager && dart pub publish
+   ```
+
+3. **Update dependencies** in main package to point to pub.dev versions instead of path dependencies before publishing
+
+4. **Tag the release** with the version number: `git tag v0.8.0 && git push origin v0.8.0`
+
 # How to use the package?
 
 See sample folder for a complete working example.  

@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:workmanager_platform_interface/workmanager_platform_interface.dart';
+import 'package:workmanager_android/workmanager_android.dart';
+import 'package:workmanager_ios/workmanager_ios.dart';
 
 /// Function that executes your background work.
 /// You should return whether the task ran successfully or not.
@@ -71,9 +74,22 @@ typedef BackgroundTaskHandler = Future<bool> Function(
 class Workmanager {
   factory Workmanager() => _instance;
 
-  Workmanager._internal();
+  Workmanager._internal() {
+    _ensurePlatformImplementation();
+  }
 
   static final Workmanager _instance = Workmanager._internal();
+
+  static void _ensurePlatformImplementation() {
+    if (WorkmanagerPlatform.instance is! WorkmanagerAndroid && 
+        WorkmanagerPlatform.instance is! WorkmanagerIOS) {
+      if (Platform.isAndroid) {
+        WorkmanagerPlatform.instance = WorkmanagerAndroid();
+      } else if (Platform.isIOS) {
+        WorkmanagerPlatform.instance = WorkmanagerIOS();
+      }
+    }
+  }
 
   /// Use this constant inside your callbackDispatcher to identify when an iOS Background Fetch occurred.
   ///
