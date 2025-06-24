@@ -18,13 +18,7 @@ jobs:
         run: |
           echo "=== Git status before formatting ==="
           git status --porcelain
-          echo "=== Running dart format ==="
-          dart format .
-          echo "=== Git diff after formatting ==="
-          git diff
-          echo "=== Git status after formatting ==="
-          git status --porcelain
-          echo "=== Now running with --set-exit-if-changed ==="
+          echo "=== Checking if files need formatting ==="
           dart format --set-exit-if-changed .
 
   format_kotlin:

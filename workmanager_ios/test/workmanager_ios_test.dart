@@ -13,11 +13,12 @@ void main() {
     setUp(() {
       workmanager = WorkmanagerIOS();
       methodCalls = <MethodCall>[];
-      
+
       // Mock the method channel
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(
-        const MethodChannel('dev.fluttercommunity.workmanager/foreground_channel_work_manager'),
+        const MethodChannel(
+            'dev.fluttercommunity.workmanager/foreground_channel_work_manager'),
         (MethodCall methodCall) async {
           methodCalls.add(methodCall);
           return null;
@@ -28,7 +29,8 @@ void main() {
     tearDown(() {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(
-        const MethodChannel('dev.fluttercommunity.workmanager/foreground_channel_work_manager'),
+        const MethodChannel(
+            'dev.fluttercommunity.workmanager/foreground_channel_work_manager'),
         null,
       );
     });
@@ -44,8 +46,9 @@ void main() {
 
         expect(methodCalls, hasLength(1));
         expect(methodCalls.first.method, 'registerOneOffTask');
-        
-        final arguments = Map<String, dynamic>.from(methodCalls.first.arguments);
+
+        final arguments =
+            Map<String, dynamic>.from(methodCalls.first.arguments);
         expect(arguments['uniqueName'], 'testTask');
         expect(arguments['taskName'], 'testTaskName');
         expect(arguments['inputData'], {'key': 'value'});
@@ -56,7 +59,8 @@ void main() {
         await workmanager.registerOneOffTask('testTask', 'testTaskName');
 
         expect(methodCalls, hasLength(1));
-        final arguments = Map<String, dynamic>.from(methodCalls.first.arguments);
+        final arguments =
+            Map<String, dynamic>.from(methodCalls.first.arguments);
         expect(arguments['inputData'], null);
         expect(arguments['initialDelaySeconds'], null);
       });
@@ -73,8 +77,9 @@ void main() {
 
         expect(methodCalls, hasLength(1));
         expect(methodCalls.first.method, 'registerPeriodicTask');
-        
-        final arguments = Map<String, dynamic>.from(methodCalls.first.arguments);
+
+        final arguments =
+            Map<String, dynamic>.from(methodCalls.first.arguments);
         expect(arguments['uniqueName'], 'periodicTask');
         expect(arguments['taskName'], 'periodicTaskName');
         expect(arguments['inputData'], {'periodic': 'data'});
@@ -97,8 +102,9 @@ void main() {
 
         expect(methodCalls, hasLength(1));
         expect(methodCalls.first.method, 'registerProcessingTask');
-        
-        final arguments = Map<String, dynamic>.from(methodCalls.first.arguments);
+
+        final arguments =
+            Map<String, dynamic>.from(methodCalls.first.arguments);
         expect(arguments['uniqueName'], 'processingTask');
         expect(arguments['taskName'], 'processingTaskName');
         expect(arguments['inputData'], {'processing': 'data'});
@@ -150,7 +156,8 @@ void main() {
       test('should return result from method channel', () async {
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(
-          const MethodChannel('dev.fluttercommunity.workmanager/foreground_channel_work_manager'),
+          const MethodChannel(
+              'dev.fluttercommunity.workmanager/foreground_channel_work_manager'),
           (MethodCall methodCall) async {
             if (methodCall.method == 'printScheduledTasks') {
               return 'Scheduled tasks: Task1, Task2';
@@ -164,10 +171,12 @@ void main() {
         expect(result, 'Scheduled tasks: Task1, Task2');
       });
 
-      test('should return default message when method channel returns null', () async {
+      test('should return default message when method channel returns null',
+          () async {
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(
-          const MethodChannel('dev.fluttercommunity.workmanager/foreground_channel_work_manager'),
+          const MethodChannel(
+              'dev.fluttercommunity.workmanager/foreground_channel_work_manager'),
           (MethodCall methodCall) async => null,
         );
 
