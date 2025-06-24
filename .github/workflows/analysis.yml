@@ -9,8 +9,11 @@ jobs:
         package: [workmanager, workmanager_platform_interface, workmanager_android, workmanager_ios]
     steps:
       - uses: actions/checkout@v4
+      - name: bootstrap
+        run: |
+          dart pub global activate melos
+          melos bootstrap
       - uses: axel-op/dart-package-analyzer@v3
         with:
-          # Required:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           relativePath: ${{ matrix.package }}/
