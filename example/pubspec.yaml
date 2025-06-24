@@ -11,7 +11,7 @@ dependencies:
   permission_handler: ^11.3.1 
   flutter:
     sdk: flutter
-  workmanager: ^0.8.0
+  workmanager:
 
 
 dev_dependencies:
