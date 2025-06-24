@@ -1,8 +1,6 @@
-import 'package:meta/meta.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'options.dart';
-import 'enums.dart';
 
 /// The interface that implementations of workmanager must implement.
 ///

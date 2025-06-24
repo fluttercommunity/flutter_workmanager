@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/services.dart';
 import 'package:workmanager_platform_interface/workmanager_platform_interface.dart';
 
@@ -20,7 +21,7 @@ class WorkmanagerAndroid extends WorkmanagerPlatform {
   }) async {
     final callback = PluginUtilities.getCallbackHandle(callbackDispatcher);
     await _channel.invokeMethod('initialize', {
-      'callbackHandle': callback?.toRawHandle(),
+      'callbackHandle': callback!.toRawHandle(),
       'isInDebugMode': isInDebugMode,
     });
   }
@@ -43,7 +44,7 @@ class WorkmanagerAndroid extends WorkmanagerPlatform {
       'taskName': taskName,
       'inputData': inputData,
       'initialDelaySeconds': initialDelay?.inSeconds,
-      'networkType': constraints?.networkType?.name,
+      'networkType': constraints?.networkType.name,
       'requiresBatteryNotLow': constraints?.requiresBatteryNotLow,
       'requiresCharging': constraints?.requiresCharging,
       'requiresDeviceIdle': constraints?.requiresDeviceIdle,
@@ -77,7 +78,7 @@ class WorkmanagerAndroid extends WorkmanagerPlatform {
       'frequencySeconds': frequency?.inSeconds,
       'flexIntervalSeconds': flexInterval?.inSeconds,
       'initialDelaySeconds': initialDelay?.inSeconds,
-      'networkType': constraints?.networkType?.name,
+      'networkType': constraints?.networkType.name,
       'requiresBatteryNotLow': constraints?.requiresBatteryNotLow,
       'requiresCharging': constraints?.requiresCharging,
       'requiresDeviceIdle': constraints?.requiresDeviceIdle,

@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/services.dart';
 import 'package:workmanager_platform_interface/workmanager_platform_interface.dart';
 
@@ -20,7 +21,7 @@ class WorkmanagerIOS extends WorkmanagerPlatform {
   }) async {
     final callback = PluginUtilities.getCallbackHandle(callbackDispatcher);
     await _channel.invokeMethod('initialize', {
-      'callbackHandle': callback?.toRawHandle(),
+      'callbackHandle': callback!.toRawHandle(),
       'isInDebugMode': isInDebugMode,
     });
   }
@@ -81,7 +82,7 @@ class WorkmanagerIOS extends WorkmanagerPlatform {
       'taskName': taskName,
       'inputData': inputData,
       'initialDelaySeconds': initialDelay?.inSeconds,
-      'networkType': constraints?.networkType?.name,
+      'networkType': constraints?.networkType.name,
       'requiresCharging': constraints?.requiresCharging,
     });
   }
