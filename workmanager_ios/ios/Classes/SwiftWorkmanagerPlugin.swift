@@ -310,11 +310,7 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
 
         if #available(iOS 13.0, *) {
             let method = ForegroundMethodChannel.Methods.RegisterOneOffTask.self
-            guard let delaySeconds =
-                arguments[method.Arguments.initialDelaySeconds.rawValue] as? Int64 else {
-                result(WMPError.invalidParameters.asFlutterError)
-                return
-            }
+            let delaySeconds = arguments[method.Arguments.initialDelaySeconds.rawValue] as? Int64 ?? 0
             guard let uniqueTaskIdentifier =
                 arguments[method.Arguments.uniqueName.rawValue] as? String else {
                 result(WMPError.invalidParameters.asFlutterError)
