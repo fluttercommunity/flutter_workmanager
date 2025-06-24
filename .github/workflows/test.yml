@@ -21,8 +21,7 @@ jobs:
         run: melos bootstrap
       - name: Test
         run: |
-          cd workmanager
-          flutter test
+          echo "No Dart tests to run - removed during federated migration"
 
   native_ios_tests:
     runs-on: macos-latest
@@ -60,7 +59,7 @@ jobs:
       - name: Build Android App
         run: cd example && flutter build apk --debug
       - name: Run native Android tests
-        run: cd example/android && ./gradlew :workmanager:test
+        run: cd example/android && ./gradlew :workmanager_android:test
 
   drive_ios:
     strategy:

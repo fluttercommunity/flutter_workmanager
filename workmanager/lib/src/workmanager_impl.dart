@@ -95,7 +95,7 @@ class Workmanager {
 
   /// The method channel used to interact with the native platform.
   static const MethodChannel _backgroundChannel = MethodChannel(
-      "be.tramckrijte.workmanager/background_channel_work_manager");
+      "dev.fluttercommunity.workmanager/background_channel_work_manager");
 
   static BackgroundTaskHandler? _backgroundTaskHandler;
 
@@ -118,8 +118,8 @@ class Workmanager {
   Future<dynamic> _handleBackgroundMessage(MethodCall call) async {
     if (call.method == "backgroundChannelInitialized") {
       return _backgroundTaskHandler?.call(
-        call.arguments["be.tramckrijte.workmanager.DART_TASK"],
-        call.arguments["be.tramckrijte.workmanager.INPUT_DATA"],
+        call.arguments["dev.fluttercommunity.workmanager.DART_TASK"],
+        call.arguments["dev.fluttercommunity.workmanager.INPUT_DATA"],
       );
     }
     return null;

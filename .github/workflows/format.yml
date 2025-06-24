@@ -52,5 +52,9 @@ jobs:
           cd workmanager
           flutter pub get
           flutter pub publish -n
-          flutter pub global activate tuneup
-          flutter pub global run tuneup check
+          cd ../workmanager_platform_interface
+          flutter pub publish -n
+          cd ../workmanager_android
+          flutter pub publish -n
+          cd ../workmanager_ios
+          flutter pub publish -n

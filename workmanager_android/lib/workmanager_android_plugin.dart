@@ -1,6 +1,3 @@
-import 'package:flutter/foundation.dart' show visibleForTesting;
-import 'package:flutter/services.dart';
-
 import 'workmanager_android.dart';
 
 /// An implementation of [WorkmanagerAndroid] that uses method channels.
