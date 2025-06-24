@@ -126,7 +126,8 @@ class WorkmanagerAndroid extends WorkmanagerPlatform {
 
   @override
   Future<bool> isScheduledByUniqueName(String uniqueName) async {
-    final result = await _channel.invokeMethod<bool>('isScheduledByUniqueName', {
+    final result =
+        await _channel.invokeMethod<bool>('isScheduledByUniqueName', {
       'uniqueName': uniqueName,
     });
     return result ?? false;

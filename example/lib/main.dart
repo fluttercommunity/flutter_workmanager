@@ -11,9 +11,11 @@ import 'package:workmanager/workmanager.dart';
 void main() => runApp(MaterialApp(home: MyApp()));
 
 const simpleTaskKey = "dev.fluttercommunity.workmanagerExample.simpleTask";
-const rescheduledTaskKey = "dev.fluttercommunity.workmanagerExample.rescheduledTask";
+const rescheduledTaskKey =
+    "dev.fluttercommunity.workmanagerExample.rescheduledTask";
 const failedTaskKey = "dev.fluttercommunity.workmanagerExample.failedTask";
-const simpleDelayedTask = "dev.fluttercommunity.workmanagerExample.simpleDelayedTask";
+const simpleDelayedTask =
+    "dev.fluttercommunity.workmanagerExample.simpleDelayedTask";
 const simplePeriodicTask =
     "dev.fluttercommunity.workmanagerExample.simplePeriodicTask";
 const simplePeriodic1HourTask =

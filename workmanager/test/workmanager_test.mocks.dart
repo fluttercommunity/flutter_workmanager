@@ -6,7 +6,8 @@ import 'dart:async' as _i3;
 
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:workmanager/workmanager.dart' as _i2;
-import 'package:workmanager_platform_interface/workmanager_platform_interface.dart' as _i4;
+import 'package:workmanager_platform_interface/workmanager_platform_interface.dart'
+    as _i4;
 
 // ignore_for_file: avoid_redundant_argument_values
 // ignore_for_file: avoid_setters_without_getters

@@ -31,7 +31,7 @@ abstract class WorkmanagerPlatform extends PlatformInterface {
   }
 
   /// Initialize the platform workmanager with the callback function.
-  /// 
+  ///
   /// [callbackDispatcher] is the callback function that will be called when background work is executed.
   /// [isInDebugMode] determines whether debug notifications should be shown.
   Future<void> initialize(
@@ -94,7 +94,8 @@ abstract class WorkmanagerPlatform extends PlatformInterface {
     Duration? backoffPolicyDelay,
     String? tag,
   }) {
-    throw UnimplementedError('registerPeriodicTask() has not been implemented.');
+    throw UnimplementedError(
+        'registerPeriodicTask() has not been implemented.');
   }
 
   /// Register a processing task (iOS only).
@@ -111,7 +112,8 @@ abstract class WorkmanagerPlatform extends PlatformInterface {
     Map<String, dynamic>? inputData,
     Constraints? constraints,
   }) {
-    throw UnimplementedError('registerProcessingTask() has not been implemented.');
+    throw UnimplementedError(
+        'registerProcessingTask() has not been implemented.');
   }
 
   /// Cancel a task by its unique name.
@@ -131,7 +133,8 @@ abstract class WorkmanagerPlatform extends PlatformInterface {
 
   /// Check if a task is scheduled by its unique name (Android only).
   Future<bool> isScheduledByUniqueName(String uniqueName) {
-    throw UnimplementedError('isScheduledByUniqueName() has not been implemented.');
+    throw UnimplementedError(
+        'isScheduledByUniqueName() has not been implemented.');
   }
 
   /// Print scheduled tasks for debugging (iOS only).

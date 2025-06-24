@@ -111,7 +111,8 @@ class Workmanager {
     bool isInDebugMode = false,
   }) async {
     _backgroundChannel.setMethodCallHandler(_handleBackgroundMessage);
-    return _platform.initialize(callbackDispatcher, isInDebugMode: isInDebugMode);
+    return _platform.initialize(callbackDispatcher,
+        isInDebugMode: isInDebugMode);
   }
 
   /// Handle background method calls from the platform
@@ -273,8 +274,7 @@ class Workmanager {
       _platform.cancelByUniqueName(uniqueName);
 
   /// Cancels task by [tag]
-  Future<void> cancelByTag(String tag) async =>
-      _platform.cancelByTag(tag);
+  Future<void> cancelByTag(String tag) async => _platform.cancelByTag(tag);
 
   /// Cancels all tasks
   Future<void> cancelAll() async => _platform.cancelAll();
@@ -284,6 +284,5 @@ class Workmanager {
   ///
   /// Currently only supported on iOS and only on iOS 13+.
   /// Returns a string containing the scheduled tasks information.
-  Future<String> printScheduledTasks() async =>
-      _platform.printScheduledTasks();
+  Future<String> printScheduledTasks() async => _platform.printScheduledTasks();
 }
