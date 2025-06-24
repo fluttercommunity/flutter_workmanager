@@ -50,12 +50,11 @@ jobs:
         run: |
           dart pub global activate melos
           melos bootstrap
-          cd workmanager
-          flutter pub get
-          flutter pub publish -n
-          cd ../workmanager_platform_interface
+          cd workmanager_platform_interface
           flutter pub publish -n
           cd ../workmanager_android
           flutter pub publish -n
           cd ../workmanager_ios
+          flutter pub publish -n
+          cd ../workmanager
           flutter pub publish -n
