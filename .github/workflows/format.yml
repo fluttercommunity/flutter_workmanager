@@ -46,10 +46,9 @@ jobs:
         with:
           channel: 'stable'
 
+      - uses: bluefireteam/melos-action@v3
       - name: publish checks
         run: |
-          dart pub global activate melos
-          melos bootstrap
           cd workmanager_platform_interface
           flutter pub publish -n
           cd ../workmanager_android

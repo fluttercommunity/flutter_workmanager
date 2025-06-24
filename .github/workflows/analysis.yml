@@ -13,53 +13,7 @@ jobs:
         with:
           channel: "stable"
           cache: true
-      - name: Verify Flutter and Dart are available
-        run: |
-          flutter --version
-          dart --version
-      - name: Setup dependencies manually
-        run: |
-          # First, create overrides for all packages
-          echo "Creating dependency overrides for all packages..."
-          
-          # workmanager_platform_interface (no dependencies on other packages)
-          cd workmanager_platform_interface
-          flutter pub get
-          cd ..
-          
-          # workmanager_android (depends on platform_interface)
-          cd workmanager_android
-          cat > pubspec_overrides.yaml << 'EOF'
-          dependency_overrides:
-            workmanager_platform_interface:
-              path: ../workmanager_platform_interface
-          EOF
-          flutter pub get
-          cd ..
-          
-          # workmanager_ios (depends on platform_interface)
-          cd workmanager_ios
-          cat > pubspec_overrides.yaml << 'EOF'
-          dependency_overrides:
-            workmanager_platform_interface:
-              path: ../workmanager_platform_interface
-          EOF
-          flutter pub get
-          cd ..
-          
-          # workmanager (depends on all packages)
-          cd workmanager
-          cat > pubspec_overrides.yaml << 'EOF'
-          dependency_overrides:
-            workmanager_platform_interface:
-              path: ../workmanager_platform_interface
-            workmanager_android:
-              path: ../workmanager_android
-            workmanager_ios:
-              path: ../workmanager_ios
-          EOF
-          flutter pub get
-          cd ..
+      - uses: bluefireteam/melos-action@v3
       - uses: axel-op/dart-package-analyzer@v3
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
