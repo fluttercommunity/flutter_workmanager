@@ -1,3 +1,22 @@
+# 0.7.0
+
+* **BREAKING**: Minimum Dart SDK bumped to 3.2.0
+* **BREAKING**: Minimum Flutter SDK bumped to 3.16.0  
+* **BREAKING**: Minimum iOS deployment target bumped to 13.0
+* Android: Update to Android Gradle Plugin 8.10.1
+* Android: Update to Gradle 8.11.1
+* Android: Update Kotlin to 2.1.0
+* Android: Update compile SDK to 35
+* Android: Update target SDK to 35
+* Android: Update NDK to 27.0.12077973
+* Android: Update Java compatibility to version 17
+* iOS: Update Swift version to 5.0
+* Dev dependencies: Update to latest versions (flutter_lints 5.0.0, mockito 5.4.4, etc.)
+* CI: Modernize GitHub Actions workflows with latest action versions
+* CI: Add Flutter caching for faster builds
+* CI: Update test environments (iPhone 15, Android API 34)
+* Fix win32 dependency compatibility issues for Dart 3.8+
+
 # 0.6.0 
 
 * Android: Removed jetifier

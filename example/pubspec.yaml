@@ -3,15 +3,16 @@ description: Demonstrates how to use the workmanager plugin.
 publish_to: 'none'
 
 environment:
-  sdk: '>=3.1.2 <4.0.0'
+  sdk: ">=3.2.0 <4.0.0"
 
 dependencies:
-  path_provider: 
-  shared_preferences: 
-  permission_handler: 
+  path_provider: ^2.1.5 
+  shared_preferences: ^2.3.0
+  permission_handler: ^11.3.1 
   flutter:
     sdk: flutter
   workmanager: 
+
 
 dev_dependencies:
   integration_test:
