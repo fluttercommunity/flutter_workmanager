@@ -1,6 +1,9 @@
 name: workmanager
 packages:
   - workmanager
+  - workmanager_platform_interface
+  - workmanager_android
+  - workmanager_ios
   - example
 scripts:
   get: melos exec -- dart pub get

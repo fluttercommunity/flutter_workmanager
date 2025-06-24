@@ -1,12 +1,17 @@
-# 0.7.1
+# 0.8.0
 
+* **BREAKING**: Migrate to federated plugin architecture for better platform extensibility
+* **BREAKING**: Platform-specific implementations moved to separate packages
+* Create `workmanager_platform_interface` for shared platform interface
+* Create `workmanager_android` package with Android WorkManager implementation
+* Create `workmanager_ios` package with iOS BGTaskScheduler implementation
+* Foundation for future macOS support using NSBackgroundActivityScheduler
 * Android: Fix v2 embedding import in BackgroundWorker by @jogapps (from PR #595)
 * Android: Fix documentation formatting and typo in BackgroundWorker by @jogapps (from PR #595)
 * iOS: Fix swapped constraints bug for requiresNetworkConnectivity and requiresExternalPower by @thegriffen (from PR #562)
 * iOS: Add Privacy Manifest for App Store compliance by @navaronbracke (from PR #555)
 * iOS: Replace print statements with proper os_log for better logging
 * iOS: printScheduledTasks now returns String instead of void by @yarith28 (from PR #585)
-* iOS: Prepare for Swift Package Manager support (requires proper implementation without file duplication)
 
 # 0.7.0
 
