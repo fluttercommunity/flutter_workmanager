@@ -6,8 +6,11 @@ import 'package:workmanager_platform_interface/workmanager_platform_interface.da
 class WorkmanagerIOS extends WorkmanagerPlatform {
   /// The method channel used to interact with the native platform.
   static const MethodChannel _channel = MethodChannel(
-    'be.tramckrijte.workmanager/foreground_channel_work_manager',
+    'dev.fluttercommunity.workmanager/foreground_channel_work_manager',
   );
+
+  /// Constructs an iOSWorkmanager.
+  WorkmanagerIOS() : super();
 
   /// Registers this class as the default instance of [WorkmanagerPlatform].
   static void registerWith() {

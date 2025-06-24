@@ -10,7 +10,7 @@ extension String {
 }
 
 public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
-    static let identifier = "be.tramckrijte.workmanager"
+    static let identifier = "dev.fluttercommunity.workmanager"
 
     private static var flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?
 
