@@ -21,7 +21,6 @@ dependencies:
     path: ../workmanager_ios
 
 dev_dependencies:
-  build_runner: ^2.4.0
   test: ^1.25.0
   mockito: ^5.4.4
   get_it: ^8.0.0
