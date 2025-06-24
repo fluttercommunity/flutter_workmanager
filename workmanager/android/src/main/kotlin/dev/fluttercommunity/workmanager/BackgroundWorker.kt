@@ -11,13 +11,13 @@ import com.google.common.util.concurrent.ListenableFuture
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.embedding.engine.loader.FlutterLoader
+import io.flutter.embedding.engine.loader.FlutterCallbackInformation
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
-import io.flutter.view.FlutterCallbackInformation
 import java.util.Random
 
-/***
- * A simple worker that will post your input back to your Flutter application.
+/**
+ * A simple worker that posts your input back to your Flutter application.
  *
  * It will block the background thread until a value of either true or false is received back from Flutter code.
  */
@@ -165,8 +165,8 @@ class BackgroundWorker(
                         }
 
                         override fun success(receivedResult: Any?) {
-                            val wasSuccessFul = receivedResult?.let { it as Boolean? } == true
-                            stopEngine(if (wasSuccessFul) Result.success() else Result.retry())
+                            val wasSuccessful = receivedResult as? Boolean == true
+                            stopEngine(if (wasSuccessful) Result.success() else Result.retry())
                         }
                     },
                 )

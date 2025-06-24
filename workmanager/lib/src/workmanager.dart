@@ -341,7 +341,8 @@ class Workmanager {
   /// development/debugging.
   ///
   /// Currently only supported on iOS and only on iOS 13+.
-  Future<void> printScheduledTasks() async =>
+  /// Returns a string containing the scheduled tasks information.
+  Future<String> printScheduledTasks() async =>
       await _foregroundChannel.invokeMethod("printScheduledTasks");
 }
 

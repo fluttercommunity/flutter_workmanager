@@ -1,3 +1,13 @@
+# 0.7.1
+
+* Android: Fix v2 embedding import in BackgroundWorker by @jogapps (from PR #595)
+* Android: Fix documentation formatting and typo in BackgroundWorker by @jogapps (from PR #595)
+* iOS: Fix swapped constraints bug for requiresNetworkConnectivity and requiresExternalPower by @thegriffen (from PR #562)
+* iOS: Add Privacy Manifest for App Store compliance by @navaronbracke (from PR #555)
+* iOS: Replace print statements with proper os_log for better logging
+* iOS: printScheduledTasks now returns String instead of void by @yarith28 (from PR #585)
+* iOS: Add Swift Package Manager support for future Flutter compatibility
+
 # 0.7.0
 
 * **BREAKING**: Minimum Dart SDK bumped to 3.2.0
