@@ -1,4 +1,4 @@
-# next
+# 0.6.0 
 
 * Android: Removed jetifier
 * Android: Removed V1 plugin APIs - this is now a Android V2 plugin only
