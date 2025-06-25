@@ -1,3 +1,5 @@
+package dev.fluttercommunity.workmanager
+
 import androidx.work.NetworkType
 import androidx.work.OutOfQuotaPolicy
 import dev.fluttercommunity.workmanager.Extractor

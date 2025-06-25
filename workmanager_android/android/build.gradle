@@ -19,6 +19,7 @@ android {
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
+        test.java.srcDirs += 'src/test/kotlin'
     }
     defaultConfig {
         compileSdk 35
@@ -47,4 +48,6 @@ dependencies {
     implementation "androidx.concurrent:concurrent-futures:1.1.0"
 
     testImplementation 'junit:junit:4.13.2'
+    testImplementation "org.jetbrains.kotlin:kotlin-test"
+    testImplementation "org.mockito:mockito-core:5.0.0"
 }
