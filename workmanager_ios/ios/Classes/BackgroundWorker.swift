@@ -44,9 +44,9 @@ class BackgroundWorker {
 
     let backgroundMode: BackgroundMode
     let flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?
-    let inputData: String
+    let inputData: [String: Any]?
 
-    init(mode: BackgroundMode, inputData: String, flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?) {
+    init(mode: BackgroundMode, inputData: [String: Any]?, flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?) {
         backgroundMode = mode
         self.inputData = inputData
         self.flutterPluginRegistrantCallback = flutterPluginRegistrantCallback

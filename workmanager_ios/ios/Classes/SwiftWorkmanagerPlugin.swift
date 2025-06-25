@@ -53,6 +53,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
                     case taskName
                     case uniqueName
                     case initialDelaySeconds
+                    case inputData
                 }
             }
 
@@ -86,7 +87,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
         // Create an operation that performs the main part of the background task
         let operation = BackgroundTaskOperation(
             task.identifier,
-            inputData: "",
+            inputData: nil,
             flutterPluginRegistrantCallback: SwiftWorkmanagerPlugin.flutterPluginRegistrantCallback,
             backgroundMode: .backgroundProcessingTask(identifier: identifier)
         )
@@ -123,7 +124,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
         // Create an operation that performs the main part of the background task
         let operation = BackgroundTaskOperation(
             task.identifier,
-            inputData: "",
+            inputData: nil,
             flutterPluginRegistrantCallback: SwiftWorkmanagerPlugin.flutterPluginRegistrantCallback,
             backgroundMode: .backgroundPeriodicTask(identifier: identifier)
         )
@@ -144,7 +145,7 @@ public class SwiftWorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate {
 
     /// Immediately starts a one off task
     @available(iOS 13.0, *)
-    public static func startOneOffTask(identifier: String, taskIdentifier: UIBackgroundTaskIdentifier, inputData: String, delaySeconds: Int64) {
+    public static func startOneOffTask(identifier: String, taskIdentifier: UIBackgroundTaskIdentifier, inputData: [String: Any]?, delaySeconds: Int64) {
         let operationQueue = OperationQueue()
         // Create an operation that performs the main part of the background task
         let operation = BackgroundTaskOperation(
@@ -318,8 +319,8 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
             }
 
             var taskIdentifier: UIBackgroundTaskIdentifier = .invalid
-            let inputData =
-                    arguments[method.Arguments.inputData.rawValue] as? String
+            // Extract inputData as native Map
+            let inputDataMap = arguments[method.Arguments.inputData.rawValue] as? [String: Any]
 
             taskIdentifier = UIApplication.shared.beginBackgroundTask(withName: uniqueTaskIdentifier, expirationHandler: {
                 // Mark the task as ended if time is expired, otherwise iOS might terminate and will throttle future executions
@@ -327,7 +328,7 @@ extension SwiftWorkmanagerPlugin: FlutterPlugin {
             })
             SwiftWorkmanagerPlugin.startOneOffTask(identifier: uniqueTaskIdentifier,
                                                   taskIdentifier: taskIdentifier,
-                                                  inputData: inputData ?? "",
+                                                  inputData: inputDataMap,
                                                   delaySeconds: delaySeconds)
             result(true)
             return
@@ -483,7 +484,7 @@ extension SwiftWorkmanagerPlugin {
         // Old background fetch API for iOS 12 and lower, in theory it should work for iOS 13+ as well
         let worker = BackgroundWorker(
             mode: .backgroundFetch,
-            inputData: "",
+            inputData: nil,
             flutterPluginRegistrantCallback: SwiftWorkmanagerPlugin.flutterPluginRegistrantCallback
         )
 

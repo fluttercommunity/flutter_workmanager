@@ -74,7 +74,7 @@ sealed class WorkManagerCall {
         abstract val tag: String?
         abstract val initialDelaySeconds: Long
         abstract val constraintsConfig: Constraints?
-        abstract val payload: String?
+        abstract val payload: Map<String, Any>?
 
         companion object KEYS {
             const val REGISTER_TASK_IS_IN_DEBUG_MODE_KEY = "isInDebugMode"
@@ -107,7 +107,7 @@ sealed class WorkManagerCall {
             override val constraintsConfig: Constraints,
             val backoffPolicyConfig: BackoffPolicyTaskConfig?,
             val outOfQuotaPolicy: OutOfQuotaPolicy?,
-            override val payload: String? = null,
+            override val payload: Map<String, Any>? = null,
         ) : RegisterTask()
 
         data class PeriodicTask(
@@ -122,7 +122,7 @@ sealed class WorkManagerCall {
             override val constraintsConfig: Constraints,
             val backoffPolicyConfig: BackoffPolicyTaskConfig?,
             val outOfQuotaPolicy: OutOfQuotaPolicy?,
-            override val payload: String? = null,
+            override val payload: Map<String, Any>? = null,
         ) : RegisterTask() {
             companion object KEYS {
                 const val PERIODIC_TASK_FREQUENCY_SECONDS_KEY = "frequency"
@@ -371,17 +371,7 @@ object Extractor {
             .build()
     }
 
-    private fun extractPayload(call: MethodCall): String? {
-        val inputData = call.argument<Map<String, Any>>(REGISTER_TASK_PAYLOAD_KEY)
-        return if (inputData != null) {
-            // Convert Map to JSON string for storage in WorkManager Data
-            try {
-                org.json.JSONObject(inputData).toString()
-            } catch (e: Exception) {
-                null
-            }
-        } else {
-            null
-        }
+    private fun extractPayload(call: MethodCall): Map<String, Any>? {
+        return call.argument<Map<String, Any>>(REGISTER_TASK_PAYLOAD_KEY)
     }
 }

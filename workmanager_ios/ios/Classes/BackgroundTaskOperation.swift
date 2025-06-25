@@ -11,11 +11,11 @@ class BackgroundTaskOperation: Operation {
 
     private let identifier: String
     private let flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?
-    private let inputData: String
+    private let inputData: [String: Any]?
     private let backgroundMode: BackgroundMode
 
     init(_ identifier: String,
-         inputData: String,
+         inputData: [String: Any]?,
          flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?,
          backgroundMode: BackgroundMode) {
         self.identifier = identifier

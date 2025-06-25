@@ -222,7 +222,7 @@ object WM {
         context: Context,
         uniqueName: String,
         dartTask: String,
-        payload: String? = null,
+        payload: Map<String, Any>? = null,
         tag: String? = null,
         isInDebugMode: Boolean = false,
         existingWorkPolicy: ExistingWorkPolicy = defaultOneOffExistingWorkPolicy,
@@ -258,7 +258,7 @@ object WM {
         context: Context,
         uniqueName: String,
         dartTask: String,
-        payload: String? = null,
+        payload: Map<String, Any>? = null,
         tag: String? = null,
         frequencyInSeconds: Long = DEFAULT_PERIODIC_REFRESH_FREQUENCY_SECONDS,
         flexIntervalInSeconds: Long = DEFAULT_FLEX_INTERVAL_SECONDS,
@@ -301,17 +301,27 @@ object WM {
     private fun buildTaskInputData(
         dartTask: String,
         isInDebugMode: Boolean,
-        payload: String?,
+        payload: Map<String, Any>?,
     ): Data {
-        return Data.Builder()
+        val builder = Data.Builder()
             .putString(DART_TASK_KEY, dartTask)
             .putBoolean(IS_IN_DEBUG_MODE_KEY, isInDebugMode)
-            .apply {
-                payload?.let {
-                    putString(PAYLOAD_KEY, payload)
-                }
+        
+        // Add payload data if provided
+        payload?.forEach { (key, value) ->
+            when (value) {
+                is String -> builder.putString("payload_$key", value)
+                is Boolean -> builder.putBoolean("payload_$key", value)
+                is Int -> builder.putInt("payload_$key", value)
+                is Long -> builder.putLong("payload_$key", value)
+                is Float -> builder.putFloat("payload_$key", value)
+                is Double -> builder.putDouble("payload_$key", value)
+                // For complex types, we'll need to handle them as strings
+                else -> builder.putString("payload_$key", value.toString())
             }
-            .build()
+        }
+        
+        return builder.build()
     }
 
     fun getWorkInfoByUniqueName(
