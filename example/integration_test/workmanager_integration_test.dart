@@ -97,10 +97,34 @@ void main() {
           backoffPolicy: BackoffPolicy.exponential,
           backoffPolicyDelay: const Duration(seconds: 30),
           tag: 'test-tag',
-          outOfQuotaPolicy: OutOfQuotaPolicy.dropWorkRequest,
+          // Don't use outOfQuotaPolicy with non-supported constraints
         );
         // Clean up
         await workmanager.cancelByUniqueName('test.oneoff.full');
+      }
+    });
+
+    testWidgets('registerOneOffTask with expedited job (Android)',
+        (WidgetTester tester) async {
+      await workmanager.initialize(callbackDispatcher);
+
+      if (Platform.isAndroid) {
+        // Expedited jobs only support network and storage constraints
+        await workmanager.registerOneOffTask(
+          'test.oneoff.expedited',
+          'expeditedTask',
+          inputData: {'expedited': 'true'},
+          constraints: Constraints(
+            networkType: NetworkType.connected,
+            requiresStorageNotLow: true,
+            // Can't use battery, charging, or idle constraints with expedited jobs
+          ),
+          existingWorkPolicy: ExistingWorkPolicy.replace,
+          tag: 'expedited-tag',
+          outOfQuotaPolicy: OutOfQuotaPolicy.runAsNonExpeditedWorkRequest,
+        );
+        // Clean up
+        await workmanager.cancelByUniqueName('test.oneoff.expedited');
       }
     });
 
