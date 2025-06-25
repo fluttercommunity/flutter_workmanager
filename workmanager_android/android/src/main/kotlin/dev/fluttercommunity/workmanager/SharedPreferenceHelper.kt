@@ -12,15 +12,14 @@ object SharedPreferenceHelper {
         ctx: Context,
         callbackHandle: Long,
     ) {
-        ctx.prefs()
+        ctx
+            .prefs()
             .edit()
             .putLong(CALLBACK_DISPATCHER_HANDLE_KEY, callbackHandle)
             .apply()
     }
 
-    fun getCallbackHandle(ctx: Context): Long {
-        return ctx.prefs().getLong(CALLBACK_DISPATCHER_HANDLE_KEY, -1L)
-    }
+    fun getCallbackHandle(ctx: Context): Long = ctx.prefs().getLong(CALLBACK_DISPATCHER_HANDLE_KEY, -1L)
 
     fun hasCallbackHandle(ctx: Context) = ctx.prefs().contains(CALLBACK_DISPATCHER_HANDLE_KEY)
 }

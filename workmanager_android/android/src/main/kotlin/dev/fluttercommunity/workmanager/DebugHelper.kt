@@ -88,14 +88,15 @@ object DebugHelper {
 
             notify(
                 messageId,
-                NotificationCompat.Builder(ctx, DEBUG_CHANNEL_ID)
+                NotificationCompat
+                    .Builder(ctx, DEBUG_CHANNEL_ID)
                     .setContentTitle(title)
                     .setContentText(contentText)
                     .setStyle(
-                        NotificationCompat.BigTextStyle()
+                        NotificationCompat
+                            .BigTextStyle()
                             .bigText(contentText),
-                    )
-                    .setSmallIcon(android.R.drawable.stat_notify_sync)
+                    ).setSmallIcon(android.R.drawable.stat_notify_sync)
                     .build(),
             )
         }

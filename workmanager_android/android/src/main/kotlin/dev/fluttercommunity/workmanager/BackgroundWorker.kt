@@ -11,9 +11,9 @@ import com.google.common.util.concurrent.ListenableFuture
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.embedding.engine.loader.FlutterLoader
-import io.flutter.view.FlutterCallbackInformation
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import io.flutter.view.FlutterCallbackInformation
 import java.util.Random
 
 /**
@@ -24,7 +24,8 @@ import java.util.Random
 class BackgroundWorker(
     applicationContext: Context,
     private val workerParams: WorkerParameters,
-) : ListenableWorker(applicationContext, workerParams), MethodChannel.MethodCallHandler {
+) : ListenableWorker(applicationContext, workerParams),
+    MethodChannel.MethodCallHandler {
     private lateinit var backgroundChannel: MethodChannel
 
     companion object {

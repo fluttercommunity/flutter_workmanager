@@ -132,7 +132,9 @@ sealed class WorkManagerCall {
     }
 
     sealed class IsScheduled : WorkManagerCall() {
-        data class ByUniqueName(val uniqueName: String) : IsScheduled() {
+        data class ByUniqueName(
+            val uniqueName: String,
+        ) : IsScheduled() {
             companion object KEYS {
                 const val IS_SCHEDULED_UNIQUE_NAME_KEY = "uniqueName"
             }
@@ -140,13 +142,17 @@ sealed class WorkManagerCall {
     }
 
     sealed class CancelTask : WorkManagerCall() {
-        data class ByUniqueName(val uniqueName: String) : CancelTask() {
+        data class ByUniqueName(
+            val uniqueName: String,
+        ) : CancelTask() {
             companion object KEYS {
                 const val UNREGISTER_TASK_UNIQUE_NAME_KEY = "uniqueName"
             }
         }
 
-        data class ByTag(val tag: String) : CancelTask() {
+        data class ByTag(
+            val tag: String,
+        ) : CancelTask() {
             companion object KEYS {
                 const val UNREGISTER_TASK_TAG_KEY = "tag"
             }
@@ -157,16 +163,22 @@ sealed class WorkManagerCall {
 
     object Unknown : WorkManagerCall()
 
-    class Failed(val code: String) : WorkManagerCall()
+    class Failed(
+        val code: String,
+    ) : WorkManagerCall()
 }
 
-private enum class TaskType(val minimumBackOffDelay: Long) {
+private enum class TaskType(
+    val minimumBackOffDelay: Long,
+) {
     ONE_OFF(WorkRequest.MIN_BACKOFF_MILLIS),
     PERIODIC(WorkRequest.MIN_BACKOFF_MILLIS),
 }
 
 object Extractor {
-    private enum class PossibleWorkManagerCall(val rawMethodName: String?) {
+    private enum class PossibleWorkManagerCall(
+        val rawMethodName: String?,
+    ) {
         INITIALIZE("initialize"),
 
         REGISTER_ONE_OFF_TASK("registerOneOffTask"),
@@ -274,9 +286,11 @@ object Extractor {
     private fun extractExistingPeriodicWorkPolicyFromCall(call: MethodCall) =
         try {
             ExistingPeriodicWorkPolicy.valueOf(
-                call.argument<String>(
-                    REGISTER_TASK_EXISTING_WORK_POLICY_KEY,
-                )!!.uppercase(),
+                call
+                    .argument<String>(
+                        REGISTER_TASK_EXISTING_WORK_POLICY_KEY,
+                    )!!
+                    .uppercase(),
             )
         } catch (ignored: Exception) {
             defaultPeriodExistingWorkPolicy
@@ -358,7 +372,8 @@ object Extractor {
         val requiresStorageNotLow =
             call.argument<Boolean>(REGISTER_TASK_CONSTRAINTS_STORAGE_NOT_LOW_KEY)
                 ?: false
-        return Constraints.Builder()
+        return Constraints
+            .Builder()
             .setRequiredNetworkType(requestedNetworkType)
             .setRequiresBatteryNotLow(requiresBatteryNotLow)
             .setRequiresCharging(requiresCharging)
@@ -367,11 +382,8 @@ object Extractor {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     setRequiresDeviceIdle(requiresDeviceIdle)
                 }
-            }
-            .build()
+            }.build()
     }
 
-    private fun extractPayload(call: MethodCall): Map<String, Any>? {
-        return call.argument<Map<String, Any>>(REGISTER_TASK_PAYLOAD_KEY)
-    }
+    private fun extractPayload(call: MethodCall): Map<String, Any>? = call.argument<Map<String, Any>>(REGISTER_TASK_PAYLOAD_KEY)
 }

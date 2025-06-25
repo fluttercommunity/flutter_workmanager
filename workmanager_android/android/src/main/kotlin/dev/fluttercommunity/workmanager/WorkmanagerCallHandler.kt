@@ -12,7 +12,6 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import dev.fluttercommunity.workmanager.BackgroundWorker.Companion.DART_TASK_KEY
 import dev.fluttercommunity.workmanager.BackgroundWorker.Companion.IS_IN_DEBUG_MODE_KEY
-import dev.fluttercommunity.workmanager.BackgroundWorker.Companion.PAYLOAD_KEY
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import java.util.concurrent.TimeUnit
@@ -29,7 +28,9 @@ private interface CallHandler<T : WorkManagerCall> {
     )
 }
 
-class WorkmanagerCallHandler(private val ctx: Context) : MethodChannel.MethodCallHandler {
+class WorkmanagerCallHandler(
+    private val ctx: Context,
+) : MethodChannel.MethodCallHandler {
     override fun onMethodCall(
         call: MethodCall,
         result: MethodChannel.Result,
@@ -197,7 +198,9 @@ private object UnregisterTaskHandler : CallHandler<WorkManagerCall.CancelTask> {
     }
 }
 
-class FailedTaskHandler(private val code: String) : CallHandler<WorkManagerCall.Failed> {
+class FailedTaskHandler(
+    private val code: String,
+) : CallHandler<WorkManagerCall.Failed> {
     override fun handle(
         context: Context,
         convertedCall: WorkManagerCall.Failed,
@@ -232,7 +235,8 @@ object WM {
         backoffPolicyConfig: BackoffPolicyTaskConfig?,
     ) {
         val oneOffTaskRequest =
-            OneTimeWorkRequest.Builder(BackgroundWorker::class.java)
+            OneTimeWorkRequest
+                .Builder(BackgroundWorker::class.java)
                 .setInputData(buildTaskInputData(dartTask, isInDebugMode, payload))
                 .setInitialDelay(initialDelaySeconds, TimeUnit.SECONDS)
                 .setConstraints(constraintsConfig)
@@ -244,13 +248,12 @@ object WM {
                             TimeUnit.MILLISECONDS,
                         )
                     }
-                }
-                .apply {
+                }.apply {
                     tag?.let(::addTag)
                     outOfQuotaPolicy?.let(::setExpedited)
-                }
-                .build()
-        context.workManager()
+                }.build()
+        context
+            .workManager()
             .enqueueUniqueWork(uniqueName, existingWorkPolicy, oneOffTaskRequest)
     }
 
@@ -270,14 +273,14 @@ object WM {
         backoffPolicyConfig: BackoffPolicyTaskConfig?,
     ) {
         val periodicTaskRequest =
-            PeriodicWorkRequest.Builder(
-                BackgroundWorker::class.java,
-                frequencyInSeconds,
-                TimeUnit.SECONDS,
-                flexIntervalInSeconds,
-                TimeUnit.SECONDS,
-            )
-                .setInputData(buildTaskInputData(dartTask, isInDebugMode, payload))
+            PeriodicWorkRequest
+                .Builder(
+                    BackgroundWorker::class.java,
+                    frequencyInSeconds,
+                    TimeUnit.SECONDS,
+                    flexIntervalInSeconds,
+                    TimeUnit.SECONDS,
+                ).setInputData(buildTaskInputData(dartTask, isInDebugMode, payload))
                 .setInitialDelay(initialDelaySeconds, TimeUnit.SECONDS)
                 .setConstraints(constraintsConfig)
                 .apply {
@@ -288,13 +291,12 @@ object WM {
                             TimeUnit.MILLISECONDS,
                         )
                     }
-                }
-                .apply {
+                }.apply {
                     tag?.let(::addTag)
                     outOfQuotaPolicy?.let(::setExpedited)
-                }
-                .build()
-        context.workManager()
+                }.build()
+        context
+            .workManager()
             .enqueueUniquePeriodicWork(uniqueName, existingWorkPolicy, periodicTaskRequest)
     }
 
@@ -303,10 +305,12 @@ object WM {
         isInDebugMode: Boolean,
         payload: Map<String, Any>?,
     ): Data {
-        val builder = Data.Builder()
-            .putString(DART_TASK_KEY, dartTask)
-            .putBoolean(IS_IN_DEBUG_MODE_KEY, isInDebugMode)
-        
+        val builder =
+            Data
+                .Builder()
+                .putString(DART_TASK_KEY, dartTask)
+                .putBoolean(IS_IN_DEBUG_MODE_KEY, isInDebugMode)
+
         // Add payload data if provided
         payload?.forEach { (key, value) ->
             when (value) {
@@ -320,7 +324,7 @@ object WM {
                 else -> builder.putString("payload_$key", value.toString())
             }
         }
-        
+
         return builder.build()
     }
 
