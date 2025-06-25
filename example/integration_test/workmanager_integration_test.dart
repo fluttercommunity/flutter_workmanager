@@ -22,14 +22,16 @@ void main() {
       workmanager = Workmanager();
     });
 
-    testWidgets('initialize should succeed on all platforms', (WidgetTester tester) async {
+    testWidgets('initialize should succeed on all platforms',
+        (WidgetTester tester) async {
       await workmanager.initialize(callbackDispatcher, isInDebugMode: true);
       // No exception means success
     });
 
-    testWidgets('registerOneOffTask basic should succeed', (WidgetTester tester) async {
+    testWidgets('registerOneOffTask basic should succeed',
+        (WidgetTester tester) async {
       await workmanager.initialize(callbackDispatcher);
-      
+
       try {
         await workmanager.registerOneOffTask(
           'test.oneoff.basic',
@@ -47,9 +49,10 @@ void main() {
       }
     });
 
-    testWidgets('registerOneOffTask with inputData should succeed', (WidgetTester tester) async {
+    testWidgets('registerOneOffTask with inputData should succeed',
+        (WidgetTester tester) async {
       await workmanager.initialize(callbackDispatcher);
-      
+
       try {
         await workmanager.registerOneOffTask(
           'test.oneoff.data',
@@ -73,9 +76,10 @@ void main() {
       }
     });
 
-    testWidgets('registerOneOffTask with all parameters (Android)', (WidgetTester tester) async {
+    testWidgets('registerOneOffTask with all parameters (Android)',
+        (WidgetTester tester) async {
       await workmanager.initialize(callbackDispatcher);
-      
+
       if (Platform.isAndroid) {
         await workmanager.registerOneOffTask(
           'test.oneoff.full',
@@ -100,9 +104,10 @@ void main() {
       }
     });
 
-    testWidgets('registerPeriodicTask should work on supported platforms', (WidgetTester tester) async {
+    testWidgets('registerPeriodicTask should work on supported platforms',
+        (WidgetTester tester) async {
       await workmanager.initialize(callbackDispatcher);
-      
+
       try {
         await workmanager.registerPeriodicTask(
           'test.periodic.basic',
@@ -120,9 +125,10 @@ void main() {
       }
     });
 
-    testWidgets('registerPeriodicTask with parameters (Android)', (WidgetTester tester) async {
+    testWidgets('registerPeriodicTask with parameters (Android)',
+        (WidgetTester tester) async {
       await workmanager.initialize(callbackDispatcher);
-      
+
       if (Platform.isAndroid) {
         await workmanager.registerPeriodicTask(
           'test.periodic.full',
@@ -146,9 +152,10 @@ void main() {
       }
     });
 
-    testWidgets('registerProcessingTask should work on iOS only', (WidgetTester tester) async {
+    testWidgets('registerProcessingTask should work on iOS only',
+        (WidgetTester tester) async {
       await workmanager.initialize(callbackDispatcher);
-      
+
       if (Platform.isIOS) {
         try {
           await workmanager.registerProcessingTask(
@@ -182,16 +189,18 @@ void main() {
       }
     });
 
-    testWidgets('cancelByUniqueName should succeed', (WidgetTester tester) async {
+    testWidgets('cancelByUniqueName should succeed',
+        (WidgetTester tester) async {
       await workmanager.initialize(callbackDispatcher);
-      
+
       // Should not throw even if task doesn't exist
       await workmanager.cancelByUniqueName('nonexistent.task');
     });
 
-    testWidgets('cancelByTag should work on Android only', (WidgetTester tester) async {
+    testWidgets('cancelByTag should work on Android only',
+        (WidgetTester tester) async {
       await workmanager.initialize(callbackDispatcher);
-      
+
       if (Platform.isAndroid) {
         // Should not throw even if no tasks with tag exist
         await workmanager.cancelByTag('nonexistent-tag');
@@ -206,7 +215,7 @@ void main() {
 
     testWidgets('cancelAll should succeed', (WidgetTester tester) async {
       await workmanager.initialize(callbackDispatcher);
-      
+
       try {
         await workmanager.cancelAll();
       } on PlatformException catch (e) {
@@ -218,28 +227,32 @@ void main() {
       }
     });
 
-    testWidgets('isScheduled should work on Android only', (WidgetTester tester) async {
+    testWidgets('isScheduled should work on Android only',
+        (WidgetTester tester) async {
       await workmanager.initialize(callbackDispatcher);
-      
+
       if (Platform.isAndroid) {
         // Test with a task that doesn't exist
-        final isScheduled = await workmanager.isScheduledByUniqueName('nonexistent.task');
+        final isScheduled =
+            await workmanager.isScheduledByUniqueName('nonexistent.task');
         expect(isScheduled, false);
-        
+
         // Register a task and check if it's scheduled
         try {
           await workmanager.registerOneOffTask(
             'test.scheduled',
             'scheduledTask',
           );
-          final isScheduledAfterRegister = await workmanager.isScheduledByUniqueName('test.scheduled');
+          final isScheduledAfterRegister =
+              await workmanager.isScheduledByUniqueName('test.scheduled');
           expect(isScheduledAfterRegister, true);
-          
+
           // Clean up
           await workmanager.cancelByUniqueName('test.scheduled');
-          
+
           // Check again after cancellation
-          final isScheduledAfterCancel = await workmanager.isScheduledByUniqueName('test.scheduled');
+          final isScheduledAfterCancel =
+              await workmanager.isScheduledByUniqueName('test.scheduled');
           expect(isScheduledAfterCancel, false);
         } catch (e) {
           // Clean up even if test fails
@@ -255,9 +268,10 @@ void main() {
       }
     });
 
-    testWidgets('printScheduledTasks should work on iOS only', (WidgetTester tester) async {
+    testWidgets('printScheduledTasks should work on iOS only',
+        (WidgetTester tester) async {
       await workmanager.initialize(callbackDispatcher);
-      
+
       if (Platform.isIOS) {
         final result = await workmanager.printScheduledTasks();
         expect(result, isA<String>());
@@ -270,11 +284,12 @@ void main() {
       }
     });
 
-    testWidgets('multiple task registration and cancellation flow', (WidgetTester tester) async {
+    testWidgets('multiple task registration and cancellation flow',
+        (WidgetTester tester) async {
       await workmanager.initialize(callbackDispatcher);
-      
+
       final taskIds = ['test.multi.1', 'test.multi.2', 'test.multi.3'];
-      
+
       try {
         // Register multiple tasks
         for (int i = 0; i < taskIds.length; i++) {
@@ -284,20 +299,20 @@ void main() {
             inputData: {'index': i},
           );
         }
-        
+
         // Cancel individual tasks
         await workmanager.cancelByUniqueName(taskIds[0]);
-        
+
         if (Platform.isAndroid) {
           // Verify first task is cancelled, others remain
           expect(await workmanager.isScheduledByUniqueName(taskIds[0]), false);
           expect(await workmanager.isScheduledByUniqueName(taskIds[1]), true);
           expect(await workmanager.isScheduledByUniqueName(taskIds[2]), true);
         }
-        
+
         // Cancel all remaining tasks
         await workmanager.cancelAll();
-        
+
         if (Platform.isAndroid) {
           // Verify all tasks are cancelled
           for (final taskId in taskIds) {
