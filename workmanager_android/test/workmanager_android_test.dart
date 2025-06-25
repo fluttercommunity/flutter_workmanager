@@ -53,7 +53,7 @@ void main() {
           backoffPolicy: BackoffPolicy.exponential,
           backoffPolicyDelay: const Duration(minutes: 1),
           tag: 'testTag',
-          outOfQuotaPolicy: OutOfQuotaPolicy.run_as_non_expedited_work_request,
+          outOfQuotaPolicy: OutOfQuotaPolicy.runAsNonExpeditedWorkRequest,
         );
 
         expect(methodCalls, hasLength(1));
@@ -75,7 +75,7 @@ void main() {
         expect(arguments['backoffDelayInMilliseconds'], 60000);
         expect(arguments['tag'], 'testTag');
         expect(
-            arguments['outOfQuotaPolicy'], 'run_as_non_expedited_work_request');
+            arguments['outOfQuotaPolicy'], 'runAsNonExpeditedWorkRequest');
       });
 
       test('should handle null optional parameters', () async {

@@ -28,10 +28,10 @@ enum NetworkType {
   metered,
 
   /// Default value. A network is not required for this work.
-  not_required,
+  notRequired,
 
   /// A non-roaming network connection is required for this work.
-  not_roaming,
+  notRoaming,
 
   /// An unmetered network connection is required for this work.
   unmetered,
@@ -40,7 +40,7 @@ enum NetworkType {
   /// networks that are generally metered, but are currently unmetered.
   ///
   /// Android API 30+
-  temporarily_unmetered,
+  temporarilyUnmetered,
 }
 
 /// An enumeration of policies that help determine out of quota behavior for expedited jobs.
@@ -49,11 +49,11 @@ enum NetworkType {
 enum OutOfQuotaPolicy {
   /// When the app does not have any expedited job quota, the expedited work request will
   /// fallback to a regular work request.
-  run_as_non_expedited_work_request,
+  runAsNonExpeditedWorkRequest,
 
   /// When the app does not have any expedited job quota, the expedited work request will
   /// we dropped and no work requests are enqueued.
-  drop_work_request,
+  dropWorkRequest,
 }
 
 /// An enumeration of backoff policies when retrying work.

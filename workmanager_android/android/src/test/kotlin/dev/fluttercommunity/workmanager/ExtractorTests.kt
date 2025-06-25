@@ -13,8 +13,8 @@ class ExtractorTests {
         val all =
             mapOf(
                 null to null,
-                "drop_work_request" to OutOfQuotaPolicy.DROP_WORK_REQUEST,
-                "run_as_non_expedited_work_request" to
+                "dropWorkRequest" to OutOfQuotaPolicy.DROP_WORK_REQUEST,
+                "runAsNonExpeditedWorkRequest" to
                     OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST,
             )
 
@@ -34,9 +34,9 @@ class ExtractorTests {
             mapOf(
                 "unmetered" to NetworkType.UNMETERED,
                 "metered" to NetworkType.METERED,
-                "not_required" to NetworkType.NOT_REQUIRED,
-                "not_roaming" to NetworkType.NOT_ROAMING,
-                "temporarily_unmetered" to NetworkType.TEMPORARILY_UNMETERED,
+                "notRequired" to NetworkType.NOT_REQUIRED,
+                "notRoaming" to NetworkType.NOT_ROAMING,
+                "temporarilyUnmetered" to NetworkType.TEMPORARILY_UNMETERED,
                 "connected" to NetworkType.CONNECTED,
             )
 
