@@ -204,7 +204,7 @@ object Extractor {
             }
             PossibleWorkManagerCall.REGISTER_ONE_OFF_TASK -> {
                 WorkManagerCall.RegisterTask.OneOffTask(
-                    isInDebugMode = call.argument<Boolean>(REGISTER_TASK_IS_IN_DEBUG_MODE_KEY)!!,
+                    isInDebugMode = call.argument<Boolean>(REGISTER_TASK_IS_IN_DEBUG_MODE_KEY) ?: false,
                     uniqueName = call.argument<String>(REGISTER_TASK_UNIQUE_NAME_KEY)!!,
                     taskName = call.argument<String>(REGISTER_TASK_NAME_VALUE_KEY)!!,
                     tag = call.argument<String>(REGISTER_TASK_TAG_KEY),
@@ -222,7 +222,7 @@ object Extractor {
             }
             PossibleWorkManagerCall.REGISTER_PERIODIC_TASK -> {
                 WorkManagerCall.RegisterTask.PeriodicTask(
-                    isInDebugMode = call.argument<Boolean>(REGISTER_TASK_IS_IN_DEBUG_MODE_KEY)!!,
+                    isInDebugMode = call.argument<Boolean>(REGISTER_TASK_IS_IN_DEBUG_MODE_KEY) ?: false,
                     uniqueName = call.argument<String>(REGISTER_TASK_UNIQUE_NAME_KEY)!!,
                     taskName = call.argument<String>(REGISTER_TASK_NAME_VALUE_KEY)!!,
                     frequencyInSeconds = extractFrequencySecondsFromCall(call),
