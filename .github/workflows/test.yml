@@ -100,12 +100,44 @@ jobs:
           channel: 'stable'
           cache: true
       - uses: bluefireteam/melos-action@v3
-      - name: Run Flutter Driver tests
+      
+      # Gradle cache for better performance
+      - name: Gradle cache
+        uses: gradle/actions/setup-gradle@v3
+      
+      # AVD cache to speed up emulator startup
+      - name: AVD cache
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ matrix.api-level }}-${{ matrix.target }}-${{ runner.os }}
+      
+      # Generate AVD snapshot for caching if not already cached
+      - name: Create AVD and generate snapshot
+        if: steps.avd-cache.outputs.cache-hit != 'true'
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
           target: ${{ matrix.target }}
           arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: echo "Generated AVD snapshot"
+      
+      # Run actual tests using cached AVD
+      - name: Run Flutter integration tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api-level }}
+          target: ${{ matrix.target }}
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
           disk-size: 6000M
           heap-size: 600M
           script: |
