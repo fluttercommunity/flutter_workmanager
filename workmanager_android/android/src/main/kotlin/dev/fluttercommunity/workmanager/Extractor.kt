@@ -342,11 +342,12 @@ object Extractor {
         try {
             val dartValue = call.argument<String>(REGISTER_TASK_OUT_OF_QUOTA_POLICY_KEY)!!
             // Map camelCase Dart enum values to Android enum names
-            val androidValue = when (dartValue) {
-                "runAsNonExpeditedWorkRequest" -> "RUN_AS_NON_EXPEDITED_WORK_REQUEST"
-                "dropWorkRequest" -> "DROP_WORK_REQUEST"
-                else -> dartValue.uppercase()
-            }
+            val androidValue =
+                when (dartValue) {
+                    "runAsNonExpeditedWorkRequest" -> "RUN_AS_NON_EXPEDITED_WORK_REQUEST"
+                    "dropWorkRequest" -> "DROP_WORK_REQUEST"
+                    else -> dartValue.uppercase()
+                }
             return OutOfQuotaPolicy.valueOf(androidValue)
         } catch (ignored: Exception) {
             return defaultOutOfQuotaPolicy
@@ -359,14 +360,15 @@ object Extractor {
             try {
                 val dartValue = call.argument<String>(REGISTER_TASK_CONSTRAINTS_NETWORK_TYPE_KEY)!!
                 // Map camelCase Dart enum values to Android enum names
-                val androidValue = when (dartValue) {
-                    "notRequired" -> "NOT_REQUIRED"
-                    "notRoaming" -> "NOT_ROAMING"
-                    "temporarilyUnmetered" -> "TEMPORARILY_UNMETERED"
-                    "runAsNonExpeditedWorkRequest" -> "RUN_AS_NON_EXPEDITED_WORK_REQUEST"
-                    "dropWorkRequest" -> "DROP_WORK_REQUEST"
-                    else -> dartValue.uppercase()
-                }
+                val androidValue =
+                    when (dartValue) {
+                        "notRequired" -> "NOT_REQUIRED"
+                        "notRoaming" -> "NOT_ROAMING"
+                        "temporarilyUnmetered" -> "TEMPORARILY_UNMETERED"
+                        "runAsNonExpeditedWorkRequest" -> "RUN_AS_NON_EXPEDITED_WORK_REQUEST"
+                        "dropWorkRequest" -> "DROP_WORK_REQUEST"
+                        else -> dartValue.uppercase()
+                    }
                 NetworkType.valueOf(androidValue)
             } catch (ignored: Exception) {
                 defaultNetworkType
