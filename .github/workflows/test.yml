@@ -47,10 +47,7 @@ jobs:
           cache: true
       - uses: bluefireteam/melos-action@v3
       - name: Run native Android tests
-        run: |
-          cd example/android
-          ./gradlew projects
-          ./gradlew test
+        run: cd example/android && ./gradlew :workmanager_android:test
 
   drive_ios:
     strategy:
