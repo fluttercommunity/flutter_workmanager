@@ -372,6 +372,16 @@ object Extractor {
     }
 
     private fun extractPayload(call: MethodCall): String? {
-        return call.argument<String>(REGISTER_TASK_PAYLOAD_KEY)
+        val inputData = call.argument<Map<String, Any>>(REGISTER_TASK_PAYLOAD_KEY)
+        return if (inputData != null) {
+            // Convert Map to JSON string for storage in WorkManager Data
+            try {
+                org.json.JSONObject(inputData).toString()
+            } catch (e: Exception) {
+                null
+            }
+        } else {
+            null
+        }
     }
 }
