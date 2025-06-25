@@ -223,7 +223,7 @@ void main() {
       
       if (Platform.isAndroid) {
         // Test with a task that doesn't exist
-        final isScheduled = await workmanager.isScheduled('nonexistent.task');
+        final isScheduled = await workmanager.isScheduledByUniqueName('nonexistent.task');
         expect(isScheduled, false);
         
         // Register a task and check if it's scheduled
@@ -232,14 +232,14 @@ void main() {
             'test.scheduled',
             'scheduledTask',
           );
-          final isScheduledAfterRegister = await workmanager.isScheduled('test.scheduled');
+          final isScheduledAfterRegister = await workmanager.isScheduledByUniqueName('test.scheduled');
           expect(isScheduledAfterRegister, true);
           
           // Clean up
           await workmanager.cancelByUniqueName('test.scheduled');
           
           // Check again after cancellation
-          final isScheduledAfterCancel = await workmanager.isScheduled('test.scheduled');
+          final isScheduledAfterCancel = await workmanager.isScheduledByUniqueName('test.scheduled');
           expect(isScheduledAfterCancel, false);
         } catch (e) {
           // Clean up even if test fails
@@ -249,7 +249,7 @@ void main() {
       } else {
         // Should throw UnsupportedError on iOS
         expect(
-          () => workmanager.isScheduled('test-task'),
+          () => workmanager.isScheduledByUniqueName('test-task'),
           throwsA(isA<UnsupportedError>()),
         );
       }
@@ -290,9 +290,9 @@ void main() {
         
         if (Platform.isAndroid) {
           // Verify first task is cancelled, others remain
-          expect(await workmanager.isScheduled(taskIds[0]), false);
-          expect(await workmanager.isScheduled(taskIds[1]), true);
-          expect(await workmanager.isScheduled(taskIds[2]), true);
+          expect(await workmanager.isScheduledByUniqueName(taskIds[0]), false);
+          expect(await workmanager.isScheduledByUniqueName(taskIds[1]), true);
+          expect(await workmanager.isScheduledByUniqueName(taskIds[2]), true);
         }
         
         // Cancel all remaining tasks
@@ -301,7 +301,7 @@ void main() {
         if (Platform.isAndroid) {
           // Verify all tasks are cancelled
           for (final taskId in taskIds) {
-            expect(await workmanager.isScheduled(taskId), false);
+            expect(await workmanager.isScheduledByUniqueName(taskId), false);
           }
         }
       } on PlatformException catch (e) {
