@@ -14,18 +14,17 @@ jobs:
           channel: "stable"
           cache: true
       - uses: bluefireteam/melos-action@v3
+
+      # unused until https://github.com/dart-lang/pana/issues/1020 is fixed
+      # # Only run dart-package-analyzer on the main workmanager package
+      # # The platform-specific packages are not meant to be published individually
+      # - uses: axel-op/dart-package-analyzer@v3
+      #   if: matrix.package == 'workmanager'
+      #   with:
+      #     githubToken: ${{ secrets.GITHUB_TOKEN }}
+      #     relativePath: ${{ matrix.package }}/
       
-      # Only run dart-package-analyzer on the main workmanager package
-      # The platform-specific packages are not meant to be published individually
-      - uses: axel-op/dart-package-analyzer@v3
-        if: matrix.package == 'workmanager'
-        with:
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
-          relativePath: ${{ matrix.package }}/
-      
-      # For other packages, run standard Flutter analysis
       - name: Analyze package
-        if: matrix.package != 'workmanager'
         run: |
           cd ${{ matrix.package }}
           flutter analyze
