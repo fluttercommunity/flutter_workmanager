@@ -1,17 +1,40 @@
 # 0.8.0
 
+## Major Architecture Changes
 * **BREAKING**: Migrate to federated plugin architecture for better platform extensibility
 * **BREAKING**: Platform-specific implementations moved to separate packages
 * Create `workmanager_platform_interface` for shared platform interface
 * Create `workmanager_android` package with Android WorkManager implementation
 * Create `workmanager_ios` package with iOS BGTaskScheduler implementation
 * Foundation for future macOS support using NSBackgroundActivityScheduler
-* Android: Fix v2 embedding import in BackgroundWorker by @jogapps (from PR #595)
-* Android: Fix documentation formatting and typo in BackgroundWorker by @jogapps (from PR #595)
-* iOS: Fix swapped constraints bug for requiresNetworkConnectivity and requiresExternalPower by @thegriffen (from PR #562)
+
+## Breaking Changes
+* **BREAKING**: Enum values changed from snake_case to camelCase:
+  * `NetworkType` values: `not_required` → `notRequired`, `not_roaming` → `notRoaming`, `metered` → `metered` (unchanged)
+  * `OutOfQuotaPolicy` values: `run_as_non_expedited_work_request` → `runAsNonExpeditedWorkRequest`, `drop_work_request` → `dropWorkRequest`
+* **BREAKING**: Removed JSON serialization for inputData - now uses native Map transfer for better performance and type safety
+
+## New Features
+* Android: Added `isScheduledByUniqueName` method to check if a periodic task is scheduled by its unique name (Android only)
+* Added comprehensive integration tests for better reliability
+
+## Bug Fixes
+* iOS: Fixed `initialDelaySeconds` parameter handling - was previously ignored
+* Android: Fixed NullPointerException when `isInDebugMode` was not properly initialized
+* Fixed inputData type handling across platforms - now properly supports all primitive types and lists
+* iOS: Fixed compilation errors with Map handling
+* iOS: Fixed swapped constraints bug for requiresNetworkConnectivity and requiresExternalPower by @thegriffen (from PR #562)
+* Android: Fixed v2 embedding import in BackgroundWorker by @jogapps (from PR #595)
+
+## Improvements
+* Updated to Flutter 3.32 and flutter_lints 6.0.0
+* Android: Updated target SDK to 35
+* Improved CI/CD with Android emulator caching for faster builds
+* Better error handling and type safety throughout the codebase
 * iOS: Add Privacy Manifest for App Store compliance by @navaronbracke (from PR #555)
 * iOS: Replace print statements with proper os_log for better logging
 * iOS: printScheduledTasks now returns String instead of void by @yarith28 (from PR #585)
+* Android: Fix documentation formatting and typo in BackgroundWorker by @jogapps (from PR #595)
 
 # 0.7.0
 
