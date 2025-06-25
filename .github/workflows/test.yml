@@ -141,4 +141,4 @@ jobs:
           disk-size: 6000M
           heap-size: 600M
           script: |
-            cd example && flutter test integration_test/workmanager_integration_test.dart --verbose
+            cd example && flutter test integration_test/workmanager_integration_test.dart

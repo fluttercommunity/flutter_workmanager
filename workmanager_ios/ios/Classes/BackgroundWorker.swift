@@ -106,9 +106,9 @@ class BackgroundWorker {
             switch call.method {
             case BackgroundChannel.initialized:
                 result(true)    // Agree to Flutter's method invocation
-                var arguments = self.backgroundMode.onResultSendArguments
-                if self.inputData != "" {
-                    arguments = arguments.merging(["dev.fluttercommunity.workmanager.INPUT_DATA": self.inputData]) { current, _ in current }
+                var arguments: [String: Any] = self.backgroundMode.onResultSendArguments
+                if let inputData = self.inputData {
+                    arguments["dev.fluttercommunity.workmanager.INPUT_DATA"] = inputData
                 }
 
                 backgroundMethodChannel?.invokeMethod(
