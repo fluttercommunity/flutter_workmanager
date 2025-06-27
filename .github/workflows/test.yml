@@ -15,10 +15,7 @@ jobs:
         with:
           channel: 'stable'
           cache: true
-      - name: Install melos
-        run: dart pub global activate melos
-      - name: Bootstrap packages
-        run: melos bootstrap
+      - uses: bluefireteam/melos-action@v3
       - name: Test
         run: |
           cd workmanager
@@ -32,10 +29,7 @@ jobs:
         with:
           channel: 'stable'
           cache: true
-      - name: Install melos
-        run: dart pub global activate melos
-      - name: Bootstrap packages
-        run: melos bootstrap
+      - uses: bluefireteam/melos-action@v3
       - name: Build iOS App
         run: cd example && flutter build ios --debug --no-codesign
       - name: Run native iOS tests
@@ -53,14 +47,11 @@ jobs:
         with:
           channel: 'stable'
           cache: true
-      - name: Install melos
-        run: dart pub global activate melos
-      - name: Bootstrap packages
-        run: melos bootstrap
+      - uses: bluefireteam/melos-action@v3
       - name: Build Android App
         run: cd example && flutter build apk --debug
       - name: Run native Android tests
-        run: cd example/android && ./gradlew :workmanager:test
+        run: cd example/android && ./gradlew :workmanager_android:test
 
   drive_ios:
     strategy:
@@ -78,10 +69,7 @@ jobs:
       - uses: futureware-tech/simulator-action@v3
         with:
           model: '${{ matrix.device }}'
-      - name: Install melos
-        run: dart pub global activate melos
-      - name: Bootstrap packages
-        run: melos bootstrap
+      - uses: bluefireteam/melos-action@v3
       # Run flutter integrate tests
       - name: Run Flutter integration tests
         run: cd example && flutter test integration_test/workmanager_integration_test.dart
@@ -93,7 +81,7 @@ jobs:
     strategy:
       #set of different configurations of the virtual environment.
       matrix:
-        api-level: [34]
+        api-level: [35]
         # api-level: [21, 29]
         target: [default]
     steps:
@@ -111,16 +99,46 @@ jobs:
         with:
           channel: 'stable'
           cache: true
-      - name: Install melos
-        run: dart pub global activate melos
-      - name: Bootstrap packages
-        run: melos bootstrap
-      - name: Run Flutter Driver tests
+      - uses: bluefireteam/melos-action@v3
+      
+      # Gradle cache for better performance
+      - name: Gradle cache
+        uses: gradle/actions/setup-gradle@v3
+      
+      # AVD cache to speed up emulator startup
+      - name: AVD cache
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ matrix.api-level }}-${{ matrix.target }}-${{ runner.os }}
+      
+      # Generate AVD snapshot for caching if not already cached
+      - name: Create AVD and generate snapshot
+        if: steps.avd-cache.outputs.cache-hit != 'true'
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
           target: ${{ matrix.target }}
           arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: echo "Generated AVD snapshot"
+      
+      # Run actual tests using cached AVD
+      - name: Run Flutter integration tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api-level }}
+          target: ${{ matrix.target }}
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
           disk-size: 6000M
           heap-size: 600M
-          script: cd example && flutter test integration_test/workmanager_integration_test.dart
+          script: |
+            cd example && flutter test integration_test/workmanager_integration_test.dart
