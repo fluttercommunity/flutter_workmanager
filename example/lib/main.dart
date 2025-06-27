@@ -39,7 +39,9 @@ final List<String> allTasks = [
 // Pragma is mandatory if the App is obfuscated or using Flutter 3.1+
 @pragma('vm:entry-point')
 void callbackDispatcher() {
+  print('callbackDispatcher called');
   Workmanager().executeTask((task, inputData) async {
+    print("callbackDispatcher called with task: $task");
     final prefs = await SharedPreferences.getInstance();
     await prefs.reload();
 
@@ -93,6 +95,8 @@ void callbackDispatcher() {
         return Future.value(false);
     }
 
+    // Return true to indicate that the task was successful
+    print("$task finished successfully");
     return Future.value(true);
   });
 }
@@ -148,8 +152,8 @@ class _MyAppState extends State<MyApp> {
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
 
-                //This task runs once.
-                //Most likely this will trigger immediately
+                // This task runs once.
+                // Most likely this will trigger immediately
                 ElevatedButton(
                   child: Text("Register OneOff Task"),
                   onPressed: () {
@@ -162,6 +166,7 @@ class _MyAppState extends State<MyApp> {
                         'double': 1.0,
                         'string': 'string',
                         'array': [1, 2, 3],
+                        // 'map': {'key': 'value'},
                       },
                     );
                   },
@@ -207,16 +212,17 @@ class _MyAppState extends State<MyApp> {
                 //It will wait at least 10 seconds before its first launch
                 //Since we have not provided a frequency it will be the default 15 minutes
                 ElevatedButton(
-                    child: Text("Register Periodic Task (Android)"),
-                    onPressed: Platform.isAndroid
-                        ? () {
-                            Workmanager().registerPeriodicTask(
-                              simplePeriodicTask,
-                              simplePeriodicTask,
-                              initialDelay: Duration(seconds: 10),
-                            );
-                          }
-                        : null),
+                  child: Text("Register Periodic Task (Android)"),
+                  onPressed: Platform.isAndroid
+                      ? () {
+                          Workmanager().registerPeriodicTask(
+                            simplePeriodicTask,
+                            simplePeriodicTask,
+                            initialDelay: Duration(seconds: 10),
+                          );
+                        }
+                      : null,
+                ),
                 //This task runs periodically
                 //It will run about every hour
                 ElevatedButton(

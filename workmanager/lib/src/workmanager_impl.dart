@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:isolate' show Isolate;
 
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:workmanager_platform_interface/workmanager_platform_interface.dart';
 import 'package:workmanager_android/workmanager_android.dart';
 import 'package:workmanager_ios/workmanager_ios.dart';
@@ -133,10 +135,14 @@ class Workmanager {
 
   /// Handle background method calls from the platform
   Future<dynamic> _handleBackgroundMessage(MethodCall call) async {
+    Map<String, dynamic>? inputData = call
+        .arguments["dev.fluttercommunity.workmanager.INPUT_DATA"]
+        .cast<String, dynamic>();
+
     if (call.method == "backgroundChannelInitialized") {
       return _backgroundTaskHandler?.call(
         call.arguments["dev.fluttercommunity.workmanager.DART_TASK"],
-        call.arguments["dev.fluttercommunity.workmanager.INPUT_DATA"],
+        inputData,
       );
     }
     return null;
@@ -157,6 +163,9 @@ class Workmanager {
   ///
   /// Scheduling other background tasks inside the [BackgroundTaskHandler] is allowed.
   void executeTask(BackgroundTaskHandler backgroundTaskHandler) async {
+    WidgetsFlutterBinding.ensureInitialized();
+
+    _backgroundChannel.setMethodCallHandler(_handleBackgroundMessage);
     _backgroundTaskHandler = backgroundTaskHandler;
     await _backgroundChannel.invokeMethod("backgroundChannelInitialized");
   }

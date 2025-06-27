@@ -35,7 +35,7 @@ object DebugHelper {
         ctx: Context,
         threadIdentifier: Int,
         dartTask: String,
-        payload: String? = null,
+        payload: Map<String, Any>? = null,
         fetchDuration: Long,
         result: ListenableWorker.Result,
     ) {
@@ -56,7 +56,7 @@ object DebugHelper {
         ctx: Context,
         threadIdentifier: Int,
         dartTask: String,
-        payload: String? = null,
+        payload: Map<String, Any>? = null,
         callbackHandle: Long,
         callbackInfo: FlutterCallbackInformation?,
         dartBundlePath: String?,

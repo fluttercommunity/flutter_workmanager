@@ -43,7 +43,8 @@ class BackgroundWorker(
     }
 
     private val payload
-        get() = workerParams.inputData.getString(PAYLOAD_KEY)
+        get() = workerParams.inputData.keyValueMap.filter { it.key.startsWith("payload_") }
+            .mapKeys { it -> it.key.replace("payload_", "") }
 
     private val dartTask
         get() = workerParams.inputData.getString(DART_TASK_KEY)!!
@@ -147,9 +148,9 @@ class BackgroundWorker(
         r: MethodChannel.Result,
     ) {
         when (call.method) {
-            BACKGROUND_CHANNEL_INITIALIZED ->
+            BACKGROUND_CHANNEL_INITIALIZED -> {
                 backgroundChannel.invokeMethod(
-                    "onResultSend",
+                    BACKGROUND_CHANNEL_INITIALIZED,
                     mapOf(DART_TASK_KEY to dartTask, PAYLOAD_KEY to payload),
                     object : MethodChannel.Result {
                         override fun notImplemented() {
@@ -171,6 +172,7 @@ class BackgroundWorker(
                         }
                     },
                 )
+            }
         }
     }
 }

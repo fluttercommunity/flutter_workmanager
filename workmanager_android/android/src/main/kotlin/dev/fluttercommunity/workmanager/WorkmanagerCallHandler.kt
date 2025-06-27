@@ -6,12 +6,14 @@ import androidx.work.Data
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
+import androidx.work.Operation
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import dev.fluttercommunity.workmanager.BackgroundWorker.Companion.DART_TASK_KEY
 import dev.fluttercommunity.workmanager.BackgroundWorker.Companion.IS_IN_DEBUG_MODE_KEY
+import io.flutter.Log
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import java.util.concurrent.TimeUnit
@@ -234,27 +236,31 @@ object WM {
         outOfQuotaPolicy: OutOfQuotaPolicy? = defaultOutOfQuotaPolicy,
         backoffPolicyConfig: BackoffPolicyTaskConfig?,
     ) {
-        val oneOffTaskRequest =
-            OneTimeWorkRequest
-                .Builder(BackgroundWorker::class.java)
-                .setInputData(buildTaskInputData(dartTask, isInDebugMode, payload))
-                .setInitialDelay(initialDelaySeconds, TimeUnit.SECONDS)
-                .setConstraints(constraintsConfig)
-                .apply {
-                    if (backoffPolicyConfig != null) {
-                        setBackoffCriteria(
-                            backoffPolicyConfig.backoffPolicy,
-                            backoffPolicyConfig.backoffDelay,
-                            TimeUnit.MILLISECONDS,
-                        )
-                    }
-                }.apply {
-                    tag?.let(::addTag)
-                    outOfQuotaPolicy?.let(::setExpedited)
-                }.build()
-        context
-            .workManager()
-            .enqueueUniqueWork(uniqueName, existingWorkPolicy, oneOffTaskRequest)
+        try {
+                val oneOffTaskRequest =
+                    OneTimeWorkRequest
+                        .Builder(BackgroundWorker::class.java)
+                        .setInputData(buildTaskInputData(dartTask, isInDebugMode, payload))
+                        .setInitialDelay(initialDelaySeconds, TimeUnit.SECONDS)
+                        .setConstraints(constraintsConfig)
+                        .apply {
+                            if (backoffPolicyConfig != null) {
+                                setBackoffCriteria(
+                                    backoffPolicyConfig.backoffPolicy,
+                                    backoffPolicyConfig.backoffDelay,
+                                    TimeUnit.MILLISECONDS,
+                                )
+                            }
+                        }.apply {
+                            tag?.let(::addTag)
+                            outOfQuotaPolicy?.let(::setExpedited)
+                        }.build()
+                context
+                    .workManager()
+                    .enqueueUniqueWork(uniqueName, existingWorkPolicy, oneOffTaskRequest)
+        } catch (e: Exception) {
+            throw e
+        }
     }
 
     fun enqueuePeriodicTask(
@@ -320,6 +326,7 @@ object WM {
                 is Long -> builder.putLong("payload_$key", value)
                 is Float -> builder.putFloat("payload_$key", value)
                 is Double -> builder.putDouble("payload_$key", value)
+                is ByteArray -> builder.putByteArray("payload_$key", value)
                 // For complex types, we'll need to handle them as strings
                 else -> builder.putString("payload_$key", value.toString())
             }
