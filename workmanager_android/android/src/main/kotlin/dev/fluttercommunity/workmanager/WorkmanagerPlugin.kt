@@ -18,6 +18,9 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin
 /**
  * Pigeon-based implementation of WorkmanagerHostApi for Android.
  * Replaces the manual method channel and data extraction approach.
+ * 
+ * Note: Pigeon guarantees that host API handlers are not called when the plugin
+ * is detached, so workManagerWrapper!! is safe to use in all API methods.
  */
 class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
     private var workManagerWrapper: WorkManagerWrapper? = null
@@ -52,16 +55,8 @@ class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
 
         try {
             workManagerWrapper!!.enqueueOneOffTask(
-                uniqueName = request.uniqueName,
-                dartTask = request.taskName,
-                payload = request.inputData?.filterNotNullKeys(),
-                tag = request.tag,
-                isInDebugMode = false, // TODO: Get from initialization
-                existingWorkPolicy = request.existingWorkPolicy?.toAndroidWorkPolicy() ?: ExistingWorkPolicy.KEEP,
-                initialDelaySeconds = request.initialDelaySeconds?.toLong() ?: 0L,
-                constraintsConfig = request.constraints?.toAndroidConstraints() ?: Constraints.NONE,
-                outOfQuotaPolicy = request.outOfQuotaPolicy?.toAndroidOutOfQuotaPolicy(),
-                backoffPolicyConfig = request.backoffPolicy?.toAndroidBackoffPolicyConfig(),
+                request = request,
+                isInDebugMode = false // TODO: Get from initialization
             )
             callback(Result.success(Unit))
         } catch (e: Exception) {
@@ -80,18 +75,8 @@ class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
 
         try {
             workManagerWrapper!!.enqueuePeriodicTask(
-                uniqueName = request.uniqueName,
-                dartTask = request.taskName,
-                payload = request.inputData?.filterNotNullKeys(),
-                tag = request.tag,
-                frequencyInSeconds = request.frequencySeconds.toLong(),
-                flexIntervalInSeconds = request.flexIntervalSeconds?.toLong() ?: DEFAULT_FLEX_INTERVAL_SECONDS,
-                isInDebugMode = false, // TODO: Get from initialization
-                existingWorkPolicy = request.existingWorkPolicy?.toAndroidPeriodicWorkPolicy() ?: ExistingPeriodicWorkPolicy.KEEP,
-                initialDelaySeconds = request.initialDelaySeconds?.toLong() ?: 0L,
-                constraintsConfig = request.constraints?.toAndroidConstraints() ?: Constraints.NONE,
-                outOfQuotaPolicy = null, // Not supported for periodic tasks
-                backoffPolicyConfig = request.backoffPolicy?.toAndroidBackoffPolicyConfig(),
+                request = request,
+                isInDebugMode = false // TODO: Get from initialization
             )
             callback(Result.success(Unit))
         } catch (e: Exception) {
@@ -114,12 +99,6 @@ class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
     }
 
     override fun cancelByTag(tag: String, callback: (Result<Unit>) -> Unit) {
-        val wrapper = workManagerWrapper
-        if (wrapper == null) {
-            callback(Result.failure(Exception("Plugin not attached to engine")))
-            return
-        }
-
         try {
             workManagerWrapper!!.cancelByTag(tag)
             callback(Result.success(Unit))
@@ -129,12 +108,6 @@ class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
     }
 
     override fun cancelAll(callback: (Result<Unit>) -> Unit) {
-        val wrapper = workManagerWrapper
-        if (wrapper == null) {
-            callback(Result.failure(Exception("Plugin not attached to engine")))
-            return
-        }
-
         try {
             workManagerWrapper!!.cancelAll()
             callback(Result.success(Unit))
@@ -158,79 +131,4 @@ class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
         // Not supported on Android
         callback(Result.failure(UnsupportedOperationException("printScheduledTasks is not supported on Android")))
     }
-}
-
-// Extension functions to convert Pigeon types to Android WorkManager types
-private fun dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.toAndroidWorkPolicy(): ExistingWorkPolicy {
-    return when (this) {
-        dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.APPEND -> ExistingWorkPolicy.APPEND_OR_REPLACE
-        dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.KEEP -> ExistingWorkPolicy.KEEP
-        dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.REPLACE -> ExistingWorkPolicy.REPLACE
-        dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.UPDATE -> ExistingWorkPolicy.APPEND_OR_REPLACE
-    }
-}
-
-private fun dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.toAndroidPeriodicWorkPolicy(): ExistingPeriodicWorkPolicy {
-    return when (this) {
-        dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.APPEND -> ExistingPeriodicWorkPolicy.REPLACE
-        dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.KEEP -> ExistingPeriodicWorkPolicy.KEEP
-        dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.REPLACE -> ExistingPeriodicWorkPolicy.REPLACE
-        dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.UPDATE -> ExistingPeriodicWorkPolicy.UPDATE
-    }
-}
-
-private fun dev.fluttercommunity.workmanager.pigeon.OutOfQuotaPolicy.toAndroidOutOfQuotaPolicy(): OutOfQuotaPolicy {
-    return when (this) {
-        dev.fluttercommunity.workmanager.pigeon.OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST -> OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST
-        dev.fluttercommunity.workmanager.pigeon.OutOfQuotaPolicy.DROP_WORK_REQUEST -> OutOfQuotaPolicy.DROP_WORK_REQUEST
-    }
-}
-
-private fun dev.fluttercommunity.workmanager.pigeon.Constraints.toAndroidConstraints(): Constraints {
-    val builder = Constraints.Builder()
-    
-    networkType?.let { builder.setRequiredNetworkType(it.toAndroidNetworkType()) }
-    requiresBatteryNotLow?.let { builder.setRequiresBatteryNotLow(it) }
-    requiresCharging?.let { builder.setRequiresCharging(it) }
-    requiresDeviceIdle?.let { builder.setRequiresDeviceIdle(it) }
-    requiresStorageNotLow?.let { builder.setRequiresStorageNotLow(it) }
-    
-    return builder.build()
-}
-
-private fun dev.fluttercommunity.workmanager.pigeon.NetworkType.toAndroidNetworkType(): NetworkType {
-    return when (this) {
-        dev.fluttercommunity.workmanager.pigeon.NetworkType.CONNECTED -> NetworkType.CONNECTED
-        dev.fluttercommunity.workmanager.pigeon.NetworkType.METERED -> NetworkType.METERED
-        dev.fluttercommunity.workmanager.pigeon.NetworkType.NOT_REQUIRED -> NetworkType.NOT_REQUIRED
-        dev.fluttercommunity.workmanager.pigeon.NetworkType.NOT_ROAMING -> NetworkType.NOT_ROAMING
-        dev.fluttercommunity.workmanager.pigeon.NetworkType.UNMETERED -> NetworkType.UNMETERED
-        dev.fluttercommunity.workmanager.pigeon.NetworkType.TEMPORARILY_UNMETERED -> NetworkType.TEMPORARILY_UNMETERED
-    }
-}
-
-private fun BackoffPolicyConfig.toAndroidBackoffPolicyConfig(): BackoffPolicyTaskConfig? {
-    return if (backoffPolicy != null && backoffDelayMillis != null) {
-        val delayMillis = backoffDelayMillis.toLong()
-        BackoffPolicyTaskConfig(
-            backoffPolicy = backoffPolicy.toAndroidBackoffPolicy(),
-            requestedBackoffDelay = delayMillis,
-            minBackoffInMillis = delayMillis,
-            backoffDelay = delayMillis
-        )
-    } else null
-}
-
-private fun dev.fluttercommunity.workmanager.pigeon.BackoffPolicy.toAndroidBackoffPolicy(): BackoffPolicy {
-    return when (this) {
-        dev.fluttercommunity.workmanager.pigeon.BackoffPolicy.EXPONENTIAL -> BackoffPolicy.EXPONENTIAL
-        dev.fluttercommunity.workmanager.pigeon.BackoffPolicy.LINEAR -> BackoffPolicy.LINEAR
-    }
-}
-
-// Helper function to filter out null keys from Map<String?, Any?>
-private fun Map<String?, Any?>.filterNotNullKeys(): Map<String, Any> {
-    return this.mapNotNull { (key, value) -> 
-        if (key != null && value != null) key to value else null 
-    }.toMap()
 }
