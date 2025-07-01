@@ -85,7 +85,7 @@ class WorkmanagerApple extends WorkmanagerPlatform {
       'taskName': taskName,
       'inputData': inputData,
       'initialDelaySeconds': initialDelay?.inSeconds,
-      'networkType': constraints?.networkType.name,
+      'networkType': constraints?.networkType?.name,
       'requiresCharging': constraints?.requiresCharging,
     });
   }
