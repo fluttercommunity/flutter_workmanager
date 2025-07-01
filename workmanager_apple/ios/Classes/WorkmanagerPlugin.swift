@@ -21,21 +21,14 @@ public class WorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
     @available(iOS 13.0, *)
     private static func handleBGProcessingTask(identifier: String, task: BGProcessingTask) {
         let operationQueue = OperationQueue()
-        
-        let operation = BackgroundTaskOperation(
-            task.identifier,
+        let operation = createBackgroundOperation(
+            identifier: task.identifier,
             inputData: nil,
-            flutterPluginRegistrantCallback: flutterPluginRegistrantCallback,
             backgroundMode: .backgroundProcessingTask(identifier: identifier)
         )
         
-        task.expirationHandler = {
-            operation.cancel()
-        }
-        
-        operation.completionBlock = {
-            task.setTaskCompleted(success: !operation.isCancelled)
-        }
+        task.expirationHandler = { operation.cancel() }
+        operation.completionBlock = { task.setTaskCompleted(success: !operation.isCancelled) }
         
         operationQueue.addOperation(operation)
     }
@@ -53,20 +46,14 @@ public class WorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
         schedulePeriodicTask(taskIdentifier: task.identifier, earliestBeginInSeconds: earliestBeginInSeconds ?? (15 * 60))
         
         let operationQueue = OperationQueue()
-        let operation = BackgroundTaskOperation(
-            task.identifier,
+        let operation = createBackgroundOperation(
+            identifier: task.identifier,
             inputData: nil,
-            flutterPluginRegistrantCallback: flutterPluginRegistrantCallback,
             backgroundMode: .backgroundPeriodicTask(identifier: identifier)
         )
         
-        task.expirationHandler = {
-            operation.cancel()
-        }
-        
-        operation.completionBlock = {
-            task.setTaskCompleted(success: !operation.isCancelled)
-        }
+        task.expirationHandler = { operation.cancel() }
+        operation.completionBlock = { task.setTaskCompleted(success: !operation.isCancelled) }
         
         operationQueue.addOperation(operation)
     }
@@ -74,17 +61,13 @@ public class WorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
     @available(iOS 13.0, *)
     public static func startOneOffTask(identifier: String, taskIdentifier: UIBackgroundTaskIdentifier, inputData: [String: Any]?, delaySeconds: Int64) {
         let operationQueue = OperationQueue()
-        let operation = BackgroundTaskOperation(
-            identifier,
+        let operation = createBackgroundOperation(
+            identifier: identifier,
             inputData: inputData,
-            flutterPluginRegistrantCallback: flutterPluginRegistrantCallback,
             backgroundMode: .backgroundOneOffTask(identifier: identifier)
         )
         
-        operation.completionBlock = {
-            UIApplication.shared.endBackgroundTask(taskIdentifier)
-        }
-        
+        operation.completionBlock = { UIApplication.shared.endBackgroundTask(taskIdentifier) }
         operationQueue.addOperation(operation)
     }
     
@@ -177,7 +160,7 @@ public class WorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
             return
         }
         
-        if #available(iOS 13.0, *) {
+        executeIfSupportedVoid(completion: completion, feature: "OneOffTask") {
             var taskIdentifier: UIBackgroundTaskIdentifier = .invalid
             let delaySeconds = request.initialDelaySeconds ?? 0
             
@@ -191,13 +174,6 @@ public class WorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
                 inputData: request.inputData as? [String: Any],
                 delaySeconds: delaySeconds
             )
-            completion(.success(()))
-        } else {
-            completion(.failure(PigeonError(
-                code: "99",
-                message: "OneOffTask could not be registered",
-                details: "BGTaskScheduler tasks are only supported on iOS 13+"
-            )))
         }
     }
     
@@ -207,20 +183,12 @@ public class WorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
             return
         }
         
-        if #available(iOS 13.0, *) {
+        executeIfSupportedVoid(completion: completion, feature: "PeriodicTask") {
             let initialDelaySeconds = Double(request.initialDelaySeconds ?? 0)
-            
             WorkmanagerPlugin.schedulePeriodicTask(
                 taskIdentifier: request.uniqueName,
                 earliestBeginInSeconds: initialDelaySeconds
             )
-            completion(.success(()))
-        } else {
-            completion(.failure(PigeonError(
-                code: "99", 
-                message: "PeriodicTask could not be registered",
-                details: "BGAppRefreshTasks are only supported on iOS 13+. Instead you should use Background Fetch"
-            )))
         }
     }
     
@@ -230,15 +198,10 @@ public class WorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
             return
         }
         
-        if #available(iOS 13.0, *) {
+        executeIfSupportedVoid(completion: completion, feature: "BackgroundProcessingTask") {
             let delaySeconds = Double(request.initialDelaySeconds ?? 0)
             let requiresCharging = request.requiresCharging ?? false
-            
-            var requiresNetwork = false
-            if let networkType = request.networkType,
-               networkType == .connected || networkType == .metered {
-                requiresNetwork = true
-            }
+            let requiresNetwork = request.networkType == .connected || request.networkType == .metered
             
             WorkmanagerPlugin.scheduleBackgroundProcessingTask(
                 withIdentifier: request.uniqueName,
@@ -246,32 +209,24 @@ public class WorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
                 requiresNetworkConnectivity: requiresNetwork,
                 requiresExternalPower: requiresCharging
             )
-            completion(.success(()))
-        } else {
-            completion(.failure(PigeonError(
-                code: "99",
-                message: "BackgroundProcessingTask could not be registered", 
-                details: "BGProcessingTasks are only supported on iOS 13+"
-            )))
         }
     }
     
     func cancelByUniqueName(uniqueName: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        if #available(iOS 13.0, *) {
+        executeIfSupportedVoid(completion: completion, feature: "cancelByUniqueName") {
             BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: uniqueName)
         }
-        completion(.success(()))
     }
     
     func cancelByTag(tag: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        completion(.failure(PigeonError(code: "not implemented", message: "not implemented", details: nil)))
+        // iOS doesn't support canceling by tag - this is an Android-specific feature
+        completion(.success(()))
     }
     
     func cancelAll(completion: @escaping (Result<Void, Error>) -> Void) {
-        if #available(iOS 13.0, *) {
+        executeIfSupportedVoid(completion: completion, feature: "cancelAll") {
             BGTaskScheduler.shared.cancelAllTaskRequests()
         }
-        completion(.success(()))
     }
     
     func isScheduledByUniqueName(uniqueName: String, completion: @escaping (Result<Bool, Error>) -> Void) {
@@ -331,6 +286,59 @@ public class WorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
                     "\n" +
                     "The `callbackDispatcher` is a top level function. See example in repository.",
             details: nil
+        )
+    }
+    
+    private func createUnsupportedVersionError(feature: String) -> PigeonError {
+        return PigeonError(
+            code: "99",
+            message: "\(feature) could not be registered",
+            details: "BGTaskScheduler tasks are only supported on iOS 13+"
+        )
+    }
+    
+    private func executeIfSupported<T>(
+        completion: @escaping (Result<T, Error>) -> Void,
+        defaultValue: T? = nil,
+        feature: String,
+        action: @escaping () -> T
+    ) {
+        if #available(iOS 13.0, *) {
+            let result = action()
+            completion(.success(result))
+        } else {
+            if let defaultValue = defaultValue {
+                completion(.success(defaultValue))
+            } else {
+                completion(.failure(createUnsupportedVersionError(feature: feature)))
+            }
+        }
+    }
+    
+    private func executeIfSupportedVoid(
+        completion: @escaping (Result<Void, Error>) -> Void,
+        feature: String,
+        action: @escaping () -> Void
+    ) {
+        if #available(iOS 13.0, *) {
+            action()
+            completion(.success(()))
+        } else {
+            completion(.failure(createUnsupportedVersionError(feature: feature)))
+        }
+    }
+    
+    @available(iOS 13.0, *)
+    private static func createBackgroundOperation(
+        identifier: String,
+        inputData: [String: Any]?,
+        backgroundMode: BackgroundMode
+    ) -> BackgroundTaskOperation {
+        return BackgroundTaskOperation(
+            identifier,
+            inputData: inputData,
+            flutterPluginRegistrantCallback: flutterPluginRegistrantCallback,
+            backgroundMode: backgroundMode
         )
     }
 }
