@@ -4,11 +4,11 @@ import 'package:pigeon/pigeon.dart';
 @ConfigurePigeon(PigeonOptions(
   dartOut: 'lib/src/pigeon/workmanager_api.g.dart',
   dartOptions: DartOptions(),
-  kotlinOut: 'android/src/main/kotlin/dev/fluttercommunity/workmanager/pigeon/WorkmanagerApi.g.kt',
+  kotlinOut: '../workmanager_android/android/src/main/kotlin/dev/fluttercommunity/workmanager/pigeon/WorkmanagerApi.g.kt',
   kotlinOptions: KotlinOptions(
     package: 'dev.fluttercommunity.workmanager.pigeon',
   ),
-  swiftOut: 'ios/Classes/pigeon/WorkmanagerApi.g.swift',
+  swiftOut: '../workmanager_apple/ios/Classes/pigeon/WorkmanagerApi.g.swift',
   copyrightHeader: 'pigeons/copyright.txt',
   dartPackageName: 'workmanager_platform_interface',
 ))
