@@ -14,7 +14,6 @@ import androidx.work.WorkManager
 import dev.fluttercommunity.workmanager.BackgroundWorker.Companion.DART_TASK_KEY
 import dev.fluttercommunity.workmanager.BackgroundWorker.Companion.IS_IN_DEBUG_MODE_KEY
 import java.util.concurrent.TimeUnit
-import kotlin.math.max
 
 // Constants
 const val DEFAULT_INITIAL_DELAY_SECONDS = 0L
@@ -30,13 +29,6 @@ val defaultConstraints: Constraints = Constraints.NONE
 val defaultOutOfQuotaPolicy: OutOfQuotaPolicy? = null
 
 
-// BackoffPolicy configuration
-data class BackoffPolicyTaskConfig(
-    val backoffPolicy: BackoffPolicy,
-    private val requestedBackoffDelay: Long,
-    private val minBackoffInMillis: Long,
-    val backoffDelay: Long = max(minBackoffInMillis, requestedBackoffDelay),
-)
 
 // Extension functions to convert Pigeon types to Android WorkManager types
 private fun dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.toAndroidWorkPolicy(): ExistingWorkPolicy {
@@ -87,17 +79,6 @@ private fun dev.fluttercommunity.workmanager.pigeon.NetworkType.toAndroidNetwork
     }
 }
 
-private fun dev.fluttercommunity.workmanager.pigeon.BackoffPolicyConfig.toAndroidBackoffPolicyConfig(): BackoffPolicyTaskConfig? {
-    return if (backoffPolicy != null && backoffDelayMillis != null) {
-        val delayMillis = backoffDelayMillis.toLong()
-        BackoffPolicyTaskConfig(
-            backoffPolicy = backoffPolicy.toAndroidBackoffPolicy(),
-            requestedBackoffDelay = delayMillis,
-            minBackoffInMillis = delayMillis,
-            backoffDelay = delayMillis
-        )
-    } else null
-}
 
 private fun dev.fluttercommunity.workmanager.pigeon.BackoffPolicy.toAndroidBackoffPolicy(): BackoffPolicy {
     return when (this) {
@@ -128,12 +109,14 @@ class WorkManagerWrapper(val context: Context) {
                     .setInitialDelay(request.initialDelaySeconds?.toLong() ?: DEFAULT_INITIAL_DELAY_SECONDS, TimeUnit.SECONDS)
                     .setConstraints(request.constraints?.toAndroidConstraints() ?: defaultConstraints)
                     .apply {
-                        request.backoffPolicy?.toAndroidBackoffPolicyConfig()?.let { config ->
-                            setBackoffCriteria(
-                                config.backoffPolicy,
-                                config.backoffDelay,
-                                TimeUnit.MILLISECONDS,
-                            )
+                        request.backoffPolicy?.let { backoffConfig ->
+                            if (backoffConfig.backoffPolicy != null && backoffConfig.backoffDelayMillis != null) {
+                                setBackoffCriteria(
+                                    backoffConfig.backoffPolicy.toAndroidBackoffPolicy(),
+                                    backoffConfig.backoffDelayMillis.toLong(),
+                                    TimeUnit.MILLISECONDS,
+                                )
+                            }
                         }
                     }.apply {
                         request.tag?.let(::addTag)
@@ -165,12 +148,14 @@ class WorkManagerWrapper(val context: Context) {
                 .setInitialDelay(request.initialDelaySeconds?.toLong() ?: DEFAULT_INITIAL_DELAY_SECONDS, TimeUnit.SECONDS)
                 .setConstraints(request.constraints?.toAndroidConstraints() ?: defaultConstraints)
                 .apply {
-                    request.backoffPolicy?.toAndroidBackoffPolicyConfig()?.let { config ->
-                        setBackoffCriteria(
-                            config.backoffPolicy,
-                            config.backoffDelay,
-                            TimeUnit.MILLISECONDS,
-                        )
+                    request.backoffPolicy?.let { backoffConfig ->
+                        if (backoffConfig.backoffPolicy != null && backoffConfig.backoffDelayMillis != null) {
+                            setBackoffCriteria(
+                                backoffConfig.backoffPolicy.toAndroidBackoffPolicy(),
+                                backoffConfig.backoffDelayMillis.toLong(),
+                                TimeUnit.MILLISECONDS,
+                            )
+                        }
                     }
                 }.apply {
                     request.tag?.let(::addTag)
