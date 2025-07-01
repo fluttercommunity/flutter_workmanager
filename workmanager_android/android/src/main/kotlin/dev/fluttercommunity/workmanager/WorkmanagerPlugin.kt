@@ -1,13 +1,5 @@
 package dev.fluttercommunity.workmanager
 
-import android.content.Context
-import androidx.work.BackoffPolicy
-import androidx.work.Constraints
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.ExistingWorkPolicy
-import androidx.work.NetworkType
-import androidx.work.OutOfQuotaPolicy
-import dev.fluttercommunity.workmanager.pigeon.BackoffPolicyConfig
 import dev.fluttercommunity.workmanager.pigeon.InitializeRequest
 import dev.fluttercommunity.workmanager.pigeon.OneOffTaskRequest
 import dev.fluttercommunity.workmanager.pigeon.PeriodicTaskRequest
@@ -15,17 +7,30 @@ import dev.fluttercommunity.workmanager.pigeon.ProcessingTaskRequest
 import dev.fluttercommunity.workmanager.pigeon.WorkmanagerHostApi
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 
+private const val initRequired =
+    "You have not properly initialized the Flutter WorkManager Package. " +
+            "You should ensure you have called the 'initialize' function first!"
+
 /**
  * Pigeon-based implementation of WorkmanagerHostApi for Android.
  * Replaces the manual method channel and data extraction approach.
- * 
- * Note: Pigeon guarantees that host API handlers are not called when the plugin
- * is detached, so workManagerWrapper!! is safe to use in all API methods.
  */
 class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
     private var workManagerWrapper: WorkManagerWrapper? = null
+    private lateinit var preferenceManager: SharedPreferenceHelper;
+
+    private var currentDispatcherHandle: Long = -1L
+    private var isInDebugMode: Boolean = false
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        preferenceManager =
+            SharedPreferenceHelper(
+                binding.applicationContext,
+                object : SharedPreferenceHelper.DispatcherHandleListener {
+                    override fun onDispatcherHandleChanged(handle: Long) {
+                        currentDispatcherHandle = handle
+                    }
+                })
         workManagerWrapper = WorkManagerWrapper(binding.applicationContext)
         WorkmanagerHostApi.setUp(binding.binaryMessenger, this)
     }
@@ -37,7 +42,8 @@ class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
 
     override fun initialize(request: InitializeRequest, callback: (Result<Unit>) -> Unit) {
         try {
-            SharedPreferenceHelper.saveCallbackDispatcherHandleKey(workManagerWrapper!!.context, request.callbackHandle.toLong())
+            preferenceManager.saveCallbackDispatcherHandleKey(request.callbackHandle)
+            isInDebugMode = request.isInDebugMode
             callback(Result.success(Unit))
         } catch (e: Exception) {
             callback(Result.failure(e))
@@ -45,18 +51,15 @@ class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
     }
 
     override fun registerOneOffTask(request: OneOffTaskRequest, callback: (Result<Unit>) -> Unit) {
-        if (!SharedPreferenceHelper.hasCallbackHandle(workManagerWrapper!!.context)) {
-            callback(Result.failure(Exception(
-                "You have not properly initialized the Flutter WorkManager Package. " +
-                "You should ensure you have called the 'initialize' function first!"
-            )))
+        if (currentDispatcherHandle == -1L) {
+            callback(Result.failure(Exception(initRequired)))
             return
         }
 
         try {
             workManagerWrapper!!.enqueueOneOffTask(
                 request = request,
-                isInDebugMode = false // TODO: Get from initialization
+                isInDebugMode = isInDebugMode
             )
             callback(Result.success(Unit))
         } catch (e: Exception) {
@@ -64,19 +67,19 @@ class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
         }
     }
 
-    override fun registerPeriodicTask(request: PeriodicTaskRequest, callback: (Result<Unit>) -> Unit) {
-        if (!SharedPreferenceHelper.hasCallbackHandle(workManagerWrapper!!.context)) {
-            callback(Result.failure(Exception(
-                "You have not properly initialized the Flutter WorkManager Package. " +
-                "You should ensure you have called the 'initialize' function first!"
-            )))
+    override fun registerPeriodicTask(
+        request: PeriodicTaskRequest,
+        callback: (Result<Unit>) -> Unit
+    ) {
+        if (currentDispatcherHandle == -1L) {
+            callback(Result.failure(Exception(initRequired)))
             return
         }
 
         try {
             workManagerWrapper!!.enqueuePeriodicTask(
                 request = request,
-                isInDebugMode = false // TODO: Get from initialization
+                isInDebugMode = isInDebugMode
             )
             callback(Result.success(Unit))
         } catch (e: Exception) {
@@ -84,7 +87,10 @@ class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
         }
     }
 
-    override fun registerProcessingTask(request: ProcessingTaskRequest, callback: (Result<Unit>) -> Unit) {
+    override fun registerProcessingTask(
+        request: ProcessingTaskRequest,
+        callback: (Result<Unit>) -> Unit
+    ) {
         // Processing tasks are iOS-specific
         callback(Result.failure(UnsupportedOperationException("Processing tasks are not supported on Android")))
     }
@@ -119,8 +125,8 @@ class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
     override fun isScheduledByUniqueName(uniqueName: String, callback: (Result<Boolean>) -> Unit) {
         try {
             val workInfos = workManagerWrapper!!.getWorkInfoByUniqueName(uniqueName).get()
-            val scheduled = workInfos.isNotEmpty() && 
-                workInfos.all { it.state == androidx.work.WorkInfo.State.ENQUEUED || it.state == androidx.work.WorkInfo.State.RUNNING }
+            val scheduled = workInfos.isNotEmpty() &&
+                    workInfos.all { it.state == androidx.work.WorkInfo.State.ENQUEUED || it.state == androidx.work.WorkInfo.State.RUNNING }
             callback(Result.success(scheduled))
         } catch (e: Exception) {
             callback(Result.failure(e))
