@@ -43,7 +43,7 @@ struct ThumbnailGenerator {
             let thumbnailImage = try thumbnail.renderAsImage()
             let localURL = try thumbnailImage.persist(fileName: name)
             return try UNNotificationAttachment(
-                identifier: "\(SwiftWorkmanagerPlugin.identifier).\(name)",
+                identifier: "\(WorkmanagerPlugin.identifier).\(name)",
                 url: localURL,
                 options: nil
             )
@@ -55,7 +55,7 @@ struct ThumbnailGenerator {
     }
 
     private static var logPrefix: String {
-        return "\(String(describing: SwiftWorkmanagerPlugin.self)) - \(ThumbnailGenerator.self)"
+        return "\(String(describing: WorkmanagerPlugin.self)) - \(ThumbnailGenerator.self)"
     }
 
 }
@@ -85,7 +85,7 @@ private extension UIView {
 private extension UIImage {
 
     func persist(fileName: String, in directory: URL = URL(fileURLWithPath: NSTemporaryDirectory())) throws -> URL {
-        let directoryURL = directory.appendingPathComponent(SwiftWorkmanagerPlugin.identifier, isDirectory: true)
+        let directoryURL = directory.appendingPathComponent(WorkmanagerPlugin.identifier, isDirectory: true)
         let fileURL = directoryURL.appendingPathComponent("\(fileName).png")
         try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
         guard let imageData = self.pngData() else {
