@@ -53,7 +53,7 @@ jobs:
           flutter pub publish -n
           cd ../workmanager_android
           flutter pub publish -n
-          cd ../workmanager_ios
+          cd ../workmanager_apple
           flutter pub publish -n
           cd ../workmanager
           flutter pub publish -n

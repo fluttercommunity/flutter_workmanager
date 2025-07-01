@@ -83,11 +83,11 @@ class Workmanager {
 
   static void _ensurePlatformImplementation() {
     if (WorkmanagerPlatform.instance is! WorkmanagerAndroid &&
-        WorkmanagerPlatform.instance is! WorkmanagerIOS) {
+        WorkmanagerPlatform.instance is! WorkmanagerApple) {
       if (Platform.isAndroid) {
         WorkmanagerPlatform.instance = WorkmanagerAndroid();
       } else if (Platform.isIOS) {
-        WorkmanagerPlatform.instance = WorkmanagerIOS();
+        WorkmanagerPlatform.instance = WorkmanagerApple();
       }
     }
   }
