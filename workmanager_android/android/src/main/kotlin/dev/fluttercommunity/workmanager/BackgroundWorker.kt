@@ -38,6 +38,7 @@ class BackgroundWorker(
         const val BACKGROUND_CHANNEL_NAME =
             "dev.fluttercommunity.workmanager/background_channel_work_manager"
         const val BACKGROUND_CHANNEL_INITIALIZED = "backgroundChannelInitialized"
+        const val ON_RESULT_SEND = "onResultSend"
 
         private val flutterLoader = FlutterLoader()
     }
@@ -158,7 +159,7 @@ class BackgroundWorker(
         when (call.method) {
             BACKGROUND_CHANNEL_INITIALIZED -> {
                 backgroundChannel.invokeMethod(
-                    BACKGROUND_CHANNEL_INITIALIZED,
+                    ON_RESULT_SEND,
                     mapOf(DART_TASK_KEY to dartTask, PAYLOAD_KEY to payload),
                     object : MethodChannel.Result {
                         override fun notImplemented() {

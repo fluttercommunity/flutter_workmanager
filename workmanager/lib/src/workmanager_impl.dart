@@ -138,7 +138,7 @@ class Workmanager {
         .arguments["dev.fluttercommunity.workmanager.INPUT_DATA"]
         .cast<String, dynamic>();
 
-    if (call.method == "backgroundChannelInitialized") {
+    if (call.method == "onResultSend") {
       return _backgroundTaskHandler?.call(
         call.arguments["dev.fluttercommunity.workmanager.DART_TASK"],
         inputData,

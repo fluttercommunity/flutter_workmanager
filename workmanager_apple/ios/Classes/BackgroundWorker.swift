@@ -46,7 +46,10 @@ class BackgroundWorker {
     let flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?
     let inputData: [String: Any]?
 
-    init(mode: BackgroundMode, inputData: [String: Any]?, flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?) {
+    init(
+        mode: BackgroundMode, inputData: [String: Any]?,
+        flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?
+    ) {
         backgroundMode = mode
         self.inputData = inputData
         self.flutterPluginRegistrantCallback = flutterPluginRegistrantCallback
@@ -55,18 +58,21 @@ class BackgroundWorker {
     private struct BackgroundChannel {
         static let name = "\(SwiftWorkmanagerPlugin.identifier)/background_channel_work_manager"
         static let initialized = "backgroundChannelInitialized"
-        static let onResultSendCommand = "backgroundChannelInitialized"
+        static let onResultSendCommand = "onResultSend"
     }
 
     /// The result is discardable due to how [BackgroundTaskOperation] works.
     @discardableResult
-    func performBackgroundRequest(_ completionHandler: @escaping (UIBackgroundFetchResult) -> Void) -> Bool {
+    func performBackgroundRequest(_ completionHandler: @escaping (UIBackgroundFetchResult) -> Void)
+        -> Bool
+    {
         guard let callbackHandle = UserDefaultsHelper.getStoredCallbackHandle(),
-            let flutterCallbackInformation = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)
-            else {
-                logError("[\(String(describing: self))] \(WMPError.workmanagerNotInitialized.message)")
-                completionHandler(.failed)
-                return false
+            let flutterCallbackInformation = FlutterCallbackCache.lookupCallbackInformation(
+                callbackHandle)
+        else {
+            logError("[\(String(describing: self))] \(WMPError.workmanagerNotInitialized.message)")
+            completionHandler(.failed)
+            return false
         }
 
         let taskSessionStart = Date()
@@ -105,7 +111,7 @@ class BackgroundWorker {
         backgroundMethodChannel?.setMethodCallHandler { call, result in
             switch call.method {
             case BackgroundChannel.initialized:
-                result(true)    // Agree to Flutter's method invocation
+                result(true)  // Agree to Flutter's method invocation
                 var arguments: [String: Any] = self.backgroundMode.onResultSendArguments
                 if let inputData = self.inputData {
                     arguments["dev.fluttercommunity.workmanager.INPUT_DATA"] = inputData
@@ -117,9 +123,12 @@ class BackgroundWorker {
                     result: { flutterResult in
                         cleanupFlutterResources()
                         let taskSessionCompleter = Date()
-                        let result: UIBackgroundFetchResult = (flutterResult as? Bool ?? false) ? .newData : .failed
+                        let result: UIBackgroundFetchResult =
+                            (flutterResult as? Bool ?? false) ? .newData : .failed
                         let taskDuration = taskSessionCompleter.timeIntervalSince(taskSessionStart)
-                        logInfo("[\(String(describing: self))] \(#function) -> performBackgroundRequest.\(result) (finished in \(taskDuration.formatToSeconds()))")
+                        logInfo(
+                            "[\(String(describing: self))] \(#function) -> performBackgroundRequest.\(result) (finished in \(taskDuration.formatToSeconds()))"
+                        )
 
                         debugHelper.showCompletedFetchNotification(
                             completedDate: taskSessionCompleter,
