@@ -1,6 +1,7 @@
+import 'dart:developer';
 import 'dart:async';
 import 'dart:io';
-import 'dart:math';
+import 'dart:math' show Random;
 
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -10,18 +11,20 @@ import 'package:workmanager/workmanager.dart';
 
 void main() => runApp(MaterialApp(home: MyApp()));
 
-const simpleTaskKey = "be.tramckrijte.workmanagerExample.simpleTask";
-const rescheduledTaskKey = "be.tramckrijte.workmanagerExample.rescheduledTask";
-const failedTaskKey = "be.tramckrijte.workmanagerExample.failedTask";
-const simpleDelayedTask = "be.tramckrijte.workmanagerExample.simpleDelayedTask";
+const simpleTaskKey = "dev.fluttercommunity.workmanagerExample.simpleTask";
+const rescheduledTaskKey =
+    "dev.fluttercommunity.workmanagerExample.rescheduledTask";
+const failedTaskKey = "dev.fluttercommunity.workmanagerExample.failedTask";
+const simpleDelayedTask =
+    "dev.fluttercommunity.workmanagerExample.simpleDelayedTask";
 const simplePeriodicTask =
-    "be.tramckrijte.workmanagerExample.simplePeriodicTask";
+    "dev.fluttercommunity.workmanagerExample.simplePeriodicTask";
 const simplePeriodic1HourTask =
-    "be.tramckrijte.workmanagerExample.simplePeriodic1HourTask";
+    "dev.fluttercommunity.workmanagerExample.simplePeriodic1HourTask";
 const iOSBackgroundAppRefresh =
-    "be.tramckrijte.workmanagerExample.iOSBackgroundAppRefresh";
+    "dev.fluttercommunity.workmanagerExample.iOSBackgroundAppRefresh";
 const iOSBackgroundProcessingTask =
-    "be.tramckrijte.workmanagerExample.iOSBackgroundProcessingTask";
+    "dev.fluttercommunity.workmanagerExample.iOSBackgroundProcessingTask";
 
 final List<String> allTasks = [
   simpleTaskKey,
@@ -37,7 +40,9 @@ final List<String> allTasks = [
 // Pragma is mandatory if the App is obfuscated or using Flutter 3.1+
 @pragma('vm:entry-point')
 void callbackDispatcher() {
+  log('callbackDispatcher called');
   Workmanager().executeTask((task, inputData) async {
+    log("callbackDispatcher called with task: $task");
     final prefs = await SharedPreferences.getInstance();
     await prefs.reload();
 
@@ -91,6 +96,8 @@ void callbackDispatcher() {
         return Future.value(false);
     }
 
+    // Return true to indicate that the task was successful
+    print("$task finished successfully");
     return Future.value(true);
   });
 }
@@ -146,8 +153,8 @@ class _MyAppState extends State<MyApp> {
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
 
-                //This task runs once.
-                //Most likely this will trigger immediately
+                // This task runs once.
+                // Most likely this will trigger immediately
                 ElevatedButton(
                   child: Text("Register OneOff Task"),
                   onPressed: () {
@@ -160,6 +167,7 @@ class _MyAppState extends State<MyApp> {
                         'double': 1.0,
                         'string': 'string',
                         'array': [1, 2, 3],
+                        // 'map': {'key': 'value'},
                       },
                     );
                   },
@@ -205,16 +213,17 @@ class _MyAppState extends State<MyApp> {
                 //It will wait at least 10 seconds before its first launch
                 //Since we have not provided a frequency it will be the default 15 minutes
                 ElevatedButton(
-                    child: Text("Register Periodic Task (Android)"),
-                    onPressed: Platform.isAndroid
-                        ? () {
-                            Workmanager().registerPeriodicTask(
-                              simplePeriodicTask,
-                              simplePeriodicTask,
-                              initialDelay: Duration(seconds: 10),
-                            );
-                          }
-                        : null),
+                  child: Text("Register Periodic Task (Android)"),
+                  onPressed: Platform.isAndroid
+                      ? () {
+                          Workmanager().registerPeriodicTask(
+                            simplePeriodicTask,
+                            simplePeriodicTask,
+                            initialDelay: Duration(seconds: 10),
+                          );
+                        }
+                      : null,
+                ),
                 //This task runs periodically
                 //It will run about every hour
                 ElevatedButton(

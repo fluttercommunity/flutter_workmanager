@@ -8,7 +8,7 @@
 
 import XCTest
 
-@testable import workmanager
+@testable import workmanager_apple
 
 class WorkmanagerTests: XCTestCase {
 

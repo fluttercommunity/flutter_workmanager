@@ -1,16 +1,30 @@
 # Flutter Workmanager
 
 [![pub package](https://img.shields.io/pub/v/workmanager.svg)](https://pub.dartlang.org/packages/workmanager)
-[![Build status](https://img.shields.io/cirrus/github/vrtdev/flutter_workmanager/master)](https://cirrus-ci.com/github/vrtdev/flutter_workmanager/)
-=======
+[![pub points](https://img.shields.io/pub/points/workmanager)](https://pub.dev/packages/workmanager/score)
+[![likes](https://img.shields.io/pub/likes/workmanager)](https://pub.dev/packages/workmanager/score)
+[![popularity](https://img.shields.io/pub/popularity/workmanager)](https://pub.dev/packages/workmanager/score)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/fluttercommunity/flutter_workmanager/test.yml?branch=main&label=tests)](https://github.com/fluttercommunity/flutter_workmanager/actions)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/fluttercommunity/flutter_workmanager/blob/main/LICENSE)
 
 Flutter WorkManager is a wrapper around [Android's WorkManager](https://developer.android.com/topic/libraries/architecture/workmanager), [iOS' performFetchWithCompletionHandler](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1623125-application) and [iOS BGAppRefreshTask](https://developer.apple.com/documentation/backgroundtasks/bgapprefreshtask), effectively enabling headless execution of Dart code in the background.
 
-For iOS users, please watch this video  on a general introduction to background processing: https://developer.apple.com/videos/play/wwdc2019/707. All of the constraints discussed in the video also apply to this plugin.
+For iOS users, please watch this video on a general introduction to background processing: https://developer.apple.com/videos/play/wwdc2019/707. All of the constraints discussed in the video also apply to this plugin.
 
 This is especially useful to run periodic tasks, such as fetching remote data on a regular basis.
 
 > This plugin was featured in this [Medium blogpost](https://medium.com/vrt-digital-studio/flutter-workmanager-81e0cfbd6f6e)
+
+## Federated Plugin Architecture
+
+This plugin uses a federated architecture, which means that the main `workmanager` package provides the API, while platform-specific implementations are in separate packages:
+
+- **workmanager**: The main package that provides the unified API
+- **workmanager_platform_interface**: The common platform interface
+- **workmanager_android**: Android-specific implementation
+- **workmanager_apple**: Apple platform (iOS/macOS) implementation
+
+This architecture allows for better platform-specific optimizations and easier maintenance. When you add `workmanager` to your `pubspec.yaml`, the platform-specific packages are automatically included through the endorsed federated plugin system.
 
 # Platform Setup
 
@@ -135,12 +149,12 @@ To use `registerPeriodicTask` first register the task in `Info.plist` and `AppDe
 
 ```objc
 // Register a periodic task with 20 minutes frequency. The frequency is in seconds.
-WorkmanagerPlugin.registerPeriodicTask(withIdentifier: "be.tramckrijte.workmanagerExample.iOSBackgroundAppRefresh", frequency: NSNumber(value: 20 * 60))
+WorkmanagerPlugin.registerPeriodicTask(withIdentifier: "dev.fluttercommunity.workmanagerExample.iOSBackgroundAppRefresh", frequency: NSNumber(value: 20 * 60))
 ```
 
 Then schedule the task from your App
 ```dart
-const iOSBackgroundAppRefresh = "be.tramckrijte.workmanagerExample.iOSBackgroundAppRefresh";
+const iOSBackgroundAppRefresh = "dev.fluttercommunity.workmanagerExample.iOSBackgroundAppRefresh";
 Workmanager().registerPeriodicTask(
   iOSBackgroundAppRefresh,
   iOSBackgroundAppRefresh,
@@ -161,7 +175,7 @@ iOS might terminate any running background processing tasks when the user starts
 For more information see [BGProcessingTask](https://developer.apple.com/documentation/backgroundtasks/bgprocessingtask)
 
 ```dart
-const iOSBackgroundProcessingTask = "be.tramckrijte.workmanagerExample.iOSBackgroundProcessingTask";
+const iOSBackgroundProcessingTask = "dev.fluttercommunity.workmanagerExample.iOSBackgroundProcessingTask";
 Workmanager().registerProcessingTask(
   iOSBackgroundProcessingTask,
   iOSBackgroundProcessingTask,
@@ -249,7 +263,7 @@ Workmanager().registerOneOffTask("1", "simpleTask", tag: "tag");
 ## Existing Work Policy
 
 Indicates the desired behaviour when the same task is scheduled more than once.  
-The default is `KEEP`
+The default is `keep`
 
 ```dart
 Workmanager().registerOneOffTask("1", "simpleTask", existingWorkPolicy: ExistingWorkPolicy.append);

@@ -16,6 +16,7 @@ jobs:
           channel: 'stable'
       - name: Format
         run: |
+          flutter pub get
           dart format --set-exit-if-changed .
 
   format_kotlin:
@@ -45,12 +46,14 @@ jobs:
         with:
           channel: 'stable'
 
+      - uses: bluefireteam/melos-action@v3
       - name: publish checks
         run: |
-          dart pub global activate melos
-          melos bootstrap
-          cd workmanager
-          flutter pub get
+          cd workmanager_platform_interface
           flutter pub publish -n
-          flutter pub global activate tuneup
-          flutter pub global run tuneup check
+          cd ../workmanager_android
+          flutter pub publish -n
+          cd ../workmanager_apple
+          flutter pub publish -n
+          cd ../workmanager
+          flutter pub publish -n

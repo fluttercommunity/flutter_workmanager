@@ -3,7 +3,7 @@ import 'package:mockito/mockito.dart';
 import 'package:get_it/get_it.dart';
 
 import 'package:test/test.dart';
-import 'package:workmanager/src/workmanager.dart';
+import 'package:workmanager/workmanager.dart';
 
 import 'workmanager_test.mocks.dart';
 

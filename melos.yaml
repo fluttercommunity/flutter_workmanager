@@ -1,9 +1,16 @@
 name: workmanager
 packages:
   - workmanager
+  - workmanager_platform_interface
+  - workmanager_android
+  - workmanager_apple
   - example
 scripts:
   get: melos exec -- dart pub get
+
+  test:
+    run: melos exec --depends-on="flutter_test" -- "flutter test"
+    description: Run tests for all packages with flutter_test dependency.
 
   generate:dart:
     run: melos exec -c 1 --depends-on="build_runner" --no-flutter -- "dart run build_runner build --delete-conflicting-outputs"

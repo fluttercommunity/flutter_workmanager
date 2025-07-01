@@ -4,10 +4,28 @@ on: pull_request
 jobs:
   package-analysis:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package: [workmanager, workmanager_platform_interface, workmanager_android, workmanager_apple]
     steps:
       - uses: actions/checkout@v4
-      - uses: axel-op/dart-package-analyzer@v3
+      - uses: subosito/flutter-action@v2
         with:
-          # Required:
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
-          relativePath: workmanager/
+          channel: "stable"
+          cache: true
+      - uses: bluefireteam/melos-action@v3
+
+      # unused until https://github.com/dart-lang/pana/issues/1020 is fixed
+      # # Only run dart-package-analyzer on the main workmanager package
+      # # The platform-specific packages are not meant to be published individually
+      # - uses: axel-op/dart-package-analyzer@v3
+      #   if: matrix.package == 'workmanager'
+      #   with:
+      #     githubToken: ${{ secrets.GITHUB_TOKEN }}
+      #     relativePath: ${{ matrix.package }}/
+      
+      - name: Analyze package
+        run: |
+          cd ${{ matrix.package }}
+          flutter analyze
+          dart pub publish --dry-run

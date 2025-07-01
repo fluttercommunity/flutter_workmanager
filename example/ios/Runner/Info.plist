@@ -4,15 +4,17 @@
 <dict>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
-		<string>be.tramckrijte.workmanagerExample.taskId</string>
-		<string>be.tramckrijte.workmanagerExample.simpleTask</string>
-		<string>be.tramckrijte.workmanagerExample.rescheduledTask</string>
-		<string>be.tramckrijte.workmanagerExample.failedTask</string>
-		<string>be.tramckrijte.workmanagerExample.simpleDelayedTask</string>
-		<string>be.tramckrijte.workmanagerExample.simplePeriodicTask</string>
-		<string>be.tramckrijte.workmanagerExample.simplePeriodic1HourTask</string>
-		<string>be.tramckrijte.workmanagerExample.iOSBackgroundAppRefresh</string>
-		<string>be.tramckrijte.workmanagerExample.iOSBackgroundProcessingTask</string>
+		<string>dev.fluttercommunity.workmanagerExample.taskId</string>
+		<string>dev.fluttercommunity.workmanagerExample.simpleTask</string>
+		<string>dev.fluttercommunity.workmanagerExample.rescheduledTask</string>
+		<string>dev.fluttercommunity.workmanagerExample.failedTask</string>
+		<string>dev.fluttercommunity.workmanagerExample.simpleDelayedTask</string>
+		<string>dev.fluttercommunity.workmanagerExample.simplePeriodicTask</string>
+		<string>dev.fluttercommunity.workmanagerExample.simplePeriodic1HourTask</string>
+		<string>dev.fluttercommunity.workmanagerExample.iOSBackgroundAppRefresh</string>
+		<string>dev.fluttercommunity.workmanagerExample.iOSBackgroundProcessingTask</string>
+		<string>dev.fluttercommunity.integrationTest.dataTransferTask</string>
+		<string>dev.fluttercommunity.integrationTest.retryTask</string>
 	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
@@ -62,5 +64,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSLocalNetworkUsageDescription</key>
+<string>This app needs local network access for debugging and communication.</string>
+<key>NSBonjourServices</key>
+<array>
+  <string>_dartobservatory._tcp</string>
+</array>
 </dict>
 </plist>
