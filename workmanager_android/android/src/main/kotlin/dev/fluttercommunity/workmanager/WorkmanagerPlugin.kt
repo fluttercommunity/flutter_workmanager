@@ -33,14 +33,8 @@ class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
     }
 
     override fun initialize(request: InitializeRequest, callback: (Result<Unit>) -> Unit) {
-        val wrapper = workManagerWrapper
-        if (wrapper == null) {
-            callback(Result.failure(Exception("Plugin not attached to engine")))
-            return
-        }
-
         try {
-            SharedPreferenceHelper.saveCallbackDispatcherHandleKey(wrapper.context, request.callbackHandle.toLong())
+            SharedPreferenceHelper.saveCallbackDispatcherHandleKey(workManagerWrapper!!.context, request.callbackHandle.toLong())
             callback(Result.success(Unit))
         } catch (e: Exception) {
             callback(Result.failure(e))
@@ -48,13 +42,7 @@ class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
     }
 
     override fun registerOneOffTask(request: OneOffTaskRequest, callback: (Result<Unit>) -> Unit) {
-        val wrapper = workManagerWrapper
-        if (wrapper == null) {
-            callback(Result.failure(Exception("Plugin not attached to engine")))
-            return
-        }
-
-        if (!SharedPreferenceHelper.hasCallbackHandle(wrapper.context)) {
+        if (!SharedPreferenceHelper.hasCallbackHandle(workManagerWrapper!!.context)) {
             callback(Result.failure(Exception(
                 "You have not properly initialized the Flutter WorkManager Package. " +
                 "You should ensure you have called the 'initialize' function first!"
@@ -63,7 +51,7 @@ class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
         }
 
         try {
-            wrapper.enqueueOneOffTask(
+            workManagerWrapper!!.enqueueOneOffTask(
                 uniqueName = request.uniqueName,
                 dartTask = request.taskName,
                 payload = request.inputData?.filterNotNullKeys(),
@@ -82,13 +70,7 @@ class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
     }
 
     override fun registerPeriodicTask(request: PeriodicTaskRequest, callback: (Result<Unit>) -> Unit) {
-        val wrapper = workManagerWrapper
-        if (wrapper == null) {
-            callback(Result.failure(Exception("Plugin not attached to engine")))
-            return
-        }
-
-        if (!SharedPreferenceHelper.hasCallbackHandle(wrapper.context)) {
+        if (!SharedPreferenceHelper.hasCallbackHandle(workManagerWrapper!!.context)) {
             callback(Result.failure(Exception(
                 "You have not properly initialized the Flutter WorkManager Package. " +
                 "You should ensure you have called the 'initialize' function first!"
@@ -97,7 +79,7 @@ class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
         }
 
         try {
-            wrapper.enqueuePeriodicTask(
+            workManagerWrapper!!.enqueuePeriodicTask(
                 uniqueName = request.uniqueName,
                 dartTask = request.taskName,
                 payload = request.inputData?.filterNotNullKeys(),
@@ -123,14 +105,8 @@ class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
     }
 
     override fun cancelByUniqueName(uniqueName: String, callback: (Result<Unit>) -> Unit) {
-        val wrapper = workManagerWrapper
-        if (wrapper == null) {
-            callback(Result.failure(Exception("Plugin not attached to engine")))
-            return
-        }
-
         try {
-            wrapper.cancelByUniqueName(uniqueName)
+            workManagerWrapper!!.cancelByUniqueName(uniqueName)
             callback(Result.success(Unit))
         } catch (e: Exception) {
             callback(Result.failure(e))
@@ -145,7 +121,7 @@ class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
         }
 
         try {
-            wrapper.cancelByTag(tag)
+            workManagerWrapper!!.cancelByTag(tag)
             callback(Result.success(Unit))
         } catch (e: Exception) {
             callback(Result.failure(e))
@@ -160,7 +136,7 @@ class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
         }
 
         try {
-            wrapper.cancelAll()
+            workManagerWrapper!!.cancelAll()
             callback(Result.success(Unit))
         } catch (e: Exception) {
             callback(Result.failure(e))
@@ -168,14 +144,8 @@ class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
     }
 
     override fun isScheduledByUniqueName(uniqueName: String, callback: (Result<Boolean>) -> Unit) {
-        val wrapper = workManagerWrapper
-        if (wrapper == null) {
-            callback(Result.failure(Exception("Plugin not attached to engine")))
-            return
-        }
-
         try {
-            val workInfos = wrapper.getWorkInfoByUniqueName(uniqueName).get()
+            val workInfos = workManagerWrapper!!.getWorkInfoByUniqueName(uniqueName).get()
             val scheduled = workInfos.isNotEmpty() && 
                 workInfos.all { it.state == androidx.work.WorkInfo.State.ENQUEUED || it.state == androidx.work.WorkInfo.State.RUNNING }
             callback(Result.success(scheduled))
