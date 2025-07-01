@@ -12,7 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
   workmanager:
-
+  uuid: ^4.4.2
 
 dev_dependencies:
   integration_test:

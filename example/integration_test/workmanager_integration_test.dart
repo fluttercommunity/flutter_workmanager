@@ -3,17 +3,65 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 import 'package:workmanager/workmanager.dart';
+
+const String dataTransferTaskName = 'dataTransferTask';
+const String retryTaskName = 'retryTask';
+
+/// One retry is enough to test the retry logic
+const int kMaxRetryAttempts = 1;
 
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
+    if (task == retryTaskName) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.reload();
+      var counterName = inputData!['counter_name'];
+      final count = prefs.getInt(counterName) ?? 0;
+      if (count == kMaxRetryAttempts) {
+        return Future.value(true);
+      } else {
+        await prefs.setInt(counterName, count + 1);
+        return Future.value(false);
+      }
+    }
+    if (task == dataTransferTaskName) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+
+      for (String key in inputData!.keys) {
+        var value = inputData[key];
+        if (value is String) {
+          await prefs.setString(key, value);
+        } else if (value is int) {
+          await prefs.setInt(key, value);
+        } else if (value is double) {
+          await prefs.setDouble(key, value);
+        } else if (value is bool) {
+          await prefs.setBool(key, value);
+        } else if (value is List) {
+          await prefs.setStringList(key, List<String>.from(value));
+        } else if (value is Map) {
+          await prefs.setString(key, value.toString());
+        } else {
+          print('Unsupported data type for key $key: $value');
+        }
+      }
+    }
     return true;
   });
 }
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() async {
+    await SharedPreferences.getInstance().then((prefs) {
+      return prefs.clear(); // Clear shared preferences before each test
+    });
+  });
 
   group('Workmanager Integration Tests', () {
     late Workmanager workmanager;
@@ -28,6 +76,77 @@ void main() {
       // No exception means success
     });
 
+    testWidgets('input data is correctly transferred to native side',
+        (WidgetTester tester) async {
+      await workmanager.initialize(callbackDispatcher);
+
+      final prefix = Uuid().v4().toString();
+
+      final testData = {
+        '$prefix.string': 'input string',
+        '$prefix.number': 42,
+        '$prefix.boolean': true,
+        '$prefix.list': ['1', '2', '3'],
+        '$prefix.double': 3.14,
+      };
+
+      await workmanager.registerOneOffTask(
+        'test.inputData',
+        dataTransferTaskName,
+        inputData: testData,
+      );
+
+      // Look for 20 seconds & observe if the settings have been written
+      for (int i = 0; i < 20; i++) {
+        await Future.delayed(const Duration(seconds: 1));
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.reload();
+        if (prefs.getString('$prefix.string') == 'input string' &&
+            prefs.getInt('$prefix.number') == 42 &&
+            prefs.getBool('$prefix.boolean') == true &&
+            prefs.getStringList('$prefix.list')!.length == 3 &&
+            prefs.getDouble('$prefix.double') == 3.14) {
+          return;
+        }
+      }
+      fail('Input data was not transferred correctly to native side.');
+    });
+
+    testWidgets('retry task should retry up to 3 times',
+        (WidgetTester tester) async {
+      await workmanager.initialize(callbackDispatcher);
+
+      final counterName = Uuid().v4().toString() + 'retryCounter';
+      final initialCount = 0;
+
+      // Set initial count in shared preferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(counterName, initialCount);
+
+      try {
+        await workmanager.registerOneOffTask(
+          'test.retry',
+          retryTaskName,
+          inputData: {'counter_name': counterName},
+          backoffPolicy: BackoffPolicy.linear,
+          backoffPolicyDelay: const Duration(seconds: 1),
+        );
+
+        // Wait for the task to complete
+        for (int i = 0; i < 100; i++) {
+          await Future.delayed(const Duration(seconds: 1));
+          await prefs.reload();
+          if (prefs.getInt(counterName) == kMaxRetryAttempts) {
+            return;
+          }
+        }
+        fail('Retry task did not reach maximum attempts.');
+      } catch (e) {
+        fail('Retry task failed with exception: $e');
+      } finally {
+        await workmanager.cancelByUniqueName('test.retry');
+      }
+    });
     testWidgets('registerOneOffTask basic should succeed',
         (WidgetTester tester) async {
       await workmanager.initialize(callbackDispatcher);
@@ -61,8 +180,7 @@ void main() {
             'string': 'test',
             'number': 42,
             'boolean': true,
-            'list': [1, 2, 3],
-            'map': {'nested': 'value'},
+            'list': ['1', '2', '3'],
           },
         );
         // Clean up

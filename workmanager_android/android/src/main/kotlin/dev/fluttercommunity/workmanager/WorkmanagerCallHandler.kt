@@ -6,14 +6,12 @@ import androidx.work.Data
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
-import androidx.work.Operation
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import dev.fluttercommunity.workmanager.BackgroundWorker.Companion.DART_TASK_KEY
 import dev.fluttercommunity.workmanager.BackgroundWorker.Companion.IS_IN_DEBUG_MODE_KEY
-import io.flutter.Log
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import java.util.concurrent.TimeUnit
@@ -44,30 +42,35 @@ class WorkmanagerCallHandler(
                     extractedCall,
                     result,
                 )
+
             is WorkManagerCall.RegisterTask ->
                 RegisterTaskHandler.handle(
                     ctx,
                     extractedCall,
                     result,
                 )
+
             is WorkManagerCall.IsScheduled ->
                 IsScheduledHandler.handle(
                     ctx,
                     extractedCall,
                     result,
                 )
+
             is WorkManagerCall.CancelTask ->
                 UnregisterTaskHandler.handle(
                     ctx,
                     extractedCall,
                     result,
                 )
+
             is WorkManagerCall.Failed ->
                 FailedTaskHandler(extractedCall.code).handle(
                     ctx,
                     extractedCall,
                     result,
                 )
+
             is WorkManagerCall.Unknown -> UnknownTaskHandler.handle(ctx, extractedCall, result)
         }
     }
@@ -193,6 +196,7 @@ private object UnregisterTaskHandler : CallHandler<WorkManagerCall.CancelTask> {
                     context,
                     convertedCall.uniqueName,
                 )
+
             is WorkManagerCall.CancelTask.ByTag -> WM.cancelByTag(context, convertedCall.tag)
             WorkManagerCall.CancelTask.All -> WM.cancelAll(context)
         }
@@ -237,27 +241,27 @@ object WM {
         backoffPolicyConfig: BackoffPolicyTaskConfig?,
     ) {
         try {
-                val oneOffTaskRequest =
-                    OneTimeWorkRequest
-                        .Builder(BackgroundWorker::class.java)
-                        .setInputData(buildTaskInputData(dartTask, isInDebugMode, payload))
-                        .setInitialDelay(initialDelaySeconds, TimeUnit.SECONDS)
-                        .setConstraints(constraintsConfig)
-                        .apply {
-                            if (backoffPolicyConfig != null) {
-                                setBackoffCriteria(
-                                    backoffPolicyConfig.backoffPolicy,
-                                    backoffPolicyConfig.backoffDelay,
-                                    TimeUnit.MILLISECONDS,
-                                )
-                            }
-                        }.apply {
-                            tag?.let(::addTag)
-                            outOfQuotaPolicy?.let(::setExpedited)
-                        }.build()
-                context
-                    .workManager()
-                    .enqueueUniqueWork(uniqueName, existingWorkPolicy, oneOffTaskRequest)
+            val oneOffTaskRequest =
+                OneTimeWorkRequest
+                    .Builder(BackgroundWorker::class.java)
+                    .setInputData(buildTaskInputData(dartTask, isInDebugMode, payload))
+                    .setInitialDelay(initialDelaySeconds, TimeUnit.SECONDS)
+                    .setConstraints(constraintsConfig)
+                    .apply {
+                        if (backoffPolicyConfig != null) {
+                            setBackoffCriteria(
+                                backoffPolicyConfig.backoffPolicy,
+                                backoffPolicyConfig.backoffDelay,
+                                TimeUnit.MILLISECONDS,
+                            )
+                        }
+                    }.apply {
+                        tag?.let(::addTag)
+                        outOfQuotaPolicy?.let(::setExpedited)
+                    }.build()
+            context
+                .workManager()
+                .enqueueUniqueWork(uniqueName, existingWorkPolicy, oneOffTaskRequest)
         } catch (e: Exception) {
             throw e
         }
@@ -326,9 +330,25 @@ object WM {
                 is Long -> builder.putLong("payload_$key", value)
                 is Float -> builder.putFloat("payload_$key", value)
                 is Double -> builder.putDouble("payload_$key", value)
+                is Array<*> ->
+                    builder.putStringArray(
+                        "payload_$key",
+                        value.filterIsInstance<String>().toTypedArray(),
+                    )
+                is List<*> ->
+                    builder.putStringArray(
+                        "payload_$key",
+                        value.filterIsInstance<String>().toTypedArray(),
+                    )
+
                 is ByteArray -> builder.putByteArray("payload_$key", value)
-                // For complex types, we'll need to handle them as strings
-                else -> builder.putString("payload_$key", value.toString())
+
+                else -> {
+                    throw IllegalArgumentException(
+                        "Unsupported payload type for key '$key': ${value::class.java.simpleName}. " +
+                            "Consider converting it to a supported type.",
+                    )
+                }
             }
         }
 

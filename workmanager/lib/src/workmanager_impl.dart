@@ -173,16 +173,18 @@ class Workmanager {
   /// Schedule a one-off task.
   ///
   /// A [uniqueName] is required so only one task can be registered.
+  ///
   /// Calling this method again with the same [uniqueName] will update the current pending task, unless an [ExistingWorkPolicy] is provided.
-  /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler], ignored on iOS where you should use [uniqueName].
-  /// The [inputData] is the input data for task. Valid value types are: int, bool, double, String and their list
-  /// The [initialDelay] is an [Duration] after which the task will run. Ignored on iOS where you should schedule the task in AppDelegate.swift
-  /// The [constraints] are the requirements that need to be met before the task runs.
-  /// The [backoffPolicy] is the backoff policy to use when retrying work.
-  /// The [backoffPolicyDelay] is the delay for the backoff policy.
-  /// The [tag] is an optional tag that can be used to identify or cancel the task.
-  /// The [existingWorkPolicy] is the policy to use when work with the same [uniqueName] already exists.
-  /// The [outOfQuotaPolicy] is the policy to use when the device is out of quota. (Android only)
+  ///
+  /// - [taskName]: is the value that will be returned in the [BackgroundTaskHandler], ignored on iOS where you should use [uniqueName].
+  /// - [inputData]: is the input data for task. Valid value types are: int, bool, double, String and their list
+  /// - [initialDelay]: is an [Duration] after which the task will run. Ignored on iOS where you should schedule the task in AppDelegate.swift
+  /// - [constraints]: are the requirements that need to be met before the task runs.
+  /// - [backoffPolicy]: is the backoff policy to use when retrying work.
+  /// - [backoffPolicyDelay]: is the delay for the backoff policy.
+  /// - [tag]: is an optional tag that can be used to identify or cancel the task.
+  /// - [existingWorkPolicy]: is the policy to use when work with the same [uniqueName] already exists.
+  /// - [outOfQuotaPolicy]: is the policy to use when the device is out of quota. (Android only)
   Future<void> registerOneOffTask(
     String uniqueName,
     String taskName, {
