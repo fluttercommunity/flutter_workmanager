@@ -3,7 +3,7 @@ packages:
   - workmanager
   - workmanager_platform_interface
   - workmanager_android
-  - workmanager_ios
+  - workmanager_apple
   - example
 scripts:
   get: melos exec -- dart pub get

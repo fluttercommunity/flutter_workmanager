@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:isolate' show Isolate;
 
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:workmanager_platform_interface/workmanager_platform_interface.dart';
 import 'package:workmanager_android/workmanager_android.dart';
-import 'package:workmanager_ios/workmanager_ios.dart';
+import 'package:workmanager_apple/workmanager_apple.dart';
 
 /// Function that executes your background work.
 /// You should return whether the task ran successfully or not.

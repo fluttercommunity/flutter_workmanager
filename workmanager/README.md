@@ -22,7 +22,7 @@ This plugin uses a federated architecture, which means that the main `workmanage
 - **workmanager**: The main package that provides the unified API
 - **workmanager_platform_interface**: The common platform interface
 - **workmanager_android**: Android-specific implementation
-- **workmanager_ios**: iOS-specific implementation
+- **workmanager_apple**: Apple platform (iOS/macOS) implementation
 
 This architecture allows for better platform-specific optimizations and easier maintenance. When you add `workmanager` to your `pubspec.yaml`, the platform-specific packages are automatically included through the endorsed federated plugin system.
 

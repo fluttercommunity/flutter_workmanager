@@ -5,7 +5,7 @@
 * **BREAKING**: Platform-specific implementations moved to separate packages
 * Create `workmanager_platform_interface` for shared platform interface
 * Create `workmanager_android` package with Android WorkManager implementation
-* Create `workmanager_ios` package with iOS BGTaskScheduler implementation
+* Create `workmanager_apple` package with iOS BGTaskScheduler implementation
 * Foundation for future macOS support using NSBackgroundActivityScheduler
 
 ## Breaking Changes

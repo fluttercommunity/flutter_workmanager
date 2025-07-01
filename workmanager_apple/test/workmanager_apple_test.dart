@@ -1,17 +1,17 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:workmanager_ios/workmanager_ios.dart';
+import 'package:workmanager_apple/workmanager_apple.dart';
 import 'package:workmanager_platform_interface/workmanager_platform_interface.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('WorkmanagerIOS', () {
-    late WorkmanagerIOS workmanager;
+  group('WorkmanagerApple', () {
+    late WorkmanagerApple workmanager;
     late List<MethodCall> methodCalls;
 
     setUp(() {
-      workmanager = WorkmanagerIOS();
+      workmanager = WorkmanagerApple();
       methodCalls = <MethodCall>[];
 
       // Mock the method channel

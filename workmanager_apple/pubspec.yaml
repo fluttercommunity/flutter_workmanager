@@ -1,5 +1,5 @@
-name: workmanager_ios
-description: iOS implementation of the workmanager plugin.
+name: workmanager_apple
+description: Apple platform (iOS/macOS) implementation of the workmanager plugin.
 version: 0.8.0
 # publish_to: none
 homepage: https://github.com/fluttercommunity/flutter_workmanager

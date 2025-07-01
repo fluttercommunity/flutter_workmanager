@@ -15,7 +15,7 @@ dependencies:
     sdk: flutter
   workmanager_platform_interface: ^0.8.0
   workmanager_android: ^0.8.0
-  workmanager_ios: ^0.8.0
+  workmanager_apple: ^0.8.0
 
 dev_dependencies:
   test: ^1.25.0
@@ -31,4 +31,4 @@ flutter:
       android:
         default_package: workmanager_android
       ios:
-        default_package: workmanager_ios
+        default_package: workmanager_apple

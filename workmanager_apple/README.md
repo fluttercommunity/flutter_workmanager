@@ -1,14 +1,14 @@
-# workmanager_ios
+# workmanager_apple
 
-[![pub package](https://img.shields.io/pub/v/workmanager_ios.svg)](https://pub.dartlang.org/packages/workmanager_ios)
-[![pub points](https://img.shields.io/pub/points/workmanager_ios)](https://pub.dev/packages/workmanager_ios/score)
+[![pub package](https://img.shields.io/pub/v/workmanager_apple.svg)](https://pub.dartlang.org/packages/workmanager_apple)
+[![pub points](https://img.shields.io/pub/points/workmanager_apple)](https://pub.dev/packages/workmanager_apple/score)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/fluttercommunity/flutter_workmanager/blob/main/LICENSE)
 
-The iOS implementation of [`workmanager`][workmanager].
+The Apple platform (iOS/macOS) implementation of [`workmanager`][workmanager].
 
 ## Description
 
-This package provides the iOS-specific implementation for the workmanager plugin, supporting iOS background fetch and BGTaskScheduler APIs for background task execution in Flutter applications.
+This package provides the Apple platform-specific implementation for the workmanager plugin, supporting iOS background fetch and BGTaskScheduler APIs for background task execution in Flutter applications on iOS and macOS.
 
 ## Usage
 
@@ -20,7 +20,7 @@ However, if you `import` this package directly, you should add it to your `pubsp
 
 ```yaml
 dependencies:
-  workmanager_ios: ^0.8.0
+  workmanager_apple: ^0.8.0
 ```
 
 ## Documentation

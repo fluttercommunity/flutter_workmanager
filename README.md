@@ -22,7 +22,7 @@ This plugin uses a federated architecture, which means that the main `workmanage
 - **workmanager**: The main package that provides the unified API
 - **workmanager_platform_interface**: The common platform interface
 - **workmanager_android**: Android-specific implementation
-- **workmanager_ios**: iOS-specific implementation
+- **workmanager_apple**: Apple platform (iOS/macOS) implementation
 
 This architecture allows for better platform-specific optimizations and easier maintenance. When you add `workmanager` to your `pubspec.yaml`, the platform-specific packages are automatically included through the endorsed federated plugin system.
 
@@ -41,7 +41,7 @@ This project uses a federated plugin architecture with multiple packages. To pub
    - `workmanager/pubspec.yaml`
    - `workmanager_platform_interface/pubspec.yaml` 
    - `workmanager_android/pubspec.yaml`
-   - `workmanager_ios/pubspec.yaml`
+   - `workmanager_apple/pubspec.yaml`
 
 2. **Publish packages in order**:
    ```bash
@@ -50,7 +50,7 @@ This project uses a federated plugin architecture with multiple packages. To pub
    
    # 2. Publish platform implementations
    cd ../workmanager_android && dart pub publish
-   cd ../workmanager_ios && dart pub publish
+   cd ../workmanager_apple && dart pub publish
    
    # 3. Publish main package last
    cd ../workmanager && dart pub publish

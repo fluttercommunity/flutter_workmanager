@@ -1,6 +1,6 @@
 import UIKit
 import Flutter
-import workmanager_ios
+import workmanager_apple
 
 @UIApplicationMain
 

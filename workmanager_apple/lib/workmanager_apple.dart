@@ -2,19 +2,19 @@ import 'dart:ui';
 import 'package:flutter/services.dart';
 import 'package:workmanager_platform_interface/workmanager_platform_interface.dart';
 
-/// iOS implementation of [WorkmanagerPlatform].
-class WorkmanagerIOS extends WorkmanagerPlatform {
+/// Apple (iOS/macOS) implementation of [WorkmanagerPlatform].
+class WorkmanagerApple extends WorkmanagerPlatform {
   /// The method channel used to interact with the native platform.
   static const MethodChannel _channel = MethodChannel(
     'dev.fluttercommunity.workmanager/foreground_channel_work_manager',
   );
 
-  /// Constructs an iOSWorkmanager.
-  WorkmanagerIOS() : super();
+  /// Constructs a WorkmanagerApple instance.
+  WorkmanagerApple() : super();
 
   /// Registers this class as the default instance of [WorkmanagerPlatform].
   static void registerWith() {
-    WorkmanagerPlatform.instance = WorkmanagerIOS();
+    WorkmanagerPlatform.instance = WorkmanagerApple();
   }
 
   @override
