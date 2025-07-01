@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        package: [workmanager, workmanager_platform_interface, workmanager_android, workmanager_ios]
+        package: [workmanager, workmanager_platform_interface, workmanager_android, workmanager_apple]
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
