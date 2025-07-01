@@ -25,6 +25,9 @@ import workmanager_ios
         WorkmanagerPlugin.registerBGProcessingTask(withIdentifier: "dev.fluttercommunity.workmanagerExample.simpleDelayedTask")
         WorkmanagerPlugin.registerBGProcessingTask(withIdentifier: "dev.fluttercommunity.workmanagerExample.iOSBackgroundProcessingTask")
 
+        WorkmanagerPlugin.registerBGProcessingTask(withIdentifier: "dev.fluttercommunity.integrationTest.dataTransferTask")
+        WorkmanagerPlugin.registerBGProcessingTask(withIdentifier: "dev.fluttercommunity.integrationTest.retryTask")
+
         // When this task is scheduled from dart it will run with minimum 20 minute frequency. The
         // frequency is not guaranteed rather iOS will schedule it as per user's App usage pattern.
         // If frequency is not provided it will default to 15 minutes

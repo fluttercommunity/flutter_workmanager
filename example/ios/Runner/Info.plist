@@ -13,6 +13,8 @@
 		<string>dev.fluttercommunity.workmanagerExample.simplePeriodic1HourTask</string>
 		<string>dev.fluttercommunity.workmanagerExample.iOSBackgroundAppRefresh</string>
 		<string>dev.fluttercommunity.workmanagerExample.iOSBackgroundProcessingTask</string>
+		<string>dev.fluttercommunity.integrationTest.dataTransferTask</string>
+		<string>dev.fluttercommunity.integrationTest.retryTask</string>
 	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
@@ -62,5 +64,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSLocalNetworkUsageDescription</key>
+<string>This app needs local network access for debugging and communication.</string>
+<key>NSBonjourServices</key>
+<array>
+  <string>_dartobservatory._tcp</string>
+</array>
 </dict>
 </plist>

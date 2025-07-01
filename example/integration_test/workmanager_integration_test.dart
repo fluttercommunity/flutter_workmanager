@@ -7,8 +7,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:workmanager/workmanager.dart';
 
-const String dataTransferTaskName = 'dataTransferTask';
-const String retryTaskName = 'retryTask';
+const String dataTransferTaskName =
+    'dev.fluttercommunity.integrationTest.dataTransferTask';
+const String retryTaskName = 'dev.fluttercommunity.integrationTest.retryTask';
 
 /// One retry is enough to test the retry logic
 const int kMaxRetryAttempts = 1;
@@ -16,6 +17,9 @@ const int kMaxRetryAttempts = 1;
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
+    print(
+        'CallbackDispatcher called with task: $task and inputData: $inputData');
+
     if (task == retryTaskName) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.reload();
@@ -91,7 +95,7 @@ void main() {
       };
 
       await workmanager.registerOneOffTask(
-        'test.inputData',
+        dataTransferTaskName,
         dataTransferTaskName,
         inputData: testData,
       );
@@ -112,7 +116,7 @@ void main() {
       fail('Input data was not transferred correctly to native side.');
     });
 
-    testWidgets('retry task should retry up to 3 times',
+    testWidgets('retry task should retry up to ${kMaxRetryAttempts} times',
         (WidgetTester tester) async {
       await workmanager.initialize(callbackDispatcher);
 
@@ -125,7 +129,7 @@ void main() {
 
       try {
         await workmanager.registerOneOffTask(
-          'test.retry',
+          retryTaskName,
           retryTaskName,
           inputData: {'counter_name': counterName},
           backoffPolicy: BackoffPolicy.linear,
@@ -133,7 +137,7 @@ void main() {
         );
 
         // Wait for the task to complete
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 45; i++) {
           await Future.delayed(const Duration(seconds: 1));
           await prefs.reload();
           if (prefs.getInt(counterName) == kMaxRetryAttempts) {
@@ -144,7 +148,7 @@ void main() {
       } catch (e) {
         fail('Retry task failed with exception: $e');
       } finally {
-        await workmanager.cancelByUniqueName('test.retry');
+        await workmanager.cancelByUniqueName(retryTaskName);
       }
     });
     testWidgets('registerOneOffTask basic should succeed',

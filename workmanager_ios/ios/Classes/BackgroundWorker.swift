@@ -55,7 +55,7 @@ class BackgroundWorker {
     private struct BackgroundChannel {
         static let name = "\(SwiftWorkmanagerPlugin.identifier)/background_channel_work_manager"
         static let initialized = "backgroundChannelInitialized"
-        static let onResultSendCommand = "onResultSend"
+        static let onResultSendCommand = "backgroundChannelInitialized"
     }
 
     /// The result is discardable due to how [BackgroundTaskOperation] works.

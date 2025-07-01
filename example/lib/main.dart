@@ -1,6 +1,7 @@
+import 'dart:developer';
 import 'dart:async';
 import 'dart:io';
-import 'dart:math';
+import 'dart:math' show Random;
 
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -39,9 +40,9 @@ final List<String> allTasks = [
 // Pragma is mandatory if the App is obfuscated or using Flutter 3.1+
 @pragma('vm:entry-point')
 void callbackDispatcher() {
-  print('callbackDispatcher called');
+  log('callbackDispatcher called');
   Workmanager().executeTask((task, inputData) async {
-    print("callbackDispatcher called with task: $task");
+    log("callbackDispatcher called with task: $task");
     final prefs = await SharedPreferences.getInstance();
     await prefs.reload();
 
