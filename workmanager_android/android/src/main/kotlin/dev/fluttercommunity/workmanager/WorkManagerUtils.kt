@@ -28,8 +28,6 @@ val defaultPeriodExistingWorkPolicy = ExistingPeriodicWorkPolicy.KEEP
 val defaultConstraints: Constraints = Constraints.NONE
 val defaultOutOfQuotaPolicy: OutOfQuotaPolicy? = null
 
-// Helper function
-private fun Context.workManager() = WorkManager.getInstance(this)
 
 // BackoffPolicy configuration
 data class BackoffPolicyTaskConfig(
@@ -39,9 +37,10 @@ data class BackoffPolicyTaskConfig(
     val backoffDelay: Long = max(minBackoffInMillis, requestedBackoffDelay),
 )
 
-object WM {
+class WorkManagerWrapper(val context: Context) {
+    private val workManager = WorkManager.getInstance(context)
+
     fun enqueueOneOffTask(
-        context: Context,
         uniqueName: String,
         dartTask: String,
         payload: Map<String, Any>? = null,
@@ -72,16 +71,13 @@ object WM {
                         tag?.let(::addTag)
                         outOfQuotaPolicy?.let(::setExpedited)
                     }.build()
-            context
-                .workManager()
-                .enqueueUniqueWork(uniqueName, existingWorkPolicy, oneOffTaskRequest)
+            workManager.enqueueUniqueWork(uniqueName, existingWorkPolicy, oneOffTaskRequest)
         } catch (e: Exception) {
             throw e
         }
     }
 
     fun enqueuePeriodicTask(
-        context: Context,
         uniqueName: String,
         dartTask: String,
         payload: Map<String, Any>? = null,
@@ -118,9 +114,7 @@ object WM {
                     tag?.let(::addTag)
                     outOfQuotaPolicy?.let(::setExpedited)
                 }.build()
-        context
-            .workManager()
-            .enqueueUniquePeriodicWork(uniqueName, existingWorkPolicy, periodicTaskRequest)
+        workManager.enqueueUniquePeriodicWork(uniqueName, existingWorkPolicy, periodicTaskRequest)
     }
 
     private fun buildTaskInputData(
@@ -168,20 +162,14 @@ object WM {
         return builder.build()
     }
 
-    fun getWorkInfoByUniqueName(
-        context: Context,
-        uniqueWorkName: String,
-    ) = context.workManager().getWorkInfosForUniqueWork(uniqueWorkName)
+    fun getWorkInfoByUniqueName(uniqueWorkName: String) = 
+        workManager.getWorkInfosForUniqueWork(uniqueWorkName)
 
-    fun cancelByUniqueName(
-        context: Context,
-        uniqueWorkName: String,
-    ) = context.workManager().cancelUniqueWork(uniqueWorkName)
+    fun cancelByUniqueName(uniqueWorkName: String) = 
+        workManager.cancelUniqueWork(uniqueWorkName)
 
-    fun cancelByTag(
-        context: Context,
-        tag: String,
-    ) = context.workManager().cancelAllWorkByTag(tag)
+    fun cancelByTag(tag: String) = 
+        workManager.cancelAllWorkByTag(tag)
 
-    fun cancelAll(context: Context) = context.workManager().cancelAllWork()
+    fun cancelAll() = workManager.cancelAllWork()
 }
