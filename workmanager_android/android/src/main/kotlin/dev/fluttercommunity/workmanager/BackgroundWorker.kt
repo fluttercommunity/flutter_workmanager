@@ -90,6 +90,12 @@ class BackgroundWorker(
         ) {
             val callbackHandle = SharedPreferenceHelper.getCallbackHandle(applicationContext)
             val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle)
+
+            if (callbackInfo == null) {
+                Log.e(TAG, "Failed to resolve Dart callback for handle $callbackHandle.")
+                return Result.failure()
+            }
+
             val dartBundlePath = flutterLoader.findAppBundlePath()
 
             if (isInDebug) {
