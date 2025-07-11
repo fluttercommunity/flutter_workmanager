@@ -7,6 +7,14 @@
 
 import Foundation
 
+#if os(iOS)
+import Flutter
+#elseif os(macOS)
+import FlutterMacOS
+#else
+#error("Unsupported platform.")
+#endif
+
 enum BackgroundMode {
     case backgroundFetch
     case backgroundProcessingTask(identifier: String)
@@ -16,26 +24,26 @@ enum BackgroundMode {
     var flutterThreadlabelPrefix: String {
         switch self {
         case .backgroundFetch:
-            return "\(SwiftWorkmanagerPlugin.identifier).BackgroundFetch"
+            return "\(WorkmanagerPlugin.identifier).BackgroundFetch"
         case .backgroundProcessingTask:
-            return "\(SwiftWorkmanagerPlugin.identifier).BackgroundProcessingTask"
+            return "\(WorkmanagerPlugin.identifier).BackgroundProcessingTask"
         case .backgroundPeriodicTask:
-            return "\(SwiftWorkmanagerPlugin.identifier).BackgroundPeriodicTask"
+            return "\(WorkmanagerPlugin.identifier).BackgroundPeriodicTask"
         case .backgroundOneOffTask:
-            return "\(SwiftWorkmanagerPlugin.identifier).OneOffTask"
+            return "\(WorkmanagerPlugin.identifier).OneOffTask"
         }
     }
 
     var onResultSendArguments: [String: String] {
         switch self {
         case .backgroundFetch:
-            return ["\(SwiftWorkmanagerPlugin.identifier).DART_TASK": "iOSPerformFetch"]
+            return ["\(WorkmanagerPlugin.identifier).DART_TASK": "iOSPerformFetch"]
         case let .backgroundProcessingTask(identifier):
-            return ["\(SwiftWorkmanagerPlugin.identifier).DART_TASK": identifier]
+            return ["\(WorkmanagerPlugin.identifier).DART_TASK": identifier]
         case let .backgroundPeriodicTask(identifier):
-            return ["\(SwiftWorkmanagerPlugin.identifier).DART_TASK": identifier]
+            return ["\(WorkmanagerPlugin.identifier).DART_TASK": identifier]
         case let .backgroundOneOffTask(identifier):
-            return ["\(SwiftWorkmanagerPlugin.identifier).DART_TASK": identifier]
+            return ["\(WorkmanagerPlugin.identifier).DART_TASK": identifier]
         }
     }
 }
@@ -56,7 +64,7 @@ class BackgroundWorker {
     }
 
     private struct BackgroundChannel {
-        static let name = "\(SwiftWorkmanagerPlugin.identifier)/background_channel_work_manager"
+        static let name = "\(WorkmanagerPlugin.identifier)/background_channel_work_manager"
         static let initialized = "backgroundChannelInitialized"
         static let onResultSendCommand = "onResultSend"
     }

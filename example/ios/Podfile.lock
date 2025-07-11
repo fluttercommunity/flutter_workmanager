@@ -41,7 +41,7 @@ SPEC CHECKSUMS:
   path_provider_foundation: 608fcb11be570ce83519b076ab6a1fffe2474f05
   permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
   shared_preferences_foundation: 9e1978ff2562383bd5676f64ec4e9aa8fa06a6f7
-  workmanager_apple: f540d652595dfe5c8b8200c4c85ba622d6fb5c5b
+  workmanager_apple: f073c5f57af569af5c2dab83ae031bd4396c8a95
 
 PODFILE CHECKSUM: 4225ca2ac155c3e63d4d416fa6b1b890e2563502
 

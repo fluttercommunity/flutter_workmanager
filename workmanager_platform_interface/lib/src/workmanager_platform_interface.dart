@@ -1,6 +1,6 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
-import 'options.dart';
+import 'pigeon/workmanager_api.g.dart';
 
 /// The interface that implementations of workmanager must implement.
 ///

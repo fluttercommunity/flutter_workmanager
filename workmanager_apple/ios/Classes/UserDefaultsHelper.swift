@@ -11,14 +11,14 @@ struct UserDefaultsHelper {
 
     // MARK: Properties
 
-    private static let userDefaults = UserDefaults(suiteName: "\(SwiftWorkmanagerPlugin.identifier).userDefaults")!
+    private static let userDefaults = UserDefaults(suiteName: "\(WorkmanagerPlugin.identifier).userDefaults")!
 
     enum Key {
         case callbackHandle
         case isDebug
 
         var stringValue: String {
-            return "\(SwiftWorkmanagerPlugin.identifier).\(self)"
+            return "\(WorkmanagerPlugin.identifier).\(self)"
         }
     }
 

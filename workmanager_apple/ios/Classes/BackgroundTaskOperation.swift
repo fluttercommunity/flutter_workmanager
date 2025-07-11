@@ -7,7 +7,15 @@
 
 import Foundation
 
-class BackgroundTaskOperation: Operation {
+#if os(iOS)
+import Flutter
+#elseif os(macOS)
+import FlutterMacOS
+#else
+#error("Unsupported platform.")
+#endif
+
+class BackgroundTaskOperation: Operation, @unchecked Sendable {
 
     private let identifier: String
     private let flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?
