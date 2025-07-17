@@ -134,9 +134,11 @@ class Workmanager {
 
   /// Handle background method calls from the platform
   Future<dynamic> _handleBackgroundMessage(MethodCall call) async {
-    Map<String, dynamic>? inputData = call
-        .arguments["dev.fluttercommunity.workmanager.INPUT_DATA"]
-        .cast<String, dynamic>();
+    final arguments = call.arguments as Map?;
+    Map<String, dynamic>? inputData;
+    if (arguments != null && arguments.containsKey("dev.fluttercommunity.workmanager.INPUT_DATA")) {
+      inputData = arguments["dev.fluttercommunity.workmanager.INPUT_DATA"]?.cast<String, dynamic>();
+    }
 
     if (call.method == "onResultSend") {
       return _backgroundTaskHandler?.call(
