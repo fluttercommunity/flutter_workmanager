@@ -93,7 +93,8 @@ class BackgroundWorker(
 
             if (callbackInfo == null) {
                 Log.e(TAG, "Failed to resolve Dart callback for handle $callbackHandle.")
-                return Result.failure()
+                completer?.set(Result.failure())
+                return@ensureInitializationCompleteAsync
             }
 
             val dartBundlePath = flutterLoader.findAppBundlePath()
