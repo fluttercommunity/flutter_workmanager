@@ -7,17 +7,19 @@ import dev.fluttercommunity.workmanager.pigeon.ProcessingTaskRequest
 import dev.fluttercommunity.workmanager.pigeon.WorkmanagerHostApi
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 
-private const val initRequired =
+private const val INIT_REQUIRED =
     "You have not properly initialized the Flutter WorkManager Package. " +
-            "You should ensure you have called the 'initialize' function first!"
+        "You should ensure you have called the 'initialize' function first!"
 
 /**
  * Pigeon-based implementation of WorkmanagerHostApi for Android.
  * Replaces the manual method channel and data extraction approach.
  */
-class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
+class WorkmanagerPlugin :
+    FlutterPlugin,
+    WorkmanagerHostApi {
     private var workManagerWrapper: WorkManagerWrapper? = null
-    private lateinit var preferenceManager: SharedPreferenceHelper;
+    private lateinit var preferenceManager: SharedPreferenceHelper
 
     private var currentDispatcherHandle: Long = -1L
     private var isInDebugMode: Boolean = false
@@ -30,7 +32,8 @@ class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
                     override fun onDispatcherHandleChanged(handle: Long) {
                         currentDispatcherHandle = handle
                     }
-                })
+                },
+            )
         workManagerWrapper = WorkManagerWrapper(binding.applicationContext)
         WorkmanagerHostApi.setUp(binding.binaryMessenger, this)
     }
@@ -40,7 +43,10 @@ class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
         workManagerWrapper = null
     }
 
-    override fun initialize(request: InitializeRequest, callback: (Result<Unit>) -> Unit) {
+    override fun initialize(
+        request: InitializeRequest,
+        callback: (Result<Unit>) -> Unit,
+    ) {
         try {
             preferenceManager.saveCallbackDispatcherHandleKey(request.callbackHandle)
             isInDebugMode = request.isInDebugMode
@@ -50,16 +56,19 @@ class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
         }
     }
 
-    override fun registerOneOffTask(request: OneOffTaskRequest, callback: (Result<Unit>) -> Unit) {
+    override fun registerOneOffTask(
+        request: OneOffTaskRequest,
+        callback: (Result<Unit>) -> Unit,
+    ) {
         if (currentDispatcherHandle == -1L) {
-            callback(Result.failure(Exception(initRequired)))
+            callback(Result.failure(Exception(INIT_REQUIRED)))
             return
         }
 
         try {
             workManagerWrapper!!.enqueueOneOffTask(
                 request = request,
-                isInDebugMode = isInDebugMode
+                isInDebugMode = isInDebugMode,
             )
             callback(Result.success(Unit))
         } catch (e: Exception) {
@@ -69,17 +78,17 @@ class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
 
     override fun registerPeriodicTask(
         request: PeriodicTaskRequest,
-        callback: (Result<Unit>) -> Unit
+        callback: (Result<Unit>) -> Unit,
     ) {
         if (currentDispatcherHandle == -1L) {
-            callback(Result.failure(Exception(initRequired)))
+            callback(Result.failure(Exception(INIT_REQUIRED)))
             return
         }
 
         try {
             workManagerWrapper!!.enqueuePeriodicTask(
                 request = request,
-                isInDebugMode = isInDebugMode
+                isInDebugMode = isInDebugMode,
             )
             callback(Result.success(Unit))
         } catch (e: Exception) {
@@ -89,13 +98,16 @@ class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
 
     override fun registerProcessingTask(
         request: ProcessingTaskRequest,
-        callback: (Result<Unit>) -> Unit
+        callback: (Result<Unit>) -> Unit,
     ) {
         // Processing tasks are iOS-specific
         callback(Result.failure(UnsupportedOperationException("Processing tasks are not supported on Android")))
     }
 
-    override fun cancelByUniqueName(uniqueName: String, callback: (Result<Unit>) -> Unit) {
+    override fun cancelByUniqueName(
+        uniqueName: String,
+        callback: (Result<Unit>) -> Unit,
+    ) {
         try {
             workManagerWrapper!!.cancelByUniqueName(uniqueName)
             callback(Result.success(Unit))
@@ -104,7 +116,10 @@ class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
         }
     }
 
-    override fun cancelByTag(tag: String, callback: (Result<Unit>) -> Unit) {
+    override fun cancelByTag(
+        tag: String,
+        callback: (Result<Unit>) -> Unit,
+    ) {
         try {
             workManagerWrapper!!.cancelByTag(tag)
             callback(Result.success(Unit))
@@ -122,10 +137,14 @@ class WorkmanagerPlugin : FlutterPlugin, WorkmanagerHostApi {
         }
     }
 
-    override fun isScheduledByUniqueName(uniqueName: String, callback: (Result<Boolean>) -> Unit) {
+    override fun isScheduledByUniqueName(
+        uniqueName: String,
+        callback: (Result<Boolean>) -> Unit,
+    ) {
         try {
             val workInfos = workManagerWrapper!!.getWorkInfoByUniqueName(uniqueName).get()
-            val scheduled = workInfos.isNotEmpty() &&
+            val scheduled =
+                workInfos.isNotEmpty() &&
                     workInfos.all { it.state == androidx.work.WorkInfo.State.ENQUEUED || it.state == androidx.work.WorkInfo.State.RUNNING }
             callback(Result.success(scheduled))
         } catch (e: Exception) {

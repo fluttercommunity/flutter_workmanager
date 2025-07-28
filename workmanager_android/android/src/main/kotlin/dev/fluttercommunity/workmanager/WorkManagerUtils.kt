@@ -2,7 +2,6 @@ package dev.fluttercommunity.workmanager
 
 import android.content.Context
 import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.Data
@@ -28,32 +27,29 @@ val defaultPeriodExistingWorkPolicy = ExistingPeriodicWorkPolicy.KEEP
 val defaultConstraints: Constraints = Constraints.NONE
 val defaultOutOfQuotaPolicy: OutOfQuotaPolicy? = null
 
-
 // Extension functions to convert Pigeon types to Android WorkManager types
-private fun dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.toAndroidWorkPolicy(): ExistingWorkPolicy {
-    return when (this) {
+private fun dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.toAndroidWorkPolicy(): ExistingWorkPolicy =
+    when (this) {
         dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.APPEND -> ExistingWorkPolicy.APPEND_OR_REPLACE
         dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.KEEP -> ExistingWorkPolicy.KEEP
         dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.REPLACE -> ExistingWorkPolicy.REPLACE
         dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.UPDATE -> ExistingWorkPolicy.APPEND_OR_REPLACE
     }
-}
 
-private fun dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.toAndroidPeriodicWorkPolicy(): ExistingPeriodicWorkPolicy {
-    return when (this) {
+private fun dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.toAndroidPeriodicWorkPolicy(): ExistingPeriodicWorkPolicy =
+    when (this) {
         dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.APPEND -> ExistingPeriodicWorkPolicy.REPLACE
         dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.KEEP -> ExistingPeriodicWorkPolicy.KEEP
         dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.REPLACE -> ExistingPeriodicWorkPolicy.REPLACE
         dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.UPDATE -> ExistingPeriodicWorkPolicy.UPDATE
     }
-}
 
-private fun dev.fluttercommunity.workmanager.pigeon.OutOfQuotaPolicy.toAndroidOutOfQuotaPolicy(): OutOfQuotaPolicy {
-    return when (this) {
-        dev.fluttercommunity.workmanager.pigeon.OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST -> OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST
+private fun dev.fluttercommunity.workmanager.pigeon.OutOfQuotaPolicy.toAndroidOutOfQuotaPolicy(): OutOfQuotaPolicy =
+    when (this) {
+        dev.fluttercommunity.workmanager.pigeon.OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST ->
+            OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST
         dev.fluttercommunity.workmanager.pigeon.OutOfQuotaPolicy.DROP_WORK_REQUEST -> OutOfQuotaPolicy.DROP_WORK_REQUEST
     }
-}
 
 private fun dev.fluttercommunity.workmanager.pigeon.Constraints.toAndroidConstraints(): Constraints {
     val builder = Constraints.Builder()
@@ -71,8 +67,8 @@ private fun dev.fluttercommunity.workmanager.pigeon.Constraints.toAndroidConstra
     return builder.build()
 }
 
-private fun dev.fluttercommunity.workmanager.pigeon.NetworkType.toAndroidNetworkType(): NetworkType {
-    return when (this) {
+private fun dev.fluttercommunity.workmanager.pigeon.NetworkType.toAndroidNetworkType(): NetworkType =
+    when (this) {
         dev.fluttercommunity.workmanager.pigeon.NetworkType.CONNECTED -> NetworkType.CONNECTED
         dev.fluttercommunity.workmanager.pigeon.NetworkType.METERED -> NetworkType.METERED
         dev.fluttercommunity.workmanager.pigeon.NetworkType.NOT_REQUIRED -> NetworkType.NOT_REQUIRED
@@ -86,24 +82,23 @@ private fun dev.fluttercommunity.workmanager.pigeon.NetworkType.toAndroidNetwork
             }
         }
     }
-}
 
-
-private fun dev.fluttercommunity.workmanager.pigeon.BackoffPolicy.toAndroidBackoffPolicy(): BackoffPolicy {
-    return when (this) {
+private fun dev.fluttercommunity.workmanager.pigeon.BackoffPolicy.toAndroidBackoffPolicy(): BackoffPolicy =
+    when (this) {
         dev.fluttercommunity.workmanager.pigeon.BackoffPolicy.EXPONENTIAL -> BackoffPolicy.EXPONENTIAL
         dev.fluttercommunity.workmanager.pigeon.BackoffPolicy.LINEAR -> BackoffPolicy.LINEAR
     }
-}
 
 // Helper function to filter out null keys from Map<String?, Any?>
-private fun Map<String?, Any?>.filterNotNullKeys(): Map<String, Any> {
-    return this.mapNotNull { (key, value) ->
-        if (key != null && value != null) key to value else null
-    }.toMap()
-}
+private fun Map<String?, Any?>.filterNotNullKeys(): Map<String, Any> =
+    this
+        .mapNotNull { (key, value) ->
+            if (key != null && value != null) key to value else null
+        }.toMap()
 
-class WorkManagerWrapper(val context: Context) {
+class WorkManagerWrapper(
+    val context: Context,
+) {
     private val workManager = WorkManager.getInstance(context)
 
     fun enqueueOneOffTask(
@@ -118,17 +113,14 @@ class WorkManagerWrapper(val context: Context) {
                         buildTaskInputData(
                             request.taskName,
                             isInDebugMode,
-                            request.inputData?.filterNotNullKeys()
-                        )
-                    )
-                    .setInitialDelay(
+                            request.inputData?.filterNotNullKeys(),
+                        ),
+                    ).setInitialDelay(
                         request.initialDelaySeconds ?: DEFAULT_INITIAL_DELAY_SECONDS,
-                        TimeUnit.SECONDS
-                    )
-                    .setConstraints(
-                        request.constraints?.toAndroidConstraints() ?: defaultConstraints
-                    )
-                    .apply {
+                        TimeUnit.SECONDS,
+                    ).setConstraints(
+                        request.constraints?.toAndroidConstraints() ?: defaultConstraints,
+                    ).apply {
                         request.backoffPolicy?.let { backoffConfig ->
                             if (backoffConfig.backoffPolicy != null && backoffConfig.backoffDelayMillis != null) {
                                 setBackoffCriteria(
@@ -146,7 +138,7 @@ class WorkManagerWrapper(val context: Context) {
                 request.uniqueName,
                 request.existingWorkPolicy?.toAndroidWorkPolicy()
                     ?: defaultOneOffExistingWorkPolicy,
-                oneOffTaskRequest
+                oneOffTaskRequest,
             )
         } catch (e: Exception) {
             throw e
@@ -169,14 +161,12 @@ class WorkManagerWrapper(val context: Context) {
                     buildTaskInputData(
                         request.taskName,
                         isInDebugMode,
-                        request.inputData?.filterNotNullKeys()
-                    )
-                )
-                .setInitialDelay(
+                        request.inputData?.filterNotNullKeys(),
+                    ),
+                ).setInitialDelay(
                     request.initialDelaySeconds ?: DEFAULT_INITIAL_DELAY_SECONDS,
-                    TimeUnit.SECONDS
-                )
-                .setConstraints(request.constraints?.toAndroidConstraints() ?: defaultConstraints)
+                    TimeUnit.SECONDS,
+                ).setConstraints(request.constraints?.toAndroidConstraints() ?: defaultConstraints)
                 .apply {
                     request.backoffPolicy?.let { backoffConfig ->
                         if (backoffConfig.backoffPolicy != null && backoffConfig.backoffDelayMillis != null) {
@@ -195,7 +185,7 @@ class WorkManagerWrapper(val context: Context) {
             request.uniqueName,
             request.existingWorkPolicy?.toAndroidPeriodicWorkPolicy()
                 ?: defaultPeriodExistingWorkPolicy,
-            periodicTaskRequest
+            periodicTaskRequest,
         )
     }
 
@@ -236,7 +226,7 @@ class WorkManagerWrapper(val context: Context) {
                 else -> {
                     throw IllegalArgumentException(
                         "Unsupported payload type for key '$key': ${value::class.java.simpleName}. " +
-                                "Consider converting it to a supported type.",
+                            "Consider converting it to a supported type.",
                     )
                 }
             }
@@ -245,14 +235,11 @@ class WorkManagerWrapper(val context: Context) {
         return builder.build()
     }
 
-    fun getWorkInfoByUniqueName(uniqueWorkName: String) =
-        workManager.getWorkInfosForUniqueWork(uniqueWorkName)
+    fun getWorkInfoByUniqueName(uniqueWorkName: String) = workManager.getWorkInfosForUniqueWork(uniqueWorkName)
 
-    fun cancelByUniqueName(uniqueWorkName: String) =
-        workManager.cancelUniqueWork(uniqueWorkName)
+    fun cancelByUniqueName(uniqueWorkName: String) = workManager.cancelUniqueWork(uniqueWorkName)
 
-    fun cancelByTag(tag: String) =
-        workManager.cancelAllWorkByTag(tag)
+    fun cancelByTag(tag: String) = workManager.cancelAllWorkByTag(tag)
 
     fun cancelAll() = workManager.cancelAllWork()
 }

@@ -33,11 +33,6 @@ class BackgroundWorker(
         const val DART_TASK_KEY = "dev.fluttercommunity.workmanager.DART_TASK"
         const val IS_IN_DEBUG_MODE_KEY = "dev.fluttercommunity.workmanager.IS_IN_DEBUG_MODE_KEY"
 
-        const val BACKGROUND_CHANNEL_NAME =
-            "dev.fluttercommunity.workmanager/background_channel_work_manager"
-        const val BACKGROUND_CHANNEL_INITIALIZED = "backgroundChannelInitialized"
-        const val ON_RESULT_SEND = "onResultSend"
-
         private val flutterLoader = FlutterLoader()
     }
 
@@ -112,9 +107,9 @@ class BackgroundWorker(
                         callbackInfo,
                     ),
                 )
-                
+
                 // Initialize the background channel
-                flutterApi.backgroundChannelInitialized { 
+                flutterApi.backgroundChannelInitialized {
                     // Channel is initialized, now execute the task
                     executeBackgroundTask()
                 }
@@ -158,7 +153,7 @@ class BackgroundWorker(
     private fun executeBackgroundTask() {
         // Convert payload to the format expected by Pigeon (Map<String?, Object?>)
         val pigeonPayload = payload.mapKeys { it.key as String? }.mapValues { it.value as Object? }
-        
+
         flutterApi.executeTask(dartTask, pigeonPayload) { result ->
             when {
                 result.isSuccess -> {
