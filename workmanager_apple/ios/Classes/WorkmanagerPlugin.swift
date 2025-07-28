@@ -129,6 +129,7 @@ public class WorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
         request.earliestBeginDate = Date(timeIntervalSinceNow: begin)
         request.requiresNetworkConnectivity = requiresNetworkConnectivity
         request.requiresExternalPower = requiresExternalPower
+        
         do {
             try BGTaskScheduler.shared.submit(request)
             logInfo("BGProcessingTask submitted \(uniqueTaskIdentifier) earliestBeginInSeconds:\(begin)")

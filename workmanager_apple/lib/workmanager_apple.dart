@@ -1,13 +1,10 @@
 import 'dart:ui';
-import 'package:flutter/services.dart';
 import 'package:workmanager_platform_interface/workmanager_platform_interface.dart';
 
 /// Apple (iOS/macOS) implementation of [WorkmanagerPlatform].
 class WorkmanagerApple extends WorkmanagerPlatform {
-  /// The method channel used to interact with the native platform.
-  static const MethodChannel _channel = MethodChannel(
-    'dev.fluttercommunity.workmanager/foreground_channel_work_manager',
-  );
+  /// The Pigeon API instance for type-safe communication.
+  final WorkmanagerHostApi _api = WorkmanagerHostApi();
 
   /// Constructs a WorkmanagerApple instance.
   WorkmanagerApple() : super();
@@ -23,10 +20,10 @@ class WorkmanagerApple extends WorkmanagerPlatform {
     bool isInDebugMode = false,
   }) async {
     final callback = PluginUtilities.getCallbackHandle(callbackDispatcher);
-    await _channel.invokeMethod('initialize', {
-      'callbackHandle': callback!.toRawHandle(),
-      'isInDebugMode': isInDebugMode,
-    });
+    await _api.initialize(InitializeRequest(
+      callbackHandle: callback!.toRawHandle(),
+      isInDebugMode: isInDebugMode,
+    ));
   }
 
   @override
@@ -42,12 +39,22 @@ class WorkmanagerApple extends WorkmanagerPlatform {
     String? tag,
     OutOfQuotaPolicy? outOfQuotaPolicy,
   }) async {
-    await _channel.invokeMethod('registerOneOffTask', {
-      'uniqueName': uniqueName,
-      'taskName': taskName,
-      'inputData': inputData,
-      'initialDelaySeconds': initialDelay?.inSeconds,
-    });
+    await _api.registerOneOffTask(OneOffTaskRequest(
+      uniqueName: uniqueName,
+      taskName: taskName,
+      inputData: inputData?.cast<String?, Object?>(),
+      initialDelaySeconds: initialDelay?.inSeconds,
+      constraints: constraints,
+      existingWorkPolicy: existingWorkPolicy,
+      backoffPolicy: backoffPolicyDelay != null && backoffPolicy != null
+          ? BackoffPolicyConfig(
+              backoffPolicy: backoffPolicy,
+              backoffDelayMillis: backoffPolicyDelay.inMilliseconds,
+            )
+          : null,
+      tag: tag,
+      outOfQuotaPolicy: outOfQuotaPolicy,
+    ));
   }
 
   @override
@@ -64,12 +71,23 @@ class WorkmanagerApple extends WorkmanagerPlatform {
     Duration? backoffPolicyDelay,
     String? tag,
   }) async {
-    await _channel.invokeMethod('registerPeriodicTask', {
-      'uniqueName': uniqueName,
-      'taskName': taskName,
-      'inputData': inputData,
-      'initialDelaySeconds': initialDelay?.inSeconds,
-    });
+    await _api.registerPeriodicTask(PeriodicTaskRequest(
+      uniqueName: uniqueName,
+      taskName: taskName,
+      frequencySeconds: frequency?.inSeconds ?? 900, // Default 15 minutes
+      flexIntervalSeconds: flexInterval?.inSeconds,
+      inputData: inputData?.cast<String?, Object?>(),
+      initialDelaySeconds: initialDelay?.inSeconds,
+      constraints: constraints,
+      existingWorkPolicy: existingWorkPolicy,
+      backoffPolicy: backoffPolicyDelay != null && backoffPolicy != null
+          ? BackoffPolicyConfig(
+              backoffPolicy: backoffPolicy,
+              backoffDelayMillis: backoffPolicyDelay.inMilliseconds,
+            )
+          : null,
+      tag: tag,
+    ));
   }
 
   @override
@@ -80,21 +98,19 @@ class WorkmanagerApple extends WorkmanagerPlatform {
     Map<String, dynamic>? inputData,
     Constraints? constraints,
   }) async {
-    await _channel.invokeMethod('registerProcessingTask', {
-      'uniqueName': uniqueName,
-      'taskName': taskName,
-      'inputData': inputData,
-      'initialDelaySeconds': initialDelay?.inSeconds,
-      'networkType': constraints?.networkType?.name,
-      'requiresCharging': constraints?.requiresCharging,
-    });
+    await _api.registerProcessingTask(ProcessingTaskRequest(
+      uniqueName: uniqueName,
+      taskName: taskName,
+      inputData: inputData?.cast<String?, Object?>(),
+      initialDelaySeconds: initialDelay?.inSeconds,
+      networkType: constraints?.networkType,
+      requiresCharging: constraints?.requiresCharging,
+    ));
   }
 
   @override
   Future<void> cancelByUniqueName(String uniqueName) async {
-    await _channel.invokeMethod('cancelTaskByUniqueName', {
-      'uniqueName': uniqueName,
-    });
+    await _api.cancelByUniqueName(uniqueName);
   }
 
   @override
@@ -105,18 +121,16 @@ class WorkmanagerApple extends WorkmanagerPlatform {
 
   @override
   Future<void> cancelAll() async {
-    await _channel.invokeMethod('cancelAllTasks');
+    await _api.cancelAll();
   }
 
   @override
   Future<bool> isScheduledByUniqueName(String uniqueName) async {
-    // This functionality is not available on iOS
-    throw UnsupportedError('isScheduledByUniqueName is not supported on iOS');
+    return await _api.isScheduledByUniqueName(uniqueName);
   }
 
   @override
   Future<String> printScheduledTasks() async {
-    final result = await _channel.invokeMethod<String>('printScheduledTasks');
-    return result ?? 'No scheduled tasks information available';
+    return await _api.printScheduledTasks();
   }
 }
