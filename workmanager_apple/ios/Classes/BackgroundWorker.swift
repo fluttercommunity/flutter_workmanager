@@ -121,7 +121,10 @@ class BackgroundWorker {
                 let taskName = self.backgroundMode.onResultSendArguments["\(WorkmanagerPlugin.identifier).DART_TASK"] ?? ""
                 
                 // Convert inputData to the format expected by Pigeon
-                let pigeonInputData = self.inputData?.mapKeys { $0 as String? }.mapValues { $0 as Any? }
+                var pigeonInputData: [String?: Any?]? = nil
+                if let inputData = self.inputData {
+                    pigeonInputData = Dictionary(uniqueKeysWithValues: inputData.map { ($0.key as String?, $0.value as Any?) })
+                }
                 
                 // Execute the task
                 flutterApi?.executeTask(taskName: taskName, inputData: pigeonInputData) { taskResult in

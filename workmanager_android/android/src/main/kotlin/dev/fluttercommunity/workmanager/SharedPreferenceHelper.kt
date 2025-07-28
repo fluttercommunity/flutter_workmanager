@@ -19,6 +19,11 @@ class SharedPreferenceHelper(
         private const val SHARED_PREFS_FILE_NAME = "flutter_workmanager_plugin"
         private const val CALLBACK_DISPATCHER_HANDLE_KEY =
             "dev.fluttercommunity.workmanager.CALLBACK_DISPATCHER_HANDLE_KEY"
+        
+        fun getCallbackHandle(context: Context): Long {
+            val preferences = context.getSharedPreferences(SHARED_PREFS_FILE_NAME, Context.MODE_PRIVATE)
+            return preferences.getLong(CALLBACK_DISPATCHER_HANDLE_KEY, -1L)
+        }
     }
 
     private val preferences: SharedPreferences
