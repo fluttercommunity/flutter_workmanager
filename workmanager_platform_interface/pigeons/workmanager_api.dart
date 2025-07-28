@@ -4,7 +4,8 @@ import 'package:pigeon/pigeon.dart';
 @ConfigurePigeon(PigeonOptions(
   dartOut: 'lib/src/pigeon/workmanager_api.g.dart',
   dartOptions: DartOptions(),
-  kotlinOut: '../workmanager_android/android/src/main/kotlin/dev/fluttercommunity/workmanager/pigeon/WorkmanagerApi.g.kt',
+  kotlinOut:
+      '../workmanager_android/android/src/main/kotlin/dev/fluttercommunity/workmanager/pigeon/WorkmanagerApi.g.kt',
   kotlinOptions: KotlinOptions(
     package: 'dev.fluttercommunity.workmanager.pigeon',
   ),
@@ -94,7 +95,7 @@ class Constraints {
     this.requiresDeviceIdle,
     this.requiresStorageNotLow,
   });
-  
+
   NetworkType? networkType;
   bool? requiresBatteryNotLow;
   bool? requiresCharging;
@@ -107,14 +108,15 @@ class BackoffPolicyConfig {
     this.backoffPolicy,
     this.backoffDelayMillis,
   });
-  
+
   BackoffPolicy? backoffPolicy;
   int? backoffDelayMillis;
 }
 
 class InitializeRequest {
-  InitializeRequest({required this.callbackHandle, required this.isInDebugMode});
-  
+  InitializeRequest(
+      {required this.callbackHandle, required this.isInDebugMode});
+
   int callbackHandle;
   bool isInDebugMode;
 }
@@ -131,7 +133,7 @@ class OneOffTaskRequest {
     this.existingWorkPolicy,
     this.outOfQuotaPolicy,
   });
-  
+
   String uniqueName;
   String taskName;
   Map<String?, Object?>? inputData;
@@ -156,7 +158,7 @@ class PeriodicTaskRequest {
     this.tag,
     this.existingWorkPolicy,
   });
-  
+
   String uniqueName;
   String taskName;
   int frequencySeconds;
@@ -179,7 +181,7 @@ class ProcessingTaskRequest {
     this.networkType,
     this.requiresCharging,
   });
-  
+
   String uniqueName;
   String taskName;
   Map<String?, Object?>? inputData;
@@ -193,28 +195,28 @@ class ProcessingTaskRequest {
 abstract class WorkmanagerHostApi {
   @async
   void initialize(InitializeRequest request);
-  
+
   @async
   void registerOneOffTask(OneOffTaskRequest request);
-  
+
   @async
   void registerPeriodicTask(PeriodicTaskRequest request);
-  
+
   @async
   void registerProcessingTask(ProcessingTaskRequest request);
-  
+
   @async
   void cancelByUniqueName(String uniqueName);
-  
+
   @async
   void cancelByTag(String tag);
-  
+
   @async
   void cancelAll();
-  
+
   @async
   bool isScheduledByUniqueName(String uniqueName);
-  
+
   @async
   String printScheduledTasks();
 }
@@ -224,7 +226,7 @@ abstract class WorkmanagerHostApi {
 abstract class WorkmanagerFlutterApi {
   @async
   void backgroundChannelInitialized();
-  
+
   @async
   bool executeTask(String taskName, Map<String?, Object?>? inputData);
 }

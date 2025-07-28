@@ -41,20 +41,20 @@ private func wrapError(_ error: Any) -> [Any?] {
     return [
       pigeonError.code,
       pigeonError.message,
-      pigeonError.details,
+      pigeonError.details
     ]
   }
   if let flutterError = error as? FlutterError {
     return [
       flutterError.code,
       flutterError.message,
-      flutterError.details,
+      flutterError.details
     ]
   }
   return [
     "\(error)",
     "\(type(of: error))",
-    "Stacktrace: \(Thread.callStackSymbols)",
+    "Stacktrace: \(Thread.callStackSymbols)"
   ]
 }
 
@@ -133,12 +133,11 @@ enum OutOfQuotaPolicy: Int {
 
 /// Generated class from Pigeon that represents data sent in messages.
 struct Constraints {
-  var networkType: NetworkType? = nil
-  var requiresBatteryNotLow: Bool? = nil
-  var requiresCharging: Bool? = nil
-  var requiresDeviceIdle: Bool? = nil
-  var requiresStorageNotLow: Bool? = nil
-
+  var networkType: NetworkType?
+  var requiresBatteryNotLow: Bool?
+  var requiresCharging: Bool?
+  var requiresDeviceIdle: Bool?
+  var requiresStorageNotLow: Bool?
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> Constraints? {
@@ -162,16 +161,15 @@ struct Constraints {
       requiresBatteryNotLow,
       requiresCharging,
       requiresDeviceIdle,
-      requiresStorageNotLow,
+      requiresStorageNotLow
     ]
   }
 }
 
 /// Generated class from Pigeon that represents data sent in messages.
 struct BackoffPolicyConfig {
-  var backoffPolicy: BackoffPolicy? = nil
-  var backoffDelayMillis: Int64? = nil
-
+  var backoffPolicy: BackoffPolicy?
+  var backoffDelayMillis: Int64?
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> BackoffPolicyConfig? {
@@ -186,7 +184,7 @@ struct BackoffPolicyConfig {
   func toList() -> [Any?] {
     return [
       backoffPolicy,
-      backoffDelayMillis,
+      backoffDelayMillis
     ]
   }
 }
@@ -195,7 +193,6 @@ struct BackoffPolicyConfig {
 struct InitializeRequest {
   var callbackHandle: Int64
   var isInDebugMode: Bool
-
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> InitializeRequest? {
@@ -210,7 +207,7 @@ struct InitializeRequest {
   func toList() -> [Any?] {
     return [
       callbackHandle,
-      isInDebugMode,
+      isInDebugMode
     ]
   }
 }
@@ -219,14 +216,13 @@ struct InitializeRequest {
 struct OneOffTaskRequest {
   var uniqueName: String
   var taskName: String
-  var inputData: [String?: Any?]? = nil
-  var initialDelaySeconds: Int64? = nil
-  var constraints: Constraints? = nil
-  var backoffPolicy: BackoffPolicyConfig? = nil
-  var tag: String? = nil
-  var existingWorkPolicy: ExistingWorkPolicy? = nil
-  var outOfQuotaPolicy: OutOfQuotaPolicy? = nil
-
+  var inputData: [String?: Any?]?
+  var initialDelaySeconds: Int64?
+  var constraints: Constraints?
+  var backoffPolicy: BackoffPolicyConfig?
+  var tag: String?
+  var existingWorkPolicy: ExistingWorkPolicy?
+  var outOfQuotaPolicy: OutOfQuotaPolicy?
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> OneOffTaskRequest? {
@@ -262,7 +258,7 @@ struct OneOffTaskRequest {
       backoffPolicy,
       tag,
       existingWorkPolicy,
-      outOfQuotaPolicy,
+      outOfQuotaPolicy
     ]
   }
 }
@@ -272,14 +268,13 @@ struct PeriodicTaskRequest {
   var uniqueName: String
   var taskName: String
   var frequencySeconds: Int64
-  var flexIntervalSeconds: Int64? = nil
-  var inputData: [String?: Any?]? = nil
-  var initialDelaySeconds: Int64? = nil
-  var constraints: Constraints? = nil
-  var backoffPolicy: BackoffPolicyConfig? = nil
-  var tag: String? = nil
-  var existingWorkPolicy: ExistingWorkPolicy? = nil
-
+  var flexIntervalSeconds: Int64?
+  var inputData: [String?: Any?]?
+  var initialDelaySeconds: Int64?
+  var constraints: Constraints?
+  var backoffPolicy: BackoffPolicyConfig?
+  var tag: String?
+  var existingWorkPolicy: ExistingWorkPolicy?
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> PeriodicTaskRequest? {
@@ -318,7 +313,7 @@ struct PeriodicTaskRequest {
       constraints,
       backoffPolicy,
       tag,
-      existingWorkPolicy,
+      existingWorkPolicy
     ]
   }
 }
@@ -327,11 +322,10 @@ struct PeriodicTaskRequest {
 struct ProcessingTaskRequest {
   var uniqueName: String
   var taskName: String
-  var inputData: [String?: Any?]? = nil
-  var initialDelaySeconds: Int64? = nil
-  var networkType: NetworkType? = nil
-  var requiresCharging: Bool? = nil
-
+  var inputData: [String?: Any?]?
+  var initialDelaySeconds: Int64?
+  var networkType: NetworkType?
+  var requiresCharging: Bool?
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> ProcessingTaskRequest? {
@@ -358,7 +352,7 @@ struct ProcessingTaskRequest {
       inputData,
       initialDelaySeconds,
       networkType,
-      requiresCharging,
+      requiresCharging
     ]
   }
 }
@@ -459,7 +453,6 @@ private class WorkmanagerApiPigeonCodecReaderWriter: FlutterStandardReaderWriter
 class WorkmanagerApiPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
   static let shared = WorkmanagerApiPigeonCodec(readerWriter: WorkmanagerApiPigeonCodecReaderWriter())
 }
-
 
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol WorkmanagerHostApi {
