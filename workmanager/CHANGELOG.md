@@ -1,6 +1,7 @@
 # Future
 
 ## Bug Fixes & Improvements
+* Fix null cast to map bug in executeTask when inputData contains null keys or values (thanks to @Dr-wgy)
 * Internal improvements to development and testing infrastructure
 
 # 0.8.0

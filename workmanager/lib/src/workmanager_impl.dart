@@ -306,9 +306,16 @@ class _WorkmanagerFlutterApiImpl extends WorkmanagerFlutterApi {
   @override
   Future<bool> executeTask(
       String taskName, Map<String?, Object?>? inputData) async {
-    // Convert the input data to the expected format
-    final Map<String, dynamic>? convertedInputData =
-        inputData?.cast<String, dynamic>();
+    // Convert the input data to the expected format, safely handling null keys/values
+    Map<String, dynamic>? convertedInputData;
+    if (inputData != null) {
+      convertedInputData = <String, dynamic>{};
+      for (final entry in inputData.entries) {
+        if (entry.key != null) {
+          convertedInputData[entry.key!] = entry.value;
+        }
+      }
+    }
 
     // Call the user's background task handler
     final result = await Workmanager._backgroundTaskHandler
