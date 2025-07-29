@@ -1,9 +1,15 @@
 ## Project Workflow
 - Project uses GitHub Actions
-- Use `ktlint -F .` in root folder to format Kotlin code
+- **CRITICAL**: Always run these formatting commands before ANY commit:
+  1. `ktlint -F .` (for Kotlin files)
+  2. `find . -name "*.dart" ! -name "*.g.dart" ! -path "*/.*" -print0 | xargs -0 dart format --set-exit-if-changed` (for Dart files)
 - Use SwiftLint for code formatting
 - Always resolve formatting and analyzer errors before completing a task
-- **CRITICAL**: Always run `ktlint -F .` after modifying any Kotlin files before committing
+- **MANDATORY PRE-COMMIT CHECKLIST**:
+  - [ ] Run ktlint formatting
+  - [ ] Run dart format (excluding generated files)
+  - [ ] Run tests
+  - [ ] Verify no formatting errors in output
 
 ## Pigeon Code Generation
 - Pigeon configuration is in `workmanager_platform_interface/pigeons/workmanager_api.dart`
@@ -37,6 +43,14 @@
 - **Avoid channel mocking**: Don't mock platform channels unless absolutely necessary
 - **Test unsupported operations**: Verify platform-specific UnsupportedError throwing
 - **Integration over unit**: Prefer integration tests for complete platform behavior validation
+
+## Test Quality Requirements
+- **NEVER create useless tests**: Tests that only check `assert(true)`, `expect(true, true)`, or similar meaningless assertions are forbidden
+- **Tests must exercise real logic**: Every test must call actual methods with real inputs and verify meaningful outputs or behavior
+- **No compilation tests**: Tests that only verify code compiles are not acceptable - if code doesn't compile, the build will fail anyway
+- **Test actual edge cases**: Tests should exercise null inputs, error conditions, boundary values, and real scenarios that could fail
+- **If testing is too complex, document why**: If a component is hard to unit test, document the testing approach and use integration tests instead
+- **Remove placeholder tests**: Don't leave empty test classes or placeholder tests in production code
 
 ## Test Execution
 - Run all tests: `flutter test` (from root or individual package)
