@@ -135,13 +135,13 @@ This prints output like:
 
 **Tasks never run:**
 - App hasn't been used recently (iOS learning algorithm) - [iOS Power Management](https://developer.apple.com/library/archive/documentation/Performance/Conceptual/power_efficiency_guidelines_osx/PrioritizeWorkAtTheTaskLevel.html)
-- Task identifiers don't match between Info.plist and AppDelegate
-- Missing BGTaskSchedulerPermittedIdentifiers in Info.plist
+- Task identifiers don't match between Info.plist and AppDelegate - [check iOS setup](quickstart#option-b-processing-tasks-for-complex-operations)
+- Missing BGTaskSchedulerPermittedIdentifiers in Info.plist - [review iOS configuration](quickstart#ios)
 
 **Tasks stop working:**
 - iOS battery optimization kicked in - [WWDC 2020: Background execution demystified](https://developer.apple.com/videos/play/wwdc2020/10063/)
 - App removed from recent apps too often
-- User disabled background refresh
+- User disabled background refresh - [check Background Fetch setup](quickstart#option-a-periodic-tasks-recommended-for-most-use-cases)
 - Task taking longer than 30 seconds - [BGTaskScheduler Documentation](https://developer.apple.com/documentation/backgroundtasks/bgtaskscheduler)
 
 **Tasks run but don't complete:**
@@ -239,28 +239,16 @@ Future<bool> isTaskHealthy(String taskName, Duration maxAge) async {
 
 ## Troubleshooting Checklist
 
-**Task not scheduling:**
+**Quick Checks:**
 - [ ] Workmanager initialized in main()
 - [ ] Task names are unique
-- [ ] Platform setup completed (iOS Info.plist, AppDelegate)
+- [ ] Platform setup completed ([iOS setup guide](quickstart#ios))
+- [ ] Debug notifications enabled (`isInDebugMode: kDebugMode`)
 
-**Task not executing:**
-- [ ] Debug notifications enabled
-- [ ] Battery optimization disabled (Android)
-- [ ] Background App Refresh enabled (iOS)
-- [ ] App used recently (iOS learning algorithm)
-- [ ] Constraints not too restrictive
-
-**Task executing but failing:**
-- [ ] Added try-catch error handling
-- [ ] Dependencies initialized in background isolate
-- [ ] Network timeouts configured appropriately
-- [ ] iOS 30-second limit respected
-
-**Performance issues:**
+**Performance & Reliability:**
 - [ ] Task logic optimized for background execution
-- [ ] Heavy processing split into smaller chunks
-- [ ] Database operations use appropriate batch sizes
-- [ ] Network requests have reasonable timeouts
+- [ ] Dependencies initialized in background isolate
+- [ ] Error handling with try-catch blocks
+- [ ] iOS 30-second execution limit respected
 
 Remember: Background task execution is controlled by the operating system and is never guaranteed. Always design your app to work gracefully when background tasks don't run as expected.

@@ -114,14 +114,19 @@ WorkmanagerPlugin.registerPeriodicTask(
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
-    print("Background task: $task");
-    
     switch (task) {
       case "data_sync":
         await syncDataWithServer();
         break;
       case "cleanup": 
         await cleanupOldFiles();
+        break;
+      case Workmanager.iOSBackgroundTask:
+        // iOS Background Fetch task
+        await handleBackgroundFetch();
+        break;
+      default:
+        // Handle unknown task types
         break;
     }
     
@@ -130,13 +135,19 @@ void callbackDispatcher() {
 }
 ```
 
+<Info>
+**Important:** The `callbackDispatcher` must be a top-level function (not inside a class) since it runs in a separate isolate.
+</Info>
+
 ### 2. Initialize in main()
 
 ```dart
+import 'package:flutter/foundation.dart';
+
 void main() {
   Workmanager().initialize(
     callbackDispatcher,
-    isInDebugMode: true,
+    isInDebugMode: kDebugMode,
   );
   
   runApp(MyApp());
@@ -146,46 +157,19 @@ void main() {
 ### 3. Schedule Tasks
 
 ```dart
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(title: Text('Workmanager Demo')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  // Schedule a one-time task
-                  Workmanager().registerOneOffTask(
-                    "sync-task",
-                    "data_sync",
-                    initialDelay: Duration(seconds: 10),
-                  );
-                },
-                child: Text('Sync Data (One-time)'),
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  // Schedule a periodic task
-                  Workmanager().registerPeriodicTask(
-                    "cleanup-task",
-                    "cleanup",
-                    frequency: Duration(hours: 24),
-                  );
-                },
-                child: Text('Daily Cleanup (Periodic)'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+// Schedule a one-time task
+Workmanager().registerOneOffTask(
+  "sync-task",
+  "data_sync",
+  initialDelay: Duration(seconds: 10),
+);
+
+// Schedule a periodic task
+Workmanager().registerPeriodicTask(
+  "cleanup-task",
+  "cleanup",
+  frequency: Duration(hours: 24),
+);
 ```
 
 ## Task Results
