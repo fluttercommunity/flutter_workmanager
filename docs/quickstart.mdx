@@ -45,6 +45,10 @@ For regular data sync, notifications, cleanup - uses iOS Background Fetch:
    
    The Background Fetch approach works automatically - just schedule tasks from your Dart code.
 
+<Warning>
+**iOS Background Fetch scheduling:** iOS completely controls when Background Fetch runs (typically once per day based on user app usage patterns). You cannot force immediate execution - it's designed for non-critical periodic updates like refreshing content.
+</Warning>
+
 #### Option B: Processing Tasks (For complex operations)
 For file uploads, data processing, longer tasks - uses BGTaskScheduler:
 
@@ -79,7 +83,7 @@ WorkmanagerPlugin.registerBGProcessingTask(
 </Info>
 
 <Success>
-**Which option to choose?** Use **Option A (Periodic Tasks)** for most use cases like data sync, notifications, and cleanup. Use **Option B (Processing Tasks)** only when you need longer execution time or fine-grained control over task scheduling.
+**Which option to choose?** Use **Option A (Background Fetch)** for non-critical updates that can happen once daily (data sync, content refresh). Use **Option B (BGTaskScheduler)** when you need more control over timing, longer execution time, or immediate task scheduling.
 </Success>
 
 ## Basic Usage
