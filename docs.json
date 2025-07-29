@@ -22,32 +22,6 @@
       ]
     },
     {
-      "group": "Examples",
-      "tab": "root",
-      "pages": [
-        {
-          "title": "Data Sync",
-          "href": "/usecases/data-sync"
-        },
-        {
-          "title": "File Upload",
-          "href": "/usecases/upload-files"
-        },
-        {
-          "title": "Cleanup Tasks",
-          "href": "/usecases/periodic-cleanup"
-        },
-        {
-          "title": "Notifications",
-          "href": "/usecases/fetch-notifications"
-        },
-        {
-          "title": "Database Tasks",
-          "href": "/usecases/database-maintenance"
-        }
-      ]
-    },
-    {
       "group": "Reference",
       "tab": "root",
       "pages": [
