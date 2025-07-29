@@ -53,7 +53,7 @@ void main() {
     test("WorkmanagerFlutterApi implementation handles null safely", () {
       // This test verifies that the fix for null cast to map bug exists
       // The fix safely handles null keys and values in inputData parameter
-      // 
+      //
       // Original issue: inputData?.cast<String, dynamic>() would fail when
       // the map contained null keys or when cast failed
       //
