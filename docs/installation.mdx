@@ -1,0 +1,78 @@
+---
+title: Installation
+description: "Install Flutter Workmanager and configure your project"
+---
+
+# Installation
+
+## Add to pubspec.yaml
+
+```yaml pubspec.yaml
+dependencies:
+  workmanager: ^0.8.0
+```
+
+```bash
+flutter pub get
+```
+
+## Platform Configuration
+
+Before using background tasks, you need to configure each platform:
+
+<CardGroup cols={2}>
+  <Card title="Android Setup" icon="android" href="/setup/android">
+    5-minute Android WorkManager setup
+  </Card>
+  <Card title="iOS Setup" icon="apple" href="/setup/ios">
+    iOS background processing configuration
+  </Card>
+</CardGroup>
+
+<Warning>
+Background tasks **will not work** without proper platform configuration. Complete the setup for your target platforms before proceeding.
+</Warning>
+
+## Initialize Workmanager
+
+Add this to your `main.dart`:
+
+```dart main.dart
+import 'package:workmanager/workmanager.dart';
+
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) {
+    // Your background task logic here
+    return Future.value(true);
+  });
+}
+
+void main() {
+  Workmanager().initialize(callbackDispatcher);
+  runApp(MyApp());
+}
+```
+
+<Info>
+You only need to initialize Workmanager once in your app. The federated architecture automatically handles platform-specific implementations.
+</Info>
+
+## Next Steps
+
+Choose your use case to get started quickly:
+
+<CardGroup cols={2}>
+  <Card title="Sync Data Regularly" icon="arrows-rotate" href="/usecases/data-sync">
+    Fetch remote data in the background
+  </Card>
+  <Card title="Clean Up Storage" icon="trash" href="/usecases/periodic-cleanup">
+    Remove old files and cache data
+  </Card>
+  <Card title="Upload Files" icon="cloud-arrow-up" href="/usecases/upload-files">
+    Upload photos and documents in background
+  </Card>
+  <Card title="Check Notifications" icon="bell" href="/usecases/fetch-notifications">
+    Fetch new notifications from server
+  </Card>
+</CardGroup>

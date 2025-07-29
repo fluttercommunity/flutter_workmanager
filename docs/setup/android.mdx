@@ -1,0 +1,127 @@
+---
+title: Android Setup
+description: "Configure Android WorkManager for background tasks"
+---
+
+# Android Setup
+
+Configure your Android app to support background tasks using WorkManager.
+
+## Prerequisites
+
+Ensure your `AndroidManifest.xml` has Flutter v2 embedding:
+
+```xml android/app/src/main/AndroidManifest.xml
+<meta-data
+    android:name="flutterEmbedding"
+    android:value="2" />
+```
+
+<Note>
+If you don't have this, follow the [Flutter v2 embedding upgrade guide](https://github.com/flutter/flutter/wiki/Upgrading-pre-1.12-Android-projects).
+</Note>
+
+## That's It!
+
+Android setup is automatic. The `workmanager_android` package handles all WorkManager configuration internally.
+
+## Debugging
+
+Enable debug notifications to see when background tasks run:
+
+```dart
+Workmanager().initialize(
+  callbackDispatcher,
+  isInDebugMode: true, // Shows notifications when tasks run
+);
+```
+
+<div style={{textAlign: 'center', margin: '20px 0'}}>
+  <img src="/.art/android_debug_notification.gif" alt="Android debug notifications" style={{height: '400px'}} />
+</div>
+
+## Testing Background Tasks
+
+Since Android controls when background tasks run, testing can be challenging:
+
+<AccordionGroup>
+  <Accordion title="Immediate Testing">
+    Use `initialDelay` to test tasks quickly:
+    ```dart
+    Workmanager().registerOneOffTask(
+      "test_task",
+      "my_task",
+      initialDelay: Duration(seconds: 10), // Runs in 10 seconds
+    );
+    ```
+  </Accordion>
+
+  <Accordion title="Force Task Execution">
+    On debug builds, you can use ADB to force task execution:
+    ```bash
+    adb shell cmd jobscheduler run -f <package_name> <job_id>
+    ```
+  </Accordion>
+
+  <Accordion title="Monitor Task Status">
+    Check if tasks are scheduled:
+    ```bash
+    adb shell dumpsys jobscheduler | grep <package_name>
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Battery Optimization
+
+Modern Android devices aggressively optimize battery usage. Users may need to:
+
+1. **Disable battery optimization** for your app in Settings
+2. **Allow background activity** in app-specific settings
+3. **Keep the app in recent apps** (don't swipe away)
+
+<Warning>
+You cannot programmatically disable battery optimization. Users must do this manually in device settings.
+</Warning>
+
+## Common Issues
+
+<AccordionGroup>
+  <Accordion title="Tasks Not Running">
+    **Possible causes:**
+    - Battery optimization is enabled for your app
+    - Device is in Doze mode
+    - App has been idle for too long
+    - Device storage is low
+
+    **Solutions:**
+    - Ask users to disable battery optimization
+    - Use appropriate constraints (network, charging, etc.)
+    - Encourage regular app usage
+  </Accordion>
+
+  <Accordion title="Tasks Running Too Often">
+    **Android respects minimum intervals:**
+    - Periodic tasks: 15-minute minimum
+    - One-off tasks: Can run immediately but respect constraints
+
+    **Use constraints to optimize:**
+    ```dart
+    constraints: Constraints(
+      networkType: NetworkType.connected,
+      requiresBatteryNotLow: true,
+      requiresCharging: false,
+    )
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="iOS Setup" icon="apple" href="/setup/ios">
+    Configure iOS background processing
+  </Card>
+  <Card title="Use Cases" icon="list-check" href="/usecases/data-sync">
+    Start with common use cases
+  </Card>
+</CardGroup>
