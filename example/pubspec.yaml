@@ -1,6 +1,7 @@
 name: workmanager_example
 description: Demonstrates how to use the workmanager plugin.
 publish_to: 'none'
+version: 1.0.0+1
 
 environment:
   sdk: ">=3.5.0 <4.0.0"
