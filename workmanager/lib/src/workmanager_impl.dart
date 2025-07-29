@@ -143,11 +143,11 @@ class Workmanager {
   /// Scheduling other background tasks inside the [BackgroundTaskHandler] is allowed.
   void executeTask(BackgroundTaskHandler backgroundTaskHandler) async {
     WidgetsFlutterBinding.ensureInitialized();
-    
+
     _backgroundTaskHandler = backgroundTaskHandler;
     _flutterApi = _WorkmanagerFlutterApiImpl();
     WorkmanagerFlutterApi.setUp(_flutterApi);
-    
+
     await _flutterApi.backgroundChannelInitialized();
   }
 
@@ -304,12 +304,15 @@ class _WorkmanagerFlutterApiImpl extends WorkmanagerFlutterApi {
   }
 
   @override
-  Future<bool> executeTask(String taskName, Map<String?, Object?>? inputData) async {
+  Future<bool> executeTask(
+      String taskName, Map<String?, Object?>? inputData) async {
     // Convert the input data to the expected format
-    final Map<String, dynamic>? convertedInputData = inputData?.cast<String, dynamic>();
-    
+    final Map<String, dynamic>? convertedInputData =
+        inputData?.cast<String, dynamic>();
+
     // Call the user's background task handler
-    final result = await Workmanager._backgroundTaskHandler?.call(taskName, convertedInputData);
+    final result = await Workmanager._backgroundTaskHandler
+        ?.call(taskName, convertedInputData);
     return result ?? false;
   }
 }

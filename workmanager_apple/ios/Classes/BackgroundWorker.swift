@@ -72,8 +72,7 @@ class BackgroundWorker {
     /// The result is discardable due to how [BackgroundTaskOperation] works.
     @discardableResult
     func performBackgroundRequest(_ completionHandler: @escaping (UIBackgroundFetchResult) -> Void)
-        -> Bool
-    {
+        -> Bool {
         guard let callbackHandle = UserDefaultsHelper.getStoredCallbackHandle(),
             let flutterCallbackInformation = FlutterCallbackCache.lookupCallbackInformation(
                 callbackHandle)
@@ -119,18 +118,18 @@ class BackgroundWorker {
             case .success:
                 // Get the task name from backgroundMode
                 let taskName = self.backgroundMode.onResultSendArguments["\(WorkmanagerPlugin.identifier).DART_TASK"] ?? ""
-                
+
                 // Convert inputData to the format expected by Pigeon
-                var pigeonInputData: [String?: Any?]? = nil
+                var pigeonInputData: [String?: Any?]?
                 if let inputData = self.inputData {
                     pigeonInputData = Dictionary(uniqueKeysWithValues: inputData.map { ($0.key as String?, $0.value as Any?) })
                 }
-                
+
                 // Execute the task
                 flutterApi?.executeTask(taskName: taskName, inputData: pigeonInputData) { taskResult in
                     cleanupFlutterResources()
                     let taskSessionCompleter = Date()
-                    
+
                     let fetchResult: UIBackgroundFetchResult
                     switch taskResult {
                     case .success(let wasSuccessful):
@@ -138,7 +137,7 @@ class BackgroundWorker {
                     case .failure:
                         fetchResult = .failed
                     }
-                    
+
                     let taskDuration = taskSessionCompleter.timeIntervalSince(taskSessionStart)
                     logInfo(
                         "[\(String(describing: self))] \(#function) -> performBackgroundRequest.\(fetchResult) (finished in \(taskDuration.formatToSeconds()))"

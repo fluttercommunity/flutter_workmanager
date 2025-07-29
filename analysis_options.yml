@@ -1,7 +1,17 @@
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.g.kt"
+    - "**/*.g.swift"
+
 formatter:
   page_width: 120
+  exclude:
+    - "lib/src/pigeon/*.g.dart"
+    - "**/pigeon/*.g.dart"
+    - "**/**/*.g.dart"
 
 linter:
   rules:
