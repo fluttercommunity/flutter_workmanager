@@ -3,8 +3,6 @@ include: package:flutter_lints/flutter.yaml
 analyzer:
   exclude:
     - "**/*.g.dart"
-    - "**/*.g.kt"
-    - "**/*.g.swift"
 
 formatter:
   page_width: 120

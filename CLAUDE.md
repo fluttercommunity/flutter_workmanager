@@ -73,4 +73,4 @@
   - `lib/src/pigeon/*.g.dart`
   - `**/pigeon/*.g.dart`
   - `**/**/*.g.dart`
-- Also added analyzer.exclude for generated files (.g.dart, .g.kt, .g.swift)
+- Also added analyzer.exclude for Dart generated files (.g.dart only - Kotlin/Swift exclusions handled by their respective linters)
