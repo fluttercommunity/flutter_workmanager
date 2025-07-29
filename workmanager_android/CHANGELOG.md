@@ -1,5 +1,8 @@
 ## Future
 
+### Bug Fixes
+* Fix null callback crash in BackgroundWorker when FlutterCallbackInformation is null (thanks to @jonathanduke, @Muneeza-PT)
+
 ### Improvements
 * Improve SharedPreferenceHelper callback handling - now calls callback immediately when preferences are already loaded
 

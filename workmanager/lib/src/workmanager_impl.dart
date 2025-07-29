@@ -295,22 +295,30 @@ class Workmanager {
   Future<String> printScheduledTasks() async => _platform.printScheduledTasks();
 }
 
+/// Converts inputData from Pigeon format, filtering out null keys
+@visibleForTesting
+Map<String, dynamic>? convertPigeonInputData(Map<String?, Object?>? inputData) {
+  Map<String, dynamic>? convertedInputData;
+  if (inputData != null) {
+    convertedInputData = <String, dynamic>{};
+    for (final entry in inputData.entries) {
+      if (entry.key != null) {
+        convertedInputData[entry.key!] = entry.value;
+      }
+    }
+  }
+  return convertedInputData;
+}
+
 /// Implementation of WorkmanagerFlutterApi for handling background task execution
 class _WorkmanagerFlutterApiImpl extends WorkmanagerFlutterApi {
   @override
-  Future<void> backgroundChannelInitialized() async {
-    // This is called by the native side to indicate it's ready
-    // We don't need to do anything special here
-  }
+  Future<void> backgroundChannelInitialized() async {}
 
   @override
   Future<bool> executeTask(
       String taskName, Map<String?, Object?>? inputData) async {
-    // Convert the input data to the expected format
-    final Map<String, dynamic>? convertedInputData =
-        inputData?.cast<String, dynamic>();
-
-    // Call the user's background task handler
+    final convertedInputData = convertPigeonInputData(inputData);
     final result = await Workmanager._backgroundTaskHandler
         ?.call(taskName, convertedInputData);
     return result ?? false;
