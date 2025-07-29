@@ -6,7 +6,8 @@
 
 ## Pigeon Code Generation
 - Pigeon configuration is in `workmanager_platform_interface/pigeons/workmanager_api.dart`
-- To regenerate Pigeon files: `melos run generate:pigeon` (recommended) or `cd workmanager_platform_interface && dart run pigeon --input pigeons/workmanager_api.dart`
+- **MUST use melos to regenerate Pigeon files**: `melos run generate:pigeon`
+- ⚠️ **DO NOT** run pigeon directly - always use the melos script for consistency
 - Generated files:
   - Dart: `workmanager_platform_interface/lib/src/pigeon/workmanager_api.g.dart`
   - Kotlin: `workmanager_android/android/src/main/kotlin/dev/fluttercommunity/workmanager/pigeon/WorkmanagerApi.g.kt`
@@ -69,9 +70,11 @@
 
 ## GitHub Actions - Formatting Issues
 - The `format.yml` workflow runs formatting checks
-- ✅ FIXED: Updated `analysis_options.yml` to exclude .g.dart files from formatting
-- Added formatter.exclude patterns to prevent formatting of Pigeon-generated files:
-  - `lib/src/pigeon/*.g.dart`
-  - `**/pigeon/*.g.dart`
-  - `**/**/*.g.dart`
-- Also added analyzer.exclude for Dart generated files (.g.dart only - Kotlin/Swift exclusions handled by their respective linters)
+- ❌ **Important Discovery**: `analysis_options.yml formatter.exclude` does NOT prevent `dart format` from formatting files
+- ✅ **FIXED**: Updated CI workflow to use `find` command to exclude .g.dart files:
+  ```bash
+  find . -name "*.dart" ! -name "*.g.dart" ! -path "*/.*" -print0 | xargs -0 dart format --set-exit-if-changed
+  ```
+- **Root Issue**: `dart format` ignores analysis_options.yml exclusions and will always format ALL Dart files
+- **Solution**: Filter files before passing to dart format to exclude generated files
+- The `analysis_options.yml` exclusions only affect static analysis, not formatting

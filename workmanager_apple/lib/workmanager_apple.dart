@@ -126,7 +126,8 @@ class WorkmanagerApple extends WorkmanagerPlatform {
 
   @override
   Future<bool> isScheduledByUniqueName(String uniqueName) async {
-    return await _api.isScheduledByUniqueName(uniqueName);
+    // isScheduledByUniqueName is Android-only functionality
+    throw UnsupportedError('isScheduledByUniqueName is not supported on iOS');
   }
 
   @override

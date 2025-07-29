@@ -410,6 +410,20 @@ melos bootstrap
 melos run get
 ```
 
+## Code Generation
+
+This project uses [Pigeon](https://pub.dev/packages/pigeon) for type-safe platform channel communication. If you modify the platform interface:
+
+**⚠️ IMPORTANT**: Always use melos to regenerate Pigeon files:
+
+```bash
+melos run generate:pigeon
+```
+
+**DO NOT** run pigeon directly - always use the melos script for consistency.
+
+## Running the example
+
 Now you should be able to run example project
 
 ```

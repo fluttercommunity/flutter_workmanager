@@ -17,7 +17,8 @@ jobs:
       - name: Format
         run: |
           flutter pub get
-          dart format --set-exit-if-changed .
+          # Format specific files, excluding generated .g.dart files
+          find . -name "*.dart" ! -name "*.g.dart" ! -path "*/.*" -print0 | xargs -0 dart format --set-exit-if-changed
 
   format_kotlin:
     runs-on: ubuntu-latest

@@ -25,6 +25,19 @@ void main() {
           )),
         );
       });
+
+      test(
+          'should throw UnsupportedError for isScheduledByUniqueName (Android-only functionality)',
+          () {
+        expect(
+          () => workmanager.isScheduledByUniqueName('testTask'),
+          throwsA(isA<UnsupportedError>().having(
+            (e) => e.message,
+            'message',
+            contains('isScheduledByUniqueName is not supported on iOS'),
+          )),
+        );
+      });
     });
 
     group('iOS BGTaskScheduler identifier validation', () {

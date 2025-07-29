@@ -7,9 +7,7 @@ analyzer:
 formatter:
   page_width: 120
   exclude:
-    - "lib/src/pigeon/*.g.dart"
-    - "**/pigeon/*.g.dart"
-    - "**/**/*.g.dart"
+    - "**/*.g.dart"
 
 linter:
   rules:
