@@ -16,6 +16,8 @@
 		<string>dev.fluttercommunity.integrationTest.dataTransferTask</string>
 		<string>dev.fluttercommunity.integrationTest.retryTask</string>
 	</array>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>
@@ -35,6 +37,15 @@
 	<key>CFBundleVersion</key>
 	<string>1.0</string>
 	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_dartVmService._tcp</string>
+		<string>_dartobservatory._tcp</string>
+	</array>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>This app uses local network access during development for Flutter debugging features such as hot reload and DevTools. This permission is only requested in debug builds and is not present in App Store releases.</string>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>
 	<array>
@@ -60,15 +71,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
-	<key>NSLocalNetworkUsageDescription</key>
-<string>This app needs local network access for debugging and communication.</string>
-<key>NSBonjourServices</key>
-<array>
-  <string>_dartobservatory._tcp</string>
-</array>
 </dict>
 </plist>
