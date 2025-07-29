@@ -41,16 +41,9 @@ For regular data sync, notifications, cleanup - uses iOS Background Fetch:
 </array>
 ```
 
-3. **Configure AppDelegate.swift**:
-```swift
-import workmanager_apple
-
-// In application didFinishLaunching
-WorkmanagerPlugin.registerPeriodicTask(
-  withIdentifier: "com.yourapp.periodic_task", 
-  frequency: NSNumber(value: 15 * 60) // 15 minutes minimum
-)
-```
+3. **No AppDelegate configuration needed!** ✅
+   
+   The Background Fetch approach works automatically - just schedule tasks from your Dart code.
 
 #### Option B: Processing Tasks (For complex operations)
 For file uploads, data processing, longer tasks - uses BGTaskScheduler:
@@ -71,7 +64,7 @@ For file uploads, data processing, longer tasks - uses BGTaskScheduler:
 </array>
 ```
 
-3. **Configure AppDelegate.swift**:
+3. **Configure AppDelegate.swift** (required for BGTaskScheduler):
 ```swift
 import workmanager_apple
 
@@ -82,7 +75,7 @@ WorkmanagerPlugin.registerBGProcessingTask(
 ```
 
 <Info>
-**Why this configuration is needed:** iOS requires explicit registration of background task identifiers for security and system resource management. The task identifier in Info.plist tells iOS which background tasks your app can schedule, while the AppDelegate registration connects the identifier to the actual task handler. This prevents apps from scheduling unauthorized background work.
+**Why BGTaskScheduler registration is needed:** iOS requires explicit registration of background task identifiers for security and system resource management. The task identifier in Info.plist tells iOS which background tasks your app can schedule, while the AppDelegate registration connects the identifier to the actual task handler. Background Fetch (Option A) doesn't require this since it uses the simpler, system-managed approach.
 </Info>
 
 <Success>
