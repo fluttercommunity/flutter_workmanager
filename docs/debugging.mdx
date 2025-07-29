@@ -97,16 +97,16 @@ void callbackDispatcher() {
 
 ### Xcode Debugging
 
-Use Xcode's console to trigger background tasks manually, or use **Debug → Perform Fetch** from the Xcode run menu:
+**For Background Fetch tasks:**
+Use **Debug → Perform Fetch** from the Xcode run menu while your app is running.
+
+**For BGTaskScheduler tasks (processing/periodic):**
+Use Xcode's console to trigger tasks manually:
 
 ```objc
-// Trigger background refresh
+// Trigger specific BGTaskScheduler task
 e -l objc -- (void)[[BGTaskScheduler sharedScheduler] 
-  _simulateLaunchForTaskWithIdentifier:@"task.id"]
-
-// Trigger processing task  
-e -l objc -- (void)[[BGTaskScheduler sharedScheduler] 
-  _simulateLaunchForTaskWithIdentifier:@"process.id"]
+  _simulateLaunchForTaskWithIdentifier:@"com.yourapp.task.identifier"]
 ```
 
 ### Monitor Scheduled Tasks
@@ -129,22 +129,25 @@ This prints output like:
 
 ### Common iOS Issues
 
+**Background App Refresh disabled:**
+- Check iOS Settings → General → Background App Refresh
+- See [Apple's Background App Refresh Guide](https://support.apple.com/en-us/102425)
+
 **Tasks never run:**
-- Background App Refresh disabled in Settings
-- App hasn't been used recently (iOS learning algorithm)
+- App hasn't been used recently (iOS learning algorithm) - [iOS Power Management](https://developer.apple.com/library/archive/documentation/Performance/Conceptual/power_efficiency_guidelines_osx/PrioritizeWorkAtTheTaskLevel.html)
 - Task identifiers don't match between Info.plist and AppDelegate
 - Missing BGTaskSchedulerPermittedIdentifiers in Info.plist
 
 **Tasks stop working:**
-- iOS battery optimization kicked in
+- iOS battery optimization kicked in - [WWDC 2020: Background execution demystified](https://developer.apple.com/videos/play/wwdc2020/10063/)
 - App removed from recent apps too often
 - User disabled background refresh
-- Task taking longer than 30 seconds
+- Task taking longer than 30 seconds - [BGTaskScheduler Documentation](https://developer.apple.com/documentation/backgroundtasks/bgtaskscheduler)
 
 **Tasks run but don't complete:**
-- Hitting 30-second execution limit
+- Hitting 30-second execution limit - [Background Tasks Best Practices](https://developer.apple.com/documentation/backgroundtasks/bgtask)
 - Network requests timing out
-- Heavy processing blocking the thread
+- Heavy processing blocking the thread - [WWDC 2019: Advances in App Background Execution](https://developer.apple.com/videos/play/wwdc2019/707/)
 
 ## General Debugging Tips
 

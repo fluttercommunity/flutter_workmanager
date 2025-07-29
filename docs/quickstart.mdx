@@ -82,8 +82,41 @@ WorkmanagerPlugin.registerBGProcessingTask(
 **Why BGTaskScheduler registration is needed:** iOS requires explicit registration of background task identifiers for security and system resource management. The task identifier in Info.plist tells iOS which background tasks your app can schedule, while the AppDelegate registration connects the identifier to the actual task handler. Background Fetch (Option A) doesn't require this since it uses the simpler, system-managed approach.
 </Info>
 
+#### Option C: Periodic Tasks with Custom Frequency
+For periodic tasks with more control than Background Fetch - uses BGTaskScheduler with frequency:
+
+1. **Enable Background Modes** in Xcode target capabilities ([Xcode Help](https://help.apple.com/xcode/mac/current/#/devbfa1532c4)):
+   - Background processing ✅
+
+2. **Add to Info.plist**:
+```xml
+<key>UIBackgroundModes</key>
+<array>
+    <string>processing</string>
+</array>
+
+<key>BGTaskSchedulerPermittedIdentifiers</key>
+<array>
+    <string>com.yourapp.periodic_task</string>
+</array>
+```
+
+3. **Configure AppDelegate.swift** (with frequency control):
+```swift
+import workmanager_apple
+
+// In application didFinishLaunching
+WorkmanagerPlugin.registerPeriodicTask(
+  withIdentifier: "com.yourapp.periodic_task",
+  frequency: NSNumber(value: 20 * 60) // 20 minutes (15 min minimum)
+)
+```
+
 <Success>
-**Which option to choose?** Use **Option A (Background Fetch)** for non-critical updates that can happen once daily (data sync, content refresh). Use **Option B (BGTaskScheduler)** when you need more control over timing, longer execution time, or immediate task scheduling.
+**Which option to choose?** 
+- **Option A (Background Fetch)** for non-critical updates that can happen once daily (data sync, content refresh)
+- **Option B (BGTaskScheduler)** for one-time tasks, file uploads, or immediate task scheduling  
+- **Option C (Periodic Tasks)** for regular tasks with custom frequency control (15+ minutes)
 </Success>
 
 ## Basic Usage
@@ -186,31 +219,7 @@ Your background tasks can return:
 
 ## Debugging
 
-Enable debug mode to see notifications when tasks run:
-
-```dart
-Workmanager().initialize(
-  callbackDispatcher,
-  isInDebugMode: true, // Shows debug notifications
-);
-```
-
-Add error handling:
-
-```dart
-@pragma('vm:entry-point')
-void callbackDispatcher() {
-  Workmanager().executeTask((task, inputData) async {
-    try {
-      // Your task logic
-      return Future.value(true);
-    } catch (e) {
-      print('Task failed: $e');
-      return Future.value(false); // Retry
-    }
-  });
-}
-```
+For comprehensive debugging guidance including platform-specific tools, ADB commands, and Xcode debugging, see the **[Debugging Guide](debugging)**.
 
 ## Next Steps
 
