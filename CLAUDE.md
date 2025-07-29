@@ -65,6 +65,39 @@
 - Keep entries brief and focused on user-facing impact
 - Relevant files: workmanager/CHANGELOG.md, workmanager_android/CHANGELOG.md, workmanager_apple/CHANGELOG.md
 
+## Contributor Bugfix Management
+- Review open PRs and recent issues (last 4 weeks) systematically
+- Create unit tests to reproduce issues before implementing fixes
+- **CRITICAL**: Always run tests using appropriate test command before committing
+- Credit contributors by name in CHANGELOG when merging their diffs
+- Close contributor PRs after integrating fixes to maintain clean git history
+- Focus on critical crashes and user-facing issues first
+
+### Current Bugfix Plan (2025-07-29)
+
+**Critical Issues (Crashes):**
+1. **Null Callback Crash (Issues #624, #621, #527)** - PRIORITY 1
+   - **Root Cause**: `FlutterCallbackInformation.lookupCallbackInformation()` returns null
+   - **Fix**: Add null check in BackgroundWorker.kt before accessing callbackInfo
+   - **Test**: Unit test with invalid callback handle to verify graceful failure
+
+2. **Null Cast Map Bug** - PRIORITY 2
+   - **Root Cause**: call.arguments can be null causing cast exception
+   - **Fix**: Safe null checking in workmanager_impl.dart
+   - **Test**: Unit test with null arguments in MethodCall
+
+**Performance Issues:**
+3. **UI Freeze on Callback (Issue #623)** - PRIORITY 3
+   - **Root Cause**: CallbackDispatcher running on main isolate
+   - **Fix**: Investigate isolate separation and background execution  
+   - **Test**: Integration test measuring UI responsiveness during callback
+
+**Behavioral Issues:**
+4. **Periodic Task Frequency (Issue #622)** - PRIORITY 4
+   - **Root Cause**: Android WorkManager minimum intervals vs user expectations
+   - **Fix**: Documentation clarification + validation warnings
+   - **Test**: Integration test verifying actual vs expected intervals
+
 ## GitHub Actions - Package Analysis
 - The `analysis.yml` workflow runs package analysis for all packages
 - It performs `flutter analyze` and `dart pub publish --dry-run` for each package
