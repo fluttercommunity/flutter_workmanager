@@ -35,8 +35,16 @@ jobs:
           channel: "stable"
           cache: true
 
+      - name: Setup iOS build environment
+        run: |
+          sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+          xcrun --sdk iphoneos --show-sdk-version
+      
       - name: build
         run: |
           dart pub global activate melos
           melos bootstrap
-          cd example && flutter build ios --debug --no-codesign
+          cd example
+          flutter clean
+          flutter pub get
+          flutter build ios --debug --no-codesign
