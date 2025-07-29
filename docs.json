@@ -1,4 +1,19 @@
 {
   "name": "Flutter Workmanager",
-  "description": "Background task execution for Flutter apps"
+  "description": "Background task execution for Flutter apps",
+  "navigation": [
+    { "text": "Home", "link": "/" },
+    { "text": "Get Started", "link": "/quickstart" },
+    {
+      "text": "Examples",
+      "items": [
+        { "text": "Data Sync", "link": "/usecases/data-sync" },
+        { "text": "File Upload", "link": "/usecases/upload-files" },
+        { "text": "Cleanup Tasks", "link": "/usecases/periodic-cleanup" },
+        { "text": "Notifications", "link": "/usecases/fetch-notifications" },
+        { "text": "Database Tasks", "link": "/usecases/database-maintenance" }
+      ]
+    },
+    { "text": "Debugging", "link": "/debugging" }
+  ]
 }

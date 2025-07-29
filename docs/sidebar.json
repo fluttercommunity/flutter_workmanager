@@ -1,0 +1,39 @@
+[
+  {
+    "text": "Home",
+    "link": "/"
+  },
+  {
+    "text": "Get Started", 
+    "link": "/quickstart"
+  },
+  {
+    "text": "Examples",
+    "children": [
+      {
+        "text": "Data Sync",
+        "link": "/usecases/data-sync"
+      },
+      {
+        "text": "File Upload",
+        "link": "/usecases/upload-files"
+      },
+      {
+        "text": "Cleanup Tasks",
+        "link": "/usecases/periodic-cleanup"
+      },
+      {
+        "text": "Notifications", 
+        "link": "/usecases/fetch-notifications"
+      },
+      {
+        "text": "Database Tasks",
+        "link": "/usecases/database-maintenance"
+      }
+    ]
+  },
+  {
+    "text": "Debugging",
+    "link": "/debugging"
+  }
+]
