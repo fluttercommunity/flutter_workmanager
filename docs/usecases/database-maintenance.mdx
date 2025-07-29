@@ -1,9 +1,9 @@
 ---
-title: Database Maintenance
-description: Perform database cleanup, optimization, and maintenance tasks in the background
+title: Example - Database Tasks
+description: Example implementation for database maintenance tasks
 ---
 
-# Database Maintenance
+# Example: Database Maintenance
 
 Automatically maintain your app's local database by cleaning up old records, optimizing indexes, and performing routine maintenance tasks in the background.
 
@@ -32,22 +32,23 @@ Future<bool> performDatabaseMaintenance() async {
   try {
     final db = await DatabaseHelper.getDatabase();
     
-    // Remove old records (older than 30 days)
+    // Remove old records (30+ days)
+    final cutoff = DateTime.now()
+        .subtract(Duration(days: 30))
+        .millisecondsSinceEpoch;
+        
     await db.delete(
       'logs',
       where: 'created_at < ?',
-      whereArgs: [DateTime.now().subtract(Duration(days: 30)).millisecondsSinceEpoch],
+      whereArgs: [cutoff],
     );
     
-    // Vacuum database to reclaim space
-    await db.execute('VACUUM');
-    
-    // Update statistics
-    await db.execute('ANALYZE');
+    // Optimize database (SQLite)
+    await db.execute('PRAGMA optimize');
     
     return true;
   } catch (e) {
-    print('Database maintenance failed: $e');
+    print('DB maintenance failed: $e');
     return false;
   }
 }

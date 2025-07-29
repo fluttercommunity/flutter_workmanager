@@ -27,24 +27,24 @@ This shows system notifications whenever background tasks run, making it easy to
 Use ADB to inspect Android's job scheduler:
 
 ```bash
-# View all scheduled jobs for your app
-adb shell dumpsys jobscheduler | grep your.package.name
+# View scheduled jobs
+adb shell dumpsys jobscheduler | grep yourapp
 
-# View detailed job info
-adb shell dumpsys jobscheduler your.package.name
+# View detailed job info  
+adb shell dumpsys jobscheduler yourapp
 
-# Force run a specific job (debug builds only)
-adb shell cmd jobscheduler run -f your.package.name JOB_ID
+# Force run job (debug only)
+adb shell cmd jobscheduler run -f yourapp JOB_ID
 ```
 
 ### Monitor Job Execution
 
 ```bash
-# Monitor job scheduler logs
+# Monitor WorkManager logs
 adb logcat | grep WorkManager
 
-# Monitor your app's background execution
-adb logcat | grep "your.package.name"
+# Monitor app background execution
+adb logcat | grep "yourapp"
 ```
 
 ### Common Android Issues
@@ -102,14 +102,13 @@ void callbackDispatcher() {
 Use Xcode's console to trigger background tasks manually:
 
 ```objc
-// Trigger background app refresh
-e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"your.task.id"]
+// Trigger background refresh
+e -l objc -- (void)[[BGTaskScheduler sharedScheduler] 
+  _simulateLaunchForTaskWithIdentifier:@"task.id"]
 
 // Trigger processing task  
-e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"your.processing.task.id"]
-
-// Force background fetch (legacy)
-e -l objc -- (void)[[UIApplication sharedApplication] _simulateApplicationDidEnterBackground]
+e -l objc -- (void)[[BGTaskScheduler sharedScheduler] 
+  _simulateLaunchForTaskWithIdentifier:@"process.id"]
 ```
 
 ### Monitor Scheduled Tasks

@@ -1,9 +1,9 @@
 ---
-title: Sync Data Regularly
-description: Automatically fetch and sync data from your API in the background
+title: Example - Data Sync
+description: Example implementation for syncing API data in background
 ---
 
-# Background Data Synchronization
+# Example: API Data Sync
 
 Keep your app's data fresh by automatically syncing with your backend API, even when the app is closed.
 
@@ -68,37 +68,36 @@ void callbackDispatcher() {
 
 Future<bool> _performDataSync() async {
   try {
-    // Fetch data from your API
+    // Fetch data from API
+    final uri = Uri.parse('https://api.yourapp.com/data');
     final response = await http.get(
-      Uri.parse('https://api.yourapp.com/data'),
-      headers: {'Authorization': 'Bearer YOUR_TOKEN'},
+      uri,
+      headers: {'Authorization': 'Bearer TOKEN'},
     ).timeout(Duration(seconds: 30));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      
-      // Store in local database (SQLite, Hive, etc.)
       await _storeDataLocally(data);
-      
-      print('Data sync completed successfully');
       return true;
     } else {
-      print('API returned ${response.statusCode}');
+      print('API error: ${response.statusCode}');
       return false; // Retry later
     }
   } catch (e) {
-    print('Sync error: $e');
-    return false; // Retry later
+    print('Sync failed: $e');
+    return false;
   }
 }
 
-Future<void> _storeDataLocally(Map<String, dynamic> data) async {
-  // Example using SharedPreferences for simple data
+Future<void> _storeDataLocally(
+  Map<String, dynamic> data
+) async {
   final prefs = await SharedPreferences.getInstance();
-  await prefs.setString('last_sync_data', json.encode(data));
-  await prefs.setString('last_sync_time', DateTime.now().toIso8601String());
-  
-  // For complex data, use SQLite, Hive, or other local storage
+  await prefs.setString('sync_data', json.encode(data));
+  await prefs.setString(
+    'sync_time', 
+    DateTime.now().toIso8601String()
+  );
 }
 ```
 
