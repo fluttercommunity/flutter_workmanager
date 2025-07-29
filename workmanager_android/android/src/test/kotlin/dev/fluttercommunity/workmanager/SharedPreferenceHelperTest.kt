@@ -8,14 +8,12 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.junit.MockitoJUnitRunner
 import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @RunWith(MockitoJUnitRunner::class)
 class SharedPreferenceHelperTest {
-
     @Mock
     private lateinit var mockContext: Context
 
@@ -90,13 +88,13 @@ class SharedPreferenceHelperTest {
         // Given: SharedPreferenceHelper is initialized and we capture the listener
         whenever(mockSharedPreferences.getLong(CALLBACK_DISPATCHER_HANDLE_KEY, INVALID_HANDLE))
             .thenReturn(INVALID_HANDLE)
-        
+
         var capturedListener: SharedPreferences.OnSharedPreferenceChangeListener? = null
         whenever(mockSharedPreferences.registerOnSharedPreferenceChangeListener(any())).then { invocation ->
             capturedListener = invocation.getArgument(0)
             null
         }
-        
+
         SharedPreferenceHelper(mockContext, mockListener)
 
         // When: preference changes for the callback dispatcher handle key
@@ -113,13 +111,13 @@ class SharedPreferenceHelperTest {
         // Given: SharedPreferenceHelper is initialized and we capture the listener
         whenever(mockSharedPreferences.getLong(CALLBACK_DISPATCHER_HANDLE_KEY, INVALID_HANDLE))
             .thenReturn(INVALID_HANDLE)
-        
+
         var capturedListener: SharedPreferences.OnSharedPreferenceChangeListener? = null
         whenever(mockSharedPreferences.registerOnSharedPreferenceChangeListener(any())).then { invocation ->
             capturedListener = invocation.getArgument(0)
             null
         }
-        
+
         SharedPreferenceHelper(mockContext, mockListener)
 
         // When: preference changes for a different key

@@ -3,6 +3,7 @@
 - Use `ktlint -F .` in root folder to format Kotlin code
 - Use SwiftLint for code formatting
 - Always resolve formatting and analyzer errors before completing a task
+- **CRITICAL**: Always run `ktlint -F .` after modifying any Kotlin files before committing
 
 ## Pigeon Code Generation
 - Pigeon configuration is in `workmanager_platform_interface/pigeons/workmanager_api.dart`
