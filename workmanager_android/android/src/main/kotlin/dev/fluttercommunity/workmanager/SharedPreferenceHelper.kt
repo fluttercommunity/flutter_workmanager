@@ -40,6 +40,12 @@ class SharedPreferenceHelper(
 
     init {
         preferences.registerOnSharedPreferenceChangeListener(preferenceListener)
+
+        // Call the callback immediately if preferences are already loaded
+        val currentHandle = preferences.getLong(CALLBACK_DISPATCHER_HANDLE_KEY, -1L)
+        if (currentHandle != -1L) {
+            dispatcherHandleListener.onDispatcherHandleChanged(currentHandle)
+        }
     }
 
     fun saveCallbackDispatcherHandleKey(callbackHandle: Long) {

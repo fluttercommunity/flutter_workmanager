@@ -139,10 +139,15 @@ class _MyAppState extends State<MyApp> {
                       }
                     }
                     if (!workmanagerInitialized) {
-                      Workmanager().initialize(
-                        callbackDispatcher,
-                        isInDebugMode: true,
-                      );
+                      try {
+                        await Workmanager().initialize(
+                          callbackDispatcher,
+                          isInDebugMode: true,
+                        );
+                      } catch (e) {
+                        print('Error initializing Workmanager: $e');
+                        return;
+                      }
                       setState(() => workmanagerInitialized = true);
                     }
                   },
