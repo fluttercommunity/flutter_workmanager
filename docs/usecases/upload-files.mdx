@@ -73,19 +73,18 @@ Future<bool> _uploadFile(Map<String, dynamic> inputData) async {
     }
 
     // Create multipart request
-    final request = http.MultipartRequest(
-      'POST',
-      Uri.parse('https://api.yourapp.com/upload'),
-    );
+    final uri = Uri.parse('https://api.yourapp.com/upload');
+    final request = http.MultipartRequest('POST', uri);
 
-    request.headers['Authorization'] = 'Bearer YOUR_TOKEN';
-    request.fields.addAll(metadata.map((k, v) => MapEntry(k, v.toString())));
-    
-    final multipartFile = await http.MultipartFile.fromPath(
-      'file',
-      filePath,
+    request.headers['Authorization'] = 'Bearer TOKEN';
+    request.fields.addAll(
+      metadata.map((k, v) => MapEntry(k, v.toString()))
     );
-    request.files.add(multipartFile);
+    
+    final file = await http.MultipartFile.fromPath(
+      'file', filePath
+    );
+    request.files.add(file);
 
     final response = await request.send().timeout(Duration(minutes: 5));
     
