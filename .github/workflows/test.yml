@@ -22,7 +22,7 @@ jobs:
           flutter test
 
   native_ios_tests:
-    runs-on: macos-latest
+    runs-on: macos-13
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -68,7 +68,7 @@ jobs:
         device:
           - "iPhone 16 Pro"
       fail-fast: false
-    runs-on: macos-latest
+    runs-on: macos-13
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
