@@ -3,15 +3,22 @@
   "description": "Background task execution for Flutter apps",
   "sidebar": [
     {
-      "title": "Home",
-      "href": "/"
-    },
-    {
-      "title": "Get Started",
-      "href": "/quickstart"
+      "group": "Getting Started",
+      "tab": "root",
+      "pages": [
+        {
+          "title": "Overview",
+          "href": "/"
+        },
+        {
+          "title": "Quick Start",
+          "href": "/quickstart"
+        }
+      ]
     },
     {
       "group": "Examples",
+      "tab": "root",
       "pages": [
         {
           "title": "Data Sync",
@@ -36,8 +43,14 @@
       ]
     },
     {
-      "title": "Debugging",
-      "href": "/debugging"
+      "group": "Reference",
+      "tab": "root",
+      "pages": [
+        {
+          "title": "Debugging",
+          "href": "/debugging"
+        }
+      ]
     }
   ]
 }
