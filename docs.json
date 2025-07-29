@@ -26,6 +26,10 @@
       "tab": "root",
       "pages": [
         {
+          "title": "Task Customization",
+          "href": "/customization"
+        },
+        {
           "title": "Debugging",
           "href": "/debugging"
         }

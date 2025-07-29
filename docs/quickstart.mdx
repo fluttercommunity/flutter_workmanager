@@ -213,65 +213,6 @@ Your background tasks can return:
 - `Future.value(false)` - 🔄 Task should be retried
 - `Future.error(...)` - ❌ Task failed
 
-## Task Customization
-
-### Input Data and Constraints
-
-```dart
-// Schedule task with input data and constraints
-Workmanager().registerOneOffTask(
-  "upload-task",
-  "file_upload",
-  initialDelay: Duration(minutes: 5),
-  inputData: {
-    'fileName': 'document.pdf',
-    'uploadUrl': 'https://api.example.com/upload',
-    'retryCount': 3
-  },
-  constraints: Constraints(
-    networkType: NetworkType.connected,
-    requiresBatteryNotLow: true,
-    requiresCharging: false,
-    requiresDeviceIdle: false,
-    requiresStorageNotLow: true,
-  ),
-);
-
-// Access input data in your task
-@pragma('vm:entry-point')
-void callbackDispatcher() {
-  Workmanager().executeTask((task, inputData) async {
-    print('Task: $task');
-    print('Input: $inputData'); // Access your input data
-    
-    String? fileName = inputData?['fileName'];
-    int retryCount = inputData?['retryCount'] ?? 0;
-    
-    // Your task logic using the input data
-    return Future.value(true);
-  });
-}
-```
-
-### Task Tagging and Management
-
-```dart
-// Tag tasks for easier management
-Workmanager().registerOneOffTask(
-  "sync-task-1",
-  "data_sync",
-  tag: "data-sync-tasks",
-);
-
-// Cancel tasks by tag
-Workmanager().cancelByTag("data-sync-tasks");
-
-// Cancel specific task
-Workmanager().cancelByUniqueName("sync-task-1");
-
-// Cancel all tasks
-Workmanager().cancelAll();
-```
 
 ## Key Points
 
@@ -287,5 +228,6 @@ For comprehensive debugging guidance including platform-specific tools, ADB comm
 
 ## Next Steps
 
-- **[Debugging Guide](debugging)** - Learn how to debug and troubleshoot background tasks
+- **[Task Customization](customization)** - Advanced configuration with constraints, input data, and management
+- **[Debugging Guide](debugging)** - Learn how to debug and troubleshoot background tasks  
 - **[Example App](https://github.com/fluttercommunity/flutter_workmanager/tree/main/example)** - Complete working demo

@@ -1,0 +1,282 @@
+---
+title: Task Customization
+description: Advanced task configuration with constraints, input data, and management
+---
+
+Configure background tasks with constraints, input data, and advanced management options.
+
+## Input Data
+
+Pass data to your background tasks and access it in the callback:
+
+```dart
+// Schedule task with input data
+Workmanager().registerOneOffTask(
+  "upload-task",
+  "file_upload",
+  inputData: {
+    'fileName': 'document.pdf',
+    'uploadUrl': 'https://api.example.com/upload',
+    'retryCount': 3,
+    'userId': 12345,
+  },
+);
+
+// Access input data in your task
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    print('Task: $task');
+    print('Input: $inputData');
+    
+    // Extract specific values
+    String? fileName = inputData?['fileName'];
+    String? uploadUrl = inputData?['uploadUrl'];
+    int retryCount = inputData?['retryCount'] ?? 0;
+    int userId = inputData?['userId'] ?? 0;
+    
+    // Use the data in your task logic
+    await uploadFile(fileName, uploadUrl, userId);
+    
+    return Future.value(true);
+  });
+}
+```
+
+<Info>
+**Input Data Types:** You can pass basic JSON-serializable types: `String`, `int`, `double`, `bool`, `List`, `Map`. Complex objects need to be serialized first.
+</Info>
+
+## Task Constraints
+
+Control when tasks should run based on device conditions:
+
+```dart
+Workmanager().registerOneOffTask(
+  "sync-task",
+  "data_sync", 
+  constraints: Constraints(
+    networkType: NetworkType.connected,      // Require internet connection
+    requiresBatteryNotLow: true,            // Don't run when battery is low
+    requiresCharging: false,                // Can run when not charging
+    requiresDeviceIdle: false,              // Can run when device is active
+    requiresStorageNotLow: true,            // Don't run when storage is low
+  ),
+);
+```
+
+### Network Constraints
+
+```dart
+// Different network requirements
+NetworkType.connected      // Any internet connection
+NetworkType.unmetered      // WiFi or unlimited data only  
+NetworkType.not_required   // Can run without internet
+```
+
+### Battery and Charging
+
+```dart
+constraints: Constraints(
+  requiresBatteryNotLow: true,    // Wait for adequate battery
+  requiresCharging: true,         // Only run when plugged in
+)
+```
+
+<Warning>
+**Platform Differences:** Some constraints are Android-only. iOS background tasks have different system-level constraints that cannot be configured directly.
+</Warning>
+
+## Task Management
+
+### Tagging Tasks
+
+Group related tasks with tags for easier management:
+
+```dart
+// Tag multiple related tasks
+Workmanager().registerOneOffTask(
+  "sync-photos",
+  "photo_sync",
+  tag: "sync-tasks",
+);
+
+Workmanager().registerOneOffTask(
+  "sync-documents", 
+  "document_sync",
+  tag: "sync-tasks",
+);
+
+// Cancel all tasks with a specific tag
+Workmanager().cancelByTag("sync-tasks");
+```
+
+### Canceling Tasks
+
+```dart
+// Cancel a specific task by unique name
+Workmanager().cancelByUniqueName("sync-photos");
+
+// Cancel tasks by tag
+Workmanager().cancelByTag("sync-tasks");
+
+// Cancel all scheduled tasks
+Workmanager().cancelAll();
+```
+
+### Task Scheduling Options
+
+```dart
+// One-time task with delay
+Workmanager().registerOneOffTask(
+  "delayed-task",
+  "cleanup",
+  initialDelay: Duration(minutes: 30),
+  inputData: {'cleanupType': 'cache'}
+);
+
+// Periodic task with custom frequency  
+Workmanager().registerPeriodicTask(
+  "hourly-sync",
+  "data_sync",
+  frequency: Duration(hours: 1),        // Android: minimum 15 minutes
+  initialDelay: Duration(minutes: 5),   // Wait before first execution
+  inputData: {'syncType': 'incremental'}
+);
+```
+
+## Advanced Configuration
+
+### Task Identification
+
+Use meaningful, unique task names to avoid conflicts:
+
+```dart
+// Good: Specific and unique
+Workmanager().registerOneOffTask(
+  "user-${userId}-photo-upload-${timestamp}",
+  "upload_task",
+  inputData: {'userId': userId, 'type': 'photo'}
+);
+
+// Avoid: Generic names that might conflict
+Workmanager().registerOneOffTask(
+  "task1", 
+  "upload",
+  // ...
+);
+```
+
+### Task Types and Names
+
+```dart
+// Use descriptive task type names in your callback
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    switch (task) {
+      case 'photo_upload':
+        return await handlePhotoUpload(inputData);
+      case 'data_sync':
+        return await handleDataSync(inputData);
+      case 'cache_cleanup':
+        return await handleCacheCleanup(inputData);
+      case 'notification_check':
+        return await handleNotificationCheck(inputData);
+      default:
+        print('Unknown task: $task');
+        return Future.value(false);
+    }
+  });
+}
+```
+
+## Error Handling and Retries
+
+```dart
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    int retryCount = inputData?['retryCount'] ?? 0;
+    
+    try {
+      // Your task logic
+      await performTask(inputData);
+      return Future.value(true);
+      
+    } catch (e) {
+      print('Task failed: $e');
+      
+      // Decide whether to retry
+      if (retryCount < 3 && isRetryableError(e)) {
+        print('Retrying task (attempt ${retryCount + 1})');
+        return Future.value(false); // Tell system to retry
+      } else {
+        print('Task failed permanently');
+        return Future.value(true); // Don't retry
+      }
+    }
+  });
+}
+
+bool isRetryableError(dynamic error) {
+  // Network errors, temporary server issues, etc.
+  return error.toString().contains('network') ||
+         error.toString().contains('timeout');
+}
+```
+
+## Best Practices
+
+### Efficient Task Design
+
+```dart
+// Good: Quick, focused tasks
+@pragma('vm:entry-point') 
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    // Fast operation
+    await syncCriticalData();
+    return Future.value(true);
+  });
+}
+
+// Avoid: Long-running operations
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    // This might timeout on iOS (30-second limit)
+    await processLargeDataset(); // ❌ Too slow
+    return Future.value(true);
+  });
+}
+```
+
+### Resource Management
+
+```dart
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    HttpClient? client;
+    
+    try {
+      // Initialize resources in the background isolate
+      client = HttpClient();
+      
+      // Perform task
+      await performNetworkOperation(client);
+      
+      return Future.value(true);
+      
+    } finally {
+      // Clean up resources
+      client?.close();
+    }
+  });
+}
+```
+
+<Success>
+**Pro Tip:** Always initialize dependencies inside your background task callback since it runs in a separate isolate from your main app.
+</Success>
