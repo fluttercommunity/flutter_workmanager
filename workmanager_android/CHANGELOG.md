@@ -1,3 +1,10 @@
+## Future
+
+### Improvements
+* Improve SharedPreferenceHelper callback handling - now calls callback immediately when preferences are already loaded
+* Add comprehensive unit tests for SharedPreferenceHelper callback scenarios
+* Fix iOS CI builds by disabling User Script Sandboxing to resolve sandbox permission errors
+
 ## 0.8.0
 
 ### Initial Release

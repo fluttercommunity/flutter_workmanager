@@ -59,6 +59,12 @@
 - Focus on current progress and next steps
 - Document decisions and architectural choices
 
+## CHANGELOG Management
+- Document improvements in CHANGELOG.md files immediately when implemented
+- Use "Future" as the version header for unreleased changes (standard open source practice)
+- Keep entries brief and focused on user-facing impact
+- Relevant files: workmanager/CHANGELOG.md, workmanager_android/CHANGELOG.md, workmanager_apple/CHANGELOG.md
+
 ## GitHub Actions - Package Analysis
 - The `analysis.yml` workflow runs package analysis for all packages
 - It performs `flutter analyze` and `dart pub publish --dry-run` for each package
