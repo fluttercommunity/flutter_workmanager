@@ -3,8 +3,6 @@ title: Quick Start
 description: Get started with Flutter Workmanager in minutes
 ---
 
-Get Flutter Workmanager up and running in your app quickly.
-
 ## Installation
 
 Add `workmanager` to your `pubspec.yaml`:
@@ -29,7 +27,7 @@ Android works automatically - no additional setup required! ✅
 ### iOS
 iOS requires a 5-minute setup in Xcode:
 
-1. **Enable Background Modes** in Xcode target capabilities:
+1. **Enable Background Modes** in Xcode target capabilities ([Xcode Help](https://help.apple.com/xcode/mac/current/#/devbfa1532c4)):
    - Background processing ✅
    - Background fetch ✅
 
@@ -56,6 +54,8 @@ WorkmanagerPlugin.registerBGProcessingTask(
   withIdentifier: "your.task.identifier"
 )
 ```
+
+> **Why this configuration is needed:** iOS requires explicit registration of background task identifiers for security and system resource management. The task identifier in Info.plist tells iOS which background tasks your app can schedule, while the AppDelegate registration connects the identifier to the actual task handler. This prevents apps from scheduling unauthorized background work.
 
 ## Basic Usage
 

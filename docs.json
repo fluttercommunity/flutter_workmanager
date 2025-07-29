@@ -1,6 +1,10 @@
 {
   "name": "Flutter Workmanager",
   "description": "Background task execution for Flutter apps",
+  "theme": {
+    "primaryColor": "#1e3a8a",
+    "accentColor": "#3b82f6"
+  },
   "sidebar": [
     {
       "group": "Getting Started",
