@@ -6,12 +6,13 @@
 
 ## Pigeon Code Generation
 - Pigeon configuration is in `workmanager_platform_interface/pigeons/workmanager_api.dart`
-- To regenerate Pigeon files: `cd workmanager_platform_interface && dart run pigeon --input pigeons/workmanager_api.dart`
+- To regenerate Pigeon files: `melos run generate:pigeon` (recommended) or `cd workmanager_platform_interface && dart run pigeon --input pigeons/workmanager_api.dart`
 - Generated files:
   - Dart: `workmanager_platform_interface/lib/src/pigeon/workmanager_api.g.dart`
   - Kotlin: `workmanager_android/android/src/main/kotlin/dev/fluttercommunity/workmanager/pigeon/WorkmanagerApi.g.kt`
   - Swift: `workmanager_apple/ios/Classes/pigeon/WorkmanagerApi.g.swift`
 - Do not manually edit generated files (*.g.* files)
+- Generated files may have different formatting than dart format - this is expected and handled by exclusion patterns
 
 ## Code Formatting Configuration
 - `.editorconfig` in root folder configures ktlint to ignore Pigeon-generated Kotlin files
