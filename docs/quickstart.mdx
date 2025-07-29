@@ -1,0 +1,197 @@
+---
+title: Quick Start
+description: Get started with Flutter Workmanager in minutes
+---
+
+## Installation
+
+Add `workmanager` to your `pubspec.yaml`:
+
+```yaml
+dependencies:
+  workmanager: ^0.8.0
+```
+
+Then run:
+```bash
+flutter pub get
+```
+
+## Platform Setup
+
+### Android
+Android works automatically - no additional setup required! ✅
+
+### iOS
+iOS requires a 5-minute setup in Xcode. Choose your approach based on your needs:
+
+#### Option A: Periodic Tasks (Recommended for most use cases)
+For regular data sync, notifications, cleanup - uses iOS Background Fetch:
+
+1. **Enable Background Modes** in Xcode target capabilities ([Xcode Help](https://help.apple.com/xcode/mac/current/#/devbfa1532c4)) and add to Info.plist:
+```xml
+<key>UIBackgroundModes</key>
+<array>
+    <string>fetch</string>
+</array>
+```
+
+2. **No AppDelegate configuration needed** - works automatically from Dart code
+
+<Warning>
+**iOS Background Fetch scheduling:** iOS completely controls when Background Fetch runs (typically once per day based on user app usage patterns). You cannot force immediate execution - it's designed for non-critical periodic updates like refreshing content.
+</Warning>
+
+#### Option B: Processing Tasks (For complex operations)
+For file uploads, data processing, longer tasks - uses BGTaskScheduler:
+
+1. **Enable Background Modes** in Xcode target capabilities ([Xcode Help](https://help.apple.com/xcode/mac/current/#/devbfa1532c4)) and add to Info.plist:
+```xml
+<key>UIBackgroundModes</key>
+<array>
+    <string>processing</string>
+</array>
+
+<key>BGTaskSchedulerPermittedIdentifiers</key>
+<array>
+    <string>com.yourapp.processing_task</string>
+</array>
+```
+
+2. **Configure AppDelegate.swift** (required for BGTaskScheduler):
+```swift
+import workmanager_apple
+
+// In application didFinishLaunching
+WorkmanagerPlugin.registerBGProcessingTask(
+  withIdentifier: "com.yourapp.processing_task"
+)
+```
+
+<Info>
+**Why BGTaskScheduler registration is needed:** iOS requires explicit registration of background task identifiers for security and system resource management. The task identifier in Info.plist tells iOS which background tasks your app can schedule, while the AppDelegate registration connects the identifier to the actual task handler. Background Fetch (Option A) doesn't require this since it uses the simpler, system-managed approach.
+</Info>
+
+#### Option C: Periodic Tasks with Custom Frequency
+For periodic tasks with more control than Background Fetch - uses BGTaskScheduler with frequency:
+
+1. **Enable Background Modes** in Xcode target capabilities ([Xcode Help](https://help.apple.com/xcode/mac/current/#/devbfa1532c4)) and add to Info.plist:
+```xml
+<key>UIBackgroundModes</key>
+<array>
+    <string>processing</string>
+</array>
+
+<key>BGTaskSchedulerPermittedIdentifiers</key>
+<array>
+    <string>com.yourapp.periodic_task</string>
+</array>
+```
+
+2. **Configure AppDelegate.swift** (with frequency control):
+```swift
+import workmanager_apple
+
+// In application didFinishLaunching
+WorkmanagerPlugin.registerPeriodicTask(
+  withIdentifier: "com.yourapp.periodic_task",
+  frequency: NSNumber(value: 20 * 60) // 20 minutes (15 min minimum)
+)
+```
+
+<Success>
+**Which option to choose?** 
+- **Option A (Background Fetch)** for non-critical updates that can happen once daily (data sync, content refresh)
+- **Option B (BGTaskScheduler)** for one-time tasks, file uploads, or immediate task scheduling  
+- **Option C (Periodic Tasks)** for regular tasks with custom frequency control (15+ minutes)
+</Success>
+
+## Basic Usage
+
+### 1. Create Background Task Handler
+
+```dart
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    switch (task) {
+      case "data_sync":
+        await syncDataWithServer();
+        break;
+      case "cleanup": 
+        await cleanupOldFiles();
+        break;
+      case Workmanager.iOSBackgroundTask:
+        // iOS Background Fetch task
+        await handleBackgroundFetch();
+        break;
+      default:
+        // Handle unknown task types
+        break;
+    }
+    
+    return Future.value(true);
+  });
+}
+```
+
+<Info>
+**Important:** The `callbackDispatcher` must be a top-level function (not inside a class) since it runs in a separate isolate.
+</Info>
+
+### 2. Initialize in main()
+
+```dart
+import 'package:flutter/foundation.dart';
+
+void main() {
+  Workmanager().initialize(
+    callbackDispatcher,
+    isInDebugMode: kDebugMode,
+  );
+  
+  runApp(MyApp());
+}
+```
+
+### 3. Schedule Tasks
+
+```dart
+// Schedule a one-time task
+Workmanager().registerOneOffTask(
+  "sync-task",
+  "data_sync",
+  initialDelay: Duration(seconds: 10),
+);
+
+// Schedule a periodic task
+Workmanager().registerPeriodicTask(
+  "cleanup-task",
+  "cleanup",
+  frequency: Duration(hours: 24),
+);
+```
+
+## Task Results
+
+Your background tasks can return:
+
+- `Future.value(true)` - ✅ Task successful
+- `Future.value(false)` - 🔄 Task should be retried
+- `Future.error(...)` - ❌ Task failed
+
+
+## Key Points
+
+- **Callback Dispatcher**: Must be a top-level function (not inside a class)
+- **Separate Isolate**: Background tasks run in isolation - initialize dependencies inside the task
+- **Platform Differences**: 
+  - Android: Reliable background execution, 15-minute minimum frequency
+  - iOS: 30-second limit, execution depends on user patterns and device state
+
+
+## Next Steps
+
+- **[Task Customization](customization)** - Advanced configuration with constraints, input data, and management
+- **[Debugging Guide](debugging)** - Learn how to debug and troubleshoot background tasks  
+- **[Example App](https://github.com/fluttercommunity/flutter_workmanager/tree/main/example)** - Complete working demo

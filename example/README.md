@@ -1,16 +1,63 @@
-# workmanager_example
+# Flutter Workmanager Example
 
-Demonstrates how to use the workmanager plugin.
+Complete working demo showing all Flutter Workmanager features and task types.
 
-## Getting Started
+## Features Demonstrated
 
-This project is a starting point for a Flutter application.
+- **One-off tasks**: Immediate background execution
+- **Periodic tasks**: Scheduled recurring background work
+- **Processing tasks**: Long-running iOS background tasks
+- **Task constraints**: Network, battery, and device state requirements
+- **Debug notifications**: Visual feedback when tasks execute
+- **Error handling**: Proper task success/failure/retry logic
+- **Platform differences**: Android vs iOS background execution
 
-A few resources to get you started if this is your first Flutter project:
+## Quick Start
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+1. **Clone and run**:
+   ```bash
+   git clone https://github.com/fluttercommunity/flutter_workmanager.git
+   cd flutter_workmanager/example
+   flutter run
+   ```
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+2. **Platform setup**:
+   - **Android**: Works immediately ✅
+   - **iOS**: Follow the iOS setup in `ios/Runner/AppDelegate.swift` and `ios/Runner/Info.plist`
+
+3. **Test background tasks**:
+   - Tap buttons to schedule different task types
+   - Put app in background to see tasks execute
+   - Check debug notifications to verify execution
+
+## Example Tasks
+
+The demo includes practical examples:
+
+- **Simulated API sync**: Fetches data and stores locally
+- **File cleanup**: Removes old cached files
+- **Periodic maintenance**: Regular app maintenance tasks
+- **Long processing**: iOS-specific long-running tasks
+
+## Key Files
+
+- `lib/main.dart` - Main app with task scheduling UI
+- `lib/callback_dispatcher.dart` - Background task execution logic
+- `ios/Runner/AppDelegate.swift` - iOS background task registration
+- `ios/Runner/Info.plist` - iOS background modes configuration
+
+## Testing Background Tasks
+
+**Android**: 
+- Tasks run reliably in background
+- Enable debug mode to see notifications
+- Use `adb shell dumpsys jobscheduler` to inspect scheduled tasks
+
+**iOS**: 
+- Test on physical device (not simulator)
+- Enable Background App Refresh in Settings
+- Use Xcode debugger commands to trigger tasks immediately
+
+## Documentation
+
+For detailed guides and real-world use cases, visit: **[docs.page/fluttercommunity/flutter_workmanager →](https://docs.page/fluttercommunity/flutter_workmanager)**

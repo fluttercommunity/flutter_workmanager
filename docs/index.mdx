@@ -1,1 +1,55 @@
-# Flutter Workmanager
+---
+title: Flutter Workmanager
+description: Background task execution for Flutter apps
+---
+
+Execute Dart code in the background, even when your app is closed. Perfect for data sync, file uploads, and periodic maintenance tasks.
+
+## Key Features
+
+- **Background Task Execution**: Execute Dart code in the background on both Android and iOS platforms
+- **Multiple Task Types**: Support for one-off tasks, periodic tasks, and iOS processing tasks  
+- **Platform Constraints**: Configure network, battery, charging, and other constraints for task execution
+- **Debug Support**: Built-in debugging with notifications to track background task execution
+
+## Supported Platforms
+
+| Platform | Support | Notes |
+|----------|---------|--------|
+| Android | ✅ Full | All WorkManager features supported |
+| iOS | ✅ Full | Background Fetch + BGTaskScheduler APIs |
+| macOS | 🚧 Planned | Future support through NSBackgroundActivityScheduler |
+| Web | ❌ Not supported | Background execution not available |
+| Windows/Linux | ❌ Not supported | No background task APIs |
+
+## Common Use Cases
+
+| Use Case | Description |
+|----------|-------------|
+| **Sync data from API** | Automatically fetch and sync data from your backend API |
+| **Upload files in background** | Upload photos, documents when network conditions are optimal |
+| **Clean up old data** | Remove old files, cache data, and maintain app performance |
+| **Fetch notifications** | Check for new notifications and messages from your server |
+| **Database maintenance** | Perform database cleanup and optimization tasks |
+
+## Architecture
+
+This plugin uses a **federated architecture**:
+- `workmanager` - Main package that provides the unified API
+- `workmanager_android` - Android implementation using WorkManager
+- `workmanager_apple` - iOS/macOS implementation using BGTaskScheduler
+- `workmanager_platform_interface` - Shared interface for platform implementations
+
+All packages are automatically included when you add `workmanager` to pubspec.yaml.
+
+## Get Started
+
+Ready to add background tasks to your Flutter app?
+
+**[→ Quick Start Guide](quickstart)** - Get up and running in minutes
+
+**[→ API Documentation](https://pub.dev/documentation/workmanager/latest/)** - Complete Dart API reference
+
+## Example Project
+
+See a complete working demo: **[Example App →](https://github.com/fluttercommunity/flutter_workmanager/tree/main/example)**
