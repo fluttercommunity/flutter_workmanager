@@ -9,55 +9,24 @@
 
 Execute Dart code in the background, even when your app is closed. Perfect for data sync, file uploads, and periodic maintenance tasks.
 
-## 📖 Full Documentation
+## 📖 Documentation
 
-**[Visit our comprehensive documentation →](https://docs.page/fluttercommunity/flutter_workmanager)**
+Get started with background tasks in Flutter:
 
-## ⚡ Quick Start
+**[→ Quick Start Guide](https://docs.page/fluttercommunity/flutter_workmanager/quickstart)** - Installation and setup
 
-### 1. Install
-```yaml
-dependencies:
-  workmanager: ^0.8.0
-```
+**[→ API Documentation](https://pub.dev/documentation/workmanager/latest/)** - Complete Dart API reference
 
-### 2. Platform Setup
-- **Android**: Works automatically ✅
-- **iOS**: [5-minute setup required](https://docs.workmanager.dev/setup/ios) 
+**[→ Debugging Guide](https://docs.page/fluttercommunity/flutter_workmanager/debugging)** - Troubleshooting help
 
-### 3. Initialize & Use
-```dart
-@pragma('vm:entry-point')
-void callbackDispatcher() {
-  Workmanager().executeTask((task, inputData) {
-    print("Background task: $task");
-    // Your background logic here
-    return Future.value(true);
-  });
-}
+## 🎯 Use Cases
 
-void main() {
-  Workmanager().initialize(callbackDispatcher);
-  
-  // Schedule a task
-  Workmanager().registerPeriodicTask(
-    "sync-task",
-    "data-sync",
-    frequency: Duration(hours: 1),
-  );
-  
-  runApp(MyApp());
-}
-```
-
-## 🎯 Common Use Cases
-
-| Use Case | Documentation |
-|----------|---------------|
-| **Sync data from API** | [Data Sync Guide →](https://docs.page/fluttercommunity/flutter_workmanager/usecases/data-sync) |
-| **Upload files in background** | [File Upload Guide →](https://docs.page/fluttercommunity/flutter_workmanager/usecases/upload-files) |
-| **Clean up old data** | [Cleanup Guide →](https://docs.page/fluttercommunity/flutter_workmanager/usecases/periodic-cleanup) |
-| **Fetch notifications** | [Notifications Guide →](https://docs.page/fluttercommunity/flutter_workmanager/usecases/fetch-notifications) |
+Background tasks are perfect for:
+- **Sync data from API** - Keep your app's data fresh
+- **Upload files in background** - Reliable file uploads
+- **Clean up old data** - Remove old files and cache
+- **Fetch notifications** - Check for new messages
+- **Database maintenance** - Optimize and clean databases
 
 ## 🏗️ Architecture
 

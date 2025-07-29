@@ -27,6 +27,10 @@ Android works automatically - no additional setup required! ✅
 ### iOS
 iOS requires a 5-minute setup in Xcode. Choose your approach based on your needs:
 
+<Info>
+**Requirements:** Swift 4.2+, Xcode 10.3+, iOS 10+ minimum deployment target. Set in your Podfile: `platform :ios, '10.0'`
+</Info>
+
 #### Option A: Periodic Tasks (Recommended for most use cases)
 For regular data sync, notifications, cleanup - uses iOS Background Fetch:
 
@@ -208,6 +212,66 @@ Your background tasks can return:
 - `Future.value(true)` - ✅ Task successful
 - `Future.value(false)` - 🔄 Task should be retried
 - `Future.error(...)` - ❌ Task failed
+
+## Task Customization
+
+### Input Data and Constraints
+
+```dart
+// Schedule task with input data and constraints
+Workmanager().registerOneOffTask(
+  "upload-task",
+  "file_upload",
+  initialDelay: Duration(minutes: 5),
+  inputData: {
+    'fileName': 'document.pdf',
+    'uploadUrl': 'https://api.example.com/upload',
+    'retryCount': 3
+  },
+  constraints: Constraints(
+    networkType: NetworkType.connected,
+    requiresBatteryNotLow: true,
+    requiresCharging: false,
+    requiresDeviceIdle: false,
+    requiresStorageNotLow: true,
+  ),
+);
+
+// Access input data in your task
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    print('Task: $task');
+    print('Input: $inputData'); // Access your input data
+    
+    String? fileName = inputData?['fileName'];
+    int retryCount = inputData?['retryCount'] ?? 0;
+    
+    // Your task logic using the input data
+    return Future.value(true);
+  });
+}
+```
+
+### Task Tagging and Management
+
+```dart
+// Tag tasks for easier management
+Workmanager().registerOneOffTask(
+  "sync-task-1",
+  "data_sync",
+  tag: "data-sync-tasks",
+);
+
+// Cancel tasks by tag
+Workmanager().cancelByTag("data-sync-tasks");
+
+// Cancel specific task
+Workmanager().cancelByUniqueName("sync-task-1");
+
+// Cancel all tasks
+Workmanager().cancelAll();
+```
 
 ## Key Points
 
