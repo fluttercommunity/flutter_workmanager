@@ -1,120 +1,139 @@
 ---
 title: Quick Start
-description: "Get started with Flutter Workmanager in minutes"
+description: Get started with Flutter Workmanager in minutes
 ---
 
 # Quick Start
 
-This guide will help you set up Flutter Workmanager and create your first background task in just a few minutes.
+Get Flutter Workmanager up and running in your app quickly.
 
 ## Installation
 
 Add `workmanager` to your `pubspec.yaml`:
 
-```yaml pubspec.yaml
+```yaml
 dependencies:
   workmanager: ^0.8.0
 ```
 
 Then run:
-
 ```bash
 flutter pub get
 ```
 
-<Note>
-The platform-specific packages (`workmanager_android`, `workmanager_apple`) are automatically included through the federated plugin system. You don't need to add them manually.
-</Note>
+> The platform-specific packages are automatically included through the federated plugin system.
 
 ## Platform Setup
 
-Before using Workmanager, you need to configure platform-specific settings:
+### Android
+Android works automatically - no additional setup required! ✅
 
-<CardGroup cols={2}>
-  <Card title="Android Setup" icon="android" href="/setup/android">
-    Configure Android WorkManager
-  </Card>
-  <Card title="iOS Setup" icon="apple" href="/setup/ios">
-    Configure iOS background processing
-  </Card>
-</CardGroup>
+### iOS
+iOS requires a 5-minute setup in Xcode:
+
+1. **Enable Background Modes** in Xcode target capabilities:
+   - Background processing ✅
+   - Background fetch ✅
+
+2. **Add to Info.plist**:
+```xml
+<key>UIBackgroundModes</key>
+<array>
+    <string>processing</string>
+    <string>fetch</string>
+</array>
+
+<key>BGTaskSchedulerPermittedIdentifiers</key>
+<array>
+    <string>your.task.identifier</string>
+</array>
+```
+
+3. **Configure AppDelegate.swift**:
+```swift
+import workmanager
+
+// In application(_:didFinishLaunchingWithOptions:)
+WorkmanagerPlugin.registerBGProcessingTask(withIdentifier: "your.task.identifier")
+```
 
 ## Basic Usage
 
-Here's a complete example to get you started:
+### 1. Create Background Task Handler
 
-```dart main.dart
-import 'package:flutter/material.dart';
-import 'package:workmanager/workmanager.dart';
-
-@pragma('vm:entry-point') // Mandatory if the App is obfuscated or using Flutter 3.1+
+```dart
+@pragma('vm:entry-point') // Required for release builds
 void callbackDispatcher() {
-  Workmanager().executeTask((task, inputData) {
-    print("Native called background task: $task"); // simpleTask will be emitted here
-    return Future.value(true);
+  Workmanager().executeTask((task, inputData) async {
+    print("Background task: $task");
+    
+    // Your background logic here
+    switch (task) {
+      case "data_sync":
+        await syncDataWithServer();
+        break;
+      case "cleanup":
+        await cleanupOldFiles();
+        break;
+    }
+    
+    return Future.value(true); // Task completed successfully
   });
 }
+```
 
+### 2. Initialize in main()
+
+```dart
 void main() {
-  // Initialize the plugin
+  // Initialize Workmanager
   Workmanager().initialize(
-    callbackDispatcher, // The top level function, aka callbackDispatcher
-    isInDebugMode: true // If enabled it will post a notification whenever the task is running
+    callbackDispatcher,
+    isInDebugMode: true, // Shows notifications when tasks run
   );
-  
-  // Register a one-off task
-  Workmanager().registerOneOffTask("task-identifier", "simpleTask");
   
   runApp(MyApp());
 }
+```
 
+### 3. Schedule Tasks
+
+```dart
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Workmanager Example',
-      home: MyHomePage(),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Workmanager Example'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            ElevatedButton(
-              onPressed: () {
-                Workmanager().registerOneOffTask(
-                  "one-off-task",
-                  "simpleTask",
-                );
-              },
-              child: Text('Register One-Off Task'),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Workmanager().registerPeriodicTask(
-                  "periodic-task",
-                  "periodicTask",
-                  frequency: Duration(minutes: 15),
-                );
-              },
-              child: Text('Register Periodic Task'),
-            ),
-          ],
+      home: Scaffold(
+        appBar: AppBar(title: Text('Workmanager Demo')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  // Schedule a one-time task
+                  Workmanager().registerOneOffTask(
+                    "sync-task",
+                    "data_sync",
+                    initialDelay: Duration(seconds: 10),
+                  );
+                },
+                child: Text('Sync Data (One-time)'),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  // Schedule a periodic task
+                  Workmanager().registerPeriodicTask(
+                    "cleanup-task",
+                    "cleanup",
+                    frequency: Duration(hours: 24),
+                  );
+                },
+                child: Text('Daily Cleanup (Periodic)'),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -122,78 +141,45 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 ```
 
-## Key Concepts
+## Task Results
 
-<AccordionGroup>
-  <Accordion title="Callback Dispatcher">
-    The `callbackDispatcher` is a top-level function that executes your background tasks. It must be either a static function or a top-level function to be accessible as a Flutter entry point.
-  </Accordion>
-  
-  <Accordion title="Task Identification">
-    - **Android**: Tasks are identified using their `taskName` (second parameter)
-    - **iOS**: Tasks are identified using their `taskIdentifier` (first parameter)
-    - **iOS Background Fetch**: Use the constant `Workmanager.iOSBackgroundTask`
-  </Accordion>
-  
-  <Accordion title="Separate Isolate">
-    The workmanager runs on a separate isolate from the main flutter isolate. Ensure to initialize all dependencies inside the `Workmanager().executeTask`.
-  </Accordion>
-</AccordionGroup>
+Your background tasks can return:
 
-## Work Results
+- `Future.value(true)` - ✅ Task successful
+- `Future.value(false)` - 🔄 Task should be retried
+- `Future.error(...)` - ❌ Task failed
 
-Your background task can return three possible outcomes:
+## Key Points
 
-<CardGroup cols={3}>
-  <Card title="Success" icon="check">
-    `Future.value(true)` - Task completed successfully
-  </Card>
-  <Card title="Retry" icon="arrow-rotate-right">
-    `Future.value(false)` - Task needs to be retried
-  </Card>
-  <Card title="Failure" icon="xmark">
-    `Future.error(...)` - Task failed permanently
-  </Card>
-</CardGroup>
+- **Callback Dispatcher**: Must be a top-level function (not inside a class)
+- **Separate Isolate**: Background tasks run in isolation - initialize dependencies inside the task
+- **Platform Differences**: 
+  - Android: Reliable background execution, 15-minute minimum frequency
+  - iOS: 30-second limit, execution depends on user patterns and device state
 
-<Info>
-On Android, the `BackoffPolicy` configures how WorkManager retries failed tasks. On iOS with BGTaskScheduler, retries need to be scheduled manually.
-</Info>
+## Debugging
 
-## Debugging Tips
-
-### Enable Debug Mode
-
-When initializing Workmanager, set `isInDebugMode: true` to receive notifications whenever background tasks run:
+Enable debug mode to see notifications when tasks run:
 
 ```dart
 Workmanager().initialize(
   callbackDispatcher,
-  isInDebugMode: true // Shows notifications for debugging
+  isInDebugMode: true, // Shows debug notifications
 );
 ```
 
-### Add Error Handling
-
-Wrap your task code in try-catch blocks:
+Add error handling:
 
 ```dart
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     try {
-      // Your background task code here
-      print("Executing task: $task");
-      
-      // Example: Save data to SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      final count = prefs.getInt('task_count') ?? 0;
-      await prefs.setInt('task_count', count + 1);
-      
+      // Your task logic
       return Future.value(true);
-    } catch (err) {
-      print("Task failed: $err");
-      return Future.value(false);
+    } catch (e) {
+      print('Task failed: $e');
+      return Future.value(false); // Retry
     }
   });
 }
@@ -201,19 +187,5 @@ void callbackDispatcher() {
 
 ## Next Steps
 
-Now that you have a basic understanding, explore more advanced features:
-
-<CardGroup cols={2}>
-  <Card title="Task Types" icon="list" href="/tasks/one-off">
-    Learn about different types of background tasks
-  </Card>
-  <Card title="Constraints" icon="filter" href="/concepts/constraints">
-    Configure when tasks should run
-  </Card>
-  <Card title="Platform Differences" icon="code-compare" href="/platform/differences">
-    Understand platform-specific behaviors
-  </Card>
-  <Card title="Examples" icon="code" href="/examples/basic">
-    See more detailed examples
-  </Card>
-</CardGroup>
+- **[Use Cases](usecases/data-sync)** - See real-world examples
+- **[Example App](https://github.com/fluttercommunity/flutter_workmanager/tree/main/example)** - Complete working demo

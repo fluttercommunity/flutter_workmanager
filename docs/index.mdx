@@ -5,75 +5,18 @@ description: Background task execution for Flutter apps
 
 # Flutter Workmanager
 
-[![pub package](https://img.shields.io/pub/v/workmanager.svg)](https://pub.dartlang.org/packages/workmanager)
-[![pub points](https://img.shields.io/pub/points/workmanager)](https://pub.dev/packages/workmanager/score)
-[![likes](https://img.shields.io/pub/likes/workmanager)](https://pub.dev/packages/workmanager/score)
-[![popularity](https://img.shields.io/pub/popularity/workmanager)](https://pub.dev/packages/workmanager/score)
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/fluttercommunity/flutter_workmanager/test.yml?branch=main&label=tests)](https://github.com/fluttercommunity/flutter_workmanager/actions)
-[![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/fluttercommunity/flutter_workmanager/blob/main/LICENSE)
+<p>
+<img src="https://img.shields.io/pub/v/workmanager.svg" alt="pub package"/> 
+<img src="https://img.shields.io/github/actions/workflow/status/fluttercommunity/flutter_workmanager/test.yml?branch=main&label=tests" alt="tests"/> 
+<img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license"/>
+</p>
 
 Execute Dart code in the background, even when your app is closed. Perfect for data sync, file uploads, and periodic maintenance tasks.
-
-## Quick Start
-
-### 1. Install
-```yaml
-dependencies:
-  workmanager: ^0.8.0
-```
-
-### 2. Platform Setup
-- **Android**: Works automatically ✅
-- **iOS**: [5-minute setup required](setup/ios) 
-
-### 3. Initialize & Use
-```dart
-@pragma('vm:entry-point')
-void callbackDispatcher() {
-  Workmanager().executeTask((task, inputData) {
-    print("Background task: $task");
-    // Your background logic here
-    return Future.value(true);
-  });
-}
-
-void main() {
-  Workmanager().initialize(callbackDispatcher);
-  
-  // Schedule a task
-  Workmanager().registerPeriodicTask(
-    "sync-task",
-    "data-sync",
-    frequency: Duration(hours: 1),
-  );
-  
-  runApp(MyApp());
-}
-```
-
-## Common Use Cases
-
-| Use Case | Documentation |
-|----------|---------------|
-| **Sync data from API** | [Data Sync Guide](usecases/data-sync) |
-| **Upload files in background** | [File Upload Guide](usecases/upload-files) |
-| **Clean up old data** | [Cleanup Guide](usecases/periodic-cleanup) |
-| **Fetch notifications** | [Notifications Guide](usecases/fetch-notifications) |
-
-## Architecture
-
-This plugin uses a **federated architecture**:
-- `workmanager` - Main package
-- `workmanager_android` - Android implementation  
-- `workmanager_apple` - iOS/macOS implementation
-- `workmanager_platform_interface` - Shared interface
-
-All packages are automatically included when you add `workmanager` to pubspec.yaml.
 
 ## Key Features
 
 - **Background Task Execution**: Execute Dart code in the background on both Android and iOS platforms
-- **Multiple Task Types**: Support for one-off tasks, periodic tasks, and iOS processing tasks
+- **Multiple Task Types**: Support for one-off tasks, periodic tasks, and iOS processing tasks  
 - **Platform Constraints**: Configure network, battery, charging, and other constraints for task execution
 - **Debug Support**: Built-in debugging with notifications to track background task execution
 
@@ -87,10 +30,22 @@ All packages are automatically included when you add `workmanager` to pubspec.ya
 | Web | ❌ Not supported | Background execution not available |
 | Windows/Linux | ❌ Not supported | No background task APIs |
 
-## Navigation
+## Common Use Cases
 
-- **[Installation](installation)** - Install and configure the plugin
-- **[Quick Start](quickstart)** - Get up and running quickly
-- **[Platform Setup](setup/android)** - Configure Android and iOS
-- **[Use Cases](usecases/data-sync)** - Real-world implementation examples
-- **[Example App](https://github.com/fluttercommunity/flutter_workmanager/tree/main/example)** - Complete working demo
+| Use Case | Description |
+|----------|-------------|
+| **[Sync data from API](usecases/data-sync)** | Automatically fetch and sync data from your backend API |
+| **[Upload files in background](usecases/upload-files)** | Upload photos, documents when network conditions are optimal |
+| **[Clean up old data](usecases/periodic-cleanup)** | Remove old files, cache data, and maintain app performance |
+| **[Fetch notifications](usecases/fetch-notifications)** | Check for new notifications and messages from your server |
+| **[Database maintenance](usecases/database-maintenance)** | Perform database cleanup and optimization tasks |
+
+## Architecture
+
+This plugin uses a **federated architecture**:
+- `workmanager` - Main package that provides the unified API
+- `workmanager_android` - Android implementation using WorkManager
+- `workmanager_apple` - iOS/macOS implementation using BGTaskScheduler
+- `workmanager_platform_interface` - Shared interface for platform implementations
+
+All packages are automatically included when you add `workmanager` to pubspec.yaml.
