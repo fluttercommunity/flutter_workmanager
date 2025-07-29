@@ -25,37 +25,69 @@ flutter pub get
 Android works automatically - no additional setup required! ✅
 
 ### iOS
-iOS requires a 5-minute setup in Xcode:
+iOS requires a 5-minute setup in Xcode. Choose your approach based on your needs:
+
+#### Option A: Periodic Tasks (Recommended for most use cases)
+For regular data sync, notifications, cleanup - uses iOS Background Fetch:
 
 1. **Enable Background Modes** in Xcode target capabilities ([Xcode Help](https://help.apple.com/xcode/mac/current/#/devbfa1532c4)):
-   - Background processing ✅
    - Background fetch ✅
 
 2. **Add to Info.plist**:
 ```xml
 <key>UIBackgroundModes</key>
 <array>
-    <string>processing</string>
     <string>fetch</string>
-</array>
-
-<key>BGTaskSchedulerPermittedIdentifiers</key>
-<array>
-    <string>your.task.identifier</string>
 </array>
 ```
 
 3. **Configure AppDelegate.swift**:
 ```swift
-import workmanager
+import workmanager_apple
 
 // In application didFinishLaunching
-WorkmanagerPlugin.registerBGProcessingTask(
-  withIdentifier: "your.task.identifier"
+WorkmanagerPlugin.registerPeriodicTask(
+  withIdentifier: "com.yourapp.periodic_task", 
+  frequency: NSNumber(value: 15 * 60) // 15 minutes minimum
 )
 ```
 
-> **Why this configuration is needed:** iOS requires explicit registration of background task identifiers for security and system resource management. The task identifier in Info.plist tells iOS which background tasks your app can schedule, while the AppDelegate registration connects the identifier to the actual task handler. This prevents apps from scheduling unauthorized background work.
+#### Option B: Processing Tasks (For complex operations)
+For file uploads, data processing, longer tasks - uses BGTaskScheduler:
+
+1. **Enable Background Modes** in Xcode target capabilities ([Xcode Help](https://help.apple.com/xcode/mac/current/#/devbfa1532c4)):
+   - Background processing ✅
+
+2. **Add to Info.plist**:
+```xml
+<key>UIBackgroundModes</key>
+<array>
+    <string>processing</string>
+</array>
+
+<key>BGTaskSchedulerPermittedIdentifiers</key>
+<array>
+    <string>com.yourapp.processing_task</string>
+</array>
+```
+
+3. **Configure AppDelegate.swift**:
+```swift
+import workmanager_apple
+
+// In application didFinishLaunching
+WorkmanagerPlugin.registerBGProcessingTask(
+  withIdentifier: "com.yourapp.processing_task"
+)
+```
+
+<Info>
+**Why this configuration is needed:** iOS requires explicit registration of background task identifiers for security and system resource management. The task identifier in Info.plist tells iOS which background tasks your app can schedule, while the AppDelegate registration connects the identifier to the actual task handler. This prevents apps from scheduling unauthorized background work.
+</Info>
+
+<Success>
+**Which option to choose?** Use **Option A (Periodic Tasks)** for most use cases like data sync, notifications, and cleanup. Use **Option B (Processing Tasks)** only when you need longer execution time or fine-grained control over task scheduling.
+</Success>
 
 ## Basic Usage
 
