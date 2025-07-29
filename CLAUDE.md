@@ -52,6 +52,15 @@
 - **If testing is too complex, document why**: If a component is hard to unit test, document the testing approach and use integration tests instead
 - **Remove placeholder tests**: Don't leave empty test classes or placeholder tests in production code
 
+## Complex Component Testing Notes
+- **BackgroundWorker**: Cannot be easily unit tested due to Flutter engine dependencies (FlutterEngine, FlutterLoader, native libraries)
+  - The `startWork()` method requires Flutter native libraries that aren't available in JVM unit tests
+  - Even with Robolectric, the Flutter engine initialization fails with native library loading errors
+  - **Testing approach**: Integration tests through the example app and manual testing with invalid callback handles
+  - **Why not mocked**: The Flutter engine initialization happens deep in the startWork() chain and would require extensive mocking of Flutter internals
+- **SharedPreferenceHelper**: Can be unit tested with Robolectric for simple preference operations
+- **Dart-side logic**: Use standard Flutter widget/unit tests, avoid testing private implementation details
+
 ## Test Execution
 - Run all tests: `flutter test` (from root or individual package)
 - Android tests: `cd workmanager_android && flutter test`
