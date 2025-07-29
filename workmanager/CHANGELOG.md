@@ -1,10 +1,7 @@
 # Future
 
 ## Bug Fixes & Improvements
-* Fix iOS example app Info.plist configuration with proper NSBonjourServices for debugging
-* Add version field to example app pubspec.yaml to resolve CFBundle warnings
-* Fix iOS CI builds by disabling User Script Sandboxing to resolve sandbox permission errors
-* Update iOS simulator devices to iPhone 16/iPhone 16 Pro in CI workflows
+* Internal improvements to development and testing infrastructure
 
 # 0.8.0
 
