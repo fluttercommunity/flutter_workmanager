@@ -295,6 +295,27 @@ class Workmanager {
   Future<String> printScheduledTasks() async => _platform.printScheduledTasks();
 }
 
+/// Safely converts inputData from Pigeon format to Dart format, filtering null keys
+///
+/// This function handles the conversion from Map<String?, Object?>? (Pigeon format)
+/// to Map<String, dynamic>? (Dart format) while safely filtering out null keys
+/// that would cause downstream issues.
+///
+/// @visibleForTesting to allow unit testing of this critical null handling logic
+@visibleForTesting
+Map<String, dynamic>? convertPigeonInputData(Map<String?, Object?>? inputData) {
+  Map<String, dynamic>? convertedInputData;
+  if (inputData != null) {
+    convertedInputData = <String, dynamic>{};
+    for (final entry in inputData.entries) {
+      if (entry.key != null) {
+        convertedInputData[entry.key!] = entry.value;
+      }
+    }
+  }
+  return convertedInputData;
+}
+
 /// Implementation of WorkmanagerFlutterApi for handling background task execution
 class _WorkmanagerFlutterApiImpl extends WorkmanagerFlutterApi {
   @override
@@ -307,15 +328,7 @@ class _WorkmanagerFlutterApiImpl extends WorkmanagerFlutterApi {
   Future<bool> executeTask(
       String taskName, Map<String?, Object?>? inputData) async {
     // Convert the input data to the expected format, safely handling null keys/values
-    Map<String, dynamic>? convertedInputData;
-    if (inputData != null) {
-      convertedInputData = <String, dynamic>{};
-      for (final entry in inputData.entries) {
-        if (entry.key != null) {
-          convertedInputData[entry.key!] = entry.value;
-        }
-      }
-    }
+    final convertedInputData = convertPigeonInputData(inputData);
 
     // Call the user's background task handler
     final result = await Workmanager._backgroundTaskHandler
