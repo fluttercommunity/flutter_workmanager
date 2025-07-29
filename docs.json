@@ -1,19 +1,43 @@
 {
   "name": "Flutter Workmanager",
   "description": "Background task execution for Flutter apps",
-  "navigation": [
-    { "text": "Home", "link": "/" },
-    { "text": "Get Started", "link": "/quickstart" },
+  "sidebar": [
     {
-      "text": "Examples",
-      "items": [
-        { "text": "Data Sync", "link": "/usecases/data-sync" },
-        { "text": "File Upload", "link": "/usecases/upload-files" },
-        { "text": "Cleanup Tasks", "link": "/usecases/periodic-cleanup" },
-        { "text": "Notifications", "link": "/usecases/fetch-notifications" },
-        { "text": "Database Tasks", "link": "/usecases/database-maintenance" }
+      "title": "Home",
+      "href": "/"
+    },
+    {
+      "title": "Get Started",
+      "href": "/quickstart"
+    },
+    {
+      "group": "Examples",
+      "pages": [
+        {
+          "title": "Data Sync",
+          "href": "/usecases/data-sync"
+        },
+        {
+          "title": "File Upload",
+          "href": "/usecases/upload-files"
+        },
+        {
+          "title": "Cleanup Tasks",
+          "href": "/usecases/periodic-cleanup"
+        },
+        {
+          "title": "Notifications",
+          "href": "/usecases/fetch-notifications"
+        },
+        {
+          "title": "Database Tasks",
+          "href": "/usecases/database-maintenance"
+        }
       ]
     },
-    { "text": "Debugging", "link": "/debugging" }
+    {
+      "title": "Debugging",
+      "href": "/debugging"
+    }
   ]
 }
