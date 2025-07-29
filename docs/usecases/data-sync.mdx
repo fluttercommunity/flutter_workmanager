@@ -195,64 +195,60 @@ class _SyncStatusWidgetState extends State<SyncStatusWidget> {
 
 ## Platform-Specific Considerations
 
-<Tabs>
-  <Tab title="Android">
-    **Android automatically handles**:
-    - Task scheduling and retry logic
-    - Battery optimization (Doze mode)
-    - App standby mode restrictions
-    - Network changes and availability
+### Android
+**Android automatically handles**:
+- Task scheduling and retry logic
+- Battery optimization (Doze mode)
+- App standby mode restrictions
+- Network changes and availability
 
-    **Best practices**:
-    ```dart
-    // Use appropriate constraints
-    Workmanager().registerPeriodicTask(
-      "data_sync",
-      "sync_task",
-      frequency: Duration(hours: 1),
-      constraints: Constraints(
-        networkType: NetworkType.connected,
-        requiresBatteryNotLow: true, // Respect battery optimization
-        requiresCharging: false,     // Don't wait for charging
-      ),
-    );
-    ```
+**Best practices**:
+```dart
+// Use appropriate constraints
+Workmanager().registerPeriodicTask(
+  "data_sync",
+  "sync_task",
+  frequency: Duration(hours: 1),
+  constraints: Constraints(
+    networkType: NetworkType.connected,
+    requiresBatteryNotLow: true, // Respect battery optimization
+    requiresCharging: false,     // Don't wait for charging
+  ),
+);
+```
 
-    **Minimum frequency**: 15 minutes (Android WorkManager limitation)
-  </Tab>
+**Minimum frequency**: 15 minutes (Android WorkManager limitation)
 
-  <Tab title="iOS">
-    **iOS has additional restrictions**:
-    - Background App Refresh must be enabled
-    - Tasks may be limited to 30 seconds
-    - iOS learns usage patterns and schedules accordingly
-    - No guaranteed execution time
+### iOS
+**iOS has additional restrictions**:
+- Background App Refresh must be enabled
+- Tasks may be limited to 30 seconds
+- iOS learns usage patterns and schedules accordingly
+- No guaranteed execution time
 
-    **Setup required in AppDelegate.swift**:
-    ```swift
-    import workmanager
+**Setup required in AppDelegate.swift**:
+```swift
+import workmanager
 
-    // In application(_:didFinishLaunchingWithOptions:)
-    WorkmanagerPlugin.registerPeriodicTask(
-      withIdentifier: "data_sync_task", 
-      frequency: NSNumber(value: 60 * 60) // 1 hour in seconds
-    )
-    ```
+// In application(_:didFinishLaunchingWithOptions:)
+WorkmanagerPlugin.registerPeriodicTask(
+  withIdentifier: "data_sync_task", 
+  frequency: NSNumber(value: 60 * 60) // 1 hour in seconds
+)
+```
 
-    **Info.plist configuration**:
-    ```xml
-    <key>BGTaskSchedulerPermittedIdentifiers</key>
-    <array>
-        <string>data_sync_task</string>
-    </array>
-    ```
+**Info.plist configuration**:
+```xml
+<key>BGTaskSchedulerPermittedIdentifiers</key>
+<array>
+    <string>data_sync_task</string>
+</array>
+```
 
-    **Best practices**:
-    - Keep sync operations under 30 seconds
-    - Use incremental sync (only fetch changes)
-    - Handle task expiration gracefully
-  </Tab>
-</Tabs>
+**Best practices**:
+- Keep sync operations under 30 seconds
+- Use incremental sync (only fetch changes)
+- Handle task expiration gracefully
 
 ## Testing Your Implementation
 
@@ -299,60 +295,49 @@ Future<void> _checkSyncHealth() async {
 
 ## Common Issues & Solutions
 
-<AccordionGroup>
-  <Accordion title="Sync Not Running">
-    **Possible causes**:
-    - Missing platform setup (Android/iOS configuration)
-    - App battery optimization preventing background tasks
-    - No network connectivity when task tries to run
-    - App hasn't been used recently (iOS restriction)
+### Sync Not Running
+**Possible causes**:
+- Missing platform setup (Android/iOS configuration)
+- App battery optimization preventing background tasks
+- No network connectivity when task tries to run
+- App hasn't been used recently (iOS restriction)
 
-    **Solutions**:
-    - Verify platform setup is complete
-    - Ask users to disable battery optimization for your app
-    - Use network constraints appropriately
-    - Encourage regular app usage
-  </Accordion>
+**Solutions**:
+- Verify platform setup is complete
+- Ask users to disable battery optimization for your app
+- Use network constraints appropriately
+- Encourage regular app usage
 
-  <Accordion title="Partial Data Sync">
-    **Implement incremental sync**:
-    ```dart
-    Future<bool> _performIncrementalSync() async {
-      final prefs = await SharedPreferences.getInstance();
-      final lastSyncTime = prefs.getString('last_sync_time') ?? '';
-      
-      final response = await http.get(
-        Uri.parse('https://api.yourapp.com/data?since=$lastSyncTime'),
-      );
-      
-      // Only sync changed data
-      if (response.statusCode == 200) {
-        final changes = json.decode(response.body);
-        await _applyChanges(changes);
-        return true;
-      }
-      return false;
-    }
-    ```
-  </Accordion>
+### Partial Data Sync
+**Implement incremental sync**:
+```dart
+Future<bool> _performIncrementalSync() async {
+  final prefs = await SharedPreferences.getInstance();
+  final lastSyncTime = prefs.getString('last_sync_time') ?? '';
+  
+  final response = await http.get(
+    Uri.parse('https://api.yourapp.com/data?since=$lastSyncTime'),
+  );
+  
+  // Only sync changed data
+  if (response.statusCode == 200) {
+    final changes = json.decode(response.body);
+    await _applyChanges(changes);
+    return true;
+  }
+  return false;
+}
+```
 
-  <Accordion title="High Battery Usage">
-    **Optimize your sync logic**:
-    - Use appropriate frequency (not too often)
-    - Add battery constraints
-    - Implement smart syncing (only when data actually changed)
-    - Use compression for large payloads
-    - Cache API responses appropriately
-  </Accordion>
-</AccordionGroup>
+### High Battery Usage
+**Optimize your sync logic**:
+- Use appropriate frequency (not too often)
+- Add battery constraints
+- Implement smart syncing (only when data actually changed)
+- Use compression for large payloads
+- Cache API responses appropriately
 
 ## Related Use Cases
 
-<CardGroup cols={2}>
-  <Card title="Upload Files" icon="cloud-arrow-up" href="/usecases/upload-files">
-    Upload user content in the background
-  </Card>
-  <Card title="Fetch Notifications" icon="bell" href="/usecases/fetch-notifications">
-    Check for new notifications from your server
-  </Card>
-</CardGroup>
+- **[Upload Files](upload-files)** - Upload user content in the background
+- **[Fetch Notifications](fetch-notifications)** - Check for new notifications from your server

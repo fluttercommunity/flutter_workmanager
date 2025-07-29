@@ -61,18 +61,14 @@ void scheduleCleanup() {
 
 ## Platform Behavior
 
-<Tabs>
-  <Tab title="Android">
-    - Runs reliably in the background
-    - Respects device idle constraints
-    - Can clean up large amounts of data
-    - Minimum frequency: 15 minutes
-  </Tab>
-  
-  <Tab title="iOS">
-    - Limited to 30 seconds execution time
-    - Use incremental cleanup approach
-    - May be deferred if device is busy
-    - Focus on quick cleanup operations
-  </Tab>
-</Tabs>
+### Android
+- Runs reliably in the background
+- Respects device idle constraints
+- Can clean up large amounts of data
+- Minimum frequency: 15 minutes
+
+### iOS
+- Limited to 30 seconds execution time
+- Use incremental cleanup approach
+- May be deferred if device is busy
+- Focus on quick cleanup operations

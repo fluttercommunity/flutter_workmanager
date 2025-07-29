@@ -178,53 +178,49 @@ class _FileUploadWidgetState extends State<FileUploadWidget> {
 
 ## Platform-Specific Behavior
 
-<Tabs>
-  <Tab title="Android">
-    **Automatic handling:**
-    - Large file uploads continue even if app is killed
-    - Respects data saver mode and metered networks
-    - Retries with exponential backoff on failure
+### Android
+**Automatic handling:**
+- Large file uploads continue even if app is killed
+- Respects data saver mode and metered networks
+- Retries with exponential backoff on failure
 
-    **Optimize for Android:**
-    ```dart
-    Workmanager().registerOneOffTask(
-      taskId,
-      uploadTaskName,
-      inputData: inputData,
-      constraints: Constraints(
-        networkType: NetworkType.unmetered, // Use WiFi when possible
-        requiresCharging: true,              // For large files
-        requiresDeviceIdle: false,           // Upload even when device in use
-      ),
-      backoffPolicy: BackoffPolicy.exponential,
-      backoffPolicyDelay: Duration(minutes: 1),
-    );
-    ```
-  </Tab>
+**Optimize for Android:**
+```dart
+Workmanager().registerOneOffTask(
+  taskId,
+  uploadTaskName,
+  inputData: inputData,
+  constraints: Constraints(
+    networkType: NetworkType.unmetered, // Use WiFi when possible
+    requiresCharging: true,              // For large files
+    requiresDeviceIdle: false,           // Upload even when device in use
+  ),
+  backoffPolicy: BackoffPolicy.exponential,
+  backoffPolicyDelay: Duration(minutes: 1),
+);
+```
 
-  <Tab title="iOS">
-    **iOS limitations:**
-    - 30-second execution limit for most tasks
-    - Use BGProcessingTask for longer uploads
-    - May be deferred until device is idle and charging
+### iOS
+**iOS limitations:**
+- 30-second execution limit for most tasks
+- Use BGProcessingTask for longer uploads
+- May be deferred until device is idle and charging
 
-    **For large files, use processing tasks:**
-    ```dart
-    // Register in AppDelegate.swift
-    WorkmanagerPlugin.registerBGProcessingTask(withIdentifier: "large_file_upload")
-    
-    // Schedule in Dart
-    Workmanager().registerProcessingTask(
-      taskId,
-      uploadTaskName,
-      constraints: Constraints(
-        networkType: NetworkType.connected,
-        requiresCharging: true, // iOS prefers charging for processing tasks
-      ),
-    );
-    ```
-  </Tab>
-</Tabs>
+**For large files, use processing tasks:**
+```dart
+// Register in AppDelegate.swift
+WorkmanagerPlugin.registerBGProcessingTask(withIdentifier: "large_file_upload")
+
+// Schedule in Dart
+Workmanager().registerProcessingTask(
+  taskId,
+  uploadTaskName,
+  constraints: Constraints(
+    networkType: NetworkType.connected,
+    requiresCharging: true, // iOS prefers charging for processing tasks
+  ),
+);
+```
 
 ## Advanced Features
 
@@ -277,11 +273,5 @@ Future<bool> _uploadWithRetry(Map<String, dynamic> inputData) async {
 
 ## Related Use Cases
 
-<CardGroup cols={2}>
-  <Card title="Data Sync" icon="arrows-rotate" href="/usecases/data-sync">
-    Synchronize data with your backend
-  </Card>
-  <Card title="Database Maintenance" icon="database" href="/usecases/database-maintenance">
-    Clean up and optimize local data
-  </Card>
-</CardGroup>
+- **[Data Sync](data-sync)** - Synchronize data with your backend
+- **[Database Maintenance](database-maintenance)** - Clean up and optimize local data

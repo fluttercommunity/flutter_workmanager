@@ -62,18 +62,14 @@ void scheduleNotificationCheck() {
 
 ## Platform Considerations
 
-<Tabs>
-  <Tab title="Android">
-    - Can check frequently (minimum 15 minutes)
-    - Works reliably in background
-    - Can show local notifications immediately
-    - Respects battery optimization settings
-  </Tab>
-  
-  <Tab title="iOS">
-    - Limited execution time (~30 seconds)
-    - May not run if app unused recently
-    - iOS learns user patterns for scheduling
-    - Background App Refresh must be enabled
-  </Tab>
-</Tabs>
+### Android
+- Can check frequently (minimum 15 minutes)
+- Works reliably in background
+- Can show local notifications immediately
+- Respects battery optimization settings
+
+### iOS
+- Limited execution time (~30 seconds)
+- May not run if app unused recently
+- iOS learns user patterns for scheduling
+- Background App Refresh must be enabled
