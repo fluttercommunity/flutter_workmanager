@@ -1,0 +1,71 @@
+---
+title: "Database Maintenance"
+description: "Perform database cleanup, optimization, and maintenance tasks in the background"
+---
+
+# Database Maintenance
+
+Automatically maintain your app's local database by cleaning up old records, optimizing indexes, and performing routine maintenance tasks in the background.
+
+## When to Use This
+
+- Remove old/expired database records
+- Optimize database indexes and vacuum SQLite
+- Archive old data to reduce database size
+- Clean up orphaned records and relationships
+- Compress and defragment database files
+
+## Quick Implementation
+
+```dart
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    if (task == "db_maintenance") {
+      return await performDatabaseMaintenance();
+    }
+    return Future.value(false);
+  });
+}
+
+Future<bool> performDatabaseMaintenance() async {
+  try {
+    final db = await DatabaseHelper.getDatabase();
+    
+    // Remove old records (older than 30 days)
+    await db.delete(
+      'logs',
+      where: 'created_at < ?',
+      whereArgs: [DateTime.now().subtract(Duration(days: 30)).millisecondsSinceEpoch],
+    );
+    
+    // Vacuum database to reclaim space
+    await db.execute('VACUUM');
+    
+    // Update statistics
+    await db.execute('ANALYZE');
+    
+    return true;
+  } catch (e) {
+    print('Database maintenance failed: $e');
+    return false;
+  }
+}
+
+void scheduleDatabaseMaintenance() {
+  Workmanager().registerPeriodicTask(
+    "db_maintenance",
+    "db_maintenance",
+    frequency: Duration(days: 7), // Weekly maintenance
+    constraints: Constraints(
+      requiresDeviceIdle: true,
+      requiresBatteryNotLow: true,
+    ),
+  );
+}
+```
+
+## Platform Considerations
+
+**Android**: Can perform comprehensive maintenance operations
+**iOS**: Limited to 30 seconds - focus on quick cleanup operations
