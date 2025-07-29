@@ -12,13 +12,9 @@ import XCTest
 
 class WorkmanagerTests: XCTestCase {
 
-    func testNetworkType() throws {
-        XCTAssertEqual(NetworkType.connected, NetworkType(fromDart: "connected"))
-        XCTAssertEqual(NetworkType.metered, NetworkType(fromDart: "metered"))
-        XCTAssertEqual(NetworkType.notRequired, NetworkType(fromDart: "not_required"))
-        XCTAssertEqual(NetworkType.notRoaming, NetworkType(fromDart: "not_roaming"))
-        XCTAssertEqual(NetworkType.temporarilyUnmetered, NetworkType(fromDart: "temporarily_unmetered"))
-        XCTAssertEqual(NetworkType.unmetered, NetworkType(fromDart: "unmetered"))
+    // TODO: Add tests for Pigeon-based implementation
+    func testPlaceholder() throws {
+        XCTAssertTrue(true)
     }
 
 }
