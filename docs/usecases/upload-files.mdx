@@ -129,27 +129,24 @@ class _FileUploadWidgetState extends State<FileUploadWidget> {
   }
 
   Future<void> _selectAndQueueFile() async {
-    final result = await FilePicker.platform.pickFiles();
-    if (result != null) {
-      final file = result.files.single;
-      final filePath = file.path!;
-      
-      // Queue for background upload
-      await UploadService.queueFileUpload(filePath, {
-        'filename': file.name,
-        'size': file.size,
-        'type': file.extension,
-        'userId': 'current_user_id',
-      });
+    // Use your preferred file picker implementation
+    final filePath = '/path/to/selected/file.jpg';
+    
+    // Queue for background upload
+    await UploadService.queueFileUpload(filePath, {
+      'filename': 'photo.jpg',
+      'size': 1024000,
+      'type': 'jpg',
+      'userId': 'current_user_id',
+    });
 
-      setState(() {
-        _pendingUploads.add(file.name);
-      });
+    setState(() {
+      _pendingUploads.add('photo.jpg');
+    });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('File queued for upload: ${file.name}')),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('File queued for upload')),
+    );
   }
 
   @override
