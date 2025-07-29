@@ -1,3 +1,8 @@
+# Future
+
+## Bug Fixes & Improvements
+* Internal improvements to development and testing infrastructure
+
 # 0.8.0
 
 ## Major Architecture Changes

@@ -1,3 +1,8 @@
+## Future
+
+### Improvements
+* Improve SharedPreferenceHelper callback handling - now calls callback immediately when preferences are already loaded
+
 ## 0.8.0
 
 ### Initial Release

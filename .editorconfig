@@ -1,0 +1,5 @@
+[*.kt]
+ktlint_standard = enabled
+
+[**/pigeon/*.g.kt]
+ktlint = disabled

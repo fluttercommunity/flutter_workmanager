@@ -8,6 +8,14 @@
 import Foundation
 import UserNotifications
 
+#if os(iOS)
+import Flutter
+#elseif os(macOS)
+import FlutterMacOS
+#else
+#error("Unsupported platform.")
+#endif
+
 class DebugNotificationHelper {
 
     private let identifier: UUID
@@ -63,7 +71,7 @@ class DebugNotificationHelper {
         UNUserNotificationCenter.current().requestAuthorization(options: [.sound, .alert]) { (_, _) in }
         let notificationRequest = createNotificationRequest(
             identifier: identifier,
-            threadIdentifier: SwiftWorkmanagerPlugin.identifier,
+            threadIdentifier: WorkmanagerPlugin.identifier,
             title: title,
             body: body,
             icon: icon
@@ -95,7 +103,7 @@ class DebugNotificationHelper {
     }
 
     private static var logPrefix: String {
-        return "\(String(describing: SwiftWorkmanagerPlugin.self)) - \(DebugNotificationHelper.self)"
+        return "\(String(describing: WorkmanagerPlugin.self)) - \(DebugNotificationHelper.self)"
     }
 
 }

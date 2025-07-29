@@ -65,10 +65,11 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>NSLocalNetworkUsageDescription</key>
-<string>This app needs local network access for debugging and communication.</string>
-<key>NSBonjourServices</key>
-<array>
-  <string>_dartobservatory._tcp</string>
-</array>
+	<string>This app uses local network access for Flutter debugging features such as hot reload and DevTools during development.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_dartVmService._tcp</string>
+		<string>_dartobservatory._tcp</string>
+	</array>
 </dict>
 </plist>

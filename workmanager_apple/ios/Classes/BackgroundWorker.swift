@@ -7,6 +7,14 @@
 
 import Foundation
 
+#if os(iOS)
+import Flutter
+#elseif os(macOS)
+import FlutterMacOS
+#else
+#error("Unsupported platform.")
+#endif
+
 enum BackgroundMode {
     case backgroundFetch
     case backgroundProcessingTask(identifier: String)
@@ -16,26 +24,26 @@ enum BackgroundMode {
     var flutterThreadlabelPrefix: String {
         switch self {
         case .backgroundFetch:
-            return "\(SwiftWorkmanagerPlugin.identifier).BackgroundFetch"
+            return "\(WorkmanagerPlugin.identifier).BackgroundFetch"
         case .backgroundProcessingTask:
-            return "\(SwiftWorkmanagerPlugin.identifier).BackgroundProcessingTask"
+            return "\(WorkmanagerPlugin.identifier).BackgroundProcessingTask"
         case .backgroundPeriodicTask:
-            return "\(SwiftWorkmanagerPlugin.identifier).BackgroundPeriodicTask"
+            return "\(WorkmanagerPlugin.identifier).BackgroundPeriodicTask"
         case .backgroundOneOffTask:
-            return "\(SwiftWorkmanagerPlugin.identifier).OneOffTask"
+            return "\(WorkmanagerPlugin.identifier).OneOffTask"
         }
     }
 
     var onResultSendArguments: [String: String] {
         switch self {
         case .backgroundFetch:
-            return ["\(SwiftWorkmanagerPlugin.identifier).DART_TASK": "iOSPerformFetch"]
+            return ["\(WorkmanagerPlugin.identifier).DART_TASK": "iOSPerformFetch"]
         case let .backgroundProcessingTask(identifier):
-            return ["\(SwiftWorkmanagerPlugin.identifier).DART_TASK": identifier]
+            return ["\(WorkmanagerPlugin.identifier).DART_TASK": identifier]
         case let .backgroundPeriodicTask(identifier):
-            return ["\(SwiftWorkmanagerPlugin.identifier).DART_TASK": identifier]
+            return ["\(WorkmanagerPlugin.identifier).DART_TASK": identifier]
         case let .backgroundOneOffTask(identifier):
-            return ["\(SwiftWorkmanagerPlugin.identifier).DART_TASK": identifier]
+            return ["\(WorkmanagerPlugin.identifier).DART_TASK": identifier]
         }
     }
 }
@@ -56,7 +64,7 @@ class BackgroundWorker {
     }
 
     private struct BackgroundChannel {
-        static let name = "\(SwiftWorkmanagerPlugin.identifier)/background_channel_work_manager"
+        static let name = "\(WorkmanagerPlugin.identifier)/background_channel_work_manager"
         static let initialized = "backgroundChannelInitialized"
         static let onResultSendCommand = "onResultSend"
     }
@@ -64,8 +72,7 @@ class BackgroundWorker {
     /// The result is discardable due to how [BackgroundTaskOperation] works.
     @discardableResult
     func performBackgroundRequest(_ completionHandler: @escaping (UIBackgroundFetchResult) -> Void)
-        -> Bool
-    {
+        -> Bool {
         guard let callbackHandle = UserDefaultsHelper.getStoredCallbackHandle(),
             let flutterCallbackInformation = FlutterCallbackCache.lookupCallbackInformation(
                 callbackHandle)
@@ -97,48 +104,54 @@ class BackgroundWorker {
         )
         flutterPluginRegistrantCallback?(flutterEngine!)
 
-        var backgroundMethodChannel: FlutterMethodChannel? = FlutterMethodChannel(
-            name: BackgroundChannel.name,
-            binaryMessenger: flutterEngine!.binaryMessenger
-        )
+        var flutterApi: WorkmanagerFlutterApi? = WorkmanagerFlutterApi(binaryMessenger: flutterEngine!.binaryMessenger)
 
         func cleanupFlutterResources() {
             flutterEngine?.destroyContext()
-            backgroundMethodChannel = nil
+            flutterApi = nil
             flutterEngine = nil
         }
 
-        backgroundMethodChannel?.setMethodCallHandler { call, result in
-            switch call.method {
-            case BackgroundChannel.initialized:
-                result(true)  // Agree to Flutter's method invocation
-                var arguments: [String: Any] = self.backgroundMode.onResultSendArguments
+        // Initialize the background channel and execute the task
+        flutterApi?.backgroundChannelInitialized { result in
+            switch result {
+            case .success:
+                // Get the task name from backgroundMode
+                let taskName = self.backgroundMode.onResultSendArguments["\(WorkmanagerPlugin.identifier).DART_TASK"] ?? ""
+
+                // Convert inputData to the format expected by Pigeon
+                var pigeonInputData: [String?: Any?]?
                 if let inputData = self.inputData {
-                    arguments["dev.fluttercommunity.workmanager.INPUT_DATA"] = inputData
+                    pigeonInputData = Dictionary(uniqueKeysWithValues: inputData.map { ($0.key as String?, $0.value as Any?) })
                 }
 
-                backgroundMethodChannel?.invokeMethod(
-                    BackgroundChannel.onResultSendCommand,
-                    arguments: arguments,
-                    result: { flutterResult in
-                        cleanupFlutterResources()
-                        let taskSessionCompleter = Date()
-                        let result: UIBackgroundFetchResult =
-                            (flutterResult as? Bool ?? false) ? .newData : .failed
-                        let taskDuration = taskSessionCompleter.timeIntervalSince(taskSessionStart)
-                        logInfo(
-                            "[\(String(describing: self))] \(#function) -> performBackgroundRequest.\(result) (finished in \(taskDuration.formatToSeconds()))"
-                        )
+                // Execute the task
+                flutterApi?.executeTask(taskName: taskName, inputData: pigeonInputData) { taskResult in
+                    cleanupFlutterResources()
+                    let taskSessionCompleter = Date()
 
-                        debugHelper.showCompletedFetchNotification(
-                            completedDate: taskSessionCompleter,
-                            result: result,
-                            elapsedTime: taskDuration
-                        )
-                        completionHandler(result)
-                    })
-            default:
-                result(WMPError.unhandledMethod(call.method).asFlutterError)
+                    let fetchResult: UIBackgroundFetchResult
+                    switch taskResult {
+                    case .success(let wasSuccessful):
+                        fetchResult = wasSuccessful ? .newData : .failed
+                    case .failure:
+                        fetchResult = .failed
+                    }
+
+                    let taskDuration = taskSessionCompleter.timeIntervalSince(taskSessionStart)
+                    logInfo(
+                        "[\(String(describing: self))] \(#function) -> performBackgroundRequest.\(fetchResult) (finished in \(taskDuration.formatToSeconds()))"
+                    )
+
+                    debugHelper.showCompletedFetchNotification(
+                        completedDate: taskSessionCompleter,
+                        result: fetchResult,
+                        elapsedTime: taskDuration
+                    )
+                    completionHandler(fetchResult)
+                }
+            case .failure(let error):
+                logError("Background channel initialization failed: \(error)")
                 cleanupFlutterResources()
                 completionHandler(UIBackgroundFetchResult.failed)
             }

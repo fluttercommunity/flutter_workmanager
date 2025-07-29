@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:workmanager_platform_interface/workmanager_platform_interface.dart';
 import 'package:workmanager_android/workmanager_android.dart';
@@ -110,11 +109,8 @@ class Workmanager {
   /// ```
   static const String iOSBackgroundTask = "iOSPerformFetch";
 
-  /// The method channel used to interact with the native platform.
-  static const MethodChannel _backgroundChannel = MethodChannel(
-      "dev.fluttercommunity.workmanager/background_channel_work_manager");
-
   static BackgroundTaskHandler? _backgroundTaskHandler;
+  static late final WorkmanagerFlutterApi _flutterApi;
 
   /// Platform implementation
   static WorkmanagerPlatform get _platform => WorkmanagerPlatform.instance;
@@ -127,24 +123,8 @@ class Workmanager {
     Function callbackDispatcher, {
     bool isInDebugMode = false,
   }) async {
-    _backgroundChannel.setMethodCallHandler(_handleBackgroundMessage);
     return _platform.initialize(callbackDispatcher,
         isInDebugMode: isInDebugMode);
-  }
-
-  /// Handle background method calls from the platform
-  Future<dynamic> _handleBackgroundMessage(MethodCall call) async {
-    Map<String, dynamic>? inputData = call
-        .arguments["dev.fluttercommunity.workmanager.INPUT_DATA"]
-        .cast<String, dynamic>();
-
-    if (call.method == "onResultSend") {
-      return _backgroundTaskHandler?.call(
-        call.arguments["dev.fluttercommunity.workmanager.DART_TASK"],
-        inputData,
-      );
-    }
-    return null;
   }
 
   /// This method needs to be called from within your [callbackDispatcher].
@@ -164,9 +144,11 @@ class Workmanager {
   void executeTask(BackgroundTaskHandler backgroundTaskHandler) async {
     WidgetsFlutterBinding.ensureInitialized();
 
-    _backgroundChannel.setMethodCallHandler(_handleBackgroundMessage);
     _backgroundTaskHandler = backgroundTaskHandler;
-    await _backgroundChannel.invokeMethod("backgroundChannelInitialized");
+    _flutterApi = _WorkmanagerFlutterApiImpl();
+    WorkmanagerFlutterApi.setUp(_flutterApi);
+
+    await _flutterApi.backgroundChannelInitialized();
   }
 
   /// Schedule a one-off task.
@@ -311,4 +293,26 @@ class Workmanager {
   /// Currently only supported on iOS and only on iOS 13+.
   /// Returns a string containing the scheduled tasks information.
   Future<String> printScheduledTasks() async => _platform.printScheduledTasks();
+}
+
+/// Implementation of WorkmanagerFlutterApi for handling background task execution
+class _WorkmanagerFlutterApiImpl extends WorkmanagerFlutterApi {
+  @override
+  Future<void> backgroundChannelInitialized() async {
+    // This is called by the native side to indicate it's ready
+    // We don't need to do anything special here
+  }
+
+  @override
+  Future<bool> executeTask(
+      String taskName, Map<String?, Object?>? inputData) async {
+    // Convert the input data to the expected format
+    final Map<String, dynamic>? convertedInputData =
+        inputData?.cast<String, dynamic>();
+
+    // Call the user's background task handler
+    final result = await Workmanager._backgroundTaskHandler
+        ?.call(taskName, convertedInputData);
+    return result ?? false;
+  }
 }

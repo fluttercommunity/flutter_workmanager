@@ -8,11 +8,10 @@ import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
 import com.google.common.util.concurrent.ListenableFuture
+import dev.fluttercommunity.workmanager.pigeon.WorkmanagerFlutterApi
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.embedding.engine.loader.FlutterLoader
-import io.flutter.plugin.common.MethodCall
-import io.flutter.plugin.common.MethodChannel
 import io.flutter.view.FlutterCallbackInformation
 import java.util.Random
 
@@ -24,9 +23,8 @@ import java.util.Random
 class BackgroundWorker(
     applicationContext: Context,
     private val workerParams: WorkerParameters,
-) : ListenableWorker(applicationContext, workerParams),
-    MethodChannel.MethodCallHandler {
-    private lateinit var backgroundChannel: MethodChannel
+) : ListenableWorker(applicationContext, workerParams) {
+    private lateinit var flutterApi: WorkmanagerFlutterApi
 
     companion object {
         const val TAG = "BackgroundWorker"
@@ -34,11 +32,6 @@ class BackgroundWorker(
         const val PAYLOAD_KEY = "dev.fluttercommunity.workmanager.INPUT_DATA"
         const val DART_TASK_KEY = "dev.fluttercommunity.workmanager.DART_TASK"
         const val IS_IN_DEBUG_MODE_KEY = "dev.fluttercommunity.workmanager.IS_IN_DEBUG_MODE_KEY"
-
-        const val BACKGROUND_CHANNEL_NAME =
-            "dev.fluttercommunity.workmanager/background_channel_work_manager"
-        const val BACKGROUND_CHANNEL_INITIALIZED = "backgroundChannelInitialized"
-        const val ON_RESULT_SEND = "onResultSend"
 
         private val flutterLoader = FlutterLoader()
     }
@@ -105,8 +98,7 @@ class BackgroundWorker(
             }
 
             engine?.let { engine ->
-                backgroundChannel = MethodChannel(engine.dartExecutor, BACKGROUND_CHANNEL_NAME)
-                backgroundChannel.setMethodCallHandler(this@BackgroundWorker)
+                flutterApi = WorkmanagerFlutterApi(engine.dartExecutor.binaryMessenger)
 
                 engine.dartExecutor.executeDartCallback(
                     DartExecutor.DartCallback(
@@ -115,6 +107,12 @@ class BackgroundWorker(
                         callbackInfo,
                     ),
                 )
+
+                // Initialize the background channel
+                flutterApi.backgroundChannelInitialized {
+                    // Channel is initialized, now execute the task
+                    executeBackgroundTask()
+                }
             }
         }
 
@@ -152,35 +150,20 @@ class BackgroundWorker(
         }
     }
 
-    override fun onMethodCall(
-        call: MethodCall,
-        r: MethodChannel.Result,
-    ) {
-        when (call.method) {
-            BACKGROUND_CHANNEL_INITIALIZED -> {
-                backgroundChannel.invokeMethod(
-                    ON_RESULT_SEND,
-                    mapOf(DART_TASK_KEY to dartTask, PAYLOAD_KEY to payload),
-                    object : MethodChannel.Result {
-                        override fun notImplemented() {
-                            stopEngine(Result.failure())
-                        }
+    private fun executeBackgroundTask() {
+        // Convert payload to the format expected by Pigeon (Map<String?, Object?>)
+        val pigeonPayload = payload.mapKeys { it.key as String? }.mapValues { it.value as Object? }
 
-                        override fun error(
-                            errorCode: String,
-                            errorMessage: String?,
-                            errorDetails: Any?,
-                        ) {
-                            Log.e(TAG, "errorCode: $errorCode, errorMessage: $errorMessage")
-                            stopEngine(Result.failure())
-                        }
-
-                        override fun success(receivedResult: Any?) {
-                            val wasSuccessful = receivedResult as? Boolean == true
-                            stopEngine(if (wasSuccessful) Result.success() else Result.retry())
-                        }
-                    },
-                )
+        flutterApi.executeTask(dartTask, pigeonPayload) { result ->
+            when {
+                result.isSuccess -> {
+                    val wasSuccessful = result.getOrNull() ?: false
+                    stopEngine(if (wasSuccessful) Result.success() else Result.retry())
+                }
+                result.isFailure -> {
+                    Log.e(TAG, "Error executing task: ${result.exceptionOrNull()?.message}")
+                    stopEngine(Result.failure())
+                }
             }
         }
     }

@@ -30,10 +30,19 @@ jobs:
           channel: 'stable'
           cache: true
       - uses: bluefireteam/melos-action@v3
+      - name: Setup iOS build environment
+        run: |
+          sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+          xcrun --sdk iphoneos --show-sdk-version
+      - name: Clean and prepare Flutter
+        run: |
+          cd example
+          flutter clean
+          flutter pub get
       - name: Build iOS App
-        run: cd example && flutter build ios --debug --no-codesign
+        run: cd example && flutter build ios --debug --no-codesign --verbose
       - name: Run native iOS tests
-        run: cd example/ios && xcodebuild -workspace Runner.xcworkspace -scheme Runner -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' test
+        run: cd example/ios && xcodebuild -workspace Runner.xcworkspace -scheme Runner -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' test
 
   native_android_tests:
     runs-on: ubuntu-latest
@@ -57,7 +66,7 @@ jobs:
     strategy:
       matrix:
         device:
-          - "iPhone 15 Pro"
+          - "iPhone 16 Pro"
       fail-fast: false
     runs-on: macos-latest
     steps:

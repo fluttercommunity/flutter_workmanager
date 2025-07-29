@@ -13,7 +13,6 @@ Flutter Android Workmanager
   s.author           = { 'Your Company' => 'email@example.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
-  s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
 
   s.ios.deployment_target = '13.0'

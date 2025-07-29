@@ -1,7 +1,13 @@
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+
 formatter:
   page_width: 120
+  exclude:
+    - "**/*.g.dart"
 
 linter:
   rules:
