@@ -11,7 +11,7 @@ Execute Dart code in the background, even when your app is closed. Perfect for d
 
 ## 📖 Full Documentation
 
-**Visit our comprehensive documentation site:** https://docs.workmanager.dev
+**[Visit our comprehensive documentation →](https://docs.page/fluttercommunity/flutter_workmanager)**
 
 ## ⚡ Quick Start
 
@@ -54,10 +54,10 @@ void main() {
 
 | Use Case | Documentation |
 |----------|---------------|
-| **Sync data from API** | [Data Sync Guide](https://docs.workmanager.dev/usecases/data-sync) |
-| **Upload files in background** | [File Upload Guide](https://docs.workmanager.dev/usecases/upload-files) |
-| **Clean up old data** | [Cleanup Guide](https://docs.workmanager.dev/usecases/periodic-cleanup) |
-| **Fetch notifications** | [Notifications Guide](https://docs.workmanager.dev/usecases/fetch-notifications) |
+| **Sync data from API** | [Data Sync Guide →](https://docs.page/fluttercommunity/flutter_workmanager/usecases/data-sync) |
+| **Upload files in background** | [File Upload Guide →](https://docs.page/fluttercommunity/flutter_workmanager/usecases/upload-files) |
+| **Clean up old data** | [Cleanup Guide →](https://docs.page/fluttercommunity/flutter_workmanager/usecases/periodic-cleanup) |
+| **Fetch notifications** | [Notifications Guide →](https://docs.page/fluttercommunity/flutter_workmanager/usecases/fetch-notifications) |
 
 ## 🏗️ Architecture
 
@@ -71,9 +71,9 @@ All packages are automatically included when you add `workmanager` to pubspec.ya
 
 ## 🐛 Issues & Support
 
-- **Bug reports**: [GitHub Issues](https://github.com/fluttercommunity/flutter_workmanager/issues)
-- **Questions**: [GitHub Discussions](https://github.com/fluttercommunity/flutter_workmanager/discussions)
-- **Documentation**: https://docs.workmanager.dev
+- **Bug reports**: [GitHub Issues →](https://github.com/fluttercommunity/flutter_workmanager/issues)
+- **Questions**: [GitHub Discussions →](https://github.com/fluttercommunity/flutter_workmanager/discussions)
+- **Documentation**: [docs.page/fluttercommunity/flutter_workmanager →](https://docs.page/fluttercommunity/flutter_workmanager)
 
 ## 🚀 Example App
 

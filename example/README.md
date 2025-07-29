@@ -60,4 +60,4 @@ The demo includes practical examples:
 
 ## Documentation
 
-For detailed guides and real-world use cases, visit: **https://docs.workmanager.dev**
+For detailed guides and real-world use cases, visit: **[docs.page/fluttercommunity/flutter_workmanager →](https://docs.page/fluttercommunity/flutter_workmanager)**

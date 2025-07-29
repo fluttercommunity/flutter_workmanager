@@ -1,0 +1,266 @@
+---
+title: Debugging Background Tasks
+description: Debug and troubleshoot background tasks on Android and iOS
+---
+
+# Debugging Background Tasks
+
+Background tasks can be tricky to debug since they run when your app is closed. Here's how to effectively debug and troubleshoot them on both platforms.
+
+## Enable Debug Mode
+
+Always start by enabling debug notifications:
+
+```dart
+Workmanager().initialize(
+  callbackDispatcher,
+  isInDebugMode: true, // Shows notifications when tasks execute
+);
+```
+
+This shows system notifications whenever background tasks run, making it easy to verify execution.
+
+## Android Debugging
+
+### Job Scheduler Inspection
+
+Use ADB to inspect Android's job scheduler:
+
+```bash
+# View all scheduled jobs for your app
+adb shell dumpsys jobscheduler | grep your.package.name
+
+# View detailed job info
+adb shell dumpsys jobscheduler your.package.name
+
+# Force run a specific job (debug builds only)
+adb shell cmd jobscheduler run -f your.package.name JOB_ID
+```
+
+### Monitor Job Execution
+
+```bash
+# Monitor job scheduler logs
+adb logcat | grep WorkManager
+
+# Monitor your app's background execution
+adb logcat | grep "your.package.name"
+```
+
+### Common Android Issues
+
+**Tasks not running:**
+- Check battery optimization settings
+- Verify app is not in "App Standby" mode
+- Ensure device isn't in Doze mode
+- Check if constraints are too restrictive
+
+**Tasks running too often:**
+- Android enforces minimum 15-minute intervals for periodic tasks
+- Use appropriate constraints to limit execution
+
+### Debug Commands
+
+```bash
+# Check if your app is whitelisted from battery optimization
+adb shell dumpsys deviceidle whitelist
+
+# Check battery optimization status
+adb shell settings get global battery_saver_constants
+
+# Force device into idle mode (testing)
+adb shell dumpsys deviceidle force-idle
+```
+
+## iOS Debugging
+
+### Console Logging
+
+iOS background tasks have limited execution time. Add detailed logging:
+
+```dart
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    print('[iOS BG] Task started: $task at ${DateTime.now()}');
+    
+    try {
+      // Your task logic
+      final result = await performTask();
+      print('[iOS BG] Task completed successfully');
+      return true;
+    } catch (e) {
+      print('[iOS BG] Task failed: $e');
+      return false;
+    }
+  });
+}
+```
+
+### Xcode Debugging
+
+Use Xcode's console to trigger background tasks manually:
+
+```objc
+// Trigger background app refresh
+e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"your.task.id"]
+
+// Trigger processing task  
+e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"your.processing.task.id"]
+
+// Force background fetch (legacy)
+e -l objc -- (void)[[UIApplication sharedApplication] _simulateApplicationDidEnterBackground]
+```
+
+### Monitor Scheduled Tasks
+
+Check what tasks iOS has scheduled:
+
+```dart
+// iOS 13+ only
+if (Platform.isIOS) {
+  final tasks = await Workmanager().printScheduledTasks();
+  print('Scheduled tasks: $tasks');
+}
+```
+
+This prints output like:
+```
+[BGTaskScheduler] Task Identifier: your.task.id earliestBeginDate: 2023.10.10 PM 11:10:12
+[BGTaskScheduler] There are no scheduled tasks
+```
+
+### Common iOS Issues
+
+**Tasks never run:**
+- Background App Refresh disabled in Settings
+- App hasn't been used recently (iOS learning algorithm)
+- Task identifiers don't match between Info.plist and AppDelegate
+- Missing BGTaskSchedulerPermittedIdentifiers in Info.plist
+
+**Tasks stop working:**
+- iOS battery optimization kicked in
+- App removed from recent apps too often
+- User disabled background refresh
+- Task taking longer than 30 seconds
+
+**Tasks run but don't complete:**
+- Hitting 30-second execution limit
+- Network requests timing out
+- Heavy processing blocking the thread
+
+## General Debugging Tips
+
+### Add Comprehensive Logging
+
+```dart
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    final startTime = DateTime.now();
+    print('🚀 Task started: $task');
+    print('📊 Input data: $inputData');
+    
+    try {
+      // Your task implementation
+      final result = await performTask(task, inputData);
+      
+      final duration = DateTime.now().difference(startTime);
+      print('✅ Task completed in ${duration.inSeconds}s');
+      
+      return result;
+    } catch (e, stackTrace) {
+      final duration = DateTime.now().difference(startTime);
+      print('❌ Task failed after ${duration.inSeconds}s: $e');
+      print('📋 Stack trace: $stackTrace');
+      
+      return false; // Retry
+    }
+  });
+}
+```
+
+### Test Task Logic Separately
+
+Create a way to test your background logic from the UI:
+
+```dart
+// Add a debug button to test task logic
+ElevatedButton(
+  onPressed: () async {
+    // Test the same logic that runs in background
+    final result = await performTask('test_task', {'debug': true});
+    print('Test result: $result');
+  },
+  child: Text('Test Task Logic'),
+)
+```
+
+### Monitor Task Health
+
+Track when tasks last ran successfully:
+
+```dart
+Future<void> saveTaskExecutionTime(String taskName) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString('${taskName}_last_run', DateTime.now().toIso8601String());
+}
+
+Future<bool> isTaskHealthy(String taskName, Duration maxAge) async {
+  final prefs = await SharedPreferences.getInstance();
+  final lastRunString = prefs.getString('${taskName}_last_run');
+  
+  if (lastRunString == null) return false;
+  
+  final lastRun = DateTime.parse(lastRunString);
+  final age = DateTime.now().difference(lastRun);
+  
+  return age < maxAge;
+}
+```
+
+## Platform-Specific Testing
+
+### Android Testing Workflow
+
+1. **Enable debug mode** and install app
+2. **Schedule task** and verify it appears in job scheduler
+3. **Put device to sleep** and wait for execution
+4. **Check debug notifications** to confirm execution
+5. **Use ADB commands** to force execution if needed
+
+### iOS Testing Workflow  
+
+1. **Test on physical device** (simulator doesn't support background tasks)
+2. **Enable Background App Refresh** in iOS Settings
+3. **Use Xcode debugger** to trigger tasks immediately
+4. **Monitor Xcode console** for logging output
+5. **Check iOS Settings > Battery** for background activity
+
+## Troubleshooting Checklist
+
+**Task not scheduling:**
+- [ ] Workmanager initialized in main()
+- [ ] Task names are unique
+- [ ] Platform setup completed (iOS Info.plist, AppDelegate)
+
+**Task not executing:**
+- [ ] Debug notifications enabled
+- [ ] Battery optimization disabled (Android)
+- [ ] Background App Refresh enabled (iOS)
+- [ ] App used recently (iOS learning algorithm)
+- [ ] Constraints not too restrictive
+
+**Task executing but failing:**
+- [ ] Added try-catch error handling
+- [ ] Dependencies initialized in background isolate
+- [ ] Network timeouts configured appropriately
+- [ ] iOS 30-second limit respected
+
+**Performance issues:**
+- [ ] Task logic optimized for background execution
+- [ ] Heavy processing split into smaller chunks
+- [ ] Database operations use appropriate batch sizes
+- [ ] Network requests have reasonable timeouts
+
+Remember: Background task execution is controlled by the operating system and is never guaranteed. Always design your app to work gracefully when background tasks don't run as expected.
