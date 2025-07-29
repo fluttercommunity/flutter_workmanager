@@ -17,8 +17,6 @@ Then run:
 flutter pub get
 ```
 
-> The platform-specific packages are automatically included through the federated plugin system.
-
 ## Platform Setup
 
 ### Android
@@ -27,17 +25,10 @@ Android works automatically - no additional setup required! ✅
 ### iOS
 iOS requires a 5-minute setup in Xcode. Choose your approach based on your needs:
 
-<Info>
-**Requirements:** Swift 4.2+, Xcode 10.3+, iOS 10+ minimum deployment target. Set in your Podfile: `platform :ios, '10.0'`
-</Info>
-
 #### Option A: Periodic Tasks (Recommended for most use cases)
 For regular data sync, notifications, cleanup - uses iOS Background Fetch:
 
-1. **Enable Background Modes** in Xcode target capabilities ([Xcode Help](https://help.apple.com/xcode/mac/current/#/devbfa1532c4)):
-   - Background fetch ✅
-
-2. **Add to Info.plist**:
+1. **Enable Background Modes** in Xcode target capabilities ([Xcode Help](https://help.apple.com/xcode/mac/current/#/devbfa1532c4)) and add to Info.plist:
 ```xml
 <key>UIBackgroundModes</key>
 <array>
@@ -45,9 +36,7 @@ For regular data sync, notifications, cleanup - uses iOS Background Fetch:
 </array>
 ```
 
-3. **No AppDelegate configuration needed!** ✅
-   
-   The Background Fetch approach works automatically - just schedule tasks from your Dart code.
+2. **No AppDelegate configuration needed** - works automatically from Dart code
 
 <Warning>
 **iOS Background Fetch scheduling:** iOS completely controls when Background Fetch runs (typically once per day based on user app usage patterns). You cannot force immediate execution - it's designed for non-critical periodic updates like refreshing content.
@@ -56,10 +45,7 @@ For regular data sync, notifications, cleanup - uses iOS Background Fetch:
 #### Option B: Processing Tasks (For complex operations)
 For file uploads, data processing, longer tasks - uses BGTaskScheduler:
 
-1. **Enable Background Modes** in Xcode target capabilities ([Xcode Help](https://help.apple.com/xcode/mac/current/#/devbfa1532c4)):
-   - Background processing ✅
-
-2. **Add to Info.plist**:
+1. **Enable Background Modes** in Xcode target capabilities ([Xcode Help](https://help.apple.com/xcode/mac/current/#/devbfa1532c4)) and add to Info.plist:
 ```xml
 <key>UIBackgroundModes</key>
 <array>
@@ -72,7 +58,7 @@ For file uploads, data processing, longer tasks - uses BGTaskScheduler:
 </array>
 ```
 
-3. **Configure AppDelegate.swift** (required for BGTaskScheduler):
+2. **Configure AppDelegate.swift** (required for BGTaskScheduler):
 ```swift
 import workmanager_apple
 
@@ -89,10 +75,7 @@ WorkmanagerPlugin.registerBGProcessingTask(
 #### Option C: Periodic Tasks with Custom Frequency
 For periodic tasks with more control than Background Fetch - uses BGTaskScheduler with frequency:
 
-1. **Enable Background Modes** in Xcode target capabilities ([Xcode Help](https://help.apple.com/xcode/mac/current/#/devbfa1532c4)):
-   - Background processing ✅
-
-2. **Add to Info.plist**:
+1. **Enable Background Modes** in Xcode target capabilities ([Xcode Help](https://help.apple.com/xcode/mac/current/#/devbfa1532c4)) and add to Info.plist:
 ```xml
 <key>UIBackgroundModes</key>
 <array>
@@ -105,7 +88,7 @@ For periodic tasks with more control than Background Fetch - uses BGTaskSchedule
 </array>
 ```
 
-3. **Configure AppDelegate.swift** (with frequency control):
+2. **Configure AppDelegate.swift** (with frequency control):
 ```swift
 import workmanager_apple
 
@@ -222,9 +205,6 @@ Your background tasks can return:
   - Android: Reliable background execution, 15-minute minimum frequency
   - iOS: 30-second limit, execution depends on user patterns and device state
 
-## Debugging
-
-For comprehensive debugging guidance including platform-specific tools, ADB commands, and Xcode debugging, see the **[Debugging Guide](debugging)**.
 
 ## Next Steps
 

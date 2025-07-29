@@ -28,15 +28,6 @@ Background tasks are perfect for:
 - **Fetch notifications** - Check for new messages
 - **Database maintenance** - Optimize and clean databases
 
-## 🏗️ Architecture
-
-This plugin uses a **federated architecture**:
-- `workmanager` - Main package (this one)
-- `workmanager_android` - Android implementation  
-- `workmanager_apple` - iOS/macOS implementation
-- `workmanager_platform_interface` - Shared interface
-
-All packages are automatically included when you add `workmanager` to pubspec.yaml.
 
 ## 🐛 Issues & Support
 
