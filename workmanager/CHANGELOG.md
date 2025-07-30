@@ -1,12 +1,5 @@
 # Future
 
-## Dependencies & Infrastructure Updates
-* Updated Pigeon from 22.7.4 to 26.0.0 for enhanced multi-platform support
-* Updated androidx.work from 2.9.0 to 2.10.2 with improved Flow-based observability and precise periodic scheduling
-* Updated permission_handler in example app from 11.3.1 to 12.0.1
-* Updated dev dependencies for better compatibility
-* Fixed Kotlin null safety issues with androidx.work 2.10.2 type system improvements
-
 ## Breaking Changes
 * **BREAKING**: Separate `ExistingWorkPolicy` and `ExistingPeriodicWorkPolicy` enums for better type safety and API clarity
   * `registerPeriodicTask` now requires `ExistingPeriodicWorkPolicy` instead of `ExistingWorkPolicy`
