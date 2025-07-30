@@ -1,5 +1,8 @@
 ## Future
 
+### Dependencies & Infrastructure Updates
+* Regenerated Pigeon files with updated version 26.0.0 for enhanced multi-platform support
+
 ### Breaking Changes
 * **BREAKING**: Update `registerPeriodicTask` to use `ExistingPeriodicWorkPolicy` instead of `ExistingWorkPolicy`
   * This provides better type safety across all platforms
