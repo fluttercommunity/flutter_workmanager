@@ -1,5 +1,10 @@
 ## Future
 
+### Dependencies & Infrastructure Updates
+* Updated Pigeon from 22.7.4 to 26.0.0 for enhanced multi-platform support
+* Regenerated platform interface files with new Pigeon version
+* Fixed Kotlin null safety issues compatibility
+
 ### Breaking Changes
 * **BREAKING**: Separate `ExistingWorkPolicy` and `ExistingPeriodicWorkPolicy` enums for better type safety
   * Mirrors Android's native WorkManager API design
