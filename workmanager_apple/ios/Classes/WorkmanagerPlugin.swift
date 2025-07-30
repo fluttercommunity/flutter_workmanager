@@ -14,7 +14,6 @@ public class WorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
     static let identifier = "dev.fluttercommunity.workmanager"
 
     private static var flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?
-    private var isInDebugMode: Bool = false
 
     // MARK: - Static Background Task Handlers
 
@@ -150,8 +149,6 @@ public class WorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
 
     func initialize(request: InitializeRequest, completion: @escaping (Result<Void, Error>) -> Void) {
         UserDefaultsHelper.storeCallbackHandle(request.callbackHandle)
-        UserDefaultsHelper.storeIsDebug(request.isInDebugMode)
-        isInDebugMode = request.isInDebugMode
         completion(.success(()))
     }
 

@@ -1,6 +1,10 @@
 # Future
 
 ## Breaking Changes
+* **BREAKING**: Removed `isInDebugMode` parameter from `initialize()` method
+  * Replace with new hook-based debug system for better flexibility
+  * See `docs/debug.md` for migration guide and usage examples
+  * No debug output by default - add platform-specific debug handlers as needed
 * **BREAKING**: Separate `ExistingWorkPolicy` and `ExistingPeriodicWorkPolicy` enums for better type safety and API clarity
   * `registerPeriodicTask` now requires `ExistingPeriodicWorkPolicy` instead of `ExistingWorkPolicy`
   * This mirrors Android's native WorkManager API design for better consistency

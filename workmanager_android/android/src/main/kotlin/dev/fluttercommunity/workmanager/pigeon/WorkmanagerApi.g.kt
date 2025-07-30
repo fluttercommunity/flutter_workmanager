@@ -311,21 +311,18 @@ data class BackoffPolicyConfig (
 
 /** Generated class from Pigeon that represents data sent in messages. */
 data class InitializeRequest (
-  val callbackHandle: Long,
-  val isInDebugMode: Boolean
+  val callbackHandle: Long
 )
  {
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): InitializeRequest {
       val callbackHandle = pigeonVar_list[0] as Long
-      val isInDebugMode = pigeonVar_list[1] as Boolean
-      return InitializeRequest(callbackHandle, isInDebugMode)
+      return InitializeRequest(callbackHandle)
     }
   }
   fun toList(): List<Any?> {
     return listOf(
       callbackHandle,
-      isInDebugMode,
     )
   }
   override fun equals(other: Any?): Boolean {

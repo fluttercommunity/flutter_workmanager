@@ -31,7 +31,6 @@ class BackgroundWorker(
 
         const val PAYLOAD_KEY = "dev.fluttercommunity.workmanager.INPUT_DATA"
         const val DART_TASK_KEY = "dev.fluttercommunity.workmanager.DART_TASK"
-        const val IS_IN_DEBUG_MODE_KEY = "dev.fluttercommunity.workmanager.IS_IN_DEBUG_MODE_KEY"
 
         private val flutterLoader = FlutterLoader()
     }
@@ -51,8 +50,6 @@ class BackgroundWorker(
     private val dartTask
         get() = workerParams.inputData.getString(DART_TASK_KEY)!!
 
-    private val isInDebug
-        get() = workerParams.inputData.getBoolean(IS_IN_DEBUG_MODE_KEY, false)
 
     private val randomThreadIdentifier = Random().nextInt()
     private var engine: FlutterEngine? = null
@@ -92,17 +89,16 @@ class BackgroundWorker(
 
             val dartBundlePath = flutterLoader.findAppBundlePath()
 
-            if (isInDebug) {
-                DebugHelper.postTaskStarting(
-                    applicationContext,
-                    randomThreadIdentifier,
-                    dartTask,
-                    payload,
-                    callbackHandle,
-                    callbackInfo,
-                    dartBundlePath,
+            WorkmanagerDebug.onTaskStarting(
+                applicationContext,
+                TaskDebugInfo(
+                    taskName = dartTask,
+                    inputData = payload,
+                    startTime = startTime,
+                    callbackHandle = callbackHandle,
+                    callbackInfo = callbackInfo?.callbackName
                 )
-            }
+            )
 
             engine?.let { engine ->
                 flutterApi = WorkmanagerFlutterApi(engine.dartExecutor.binaryMessenger)
@@ -133,16 +129,19 @@ class BackgroundWorker(
     private fun stopEngine(result: Result?) {
         val fetchDuration = System.currentTimeMillis() - startTime
 
-        if (isInDebug) {
-            DebugHelper.postTaskCompleteNotification(
-                applicationContext,
-                randomThreadIdentifier,
-                dartTask,
-                payload,
-                fetchDuration,
-                result ?: Result.failure(),
+        WorkmanagerDebug.onTaskCompleted(
+            applicationContext,
+            TaskDebugInfo(
+                taskName = dartTask,
+                inputData = payload,
+                startTime = startTime
+            ),
+            TaskResult(
+                success = result is Result.Success,
+                duration = fetchDuration,
+                error = if (result is Result.Failure) "Task failed" else null
             )
-        }
+        )
 
         // No result indicates we were signalled to stop by WorkManager.  The result is already
         // STOPPED, so no need to resolve another one.

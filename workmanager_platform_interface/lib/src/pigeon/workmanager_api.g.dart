@@ -248,17 +248,13 @@ class BackoffPolicyConfig {
 class InitializeRequest {
   InitializeRequest({
     required this.callbackHandle,
-    required this.isInDebugMode,
   });
 
   int callbackHandle;
 
-  bool isInDebugMode;
-
   List<Object?> _toList() {
     return <Object?>[
       callbackHandle,
-      isInDebugMode,
     ];
   }
 
@@ -269,7 +265,6 @@ class InitializeRequest {
     result as List<Object?>;
     return InitializeRequest(
       callbackHandle: result[0]! as int,
-      isInDebugMode: result[1]! as bool,
     );
   }
 

@@ -22,7 +22,6 @@ class WorkmanagerPlugin :
     private lateinit var preferenceManager: SharedPreferenceHelper
 
     private var currentDispatcherHandle: Long = -1L
-    private var isInDebugMode: Boolean = false
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         preferenceManager =
@@ -49,7 +48,6 @@ class WorkmanagerPlugin :
     ) {
         try {
             preferenceManager.saveCallbackDispatcherHandleKey(request.callbackHandle)
-            isInDebugMode = request.isInDebugMode
             callback(Result.success(Unit))
         } catch (e: Exception) {
             callback(Result.failure(e))
@@ -66,10 +64,7 @@ class WorkmanagerPlugin :
         }
 
         try {
-            workManagerWrapper!!.enqueueOneOffTask(
-                request = request,
-                isInDebugMode = isInDebugMode,
-            )
+            workManagerWrapper!!.enqueueOneOffTask(request = request)
             callback(Result.success(Unit))
         } catch (e: Exception) {
             callback(Result.failure(e))
@@ -86,10 +81,7 @@ class WorkmanagerPlugin :
         }
 
         try {
-            workManagerWrapper!!.enqueuePeriodicTask(
-                request = request,
-                isInDebugMode = isInDebugMode,
-            )
+            workManagerWrapper!!.enqueuePeriodicTask(request = request)
             callback(Result.success(Unit))
         } catch (e: Exception) {
             callback(Result.failure(e))

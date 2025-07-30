@@ -15,14 +15,10 @@ class WorkmanagerApple extends WorkmanagerPlatform {
   }
 
   @override
-  Future<void> initialize(
-    Function callbackDispatcher, {
-    bool isInDebugMode = false,
-  }) async {
+  Future<void> initialize(Function callbackDispatcher) async {
     final callback = PluginUtilities.getCallbackHandle(callbackDispatcher);
     await _api.initialize(InitializeRequest(
       callbackHandle: callback!.toRawHandle(),
-      isInDebugMode: isInDebugMode,
     ));
   }
 

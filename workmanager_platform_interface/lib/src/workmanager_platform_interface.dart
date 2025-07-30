@@ -33,11 +33,7 @@ abstract class WorkmanagerPlatform extends PlatformInterface {
   /// Initialize the platform workmanager with the callback function.
   ///
   /// [callbackDispatcher] is the callback function that will be called when background work is executed.
-  /// [isInDebugMode] determines whether debug notifications should be shown.
-  Future<void> initialize(
-    Function callbackDispatcher, {
-    bool isInDebugMode = false,
-  }) {
+  Future<void> initialize(Function callbackDispatcher) {
     throw UnimplementedError('initialize() has not been implemented.');
   }
 

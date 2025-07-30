@@ -152,11 +152,9 @@ class BackoffPolicyConfig {
 }
 
 class InitializeRequest {
-  InitializeRequest(
-      {required this.callbackHandle, required this.isInDebugMode});
+  InitializeRequest({required this.callbackHandle});
 
   int callbackHandle;
-  bool isInDebugMode;
 }
 
 class OneOffTaskRequest {

@@ -304,23 +304,19 @@ struct BackoffPolicyConfig: Hashable {
 /// Generated class from Pigeon that represents data sent in messages.
 struct InitializeRequest: Hashable {
   var callbackHandle: Int64
-  var isInDebugMode: Bool
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> InitializeRequest? {
     let callbackHandle = pigeonVar_list[0] as! Int64
-    let isInDebugMode = pigeonVar_list[1] as! Bool
 
     return InitializeRequest(
-      callbackHandle: callbackHandle,
-      isInDebugMode: isInDebugMode
+      callbackHandle: callbackHandle
     )
   }
   func toList() -> [Any?] {
     return [
-      callbackHandle,
-      isInDebugMode,
+      callbackHandle
     ]
   }
   static func == (lhs: InitializeRequest, rhs: InitializeRequest) -> Bool {

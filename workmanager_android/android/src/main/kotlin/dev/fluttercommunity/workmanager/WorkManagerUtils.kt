@@ -13,7 +13,6 @@ import androidx.work.OutOfQuotaPolicy
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
 import dev.fluttercommunity.workmanager.BackgroundWorker.Companion.DART_TASK_KEY
-import dev.fluttercommunity.workmanager.BackgroundWorker.Companion.IS_IN_DEBUG_MODE_KEY
 import java.util.concurrent.TimeUnit
 
 // Constants
@@ -102,7 +101,6 @@ class WorkManagerWrapper(
 
     fun enqueueOneOffTask(
         request: dev.fluttercommunity.workmanager.pigeon.OneOffTaskRequest,
-        isInDebugMode: Boolean = false,
     ) {
         try {
             val oneOffTaskRequest =
@@ -111,7 +109,6 @@ class WorkManagerWrapper(
                     .setInputData(
                         buildTaskInputData(
                             request.taskName,
-                            isInDebugMode,
                             request.inputData?.filterNotNullKeys(),
                         ),
                     ).setInitialDelay(
@@ -146,7 +143,6 @@ class WorkManagerWrapper(
 
     fun enqueuePeriodicTask(
         request: dev.fluttercommunity.workmanager.pigeon.PeriodicTaskRequest,
-        isInDebugMode: Boolean = false,
     ) {
         val periodicTaskRequest =
             PeriodicWorkRequest
@@ -159,7 +155,6 @@ class WorkManagerWrapper(
                 ).setInputData(
                     buildTaskInputData(
                         request.taskName,
-                        isInDebugMode,
                         request.inputData?.filterNotNullKeys(),
                     ),
                 ).setInitialDelay(
@@ -190,14 +185,12 @@ class WorkManagerWrapper(
 
     private fun buildTaskInputData(
         dartTask: String,
-        isInDebugMode: Boolean,
         payload: Map<String, Any>?,
     ): Data {
         val builder =
             Data
                 .Builder()
                 .putString(DART_TASK_KEY, dartTask)
-                .putBoolean(IS_IN_DEBUG_MODE_KEY, isInDebugMode)
 
         // Add payload data if provided
         payload?.forEach { (key, value) ->
