@@ -288,7 +288,7 @@ void main() {
             requiresBatteryNotLow: false,
             requiresCharging: true,
           ),
-          existingWorkPolicy: ExistingWorkPolicy.keep,
+          existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
           backoffPolicy: BackoffPolicy.linear,
           backoffPolicyDelay: const Duration(seconds: 10),
           tag: 'periodic-tag',

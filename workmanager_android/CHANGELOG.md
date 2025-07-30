@@ -1,6 +1,13 @@
 ## Future
 
+### Breaking Changes
+* **BREAKING**: Update `registerPeriodicTask` to use `ExistingPeriodicWorkPolicy` instead of `ExistingWorkPolicy`
+  * This provides better type safety and mirrors Android's native API
+
 ### Bug Fixes
+* Fix issue #622: Periodic tasks running at incorrect frequencies when re-registered
+  * Changed default `ExistingPeriodicWorkPolicy` from `KEEP` to `UPDATE`
+  * Ensures new task configurations properly replace existing ones
 * Fix null callback crash in BackgroundWorker when FlutterCallbackInformation is null (thanks to @jonathanduke, @Muneeza-PT)
 
 ### Improvements

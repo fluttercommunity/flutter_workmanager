@@ -18,8 +18,7 @@ PlatformException _createConnectionError(String channelName) {
   );
 }
 
-List<Object?> wrapResponse(
-    {Object? result, PlatformException? error, bool empty = false}) {
+List<Object?> wrapResponse({Object? result, PlatformException? error, bool empty = false}) {
   if (empty) {
     return <Object?>[];
   }
@@ -39,19 +38,14 @@ List<Object?> wrapResponse(
 enum NetworkType {
   /// Any working network connection is required for this work.
   connected,
-
   /// A metered network connection is required for this work.
   metered,
-
   /// Default value. A network is not required for this work.
   notRequired,
-
   /// A non-roaming network connection is required for this work.
   notRoaming,
-
   /// An unmetered network connection is required for this work.
   unmetered,
-
   /// A temporarily unmetered Network. This capability will be set for
   /// networks that are generally metered, but are currently unmetered.
   ///
@@ -65,24 +59,56 @@ enum NetworkType {
 enum BackoffPolicy {
   /// Used to indicate that WorkManager should increase the backoff time exponentially
   exponential,
-
   /// Used to indicate that WorkManager should increase the backoff time linearly
   linear,
 }
 
-/// An enumeration of the conflict resolution policies in case of a collision.
+/// An enumeration of the conflict resolution policies when registering one-off work with the same unique name.
+///
+/// This policy determines what happens when you register a one-off task with a unique name that already exists.
+///
+/// See: https://developer.android.com/reference/androidx/work/ExistingWorkPolicy
 enum ExistingWorkPolicy {
   /// If there is existing pending (uncompleted) work with the same unique name, append the newly-specified work as a child of all the leaves of that work sequence.
   append,
-
   /// If there is existing pending (uncompleted) work with the same unique name, do nothing.
+  /// The new work request is ignored and the existing work continues unchanged.
   keep,
-
   /// If there is existing pending (uncompleted) work with the same unique name, cancel and delete it.
+  /// The new work request replaces the existing one entirely.
   replace,
-
-  /// If there is existing pending (uncompleted) work with the same unique name, it will be updated the new specification.
+  /// If there is existing pending (uncompleted) work with the same unique name, it will be updated with the new specification.
   /// Note: This maps to appendOrReplace in the native implementation.
+  update,
+}
+
+/// An enumeration of the conflict resolution policies when registering periodic work with the same unique name.
+///
+/// This policy determines what happens when you register a periodic task with a unique name that already exists.
+/// This is especially important during development when you might register the same task multiple times
+/// with different frequencies or configurations.
+///
+/// See: https://developer.android.com/reference/androidx/work/ExistingPeriodicWorkPolicy
+enum ExistingPeriodicWorkPolicy {
+  /// If there is existing pending (uncompleted) work with the same unique name, do nothing.
+  /// The new work request is ignored and the existing work continues unchanged.
+  ///
+  /// **Warning**: If you previously registered a periodic task with a short frequency
+  /// (e.g., 15 minutes) and later register the same task with a longer frequency (e.g., 2 hours),
+  /// the task will continue running at the original short frequency. This can cause confusion
+  /// during development. Consider using [update] instead.
+  keep,
+  /// If there is existing pending (uncompleted) work with the same unique name, cancel and delete it.
+  /// The new work request replaces the existing one entirely.
+  ///
+  /// **Deprecated**: Android recommends using [update] instead for less disruptive updates.
+  replace,
+  /// If there is existing pending (uncompleted) work with the same unique name, it will be updated with the new specification.
+  ///
+  /// **Recommended** - updates existing work without canceling running workers and preserves original timing.
+  /// This is the default policy for periodic tasks to prevent frequency confusion.
+  ///
+  /// Available since WorkManager 2.8.0.
   update,
 }
 
@@ -93,7 +119,6 @@ enum OutOfQuotaPolicy {
   /// When the app does not have any expedited job quota, the expedited work request will
   /// fallback to a regular work request.
   runAsNonExpeditedWorkRequest,
-
   /// When the app does not have any expedited job quota, the expedited work request will
   /// we dropped and no work requests are enqueued.
   dropWorkRequest,
@@ -242,8 +267,7 @@ class OneOffTaskRequest {
     return OneOffTaskRequest(
       uniqueName: result[0]! as String,
       taskName: result[1]! as String,
-      inputData:
-          (result[2] as Map<Object?, Object?>?)?.cast<String?, Object?>(),
+      inputData: (result[2] as Map<Object?, Object?>?)?.cast<String?, Object?>(),
       initialDelaySeconds: result[3] as int?,
       constraints: result[4] as Constraints?,
       backoffPolicy: result[5] as BackoffPolicyConfig?,
@@ -286,7 +310,7 @@ class PeriodicTaskRequest {
 
   String? tag;
 
-  ExistingWorkPolicy? existingWorkPolicy;
+  ExistingPeriodicWorkPolicy? existingWorkPolicy;
 
   Object encode() {
     return <Object?>[
@@ -310,13 +334,12 @@ class PeriodicTaskRequest {
       taskName: result[1]! as String,
       frequencySeconds: result[2]! as int,
       flexIntervalSeconds: result[3] as int?,
-      inputData:
-          (result[4] as Map<Object?, Object?>?)?.cast<String?, Object?>(),
+      inputData: (result[4] as Map<Object?, Object?>?)?.cast<String?, Object?>(),
       initialDelaySeconds: result[5] as int?,
       constraints: result[6] as Constraints?,
       backoffPolicy: result[7] as BackoffPolicyConfig?,
       tag: result[8] as String?,
-      existingWorkPolicy: result[9] as ExistingWorkPolicy?,
+      existingWorkPolicy: result[9] as ExistingPeriodicWorkPolicy?,
     );
   }
 }
@@ -359,14 +382,14 @@ class ProcessingTaskRequest {
     return ProcessingTaskRequest(
       uniqueName: result[0]! as String,
       taskName: result[1]! as String,
-      inputData:
-          (result[2] as Map<Object?, Object?>?)?.cast<String?, Object?>(),
+      inputData: (result[2] as Map<Object?, Object?>?)?.cast<String?, Object?>(),
       initialDelaySeconds: result[3] as int?,
       networkType: result[4] as NetworkType?,
       requiresCharging: result[5] as bool?,
     );
   }
 }
+
 
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
@@ -375,35 +398,38 @@ class _PigeonCodec extends StandardMessageCodec {
     if (value is int) {
       buffer.putUint8(4);
       buffer.putInt64(value);
-    } else if (value is NetworkType) {
+    }    else if (value is NetworkType) {
       buffer.putUint8(129);
       writeValue(buffer, value.index);
-    } else if (value is BackoffPolicy) {
+    }    else if (value is BackoffPolicy) {
       buffer.putUint8(130);
       writeValue(buffer, value.index);
-    } else if (value is ExistingWorkPolicy) {
+    }    else if (value is ExistingWorkPolicy) {
       buffer.putUint8(131);
       writeValue(buffer, value.index);
-    } else if (value is OutOfQuotaPolicy) {
+    }    else if (value is ExistingPeriodicWorkPolicy) {
       buffer.putUint8(132);
       writeValue(buffer, value.index);
-    } else if (value is Constraints) {
+    }    else if (value is OutOfQuotaPolicy) {
       buffer.putUint8(133);
-      writeValue(buffer, value.encode());
-    } else if (value is BackoffPolicyConfig) {
+      writeValue(buffer, value.index);
+    }    else if (value is Constraints) {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
-    } else if (value is InitializeRequest) {
+    }    else if (value is BackoffPolicyConfig) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
-    } else if (value is OneOffTaskRequest) {
+    }    else if (value is InitializeRequest) {
       buffer.putUint8(136);
       writeValue(buffer, value.encode());
-    } else if (value is PeriodicTaskRequest) {
+    }    else if (value is OneOffTaskRequest) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
-    } else if (value is ProcessingTaskRequest) {
+    }    else if (value is PeriodicTaskRequest) {
       buffer.putUint8(138);
+      writeValue(buffer, value.encode());
+    }    else if (value is ProcessingTaskRequest) {
+      buffer.putUint8(139);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -413,29 +439,32 @@ class _PigeonCodec extends StandardMessageCodec {
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 129:
+      case 129: 
         final int? value = readValue(buffer) as int?;
         return value == null ? null : NetworkType.values[value];
-      case 130:
+      case 130: 
         final int? value = readValue(buffer) as int?;
         return value == null ? null : BackoffPolicy.values[value];
-      case 131:
+      case 131: 
         final int? value = readValue(buffer) as int?;
         return value == null ? null : ExistingWorkPolicy.values[value];
-      case 132:
+      case 132: 
+        final int? value = readValue(buffer) as int?;
+        return value == null ? null : ExistingPeriodicWorkPolicy.values[value];
+      case 133: 
         final int? value = readValue(buffer) as int?;
         return value == null ? null : OutOfQuotaPolicy.values[value];
-      case 133:
+      case 134: 
         return Constraints.decode(readValue(buffer)!);
-      case 134:
+      case 135: 
         return BackoffPolicyConfig.decode(readValue(buffer)!);
-      case 135:
+      case 136: 
         return InitializeRequest.decode(readValue(buffer)!);
-      case 136:
+      case 137: 
         return OneOffTaskRequest.decode(readValue(buffer)!);
-      case 137:
+      case 138: 
         return PeriodicTaskRequest.decode(readValue(buffer)!);
-      case 138:
+      case 139: 
         return ProcessingTaskRequest.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -447,11 +476,9 @@ class WorkmanagerHostApi {
   /// Constructor for [WorkmanagerHostApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  WorkmanagerHostApi(
-      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+  WorkmanagerHostApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix =
-            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -459,10 +486,8 @@ class WorkmanagerHostApi {
   final String pigeonVar_messageChannelSuffix;
 
   Future<void> initialize(InitializeRequest request) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.initialize$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.initialize$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -483,10 +508,8 @@ class WorkmanagerHostApi {
   }
 
   Future<void> registerOneOffTask(OneOffTaskRequest request) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.registerOneOffTask$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.registerOneOffTask$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -507,10 +530,8 @@ class WorkmanagerHostApi {
   }
 
   Future<void> registerPeriodicTask(PeriodicTaskRequest request) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.registerPeriodicTask$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.registerPeriodicTask$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -531,10 +552,8 @@ class WorkmanagerHostApi {
   }
 
   Future<void> registerProcessingTask(ProcessingTaskRequest request) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.registerProcessingTask$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.registerProcessingTask$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -555,10 +574,8 @@ class WorkmanagerHostApi {
   }
 
   Future<void> cancelByUniqueName(String uniqueName) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.cancelByUniqueName$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.cancelByUniqueName$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -579,10 +596,8 @@ class WorkmanagerHostApi {
   }
 
   Future<void> cancelByTag(String tag) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.cancelByTag$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.cancelByTag$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -603,10 +618,8 @@ class WorkmanagerHostApi {
   }
 
   Future<void> cancelAll() async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.cancelAll$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.cancelAll$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -627,10 +640,8 @@ class WorkmanagerHostApi {
   }
 
   Future<bool> isScheduledByUniqueName(String uniqueName) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.isScheduledByUniqueName$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.isScheduledByUniqueName$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -656,10 +667,8 @@ class WorkmanagerHostApi {
   }
 
   Future<String> printScheduledTasks() async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.printScheduledTasks$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.printScheduledTasks$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -692,19 +701,11 @@ abstract class WorkmanagerFlutterApi {
 
   Future<bool> executeTask(String taskName, Map<String?, Object?>? inputData);
 
-  static void setUp(
-    WorkmanagerFlutterApi? api, {
-    BinaryMessenger? binaryMessenger,
-    String messageChannelSuffix = '',
-  }) {
-    messageChannelSuffix =
-        messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+  static void setUp(WorkmanagerFlutterApi? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
+    messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
     {
-      final BasicMessageChannel<
-          Object?> pigeonVar_channel = BasicMessageChannel<
-              Object?>(
-          'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerFlutterApi.backgroundChannelInitialized$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerFlutterApi.backgroundChannelInitialized$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
@@ -715,41 +716,34 @@ abstract class WorkmanagerFlutterApi {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<
-          Object?> pigeonVar_channel = BasicMessageChannel<
-              Object?>(
-          'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerFlutterApi.executeTask$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerFlutterApi.executeTask$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-              'Argument for dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerFlutterApi.executeTask was null.');
+          'Argument for dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerFlutterApi.executeTask was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_taskName = (args[0] as String?);
           assert(arg_taskName != null,
               'Argument for dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerFlutterApi.executeTask was null, expected non-null String.');
-          final Map<String?, Object?>? arg_inputData =
-              (args[1] as Map<Object?, Object?>?)?.cast<String?, Object?>();
+          final Map<String?, Object?>? arg_inputData = (args[1] as Map<Object?, Object?>?)?.cast<String?, Object?>();
           try {
-            final bool output =
-                await api.executeTask(arg_taskName!, arg_inputData);
+            final bool output = await api.executeTask(arg_taskName!, arg_inputData);
             return wrapResponse(result: output);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }

@@ -25,6 +25,8 @@ const iOSBackgroundAppRefresh =
     "dev.fluttercommunity.workmanagerExample.iOSBackgroundAppRefresh";
 const iOSBackgroundProcessingTask =
     "dev.fluttercommunity.workmanagerExample.iOSBackgroundProcessingTask";
+const periodicUpdatePolicyTask =
+    "dev.fluttercommunity.workmanagerExample.periodicUpdatePolicyTask";
 
 final List<String> allTasks = [
   simpleTaskKey,
@@ -35,6 +37,7 @@ final List<String> allTasks = [
   simplePeriodic1HourTask,
   iOSBackgroundAppRefresh,
   iOSBackgroundProcessingTask,
+  periodicUpdatePolicyTask,
 ];
 
 // Pragma is mandatory if the App is obfuscated or using Flutter 3.1+
@@ -92,6 +95,11 @@ void callbackDispatcher() {
         await Future<void>.delayed(Duration(seconds: 40));
         print("$task finished");
         break;
+      case periodicUpdatePolicyTask:
+        final frequency = inputData?['frequency'] ?? 'unknown';
+        print(
+            "$periodicUpdatePolicyTask executed with frequency: $frequency minutes at ${DateTime.now()}");
+        break;
       default:
         return Future.value(false);
     }
@@ -110,6 +118,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   bool workmanagerInitialized = false;
   String _prefsString = "empty";
+  int _selectedFrequency = 15; // Default to 15 minutes
 
   @override
   Widget build(BuildContext context) {
@@ -244,6 +253,66 @@ class _MyAppState extends State<MyApp> {
                           }
                         : null),
 
+                SizedBox(height: 16),
+                Text(
+                  "Test Periodic Task with UPDATE Policy (Android)",
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                Text(
+                  "Demonstrates issue #622 fix - changing frequency updates the existing task",
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                SizedBox(height: 8),
+                if (Platform.isAndroid) ...[
+                  Row(
+                    children: [
+                      Text("Frequency: "),
+                      Expanded(
+                        child: DropdownButton<int>(
+                          value: _selectedFrequency,
+                          items: [
+                            DropdownMenuItem(
+                                value: 15, child: Text("15 minutes")),
+                            DropdownMenuItem(
+                                value: 30, child: Text("30 minutes")),
+                            DropdownMenuItem(value: 60, child: Text("1 hour")),
+                          ],
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedFrequency = value!;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  ElevatedButton(
+                    child: Text("Register Periodic Task with UPDATE Policy"),
+                    onPressed: () {
+                      Workmanager().registerPeriodicTask(
+                        periodicUpdatePolicyTask,
+                        periodicUpdatePolicyTask,
+                        frequency: Duration(minutes: _selectedFrequency),
+                        initialDelay: Duration(seconds: 10),
+                        existingWorkPolicy: ExistingPeriodicWorkPolicy.update,
+                        inputData: <String, dynamic>{
+                          'frequency': _selectedFrequency,
+                          'timestamp': DateTime.now().toIso8601String(),
+                        },
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                              "Registered periodic task with ${_selectedFrequency}min frequency using UPDATE policy"),
+                          duration: Duration(seconds: 3),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+
+                SizedBox(height: 16),
                 // Currently we cannot provide frequency for iOS, hence it will be
                 // minimum 15 minutes after which iOS will reschedule
                 ElevatedButton(

@@ -63,6 +63,12 @@ void main() {
         expect(ExistingWorkPolicy.update.index, 3);
       });
 
+      test('should handle ExistingPeriodicWorkPolicy enum correctly', () {
+        expect(ExistingPeriodicWorkPolicy.keep.index, 0);
+        expect(ExistingPeriodicWorkPolicy.replace.index, 1);
+        expect(ExistingPeriodicWorkPolicy.update.index, 2);
+      });
+
       test('should handle OutOfQuotaPolicy enum correctly', () {
         expect(OutOfQuotaPolicy.runAsNonExpeditedWorkRequest.index, 0);
         expect(OutOfQuotaPolicy.dropWorkRequest.index, 1);
@@ -249,13 +255,14 @@ void main() {
           flexIntervalSeconds: 300, // 5 minutes
           inputData: {'type': 'periodic'},
           constraints: Constraints(requiresCharging: true),
-          existingWorkPolicy: ExistingWorkPolicy.keep,
+          existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
         );
 
         expect(periodicRequest.uniqueName, 'periodic-task');
         expect(periodicRequest.frequencySeconds, 900);
         expect(periodicRequest.flexIntervalSeconds, 300);
-        expect(periodicRequest.existingWorkPolicy, ExistingWorkPolicy.keep);
+        expect(periodicRequest.existingWorkPolicy,
+            ExistingPeriodicWorkPolicy.keep);
       });
     });
   });
