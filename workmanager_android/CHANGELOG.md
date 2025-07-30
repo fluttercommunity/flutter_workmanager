@@ -2,7 +2,6 @@
 
 ### Dependencies & Infrastructure Updates
 * Updated androidx.work from 2.9.0 to 2.10.2 with improved Flow-based observability
-* Fixed Kotlin null safety issues with androidx.work 2.10.2 type system improvements
 * Regenerated Pigeon files with updated version 26.0.0
 
 ### Breaking Changes
