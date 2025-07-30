@@ -35,14 +35,12 @@ class MockWorkmanager extends _i1.Mock implements _i2.Workmanager {
 
   @override
   _i3.Future<void> initialize(
-    Function? callbackDispatcher, {
-    bool? isInDebugMode = false,
-  }) =>
+    Function? callbackDispatcher,
+  ) =>
       (super.noSuchMethod(
         Invocation.method(
           #initialize,
           [callbackDispatcher],
-          {#isInDebugMode: isInDebugMode},
         ),
         returnValue: _i3.Future<void>.value(),
         returnValueForMissingStub: _i3.Future<void>.value(),

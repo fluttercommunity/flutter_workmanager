@@ -143,9 +143,8 @@ abstract class WorkmanagerPlatform extends PlatformInterface {
 class _PlaceholderImplementation extends WorkmanagerPlatform {
   @override
   Future<void> initialize(
-    Function callbackDispatcher, {
-    bool isInDebugMode = false,
-  }) async {
+    Function callbackDispatcher,
+  ) async {
     throw UnimplementedError(
       'No implementation found for workmanager on this platform. '
       'Make sure to add the platform-specific implementation package to your dependencies.',

@@ -89,7 +89,7 @@ WorkmanagerDebug.setDebugHandler(NotificationDebugHandler())
 Create your own debug handler for custom logging needs:
 
 <Tabs>
-<Tab title="Android">
+  <TabItem label="Android" value="android">
 
 ```kotlin
 class CustomDebugHandler : WorkmanagerDebugHandler {
@@ -105,8 +105,8 @@ class CustomDebugHandler : WorkmanagerDebugHandler {
 WorkmanagerDebug.setDebugHandler(CustomDebugHandler())
 ```
 
-</Tab>
-<Tab title="iOS">
+  </TabItem>
+  <TabItem label="iOS" value="ios">
 
 ```swift
 class CustomDebugHandler: WorkmanagerDebugHandler {
@@ -122,7 +122,7 @@ class CustomDebugHandler: WorkmanagerDebugHandler {
 WorkmanagerDebug.setDebugHandler(CustomDebugHandler())
 ```
 
-</Tab>
+  </TabItem>
 </Tabs>
 
 ## Android Debugging
@@ -350,7 +350,7 @@ Future<bool> isTaskHealthy(String taskName, Duration maxAge) async {
 - [ ] Workmanager initialized in main()
 - [ ] Task names are unique
 - [ ] Platform setup completed ([iOS setup guide](quickstart#ios))
-- [ ] Debug notifications enabled (`isInDebugMode: kDebugMode`)
+- [ ] Debug handler configured (see [Debug Handlers](#debug-handlers))
 
 **Performance & Reliability:**
 - [ ] Task logic optimized for background execution

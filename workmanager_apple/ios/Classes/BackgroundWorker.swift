@@ -85,11 +85,13 @@ class BackgroundWorker {
         let taskSessionStart = Date()
         let taskSessionIdentifier = UUID()
 
-        let debugHelper = DebugNotificationHelper(taskSessionIdentifier)
-        debugHelper.showStartFetchNotification(
-            startDate: taskSessionStart,
-            callBackHandle: callbackHandle,
-            callbackInfo: flutterCallbackInformation
+        WorkmanagerDebug.onTaskStarting(
+            taskInfo: TaskDebugInfo(
+                taskName: "background_fetch",
+                startTime: taskSessionStart.timeIntervalSince1970,
+                callbackHandle: callbackHandle,
+                callbackInfo: flutterCallbackInformation.callbackName
+            )
         )
 
         var flutterEngine: FlutterEngine? = FlutterEngine(
@@ -143,10 +145,18 @@ class BackgroundWorker {
                         "[\(String(describing: self))] \(#function) -> performBackgroundRequest.\(fetchResult) (finished in \(taskDuration.formatToSeconds()))"
                     )
 
-                    debugHelper.showCompletedFetchNotification(
-                        completedDate: taskSessionCompleter,
-                        result: fetchResult,
-                        elapsedTime: taskDuration
+                    WorkmanagerDebug.onTaskCompleted(
+                        taskInfo: TaskDebugInfo(
+                            taskName: "background_fetch",
+                            startTime: taskSessionStart.timeIntervalSince1970,
+                            callbackHandle: callbackHandle,
+                            callbackInfo: flutterCallbackInformation.callbackName
+                        ),
+                        result: TaskResult(
+                            success: fetchResult == .newData,
+                            duration: Int64(taskDuration * 1000), // Convert to milliseconds
+                            error: fetchResult == .failed ? "Background fetch failed" : nil
+                        )
                     )
                     completionHandler(fetchResult)
                 }

@@ -33,3 +33,16 @@
 - **What matters to users**: Breaking changes, new features, bug fixes that affect their code
 - **Example of bad changelog entry**: "Fixed Kotlin null safety issues with androidx.work 2.10.2 type system improvements"
 - **Example of good changelog entry**: "Fixed periodic tasks not respecting frequency changes"
+
+## Documentation Components (docs.page)
+- **Component reference**: https://use.docs.page/ contains the full reference for available components
+- **Tabs component syntax**:
+  ```jsx
+  <Tabs>
+    <TabItem label="Tab Name" value="unique-value">
+      Content here
+    </TabItem>
+  </Tabs>
+  ```
+- Use `<TabItem>` not `<Tab>` - this is a common mistake that causes JavaScript errors
+- Always include both `label` and `value` props on TabItem components

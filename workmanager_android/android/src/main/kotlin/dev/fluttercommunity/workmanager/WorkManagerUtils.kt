@@ -99,9 +99,7 @@ class WorkManagerWrapper(
 ) {
     private val workManager = WorkManager.getInstance(context)
 
-    fun enqueueOneOffTask(
-        request: dev.fluttercommunity.workmanager.pigeon.OneOffTaskRequest,
-    ) {
+    fun enqueueOneOffTask(request: dev.fluttercommunity.workmanager.pigeon.OneOffTaskRequest) {
         try {
             val oneOffTaskRequest =
                 OneTimeWorkRequest
@@ -141,9 +139,7 @@ class WorkManagerWrapper(
         }
     }
 
-    fun enqueuePeriodicTask(
-        request: dev.fluttercommunity.workmanager.pigeon.PeriodicTaskRequest,
-    ) {
+    fun enqueuePeriodicTask(request: dev.fluttercommunity.workmanager.pigeon.PeriodicTaskRequest) {
         val periodicTaskRequest =
             PeriodicWorkRequest
                 .Builder(

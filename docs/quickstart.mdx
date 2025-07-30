@@ -145,10 +145,7 @@ void callbackDispatcher() {
 import 'package:flutter/foundation.dart';
 
 void main() {
-  Workmanager().initialize(
-    callbackDispatcher,
-    isInDebugMode: kDebugMode,
-  );
+  Workmanager().initialize(callbackDispatcher);
   
   runApp(MyApp());
 }

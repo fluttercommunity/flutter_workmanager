@@ -10,12 +10,19 @@ interface WorkmanagerDebugHandler {
     /**
      * Called when a background task starts executing.
      */
-    fun onTaskStarting(context: Context, taskInfo: TaskDebugInfo)
+    fun onTaskStarting(
+        context: Context,
+        taskInfo: TaskDebugInfo,
+    )
 
     /**
      * Called when a background task completes execution.
      */
-    fun onTaskCompleted(context: Context, taskInfo: TaskDebugInfo, result: TaskResult)
+    fun onTaskCompleted(
+        context: Context,
+        taskInfo: TaskDebugInfo,
+        result: TaskResult,
+    )
 }
 
 /**
@@ -27,7 +34,7 @@ data class TaskDebugInfo(
     val inputData: Map<String, Any?>? = null,
     val startTime: Long,
     val callbackHandle: Long? = null,
-    val callbackInfo: String? = null
+    val callbackInfo: String? = null,
 )
 
 /**
@@ -36,7 +43,7 @@ data class TaskDebugInfo(
 data class TaskResult(
     val success: Boolean,
     val duration: Long,
-    val error: String? = null
+    val error: String? = null,
 )
 
 /**
@@ -58,11 +65,18 @@ object WorkmanagerDebug {
      */
     fun getDebugHandler(): WorkmanagerDebugHandler? = debugHandler
 
-    internal fun onTaskStarting(context: Context, taskInfo: TaskDebugInfo) {
+    internal fun onTaskStarting(
+        context: Context,
+        taskInfo: TaskDebugInfo,
+    ) {
         debugHandler?.onTaskStarting(context, taskInfo)
     }
 
-    internal fun onTaskCompleted(context: Context, taskInfo: TaskDebugInfo, result: TaskResult) {
+    internal fun onTaskCompleted(
+        context: Context,
+        taskInfo: TaskDebugInfo,
+        result: TaskResult,
+    ) {
         debugHandler?.onTaskCompleted(context, taskInfo, result)
     }
 }

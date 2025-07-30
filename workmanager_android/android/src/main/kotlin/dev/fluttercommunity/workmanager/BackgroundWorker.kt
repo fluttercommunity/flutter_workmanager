@@ -50,7 +50,6 @@ class BackgroundWorker(
     private val dartTask
         get() = workerParams.inputData.getString(DART_TASK_KEY)!!
 
-
     private val randomThreadIdentifier = Random().nextInt()
     private var engine: FlutterEngine? = null
 
@@ -96,8 +95,8 @@ class BackgroundWorker(
                     inputData = payload,
                     startTime = startTime,
                     callbackHandle = callbackHandle,
-                    callbackInfo = callbackInfo?.callbackName
-                )
+                    callbackInfo = callbackInfo?.callbackName,
+                ),
             )
 
             engine?.let { engine ->
@@ -134,13 +133,13 @@ class BackgroundWorker(
             TaskDebugInfo(
                 taskName = dartTask,
                 inputData = payload,
-                startTime = startTime
+                startTime = startTime,
             ),
             TaskResult(
                 success = result is Result.Success,
                 duration = fetchDuration,
-                error = if (result is Result.Failure) "Task failed" else null
-            )
+                error = if (result is Result.Failure) "Task failed" else null,
+            ),
         )
 
         // No result indicates we were signalled to stop by WorkManager.  The result is already
