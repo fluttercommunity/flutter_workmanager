@@ -1,9 +1,10 @@
 ## Pre-Commit Requirements
 **CRITICAL**: Always run from project root before ANY commit:
-1. `ktlint -F .`
-2. `find . -name "*.dart" ! -name "*.g.dart" ! -path "*/.*" -print0 | xargs -0 dart format --set-exit-if-changed`
-3. `flutter test` (all Dart tests)
-4. `cd example/android && ./gradlew :workmanager_android:test` (Android native tests)
+1. `dart analyze` (check for code errors)
+2. `ktlint -F .`
+3. `find . -name "*.dart" ! -name "*.g.dart" ! -path "*/.*" -print0 | xargs -0 dart format --set-exit-if-changed`
+4. `flutter test` (all Dart tests)
+5. `cd example/android && ./gradlew :workmanager_android:test` (Android native tests)
 
 ## Code Generation
 - Regenerate Pigeon files: `melos run generate:pigeon`
