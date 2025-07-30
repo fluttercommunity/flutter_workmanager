@@ -23,7 +23,7 @@ const val DEFAULT_FLEX_INTERVAL_SECONDS =
 
 // Default values
 val defaultOneOffExistingWorkPolicy = ExistingWorkPolicy.KEEP
-val defaultPeriodExistingWorkPolicy = ExistingPeriodicWorkPolicy.KEEP
+val defaultPeriodExistingWorkPolicy = ExistingPeriodicWorkPolicy.UPDATE
 val defaultConstraints: Constraints = Constraints.NONE
 val defaultOutOfQuotaPolicy: OutOfQuotaPolicy? = null
 
@@ -36,12 +36,11 @@ private fun dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.toAndroid
         dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.UPDATE -> ExistingWorkPolicy.APPEND_OR_REPLACE
     }
 
-private fun dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.toAndroidPeriodicWorkPolicy(): ExistingPeriodicWorkPolicy =
+private fun dev.fluttercommunity.workmanager.pigeon.ExistingPeriodicWorkPolicy.toAndroidPeriodicWorkPolicy(): ExistingPeriodicWorkPolicy =
     when (this) {
-        dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.APPEND -> ExistingPeriodicWorkPolicy.REPLACE
-        dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.KEEP -> ExistingPeriodicWorkPolicy.KEEP
-        dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.REPLACE -> ExistingPeriodicWorkPolicy.REPLACE
-        dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.UPDATE -> ExistingPeriodicWorkPolicy.UPDATE
+        dev.fluttercommunity.workmanager.pigeon.ExistingPeriodicWorkPolicy.KEEP -> ExistingPeriodicWorkPolicy.KEEP
+        dev.fluttercommunity.workmanager.pigeon.ExistingPeriodicWorkPolicy.REPLACE -> ExistingPeriodicWorkPolicy.REPLACE
+        dev.fluttercommunity.workmanager.pigeon.ExistingPeriodicWorkPolicy.UPDATE -> ExistingPeriodicWorkPolicy.UPDATE
     }
 
 private fun dev.fluttercommunity.workmanager.pigeon.OutOfQuotaPolicy.toAndroidOutOfQuotaPolicy(): OutOfQuotaPolicy =

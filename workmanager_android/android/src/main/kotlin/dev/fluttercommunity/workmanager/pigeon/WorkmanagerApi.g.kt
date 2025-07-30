@@ -105,22 +105,78 @@ enum class BackoffPolicy(val raw: Int) {
   }
 }
 
-/** An enumeration of the conflict resolution policies in case of a collision. */
+/**
+ * An enumeration of the conflict resolution policies when registering one-off work with the same unique name.
+ *
+ * This policy determines what happens when you register a one-off task with a unique name that already exists.
+ *
+ * See: https://developer.android.com/reference/androidx/work/ExistingWorkPolicy
+ */
 enum class ExistingWorkPolicy(val raw: Int) {
   /** If there is existing pending (uncompleted) work with the same unique name, append the newly-specified work as a child of all the leaves of that work sequence. */
   APPEND(0),
-  /** If there is existing pending (uncompleted) work with the same unique name, do nothing. */
+  /**
+   * If there is existing pending (uncompleted) work with the same unique name, do nothing.
+   * The new work request is ignored and the existing work continues unchanged.
+   */
   KEEP(1),
-  /** If there is existing pending (uncompleted) work with the same unique name, cancel and delete it. */
+  /**
+   * If there is existing pending (uncompleted) work with the same unique name, cancel and delete it.
+   * The new work request replaces the existing one entirely.
+   */
   REPLACE(2),
   /**
-   * If there is existing pending (uncompleted) work with the same unique name, it will be updated the new specification.
+   * If there is existing pending (uncompleted) work with the same unique name, it will be updated with the new specification.
    * Note: This maps to appendOrReplace in the native implementation.
    */
   UPDATE(3);
 
   companion object {
     fun ofRaw(raw: Int): ExistingWorkPolicy? {
+      return values().firstOrNull { it.raw == raw }
+    }
+  }
+}
+
+/**
+ * An enumeration of the conflict resolution policies when registering periodic work with the same unique name.
+ *
+ * This policy determines what happens when you register a periodic task with a unique name that already exists.
+ * This is especially important during development when you might register the same task multiple times
+ * with different frequencies or configurations.
+ *
+ * See: https://developer.android.com/reference/androidx/work/ExistingPeriodicWorkPolicy
+ */
+enum class ExistingPeriodicWorkPolicy(val raw: Int) {
+  /**
+   * If there is existing pending (uncompleted) work with the same unique name, do nothing.
+   * The new work request is ignored and the existing work continues unchanged.
+   *
+   * **Warning**: If you previously registered a periodic task with a short frequency
+   * (e.g., 15 minutes) and later register the same task with a longer frequency (e.g., 2 hours),
+   * the task will continue running at the original short frequency. This can cause confusion
+   * during development. Consider using [update] instead.
+   */
+  KEEP(0),
+  /**
+   * If there is existing pending (uncompleted) work with the same unique name, cancel and delete it.
+   * The new work request replaces the existing one entirely.
+   *
+   * **Deprecated**: Android recommends using [update] instead for less disruptive updates.
+   */
+  REPLACE(1),
+  /**
+   * If there is existing pending (uncompleted) work with the same unique name, it will be updated with the new specification.
+   *
+   * **Recommended** - updates existing work without canceling running workers and preserves original timing.
+   * This is the default policy for periodic tasks to prevent frequency confusion.
+   *
+   * Available since WorkManager 2.8.0.
+   */
+  UPDATE(2);
+
+  companion object {
+    fun ofRaw(raw: Int): ExistingPeriodicWorkPolicy? {
       return values().firstOrNull { it.raw == raw }
     }
   }
@@ -275,7 +331,7 @@ data class PeriodicTaskRequest (
   val constraints: Constraints? = null,
   val backoffPolicy: BackoffPolicyConfig? = null,
   val tag: String? = null,
-  val existingWorkPolicy: ExistingWorkPolicy? = null
+  val existingWorkPolicy: ExistingPeriodicWorkPolicy? = null
 )
  {
   companion object {
@@ -289,7 +345,7 @@ data class PeriodicTaskRequest (
       val constraints = pigeonVar_list[6] as Constraints?
       val backoffPolicy = pigeonVar_list[7] as BackoffPolicyConfig?
       val tag = pigeonVar_list[8] as String?
-      val existingWorkPolicy = pigeonVar_list[9] as ExistingWorkPolicy?
+      val existingWorkPolicy = pigeonVar_list[9] as ExistingPeriodicWorkPolicy?
       return PeriodicTaskRequest(uniqueName, taskName, frequencySeconds, flexIntervalSeconds, inputData, initialDelaySeconds, constraints, backoffPolicy, tag, existingWorkPolicy)
     }
   }
@@ -361,35 +417,40 @@ private open class WorkmanagerApiPigeonCodec : StandardMessageCodec() {
       }
       132.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          OutOfQuotaPolicy.ofRaw(it.toInt())
+          ExistingPeriodicWorkPolicy.ofRaw(it.toInt())
         }
       }
       133.toByte() -> {
-        return (readValue(buffer) as? List<Any?>)?.let {
-          Constraints.fromList(it)
+        return (readValue(buffer) as Long?)?.let {
+          OutOfQuotaPolicy.ofRaw(it.toInt())
         }
       }
       134.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          BackoffPolicyConfig.fromList(it)
+          Constraints.fromList(it)
         }
       }
       135.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          InitializeRequest.fromList(it)
+          BackoffPolicyConfig.fromList(it)
         }
       }
       136.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          OneOffTaskRequest.fromList(it)
+          InitializeRequest.fromList(it)
         }
       }
       137.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PeriodicTaskRequest.fromList(it)
+          OneOffTaskRequest.fromList(it)
         }
       }
       138.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          PeriodicTaskRequest.fromList(it)
+        }
+      }
+      139.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           ProcessingTaskRequest.fromList(it)
         }
@@ -411,32 +472,36 @@ private open class WorkmanagerApiPigeonCodec : StandardMessageCodec() {
         stream.write(131)
         writeValue(stream, value.raw)
       }
-      is OutOfQuotaPolicy -> {
+      is ExistingPeriodicWorkPolicy -> {
         stream.write(132)
         writeValue(stream, value.raw)
       }
-      is Constraints -> {
+      is OutOfQuotaPolicy -> {
         stream.write(133)
-        writeValue(stream, value.toList())
+        writeValue(stream, value.raw)
       }
-      is BackoffPolicyConfig -> {
+      is Constraints -> {
         stream.write(134)
         writeValue(stream, value.toList())
       }
-      is InitializeRequest -> {
+      is BackoffPolicyConfig -> {
         stream.write(135)
         writeValue(stream, value.toList())
       }
-      is OneOffTaskRequest -> {
+      is InitializeRequest -> {
         stream.write(136)
         writeValue(stream, value.toList())
       }
-      is PeriodicTaskRequest -> {
+      is OneOffTaskRequest -> {
         stream.write(137)
         writeValue(stream, value.toList())
       }
-      is ProcessingTaskRequest -> {
+      is PeriodicTaskRequest -> {
         stream.write(138)
+        writeValue(stream, value.toList())
+      }
+      is ProcessingTaskRequest -> {
+        stream.write(139)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)

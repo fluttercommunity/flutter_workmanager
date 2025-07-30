@@ -72,7 +72,7 @@ class MockWorkmanager extends _i1.Mock implements _i2.Workmanager {
           {Duration? frequency,
           Duration? flexInterval,
           String? tag,
-          _i4.ExistingWorkPolicy? existingWorkPolicy,
+          _i4.ExistingPeriodicWorkPolicy? existingWorkPolicy,
           Duration? initialDelay = Duration.zero,
           _i4.Constraints? constraints,
           _i4.BackoffPolicy? backoffPolicy,

@@ -57,19 +57,57 @@ enum BackoffPolicy {
   linear,
 }
 
-/// An enumeration of the conflict resolution policies in case of a collision.
+/// An enumeration of the conflict resolution policies when registering one-off work with the same unique name.
+///
+/// This policy determines what happens when you register a one-off task with a unique name that already exists.
+///
+/// See: https://developer.android.com/reference/androidx/work/ExistingWorkPolicy
 enum ExistingWorkPolicy {
   /// If there is existing pending (uncompleted) work with the same unique name, append the newly-specified work as a child of all the leaves of that work sequence.
   append,
 
   /// If there is existing pending (uncompleted) work with the same unique name, do nothing.
+  /// The new work request is ignored and the existing work continues unchanged.
   keep,
 
   /// If there is existing pending (uncompleted) work with the same unique name, cancel and delete it.
+  /// The new work request replaces the existing one entirely.
   replace,
 
-  /// If there is existing pending (uncompleted) work with the same unique name, it will be updated the new specification.
+  /// If there is existing pending (uncompleted) work with the same unique name, it will be updated with the new specification.
   /// Note: This maps to appendOrReplace in the native implementation.
+  update,
+}
+
+/// An enumeration of the conflict resolution policies when registering periodic work with the same unique name.
+///
+/// This policy determines what happens when you register a periodic task with a unique name that already exists.
+/// This is especially important during development when you might register the same task multiple times
+/// with different frequencies or configurations.
+///
+/// See: https://developer.android.com/reference/androidx/work/ExistingPeriodicWorkPolicy
+enum ExistingPeriodicWorkPolicy {
+  /// If there is existing pending (uncompleted) work with the same unique name, do nothing.
+  /// The new work request is ignored and the existing work continues unchanged.
+  ///
+  /// **Warning**: If you previously registered a periodic task with a short frequency
+  /// (e.g., 15 minutes) and later register the same task with a longer frequency (e.g., 2 hours),
+  /// the task will continue running at the original short frequency. This can cause confusion
+  /// during development. Consider using [update] instead.
+  keep,
+
+  /// If there is existing pending (uncompleted) work with the same unique name, cancel and delete it.
+  /// The new work request replaces the existing one entirely.
+  ///
+  /// **Deprecated**: Android recommends using [update] instead for less disruptive updates.
+  replace,
+
+  /// If there is existing pending (uncompleted) work with the same unique name, it will be updated with the new specification.
+  ///
+  /// **Recommended** - updates existing work without canceling running workers and preserves original timing.
+  /// This is the default policy for periodic tasks to prevent frequency confusion.
+  ///
+  /// Available since WorkManager 2.8.0.
   update,
 }
 
@@ -168,7 +206,7 @@ class PeriodicTaskRequest {
   Constraints? constraints;
   BackoffPolicyConfig? backoffPolicy;
   String? tag;
-  ExistingWorkPolicy? existingWorkPolicy;
+  ExistingPeriodicWorkPolicy? existingWorkPolicy;
 }
 
 // iOS specific request

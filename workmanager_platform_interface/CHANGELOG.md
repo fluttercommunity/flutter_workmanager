@@ -1,3 +1,11 @@
+## Future
+
+### Breaking Changes
+* **BREAKING**: Separate `ExistingWorkPolicy` and `ExistingPeriodicWorkPolicy` enums for better type safety
+  * Mirrors Android's native WorkManager API design
+  * `ExistingPeriodicWorkPolicy` now used for periodic tasks with three options: `keep`, `replace`, `update`
+  * Added comprehensive documentation with upstream Android documentation links
+
 ## 0.8.0
 
 ### Initial Release

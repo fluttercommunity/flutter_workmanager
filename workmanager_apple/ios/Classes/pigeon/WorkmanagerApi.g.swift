@@ -106,17 +106,53 @@ enum BackoffPolicy: Int {
   case linear = 1
 }
 
-/// An enumeration of the conflict resolution policies in case of a collision.
+/// An enumeration of the conflict resolution policies when registering one-off work with the same unique name.
+///
+/// This policy determines what happens when you register a one-off task with a unique name that already exists.
+///
+/// See: https://developer.android.com/reference/androidx/work/ExistingWorkPolicy
 enum ExistingWorkPolicy: Int {
   /// If there is existing pending (uncompleted) work with the same unique name, append the newly-specified work as a child of all the leaves of that work sequence.
   case append = 0
   /// If there is existing pending (uncompleted) work with the same unique name, do nothing.
+  /// The new work request is ignored and the existing work continues unchanged.
   case keep = 1
   /// If there is existing pending (uncompleted) work with the same unique name, cancel and delete it.
+  /// The new work request replaces the existing one entirely.
   case replace = 2
-  /// If there is existing pending (uncompleted) work with the same unique name, it will be updated the new specification.
+  /// If there is existing pending (uncompleted) work with the same unique name, it will be updated with the new specification.
   /// Note: This maps to appendOrReplace in the native implementation.
   case update = 3
+}
+
+/// An enumeration of the conflict resolution policies when registering periodic work with the same unique name.
+///
+/// This policy determines what happens when you register a periodic task with a unique name that already exists.
+/// This is especially important during development when you might register the same task multiple times
+/// with different frequencies or configurations.
+///
+/// See: https://developer.android.com/reference/androidx/work/ExistingPeriodicWorkPolicy
+enum ExistingPeriodicWorkPolicy: Int {
+  /// If there is existing pending (uncompleted) work with the same unique name, do nothing.
+  /// The new work request is ignored and the existing work continues unchanged.
+  ///
+  /// **Warning**: If you previously registered a periodic task with a short frequency
+  /// (e.g., 15 minutes) and later register the same task with a longer frequency (e.g., 2 hours),
+  /// the task will continue running at the original short frequency. This can cause confusion
+  /// during development. Consider using [update] instead.
+  case keep = 0
+  /// If there is existing pending (uncompleted) work with the same unique name, cancel and delete it.
+  /// The new work request replaces the existing one entirely.
+  ///
+  /// **Deprecated**: Android recommends using [update] instead for less disruptive updates.
+  case replace = 1
+  /// If there is existing pending (uncompleted) work with the same unique name, it will be updated with the new specification.
+  ///
+  /// **Recommended** - updates existing work without canceling running workers and preserves original timing.
+  /// This is the default policy for periodic tasks to prevent frequency confusion.
+  ///
+  /// Available since WorkManager 2.8.0.
+  case update = 2
 }
 
 /// An enumeration of policies that help determine out of quota behavior for expedited jobs.
@@ -278,7 +314,7 @@ struct PeriodicTaskRequest {
   var constraints: Constraints? = nil
   var backoffPolicy: BackoffPolicyConfig? = nil
   var tag: String? = nil
-  var existingWorkPolicy: ExistingWorkPolicy? = nil
+  var existingWorkPolicy: ExistingPeriodicWorkPolicy? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -292,7 +328,7 @@ struct PeriodicTaskRequest {
     let constraints: Constraints? = nilOrValue(pigeonVar_list[6])
     let backoffPolicy: BackoffPolicyConfig? = nilOrValue(pigeonVar_list[7])
     let tag: String? = nilOrValue(pigeonVar_list[8])
-    let existingWorkPolicy: ExistingWorkPolicy? = nilOrValue(pigeonVar_list[9])
+    let existingWorkPolicy: ExistingPeriodicWorkPolicy? = nilOrValue(pigeonVar_list[9])
 
     return PeriodicTaskRequest(
       uniqueName: uniqueName,
@@ -387,20 +423,26 @@ private class WorkmanagerApiPigeonCodecReader: FlutterStandardReader {
     case 132:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return OutOfQuotaPolicy(rawValue: enumResultAsInt)
+        return ExistingPeriodicWorkPolicy(rawValue: enumResultAsInt)
       }
       return nil
     case 133:
-      return Constraints.fromList(self.readValue() as! [Any?])
+      let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
+      if let enumResultAsInt = enumResultAsInt {
+        return OutOfQuotaPolicy(rawValue: enumResultAsInt)
+      }
+      return nil
     case 134:
-      return BackoffPolicyConfig.fromList(self.readValue() as! [Any?])
+      return Constraints.fromList(self.readValue() as! [Any?])
     case 135:
-      return InitializeRequest.fromList(self.readValue() as! [Any?])
+      return BackoffPolicyConfig.fromList(self.readValue() as! [Any?])
     case 136:
-      return OneOffTaskRequest.fromList(self.readValue() as! [Any?])
+      return InitializeRequest.fromList(self.readValue() as! [Any?])
     case 137:
-      return PeriodicTaskRequest.fromList(self.readValue() as! [Any?])
+      return OneOffTaskRequest.fromList(self.readValue() as! [Any?])
     case 138:
+      return PeriodicTaskRequest.fromList(self.readValue() as! [Any?])
+    case 139:
       return ProcessingTaskRequest.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
@@ -419,26 +461,29 @@ private class WorkmanagerApiPigeonCodecWriter: FlutterStandardWriter {
     } else if let value = value as? ExistingWorkPolicy {
       super.writeByte(131)
       super.writeValue(value.rawValue)
-    } else if let value = value as? OutOfQuotaPolicy {
+    } else if let value = value as? ExistingPeriodicWorkPolicy {
       super.writeByte(132)
       super.writeValue(value.rawValue)
-    } else if let value = value as? Constraints {
+    } else if let value = value as? OutOfQuotaPolicy {
       super.writeByte(133)
-      super.writeValue(value.toList())
-    } else if let value = value as? BackoffPolicyConfig {
+      super.writeValue(value.rawValue)
+    } else if let value = value as? Constraints {
       super.writeByte(134)
       super.writeValue(value.toList())
-    } else if let value = value as? InitializeRequest {
+    } else if let value = value as? BackoffPolicyConfig {
       super.writeByte(135)
       super.writeValue(value.toList())
-    } else if let value = value as? OneOffTaskRequest {
+    } else if let value = value as? InitializeRequest {
       super.writeByte(136)
       super.writeValue(value.toList())
-    } else if let value = value as? PeriodicTaskRequest {
+    } else if let value = value as? OneOffTaskRequest {
       super.writeByte(137)
       super.writeValue(value.toList())
-    } else if let value = value as? ProcessingTaskRequest {
+    } else if let value = value as? PeriodicTaskRequest {
       super.writeByte(138)
+      super.writeValue(value.toList())
+    } else if let value = value as? ProcessingTaskRequest {
+      super.writeByte(139)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)

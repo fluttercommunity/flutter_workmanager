@@ -1,3 +1,9 @@
+## Future
+
+### Breaking Changes
+* **BREAKING**: Update `registerPeriodicTask` to use `ExistingPeriodicWorkPolicy` instead of `ExistingWorkPolicy`
+  * This provides better type safety across all platforms
+
 ## 0.8.0
 
 ### Initial Release

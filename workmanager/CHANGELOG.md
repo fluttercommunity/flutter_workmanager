@@ -1,6 +1,14 @@
 # Future
 
+## Breaking Changes
+* **BREAKING**: Separate `ExistingWorkPolicy` and `ExistingPeriodicWorkPolicy` enums for better type safety and API clarity
+  * `registerPeriodicTask` now requires `ExistingPeriodicWorkPolicy` instead of `ExistingWorkPolicy`
+  * This mirrors Android's native WorkManager API design for better consistency
+
 ## Bug Fixes & Improvements
+* Fix issue #622: Periodic tasks running at incorrect frequencies when re-registered with different intervals
+  * Changed default policy from `KEEP` to `UPDATE` for periodic tasks
+  * `UPDATE` policy ensures new task configurations replace existing ones without disruption
 * Fix null cast to map bug in executeTask when inputData contains null keys or values (thanks to @Dr-wgy)
 * Internal improvements to development and testing infrastructure
 
