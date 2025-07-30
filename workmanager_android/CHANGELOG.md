@@ -1,5 +1,9 @@
 ## Future
 
+### Dependencies & Infrastructure Updates
+* Updated androidx.work from 2.9.0 to 2.10.2 with improved Flow-based observability
+* Regenerated Pigeon files with updated version 26.0.0
+
 ### Breaking Changes
 * **BREAKING**: Update `registerPeriodicTask` to use `ExistingPeriodicWorkPolicy` instead of `ExistingWorkPolicy`
   * This provides better type safety and mirrors Android's native API

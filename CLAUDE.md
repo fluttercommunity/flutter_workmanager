@@ -15,7 +15,7 @@
 - Use melos to run all tests: `melos run test`
 - Or run tests in individual packages:
   - `cd workmanager_android && flutter test`
-  - `cd workmanager_apple && flutter test`
+  - `cd workmanager_apple && flutter test` 
   - `cd workmanager && flutter test`
 - Before running tests in workmanager package, ensure mocks are up-to-date: `melos run generate:dart`
 
@@ -26,3 +26,10 @@
 
 ## Complex Component Testing
 - **BackgroundWorker**: Cannot be unit tested due to Flutter engine dependencies - use integration tests
+
+## Changelog Guidelines
+- **User-focused content only**: Write from end user perspective, not internal implementation details
+- **No AI agent progress**: Don't document debugging steps, build fixes, or internal development process
+- **What matters to users**: Breaking changes, new features, bug fixes that affect their code
+- **Example of bad changelog entry**: "Fixed Kotlin null safety issues with androidx.work 2.10.2 type system improvements"
+- **Example of good changelog entry**: "Fixed periodic tasks not respecting frequency changes"
