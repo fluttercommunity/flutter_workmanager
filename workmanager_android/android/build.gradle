@@ -43,7 +43,7 @@ android {
 }
 
 dependencies {
-    def work_version = "2.9.0"
+    def work_version = "2.10.2"
     implementation "androidx.work:work-runtime:$work_version"
     implementation "androidx.concurrent:concurrent-futures:1.1.0"
 

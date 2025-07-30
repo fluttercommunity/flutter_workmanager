@@ -18,7 +18,7 @@ dependencies:
   workmanager_apple: ^0.8.0
 
 dev_dependencies:
-  test: ^1.25.0
+  test: ^1.25.15
   mockito: ^5.4.4
   build_runner: ^2.4.9
   get_it: ^8.0.0
