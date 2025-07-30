@@ -1,0 +1,35 @@
+name: generated-files
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  check-generated-files:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+      - uses: bluefireteam/melos-action@v3
+      
+      - name: Generate files
+        run: melos run generate
+        
+      - name: Check for uncommitted changes
+        run: |
+          if ! git diff --quiet; then
+            echo "❌ Generated files are not up-to-date!"
+            echo "The following files have uncommitted changes after generation:"
+            git diff --name-only
+            echo ""
+            echo "Please run 'melos run generate' locally and commit the updated files."
+            echo ""
+            echo "Changes detected:"
+            git diff
+            exit 1
+          else
+            echo "✅ All generated files are up-to-date"
+          fi
