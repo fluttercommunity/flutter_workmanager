@@ -1,7 +1,8 @@
 # Future
 
 ## Breaking Changes
-* **BREAKING**: Removed `isInDebugMode` parameter from `initialize()` method
+* **BREAKING**: The `isInDebugMode` parameter in `initialize()` is now deprecated and has no effect
+  * The parameter is still accepted for backward compatibility but will be removed in a future version
   * Replace with new hook-based debug system for better flexibility
   * See updated debugging documentation for migration guide and usage examples
   * No debug output by default - add platform-specific debug handlers as needed

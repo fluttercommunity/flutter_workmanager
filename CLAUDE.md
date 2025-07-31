@@ -10,6 +10,7 @@
 - Regenerate Pigeon files: `melos run generate:pigeon`
 - Regenerate Dart files (including mocks): `melos run generate:dart`
 - Do not manually edit *.g.* files
+- Never manually modify mocks or generated files. Always modify the source, then run the generator tasks via melos.
 
 ## Running Tests
 - Use melos to run all tests: `melos run test`

@@ -33,7 +33,8 @@ abstract class WorkmanagerPlatform extends PlatformInterface {
   /// Initialize the platform workmanager with the callback function.
   ///
   /// [callbackDispatcher] is the callback function that will be called when background work is executed.
-  Future<void> initialize(Function callbackDispatcher) {
+  /// [isInDebugMode] is deprecated and has no effect. Use WorkmanagerDebug handlers instead.
+  Future<void> initialize(Function callbackDispatcher, {@Deprecated('Use WorkmanagerDebug handlers instead. This parameter has no effect.') bool isInDebugMode = false}) {
     throw UnimplementedError('initialize() has not been implemented.');
   }
 
@@ -143,8 +144,10 @@ abstract class WorkmanagerPlatform extends PlatformInterface {
 class _PlaceholderImplementation extends WorkmanagerPlatform {
   @override
   Future<void> initialize(
-    Function callbackDispatcher,
-  ) async {
+    Function callbackDispatcher, {
+    @Deprecated('Use WorkmanagerDebug handlers instead. This parameter has no effect.')
+    bool isInDebugMode = false,
+  }) async {
     throw UnimplementedError(
       'No implementation found for workmanager on this platform. '
       'Make sure to add the platform-specific implementation package to your dependencies.',

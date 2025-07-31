@@ -1,29 +1,7 @@
 package dev.fluttercommunity.workmanager
 
 import android.content.Context
-
-/**
- * Interface for handling debug events in Workmanager.
- * Implement this interface to customize how debug information is handled.
- */
-interface WorkmanagerDebugHandler {
-    /**
-     * Called when a background task starts executing.
-     */
-    fun onTaskStarting(
-        context: Context,
-        taskInfo: TaskDebugInfo,
-    )
-
-    /**
-     * Called when a background task completes execution.
-     */
-    fun onTaskCompleted(
-        context: Context,
-        taskInfo: TaskDebugInfo,
-        result: TaskResult,
-    )
-}
+import dev.fluttercommunity.workmanager.pigeon.TaskStatus
 
 /**
  * Information about a task for debugging purposes.
@@ -47,36 +25,49 @@ data class TaskResult(
 )
 
 /**
- * Global debug handler registry for Workmanager.
- * Allows developers to set custom debug handlers.
+ * Abstract debug handler for Workmanager events.
+ * Override methods to customize debug behavior. Default implementations do nothing.
  */
-object WorkmanagerDebug {
-    private var debugHandler: WorkmanagerDebugHandler? = null
+abstract class WorkmanagerDebug {
+    companion object {
+        @JvmStatic
+        private var current: WorkmanagerDebug = object : WorkmanagerDebug() {}
 
-    /**
-     * Set a custom debug handler. Pass null to disable debug handling.
-     */
-    fun setDebugHandler(handler: WorkmanagerDebugHandler?) {
-        debugHandler = handler
+        /**
+         * Set the global debug handler.
+         */
+        @JvmStatic
+        fun setCurrent(handler: WorkmanagerDebug) {
+            current = handler
+        }
+
+        /**
+         * Get the current debug handler.
+         */
+        @JvmStatic
+        fun getCurrent(): WorkmanagerDebug = current
+
+        // Internal methods for the plugin to call
+        internal fun onTaskStatusUpdate(context: Context, taskInfo: TaskDebugInfo, status: TaskStatus, result: TaskResult? = null) {
+            current.onTaskStatusUpdate(context, taskInfo, status, result)
+        }
+
+        internal fun onExceptionEncountered(context: Context, taskInfo: TaskDebugInfo?, exception: Throwable) {
+            current.onExceptionEncountered(context, taskInfo, exception)
+        }
     }
 
     /**
-     * Get the current debug handler, if any.
+     * Called when a task status changes.
      */
-    fun getDebugHandler(): WorkmanagerDebugHandler? = debugHandler
-
-    internal fun onTaskStarting(
-        context: Context,
-        taskInfo: TaskDebugInfo,
-    ) {
-        debugHandler?.onTaskStarting(context, taskInfo)
+    open fun onTaskStatusUpdate(context: Context, taskInfo: TaskDebugInfo, status: TaskStatus, result: TaskResult?) {
+        // Default: do nothing
     }
 
-    internal fun onTaskCompleted(
-        context: Context,
-        taskInfo: TaskDebugInfo,
-        result: TaskResult,
-    ) {
-        debugHandler?.onTaskCompleted(context, taskInfo, result)
+    /**
+     * Called when an exception occurs during task processing.
+     */
+    open fun onExceptionEncountered(context: Context, taskInfo: TaskDebugInfo?, exception: Throwable) {
+        // Default: do nothing
     }
 }

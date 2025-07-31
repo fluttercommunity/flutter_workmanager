@@ -85,14 +85,14 @@ class BackgroundWorker {
         let taskSessionStart = Date()
         let taskSessionIdentifier = UUID()
 
-        WorkmanagerDebug.onTaskStarting(
-            taskInfo: TaskDebugInfo(
-                taskName: "background_fetch",
-                startTime: taskSessionStart.timeIntervalSince1970,
-                callbackHandle: callbackHandle,
-                callbackInfo: flutterCallbackInformation.callbackName
-            )
+        let taskInfo = TaskDebugInfo(
+            taskName: "background_fetch",
+            startTime: taskSessionStart.timeIntervalSince1970,
+            callbackHandle: callbackHandle,
+            callbackInfo: flutterCallbackInformation.callbackName
         )
+        
+        WorkmanagerDebug.onTaskStatusUpdate(taskInfo: taskInfo, status: .started)
 
         var flutterEngine: FlutterEngine? = FlutterEngine(
             name: backgroundMode.flutterThreadlabelPrefix,
@@ -145,19 +145,14 @@ class BackgroundWorker {
                         "[\(String(describing: self))] \(#function) -> performBackgroundRequest.\(fetchResult) (finished in \(taskDuration.formatToSeconds()))"
                     )
 
-                    WorkmanagerDebug.onTaskCompleted(
-                        taskInfo: TaskDebugInfo(
-                            taskName: "background_fetch",
-                            startTime: taskSessionStart.timeIntervalSince1970,
-                            callbackHandle: callbackHandle,
-                            callbackInfo: flutterCallbackInformation.callbackName
-                        ),
-                        result: TaskResult(
-                            success: fetchResult == .newData,
-                            duration: Int64(taskDuration * 1000), // Convert to milliseconds
-                            error: fetchResult == .failed ? "Background fetch failed" : nil
-                        )
+                    let taskResult = TaskResult(
+                        success: fetchResult == .newData,
+                        duration: Int64(taskDuration * 1000), // Convert to milliseconds
+                        error: fetchResult == .failed ? "Background fetch failed" : nil
                     )
+                    
+                    let status: TaskStatus = fetchResult == .newData ? .completed : .failed
+                    WorkmanagerDebug.onTaskStatusUpdate(taskInfo: taskInfo, status: status, result: taskResult)
                     completionHandler(fetchResult)
                 }
             case .failure(let error):

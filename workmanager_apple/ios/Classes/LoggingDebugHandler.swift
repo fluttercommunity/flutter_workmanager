@@ -3,23 +3,34 @@ import os
 
 /**
  * A debug handler that outputs debug information to iOS's unified logging system.
- * Use this for development to see task execution in the console and Xcode logs.
  */
-public class LoggingDebugHandler: WorkmanagerDebugHandler {
+public class LoggingDebugHandler: WorkmanagerDebug {
     private let logger = os.Logger(subsystem: "dev.fluttercommunity.workmanager", category: "debug")
     
-    public init() {}
+    public override init() {}
     
-    public func onTaskStarting(taskInfo: TaskDebugInfo) {
-        logger.debug("Task starting: \(taskInfo.taskName), callbackHandle: \(taskInfo.callbackHandle ?? -1)")
+    public override func onTaskStatusUpdate(taskInfo: TaskDebugInfo, status: TaskStatus, result: TaskResult?) {
+        switch status {
+        case .scheduled:
+            logger.debug("Task scheduled: \(taskInfo.taskName)")
+        case .started:
+            logger.debug("Task started: \(taskInfo.taskName), callbackHandle: \(taskInfo.callbackHandle ?? -1)")
+        case .completed:
+            let success = result?.success ?? false
+            let duration = result?.duration ?? 0
+            logger.debug("Task completed: \(taskInfo.taskName), success: \(success), duration: \(duration)ms")
+        case .failed:
+            let error = result?.error ?? "Unknown error"
+            logger.error("Task failed: \(taskInfo.taskName), error: \(error)")
+        case .cancelled:
+            logger.info("Task cancelled: \(taskInfo.taskName)")
+        case .retrying:
+            logger.info("Task retrying: \(taskInfo.taskName)")
+        }
     }
     
-    public func onTaskCompleted(taskInfo: TaskDebugInfo, result: TaskResult) {
-        let status = result.success ? "SUCCESS" : "FAILURE"
-        logger.debug("Task completed: \(taskInfo.taskName), result: \(status), duration: \(String(format: "%.2f", result.duration))s")
-        
-        if let error = result.error {
-            logger.error("Task error: \(error)")
-        }
+    public override func onExceptionEncountered(taskInfo: TaskDebugInfo?, exception: Error) {
+        let taskName = taskInfo?.taskName ?? "unknown"
+        logger.error("Exception in task: \(taskName), error: \(exception.localizedDescription)")
     }
 }
