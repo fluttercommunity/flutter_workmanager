@@ -14,7 +14,7 @@ import kotlin.random.Random
 /**
  * A debug handler that shows notifications for task events.
  * Note: You need to ensure your app has notification permissions.
- * 
+ *
  * @param channelId Custom notification channel ID (defaults to "WorkmanagerDebugChannelId")
  * @param channelName Custom notification channel name (defaults to "Workmanager Debug")
  * @param groupKey Custom notification group key for grouping notifications (optional)
@@ -22,9 +22,10 @@ import kotlin.random.Random
 class NotificationDebugHandler(
     private val channelId: String = "WorkmanagerDebugChannelId",
     private val channelName: String = "Workmanager Debug",
-    private val groupKey: String? = null
+    private val groupKey: String? = null,
 ) : WorkmanagerDebug() {
     private val isUsingDefaultChannel = channelId == "WorkmanagerDebugChannelId"
+
     companion object {
         private val debugDateFormatter =
             DateFormat.getTimeInstance(DateFormat.SHORT)
@@ -131,19 +132,20 @@ class NotificationDebugHandler(
             createNotificationChannel(notificationManager)
         }
 
-        val notificationBuilder = NotificationCompat
-            .Builder(context, channelId)
-            .setContentTitle(title)
-            .setContentText(contentText)
-            .setStyle(
-                NotificationCompat
-                    .BigTextStyle()
-                    .bigText(contentText),
-            ).setSmallIcon(android.R.drawable.stat_notify_sync)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+        val notificationBuilder =
+            NotificationCompat
+                .Builder(context, channelId)
+                .setContentTitle(title)
+                .setContentText(contentText)
+                .setStyle(
+                    NotificationCompat
+                        .BigTextStyle()
+                        .bigText(contentText),
+                ).setSmallIcon(android.R.drawable.stat_notify_sync)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
 
         // Add group key if specified
-        groupKey?.let { 
+        groupKey?.let {
             notificationBuilder.setGroup(it)
         }
 

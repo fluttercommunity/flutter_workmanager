@@ -3,7 +3,6 @@ package dev.fluttercommunity.workmanager
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
@@ -127,7 +126,10 @@ class BackgroundWorker(
         stopEngine(null)
     }
 
-    private fun stopEngine(result: Result?, errorMessage: String? = null) {
+    private fun stopEngine(
+        result: Result?,
+        errorMessage: String? = null,
+    ) {
         val fetchDuration = System.currentTimeMillis() - startTime
 
         val taskInfo =
@@ -141,17 +143,19 @@ class BackgroundWorker(
             TaskResult(
                 success = result is Result.Success,
                 duration = fetchDuration,
-                error = when (result) {
-                    is Result.Failure -> errorMessage ?: "Task failed"
-                    else -> null
-                },
+                error =
+                    when (result) {
+                        is Result.Failure -> errorMessage ?: "Task failed"
+                        else -> null
+                    },
             )
 
-        val status = when (result) {
-            is Result.Success -> TaskStatus.COMPLETED
-            is Result.Retry -> TaskStatus.RESCHEDULED
-            else -> TaskStatus.FAILED
-        }
+        val status =
+            when (result) {
+                is Result.Success -> TaskStatus.COMPLETED
+                is Result.Retry -> TaskStatus.RESCHEDULED
+                else -> TaskStatus.FAILED
+            }
         WorkmanagerDebug.onTaskStatusUpdate(applicationContext, taskInfo, status, taskResult)
 
         // No result indicates we were signalled to stop by WorkManager.  The result is already

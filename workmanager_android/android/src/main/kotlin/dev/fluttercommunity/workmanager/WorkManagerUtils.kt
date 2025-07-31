@@ -135,13 +135,14 @@ class WorkManagerWrapper(
                     ?: defaultOneOffExistingWorkPolicy,
                 oneOffTaskRequest,
             )
-            
-            val taskInfo = TaskDebugInfo(
-                taskName = request.taskName,
-                uniqueName = request.uniqueName,
-                inputData = request.inputData?.filterNotNullKeys(),
-                startTime = System.currentTimeMillis(),
-            )
+
+            val taskInfo =
+                TaskDebugInfo(
+                    taskName = request.taskName,
+                    uniqueName = request.uniqueName,
+                    inputData = request.inputData?.filterNotNullKeys(),
+                    startTime = System.currentTimeMillis(),
+                )
             WorkmanagerDebug.onTaskStatusUpdate(context, taskInfo, TaskStatus.SCHEDULED)
         } catch (e: Exception) {
             throw e
@@ -186,13 +187,14 @@ class WorkManagerWrapper(
                 ?: defaultPeriodExistingWorkPolicy,
             periodicTaskRequest,
         )
-        
-        val taskInfo = TaskDebugInfo(
-            taskName = request.taskName,
-            uniqueName = request.uniqueName,
-            inputData = request.inputData?.filterNotNullKeys(),
-            startTime = System.currentTimeMillis(),
-        )
+
+        val taskInfo =
+            TaskDebugInfo(
+                taskName = request.taskName,
+                uniqueName = request.uniqueName,
+                inputData = request.inputData?.filterNotNullKeys(),
+                startTime = System.currentTimeMillis(),
+            )
         WorkmanagerDebug.onTaskStatusUpdate(context, taskInfo, TaskStatus.SCHEDULED)
     }
 

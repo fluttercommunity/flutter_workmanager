@@ -1,4 +1,4 @@
-package dev.fluttercommunity.workmanager_example
+package dev.fluttercommunity.workmanager.example
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -14,18 +14,18 @@ class MainActivity : FlutterActivity() {
 
     override fun onStart() {
         super.onStart()
-        
+
         // Request notification permission for Android 13+ (API 33+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
                     this,
-                    Manifest.permission.POST_NOTIFICATIONS
+                    Manifest.permission.POST_NOTIFICATIONS,
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 ActivityCompat.requestPermissions(
                     this,
                     arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                    NOTIFICATION_PERMISSION_REQUEST_CODE
+                    NOTIFICATION_PERMISSION_REQUEST_CODE,
                 )
             }
         }
@@ -34,10 +34,10 @@ class MainActivity : FlutterActivity() {
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
-        grantResults: IntArray
+        grantResults: IntArray,
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        
+
         if (requestCode == NOTIFICATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permission granted - debug notifications will work

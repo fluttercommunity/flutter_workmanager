@@ -15,7 +15,7 @@ public class NotificationDebugHandler: WorkmanagerDebug {
     private let successEmoji = "✅"
     private let failureEmoji = "❌"
     private let stopEmoji = "⏹️"
-    
+
     private let categoryIdentifier: String?
     private let threadIdentifier: String?
 
@@ -71,12 +71,12 @@ public class NotificationDebugHandler: WorkmanagerDebug {
         content.title = title
         content.body = body
         content.sound = .default
-        
+
         // Set category identifier if specified
         if let categoryIdentifier = categoryIdentifier {
             content.categoryIdentifier = categoryIdentifier
         }
-        
+
         // Set thread identifier if specified for grouping
         if let threadIdentifier = threadIdentifier {
             content.threadIdentifier = threadIdentifier

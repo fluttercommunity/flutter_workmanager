@@ -4,11 +4,11 @@
   <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
   <application
-    android:name="dev.fluttercommunity.workmanager_example.ExampleApplication"
+    android:name=".ExampleApplication"
     android:icon="@mipmap/ic_launcher"
     android:label="workmanager_example">
     <activity
-      android:name="dev.fluttercommunity.workmanager_example.MainActivity"
+      android:name=".MainActivity"
       android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
       android:hardwareAccelerated="true"
       android:launchMode="singleTop"

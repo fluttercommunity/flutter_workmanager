@@ -135,7 +135,7 @@ class BackgroundWorker {
                     let fetchResult: UIBackgroundFetchResult
                     let status: TaskStatus
                     let errorMessage: String?
-                    
+
                     switch taskResult {
                     case .success(let wasSuccessful):
                         if wasSuccessful {

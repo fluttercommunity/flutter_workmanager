@@ -24,10 +24,10 @@ import workmanager_apple
 
         // EXAMPLE: Enable debug notifications for background tasks
         // Uncomment one of the following lines to enable debug output:
-        
+
         // Option 1: Notification-based debug handler (shows debug info as notifications)
         WorkmanagerDebug.setCurrent(NotificationDebugHandler())
-        
+
         // Option 2: Logging-based debug handler (writes to system log)
         // WorkmanagerDebug.setCurrent(LoggingDebugHandler())
 

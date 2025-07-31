@@ -172,7 +172,7 @@ public class WorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
                 inputData: request.inputData as? [String: Any],
                 delaySeconds: delaySeconds
             )
-            
+
             let taskInfo = TaskDebugInfo(
                 taskName: request.taskName,
                 uniqueName: request.uniqueName,
@@ -195,7 +195,7 @@ public class WorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
                 taskIdentifier: request.uniqueName,
                 earliestBeginInSeconds: initialDelaySeconds
             )
-            
+
             let taskInfo = TaskDebugInfo(
                 taskName: request.taskName,
                 uniqueName: request.uniqueName,
