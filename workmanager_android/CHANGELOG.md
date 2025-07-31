@@ -7,11 +7,17 @@
 * **BREAKING**: `registerPeriodicTask` now uses `ExistingPeriodicWorkPolicy`
   * Replace `ExistingWorkPolicy` parameter with `ExistingPeriodicWorkPolicy`
 
+### New Features
+* Add `NotificationDebugHandler` for debug notifications with configurable channels
+* Add `LoggingDebugHandler` for system log-based debugging
+* Add `TaskStatus.SCHEDULED` and `TaskStatus.RESCHEDULED` for better task lifecycle tracking
+
 ### Bug Fixes
 * Fix periodic tasks running at wrong frequency when re-registered (#622)
   * Changed default policy from `KEEP` to `UPDATE`
   * `UPDATE` ensures new task configurations replace existing ones
 * Fix crash when background task callback is null (thanks @jonathanduke, @Muneeza-PT)
+* Fix retry detection using `runAttemptCount` to properly identify retrying tasks
 
 ## 0.8.0
 

@@ -3,8 +3,15 @@
 ### Breaking Changes
 * **BREAKING**: iOS minimum deployment target increased to 14.0
   * Update your iOS project's deployment target to 14.0+
+  * Required for notification debug handlers (iOS 14+ notification permissions)
 * **BREAKING**: `registerPeriodicTask` now uses `ExistingPeriodicWorkPolicy`
   * Replace `ExistingWorkPolicy` parameter with `ExistingPeriodicWorkPolicy`
+
+### New Features
+* Add `NotificationDebugHandler` for debug notifications with configurable grouping
+  * Requires iOS 14+ and notification permissions
+* Add `LoggingDebugHandler` for system log-based debugging
+* Add `TaskStatus.SCHEDULED` and `TaskStatus.RESCHEDULED` for better task lifecycle tracking
 
 ## 0.8.0
 

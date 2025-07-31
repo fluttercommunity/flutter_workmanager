@@ -3,15 +3,23 @@
 ## Breaking Changes
 * **BREAKING**: `isInDebugMode` parameter in `initialize()` is deprecated
   * Parameter still accepted but will be removed in future version
-  * Replace with hook-based debug system - see migration guide
+  * Replace with hook-based debug system using `WorkmanagerDebug.setCurrent()`
 * **BREAKING**: iOS minimum deployment target increased to 14.0
   * Update your iOS project's deployment target to 14.0+
 * **BREAKING**: `registerPeriodicTask` now uses `ExistingPeriodicWorkPolicy`
   * Replace `ExistingWorkPolicy` parameter with `ExistingPeriodicWorkPolicy`
 
+## New Features
+* Add optional hook-based debug system with configurable handlers
+  * `NotificationDebugHandler` - shows task status as notifications 
+  * `LoggingDebugHandler` - writes task events to system log
+  * Eliminates risk of debug notifications appearing in production apps
+* Add `TaskStatus.SCHEDULED` and `TaskStatus.RESCHEDULED` for better task lifecycle visibility
+
 ## Bug Fixes
 * Fix periodic tasks running at wrong frequency when re-registered (#622)
 * Fix crash when inputData contains null values (thanks @Dr-wgy)
+* Fix Android retry detection to properly identify retrying tasks
 
 # 0.8.0
 

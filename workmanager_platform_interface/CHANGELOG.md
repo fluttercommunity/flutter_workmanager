@@ -4,6 +4,10 @@
 * **BREAKING**: Separate `ExistingWorkPolicy` and `ExistingPeriodicWorkPolicy` enums
   * Use `ExistingPeriodicWorkPolicy` for periodic tasks: `keep`, `replace`, `update`
 
+### New Features
+* Add `TaskStatus.SCHEDULED` and `TaskStatus.RESCHEDULED` enums for enhanced task lifecycle tracking
+* Add debug handler interface and implementations for optional task monitoring
+
 ## 0.8.0
 
 ### Initial Release
