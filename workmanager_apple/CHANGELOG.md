@@ -1,17 +1,12 @@
-## Future
+## 0.9.0
 
-### Breaking Changes
-* **BREAKING**: iOS minimum deployment target increased to 14.0
-  * Update your iOS project's deployment target to 14.0+
-  * Required for notification debug handlers (iOS 14+ notification permissions)
-* **BREAKING**: `registerPeriodicTask` now uses `ExistingPeriodicWorkPolicy`
-  * Replace `ExistingWorkPolicy` parameter with `ExistingPeriodicWorkPolicy`
+> Note: This release has breaking changes.
 
-### New Features
-* Add `NotificationDebugHandler` for debug notifications with configurable grouping
-  * Requires iOS 14+ and notification permissions
-* Add `LoggingDebugHandler` for system log-based debugging
-* Add `TaskStatus.SCHEDULED` and `TaskStatus.RESCHEDULED` for better task lifecycle tracking
+ - **REFACTOR**: replace debug mode with extensible hook-based system (#630).
+ - **REFACTOR**: Migrate internal interfaces to pigeon (#613).
+ - **FEAT**: Migrate to federated plugin architecture (#611).
+ - **BREAKING** **FIX**: resolve issue #622 - periodic tasks running at incorrect frequencies (#628).
+
 
 ## 0.8.0
 

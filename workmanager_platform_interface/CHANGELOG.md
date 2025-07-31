@@ -1,12 +1,12 @@
-## Future
+## 0.9.0
 
-### Breaking Changes
-* **BREAKING**: Separate `ExistingWorkPolicy` and `ExistingPeriodicWorkPolicy` enums
-  * Use `ExistingPeriodicWorkPolicy` for periodic tasks: `keep`, `replace`, `update`
+> Note: This release has breaking changes.
 
-### New Features
-* Add `TaskStatus.SCHEDULED` and `TaskStatus.RESCHEDULED` enums for enhanced task lifecycle tracking
-* Add debug handler interface and implementations for optional task monitoring
+ - **REFACTOR**: replace debug mode with extensible hook-based system (#630).
+ - **REFACTOR**: Migrate internal interfaces to pigeon (#613).
+ - **FEAT**: Migrate to federated plugin architecture (#611).
+ - **BREAKING** **FIX**: resolve issue #622 - periodic tasks running at incorrect frequencies (#628).
+
 
 ## 0.8.0
 

@@ -1,23 +1,13 @@
-## Future
+## 0.9.0
 
-### Dependencies
-* Updated androidx.work from 2.9.0 to 2.10.2
+> Note: This release has breaking changes.
 
-### Breaking Changes
-* **BREAKING**: `registerPeriodicTask` now uses `ExistingPeriodicWorkPolicy`
-  * Replace `ExistingWorkPolicy` parameter with `ExistingPeriodicWorkPolicy`
+ - **REFACTOR**: replace debug mode with extensible hook-based system (#630).
+ - **REFACTOR**: Migrate internal interfaces to pigeon (#613).
+ - **FIX**: resolve critical null handling crashes from contributor reports (#626).
+ - **FEAT**: Migrate to federated plugin architecture (#611).
+ - **BREAKING** **FIX**: resolve issue #622 - periodic tasks running at incorrect frequencies (#628).
 
-### New Features
-* Add `NotificationDebugHandler` for debug notifications with configurable channels
-* Add `LoggingDebugHandler` for system log-based debugging
-* Add `TaskStatus.SCHEDULED` and `TaskStatus.RESCHEDULED` for better task lifecycle tracking
-
-### Bug Fixes
-* Fix periodic tasks running at wrong frequency when re-registered (#622)
-  * Changed default policy from `KEEP` to `UPDATE`
-  * `UPDATE` ensures new task configurations replace existing ones
-* Fix crash when background task callback is null (thanks @jonathanduke, @Muneeza-PT)
-* Fix retry detection using `runAttemptCount` to properly identify retrying tasks
 
 ## 0.8.0
 
