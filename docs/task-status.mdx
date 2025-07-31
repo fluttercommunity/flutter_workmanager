@@ -1,0 +1,295 @@
+---
+title: Task Status Tracking
+description: Understanding background task lifecycle and status notifications
+---
+
+Workmanager provides detailed task status tracking through debug handlers, allowing you to monitor the complete lifecycle of your background tasks from scheduling to completion.
+
+## Task Status Overview
+
+Background tasks go through several status states during their lifecycle. The Workmanager plugin tracks these states and provides notifications through debug handlers.
+
+## Task Status States
+
+| Status | Description | When it occurs | Android | iOS |
+|--------|-------------|----------------|---------|-----|
+| **Scheduled** | Task has been scheduled with the system | When `registerOneOffTask()` or `registerPeriodicTask()` is called | ✅ | ✅ |
+| **Started** | Task execution has begun (first attempt) | When task starts running for the first time | ✅ | ✅ |
+| **Retrying** | Task is being retried after a previous attempt | When task starts running after `runAttemptCount > 0` | ✅ | ❌ |
+| **Rescheduled** | Task will be retried later | When Dart function returns `false` | ✅ | ❌ |
+| **Completed** | Task finished successfully | When Dart function returns `true` | ✅ | ✅ |
+| **Failed** | Task failed permanently | When Dart function throws an exception | ✅ | ✅ |
+| **Cancelled** | Task was cancelled before completion | When `cancelAll()` or `cancelByUniqueName()` is called | ✅ | ✅ |
+
+## Task Result Behavior
+
+The behavior of task status depends on what your Dart background function returns:
+
+### Dart Function Return Values
+
+<Tabs>
+  <TabItem label="Android" value="android">
+
+| Dart Return | Task Status | System Behavior | Debug Notification |
+|-------------|-------------|-----------------|-------------------|
+| `true` | **Completed** | Task succeeds, won't retry | ✅ Success |
+| `false` | **Rescheduled** | WorkManager schedules retry with backoff | 🔄 Rescheduled |
+| `Future.error()` | **Failed** | Task fails permanently, no retry | ❌ Failed + error |
+| Exception thrown | **Failed** | Task fails permanently, no retry | ❌ Failed + error |
+
+  </TabItem>
+  <TabItem label="iOS" value="ios">
+
+| Dart Return | Task Status | System Behavior | Debug Notification |
+|-------------|-------------|-----------------|-------------------|
+| `true` | **Completed** | Task succeeds, won't retry | ✅ Success |
+| `false` | **Retrying** | App must manually reschedule | 🔄 Retrying |
+| `Future.error()` | **Failed** | Task fails, no automatic retry | ❌ Failed + error |
+| Exception thrown | **Failed** | Task fails, no automatic retry | ❌ Failed + error |
+
+  </TabItem>
+</Tabs>
+
+## Advanced Android Features
+
+### Retry Detection
+
+On Android, Workmanager can distinguish between first attempts and retries using `runAttemptCount`:
+
+| Scenario | Start Status | End Status | Notification Example |
+|----------|--------------|------------|---------------------|
+| Fresh task, succeeds | **Started** | **Completed** | ▶️ Started → ✅ Success |
+| Fresh task, returns false | **Started** | **Rescheduled** | ▶️ Started → 🔄 Rescheduled |
+| Retry attempt, succeeds | **Retrying** | **Completed** | 🔄 Retrying → ✅ Success |
+| Retry attempt, fails | **Retrying** | **Failed** | 🔄 Retrying → ❌ Failed |
+
+### Backoff Policy
+
+When a task returns `false`, Android WorkManager uses exponential backoff by default:
+- 1st retry: ~30 seconds
+- 2nd retry: ~1 minute  
+- 3rd retry: ~2 minutes
+- Maximum: ~5 hours
+
+## Debug Handler Integration
+
+Task status is exposed through debug handlers. Set up debug handlers to receive status notifications:
+
+### Notification Configuration
+
+The `NotificationDebugHandler` supports custom notification channels and grouping:
+
+**Android Options:**
+- `channelId`: Custom notification channel ID for organizing notifications (if custom, you must create the channel first)
+- `channelName`: Human-readable channel name shown in system settings (only used if using default channel)
+- `groupKey`: Groups related notifications together in the notification drawer
+
+**iOS Options:**
+- `categoryIdentifier`: Custom notification category for specialized handling
+- `threadIdentifier`: Groups notifications in the same conversation thread
+
+<Tabs>
+  <TabItem label="Android" value="android">
+
+```kotlin
+// NotificationDebugHandler - shows status as notifications
+WorkmanagerDebug.setCurrent(NotificationDebugHandler())
+
+// Custom notification channel and grouping (you must create the channel first)
+val channelId = "MyAppDebugChannel"
+if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+    val channel = NotificationChannel(channelId, "My App Debug", NotificationManager.IMPORTANCE_DEFAULT)
+    val notificationManager = getSystemService(NotificationManager::class.java)
+    notificationManager.createNotificationChannel(channel)
+}
+WorkmanagerDebug.setCurrent(NotificationDebugHandler(
+    channelId = channelId,
+    groupKey = "workmanager_debug_group"
+))
+
+// LoggingDebugHandler - writes to system log
+WorkmanagerDebug.setCurrent(LoggingDebugHandler())
+
+// Custom handler
+class CustomDebugHandler : WorkmanagerDebug() {
+    override fun onTaskStatusUpdate(
+        context: Context, 
+        taskInfo: TaskDebugInfo, 
+        status: TaskStatus, 
+        result: TaskResult?
+    ) {
+        when (status) {
+            TaskStatus.SCHEDULED -> log("Task scheduled: ${taskInfo.taskName}")
+            TaskStatus.STARTED -> log("Task started: ${taskInfo.taskName}")
+            TaskStatus.RETRYING -> log("Task retrying (attempt ${taskInfo.runAttemptCount}): ${taskInfo.taskName}")
+            TaskStatus.RESCHEDULED -> log("Task rescheduled: ${taskInfo.taskName}")
+            TaskStatus.COMPLETED -> log("Task completed: ${taskInfo.taskName}")
+            TaskStatus.FAILED -> log("Task failed: ${taskInfo.taskName}, error: ${result?.error}")
+            TaskStatus.CANCELLED -> log("Task cancelled: ${taskInfo.taskName}")
+        }
+    }
+}
+```
+
+  </TabItem>
+  <TabItem label="iOS" value="ios">
+
+```swift
+// NotificationDebugHandler - shows status as notifications  
+WorkmanagerDebug.setCurrent(NotificationDebugHandler())
+
+// Custom notification category and thread grouping
+WorkmanagerDebug.setCurrent(NotificationDebugHandler(
+    categoryIdentifier: "myAppDebugCategory",
+    threadIdentifier: "workmanager_debug_thread"
+))
+
+// LoggingDebugHandler - writes to system log
+WorkmanagerDebug.setCurrent(LoggingDebugHandler())
+
+// Custom handler
+class CustomDebugHandler: WorkmanagerDebug {
+    override func onTaskStatusUpdate(taskInfo: TaskDebugInfo, status: TaskStatus, result: TaskResult?) {
+        switch status {
+        case .scheduled:
+            print("Task scheduled: \(taskInfo.taskName)")
+        case .started:
+            print("Task started: \(taskInfo.taskName)")
+        case .retrying:
+            print("Task retrying: \(taskInfo.taskName)")
+        case .rescheduled:
+            print("Task rescheduled: \(taskInfo.taskName)")
+        case .completed:
+            print("Task completed: \(taskInfo.taskName)")
+        case .failed:
+            print("Task failed: \(taskInfo.taskName), error: \(result?.error ?? "unknown")")
+        case .cancelled:
+            print("Task cancelled: \(taskInfo.taskName)")
+        }
+    }
+}
+```
+
+  </TabItem>
+</Tabs>
+
+## Notification Format
+
+The built-in `NotificationDebugHandler` shows concise, actionable notifications:
+
+### Notification Examples
+
+| Status | Title Format | Body |
+|--------|--------------|------|
+| Scheduled | 📅 Scheduled | taskName |
+| Started | ▶️ Started | taskName |
+| Retrying | 🔄 Retrying | taskName |
+| Rescheduled | 🔄 Rescheduled | taskName |
+| Success | ✅ Success | taskName |
+| Failed | ❌ Failed | taskName + error message |
+| Exception | ❌ Exception | taskName + exception details |
+| Cancelled | ⏹️ Cancelled | taskName |
+
+## Platform Differences
+
+### Android Advantages
+- **Retry detection**: Can distinguish first attempts from retries
+- **Automatic rescheduling**: WorkManager handles retry logic with backoff
+- **Rich debug info**: Access to `runAttemptCount` and system constraints
+- **Guaranteed execution**: Tasks will retry according to policy
+
+### iOS Limitations  
+- **No retry detection**: Cannot distinguish first attempts from retries
+- **Manual rescheduling**: App must reschedule tasks on failure
+- **System controlled**: iOS decides when/if tasks actually run
+- **No guarantees**: Tasks may never execute depending on system state
+
+## Best Practices
+
+### Task Implementation
+
+```dart
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    try {
+      // Your task logic here
+      final result = await performWork(task, inputData);
+      
+      if (result.isSuccess) {
+        return true;  // ✅ Task succeeded
+      } else {
+        return false; // 🔄 Retry with backoff (Android) or manual reschedule (iOS)
+      }
+    } catch (e) {
+      // 🔥 Permanent failure - will not retry
+      throw Exception('Task failed: $e');
+    }
+  });
+}
+```
+
+### Error Handling Strategy
+
+| Error Type | Recommended Return | Result |
+|------------|-------------------|--------|
+| Network timeout | `return false` | Task will retry later |
+| Invalid data | `throw Exception()` | Task fails permanently |
+| Temporary server error | `return false` | Task will retry with backoff |
+| Authentication failure | `throw Exception()` | Task fails, needs user intervention |
+
+### Monitoring Task Health
+
+```dart
+// Track task execution in your debug handler
+class TaskHealthMonitor : WorkmanagerDebug() {
+    override fun onTaskStatusUpdate(context: Context, taskInfo: TaskDebugInfo, status: TaskStatus, result: TaskResult?) {
+        when (status) {
+            TaskStatus.COMPLETED -> recordSuccess(taskInfo.taskName)
+            TaskStatus.FAILED -> recordFailure(taskInfo.taskName, result?.error)
+            TaskStatus.RETRYING -> recordRetry(taskInfo.taskName)
+        }
+    }
+}
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**Tasks showing as "Rescheduled" but not running:**
+- Android: Check battery optimization and Doze mode settings
+- iOS: Verify Background App Refresh is enabled and app is used regularly
+
+**Tasks immediately failing:**
+- Check if task logic throws exceptions during initialization
+- Verify all dependencies are available in background isolate
+- Review error messages in Failed notifications
+
+**No status notifications appearing:**
+- Ensure debug handler is set before task execution
+- Check notification permissions (for NotificationDebugHandler)
+- Verify debug handler is called during task lifecycle
+
+For detailed debugging guidance, see the [Debugging Guide](debugging).
+
+## Migration from isInDebugMode
+
+If you were using the deprecated `isInDebugMode` parameter:
+
+```dart
+// ❌ Old approach (deprecated)
+await Workmanager().initialize(
+  callbackDispatcher,
+  isInDebugMode: true, // Deprecated
+);
+
+// ✅ New approach
+await Workmanager().initialize(callbackDispatcher);
+
+// Set up platform-specific debug handler
+// Android: WorkmanagerDebug.setCurrent(NotificationDebugHandler())
+// iOS: WorkmanagerDebug.setCurrent(LoggingDebugHandler())
+```
+
+The new system provides much more detailed and customizable debugging information than the simple boolean flag.

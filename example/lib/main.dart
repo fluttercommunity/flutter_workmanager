@@ -149,10 +149,7 @@ class _MyAppState extends State<MyApp> {
                     }
                     if (!workmanagerInitialized) {
                       try {
-                        await Workmanager().initialize(
-                          callbackDispatcher,
-                          isInDebugMode: true,
-                        );
+                        await Workmanager().initialize(callbackDispatcher);
                       } catch (e) {
                         print('Error initializing Workmanager: $e');
                         return;

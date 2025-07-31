@@ -1,15 +1,19 @@
 ## Pre-Commit Requirements
 **CRITICAL**: Always run from project root before ANY commit:
 1. `dart analyze` (check for code errors)
-2. `ktlint -F .`
-3. `find . -name "*.dart" ! -name "*.g.dart" ! -path "*/.*" -print0 | xargs -0 dart format --set-exit-if-changed`
-4. `flutter test` (all Dart tests)
-5. `cd example/android && ./gradlew :workmanager_android:test` (Android native tests)
+2. `ktlint -F .` (format Kotlin code)
+3. `swiftlint --fix` (format Swift code)
+4. `find . -name "*.dart" ! -name "*.g.dart" ! -path "*/.*" -print0 | xargs -0 dart format --set-exit-if-changed`
+5. `flutter test` (all Dart tests)
+6. `cd example/android && ./gradlew :workmanager_android:test` (Android native tests)
+7. `cd example && flutter build apk --debug` (build Android example app)
+8. `cd example && flutter build ios --debug --no-codesign` (build iOS example app)
 
 ## Code Generation
 - Regenerate Pigeon files: `melos run generate:pigeon`
 - Regenerate Dart files (including mocks): `melos run generate:dart`
 - Do not manually edit *.g.* files
+- Never manually modify mocks or generated files. Always modify the source, then run the generator tasks via melos.
 
 ## Running Tests
 - Use melos to run all tests: `melos run test`
@@ -33,3 +37,30 @@
 - **What matters to users**: Breaking changes, new features, bug fixes that affect their code
 - **Example of bad changelog entry**: "Fixed Kotlin null safety issues with androidx.work 2.10.2 type system improvements"
 - **Example of good changelog entry**: "Fixed periodic tasks not respecting frequency changes"
+
+## Documentation Components (docs.page)
+- **Component reference**: https://use.docs.page/ contains the full reference for available components
+- **Tabs component syntax**:
+  ```jsx
+  <Tabs>
+    <TabItem label="Tab Name" value="unique-value">
+      Content here
+    </TabItem>
+  </Tabs>
+  ```
+- Use `<TabItem>` not `<Tab>` - this is a common mistake that causes JavaScript errors
+- Always include both `label` and `value` props on TabItem components
+
+## Pull Request Description Guidelines
+
+Template:
+```markdown
+## Summary
+- Brief change description
+
+Fixes #123
+
+## Breaking Changes (if applicable)
+**Before:** `old code`
+**After:** `new code`
+```

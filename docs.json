@@ -30,6 +30,10 @@
           "href": "/customization"
         },
         {
+          "title": "Task Status Tracking",
+          "href": "/task-status"
+        },
+        {
           "title": "Debugging",
           "href": "/debugging"
         }

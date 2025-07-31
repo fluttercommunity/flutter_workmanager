@@ -13,7 +13,7 @@ import androidx.work.OutOfQuotaPolicy
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
 import dev.fluttercommunity.workmanager.BackgroundWorker.Companion.DART_TASK_KEY
-import dev.fluttercommunity.workmanager.BackgroundWorker.Companion.IS_IN_DEBUG_MODE_KEY
+import dev.fluttercommunity.workmanager.pigeon.TaskStatus
 import java.util.concurrent.TimeUnit
 
 // Constants
@@ -100,10 +100,7 @@ class WorkManagerWrapper(
 ) {
     private val workManager = WorkManager.getInstance(context)
 
-    fun enqueueOneOffTask(
-        request: dev.fluttercommunity.workmanager.pigeon.OneOffTaskRequest,
-        isInDebugMode: Boolean = false,
-    ) {
+    fun enqueueOneOffTask(request: dev.fluttercommunity.workmanager.pigeon.OneOffTaskRequest) {
         try {
             val oneOffTaskRequest =
                 OneTimeWorkRequest
@@ -111,7 +108,6 @@ class WorkManagerWrapper(
                     .setInputData(
                         buildTaskInputData(
                             request.taskName,
-                            isInDebugMode,
                             request.inputData?.filterNotNullKeys(),
                         ),
                     ).setInitialDelay(
@@ -139,15 +135,21 @@ class WorkManagerWrapper(
                     ?: defaultOneOffExistingWorkPolicy,
                 oneOffTaskRequest,
             )
+
+            val taskInfo =
+                TaskDebugInfo(
+                    taskName = request.taskName,
+                    uniqueName = request.uniqueName,
+                    inputData = request.inputData?.filterNotNullKeys(),
+                    startTime = System.currentTimeMillis(),
+                )
+            WorkmanagerDebug.onTaskStatusUpdate(context, taskInfo, TaskStatus.SCHEDULED)
         } catch (e: Exception) {
             throw e
         }
     }
 
-    fun enqueuePeriodicTask(
-        request: dev.fluttercommunity.workmanager.pigeon.PeriodicTaskRequest,
-        isInDebugMode: Boolean = false,
-    ) {
+    fun enqueuePeriodicTask(request: dev.fluttercommunity.workmanager.pigeon.PeriodicTaskRequest) {
         val periodicTaskRequest =
             PeriodicWorkRequest
                 .Builder(
@@ -159,7 +161,6 @@ class WorkManagerWrapper(
                 ).setInputData(
                     buildTaskInputData(
                         request.taskName,
-                        isInDebugMode,
                         request.inputData?.filterNotNullKeys(),
                     ),
                 ).setInitialDelay(
@@ -186,18 +187,25 @@ class WorkManagerWrapper(
                 ?: defaultPeriodExistingWorkPolicy,
             periodicTaskRequest,
         )
+
+        val taskInfo =
+            TaskDebugInfo(
+                taskName = request.taskName,
+                uniqueName = request.uniqueName,
+                inputData = request.inputData?.filterNotNullKeys(),
+                startTime = System.currentTimeMillis(),
+            )
+        WorkmanagerDebug.onTaskStatusUpdate(context, taskInfo, TaskStatus.SCHEDULED)
     }
 
     private fun buildTaskInputData(
         dartTask: String,
-        isInDebugMode: Boolean,
         payload: Map<String, Any>?,
     ): Data {
         val builder =
             Data
                 .Builder()
                 .putString(DART_TASK_KEY, dartTask)
-                .putBoolean(IS_IN_DEBUG_MODE_KEY, isInDebugMode)
 
         // Add payload data if provided
         payload?.forEach { (key, value) ->

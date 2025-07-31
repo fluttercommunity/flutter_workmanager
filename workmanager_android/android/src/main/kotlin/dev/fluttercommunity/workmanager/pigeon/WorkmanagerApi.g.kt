@@ -84,6 +84,30 @@ class FlutterError (
   val details: Any? = null
 ) : Throwable()
 
+/** Task status for debugging and monitoring. */
+enum class TaskStatus(val raw: Int) {
+  /** Task has been scheduled */
+  SCHEDULED(0),
+  /** Task has started execution */
+  STARTED(1),
+  /** Task completed successfully */
+  COMPLETED(2),
+  /** Task failed */
+  FAILED(3),
+  /** Task was cancelled */
+  CANCELLED(4),
+  /** Task is being retried */
+  RETRYING(5),
+  /** Task was rescheduled for later execution */
+  RESCHEDULED(6);
+
+  companion object {
+    fun ofRaw(raw: Int): TaskStatus? {
+      return values().firstOrNull { it.raw == raw }
+    }
+  }
+}
+
 /**
  * An enumeration of various network types that can be used as Constraints for work.
  *
@@ -311,21 +335,18 @@ data class BackoffPolicyConfig (
 
 /** Generated class from Pigeon that represents data sent in messages. */
 data class InitializeRequest (
-  val callbackHandle: Long,
-  val isInDebugMode: Boolean
+  val callbackHandle: Long
 )
  {
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): InitializeRequest {
       val callbackHandle = pigeonVar_list[0] as Long
-      val isInDebugMode = pigeonVar_list[1] as Boolean
-      return InitializeRequest(callbackHandle, isInDebugMode)
+      return InitializeRequest(callbackHandle)
     }
   }
   fun toList(): List<Any?> {
     return listOf(
       callbackHandle,
-      isInDebugMode,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -494,55 +515,60 @@ private open class WorkmanagerApiPigeonCodec : StandardMessageCodec() {
     return when (type) {
       129.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          NetworkType.ofRaw(it.toInt())
+          TaskStatus.ofRaw(it.toInt())
         }
       }
       130.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          BackoffPolicy.ofRaw(it.toInt())
+          NetworkType.ofRaw(it.toInt())
         }
       }
       131.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          ExistingWorkPolicy.ofRaw(it.toInt())
+          BackoffPolicy.ofRaw(it.toInt())
         }
       }
       132.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          ExistingPeriodicWorkPolicy.ofRaw(it.toInt())
+          ExistingWorkPolicy.ofRaw(it.toInt())
         }
       }
       133.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          OutOfQuotaPolicy.ofRaw(it.toInt())
+          ExistingPeriodicWorkPolicy.ofRaw(it.toInt())
         }
       }
       134.toByte() -> {
-        return (readValue(buffer) as? List<Any?>)?.let {
-          Constraints.fromList(it)
+        return (readValue(buffer) as Long?)?.let {
+          OutOfQuotaPolicy.ofRaw(it.toInt())
         }
       }
       135.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          BackoffPolicyConfig.fromList(it)
+          Constraints.fromList(it)
         }
       }
       136.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          InitializeRequest.fromList(it)
+          BackoffPolicyConfig.fromList(it)
         }
       }
       137.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          OneOffTaskRequest.fromList(it)
+          InitializeRequest.fromList(it)
         }
       }
       138.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PeriodicTaskRequest.fromList(it)
+          OneOffTaskRequest.fromList(it)
         }
       }
       139.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          PeriodicTaskRequest.fromList(it)
+        }
+      }
+      140.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           ProcessingTaskRequest.fromList(it)
         }
@@ -552,48 +578,52 @@ private open class WorkmanagerApiPigeonCodec : StandardMessageCodec() {
   }
   override fun writeValue(stream: ByteArrayOutputStream, value: Any?)   {
     when (value) {
-      is NetworkType -> {
+      is TaskStatus -> {
         stream.write(129)
         writeValue(stream, value.raw)
       }
-      is BackoffPolicy -> {
+      is NetworkType -> {
         stream.write(130)
         writeValue(stream, value.raw)
       }
-      is ExistingWorkPolicy -> {
+      is BackoffPolicy -> {
         stream.write(131)
         writeValue(stream, value.raw)
       }
-      is ExistingPeriodicWorkPolicy -> {
+      is ExistingWorkPolicy -> {
         stream.write(132)
         writeValue(stream, value.raw)
       }
-      is OutOfQuotaPolicy -> {
+      is ExistingPeriodicWorkPolicy -> {
         stream.write(133)
         writeValue(stream, value.raw)
       }
-      is Constraints -> {
+      is OutOfQuotaPolicy -> {
         stream.write(134)
-        writeValue(stream, value.toList())
+        writeValue(stream, value.raw)
       }
-      is BackoffPolicyConfig -> {
+      is Constraints -> {
         stream.write(135)
         writeValue(stream, value.toList())
       }
-      is InitializeRequest -> {
+      is BackoffPolicyConfig -> {
         stream.write(136)
         writeValue(stream, value.toList())
       }
-      is OneOffTaskRequest -> {
+      is InitializeRequest -> {
         stream.write(137)
         writeValue(stream, value.toList())
       }
-      is PeriodicTaskRequest -> {
+      is OneOffTaskRequest -> {
         stream.write(138)
         writeValue(stream, value.toList())
       }
-      is ProcessingTaskRequest -> {
+      is PeriodicTaskRequest -> {
         stream.write(139)
+        writeValue(stream, value.toList())
+      }
+      is ProcessingTaskRequest -> {
+        stream.write(140)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)

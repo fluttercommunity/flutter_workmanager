@@ -76,7 +76,7 @@ void main() {
 
     testWidgets('initialize should succeed on all platforms',
         (WidgetTester tester) async {
-      await workmanager.initialize(callbackDispatcher, isInDebugMode: true);
+      await workmanager.initialize(callbackDispatcher);
       // No exception means success
     });
 

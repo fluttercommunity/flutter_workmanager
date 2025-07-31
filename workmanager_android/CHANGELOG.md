@@ -1,21 +1,23 @@
 ## Future
 
-### Dependencies & Infrastructure Updates
-* Updated androidx.work from 2.9.0 to 2.10.2 with improved Flow-based observability
-* Regenerated Pigeon files with updated version 26.0.0
+### Dependencies
+* Updated androidx.work from 2.9.0 to 2.10.2
 
 ### Breaking Changes
-* **BREAKING**: Update `registerPeriodicTask` to use `ExistingPeriodicWorkPolicy` instead of `ExistingWorkPolicy`
-  * This provides better type safety and mirrors Android's native API
+* **BREAKING**: `registerPeriodicTask` now uses `ExistingPeriodicWorkPolicy`
+  * Replace `ExistingWorkPolicy` parameter with `ExistingPeriodicWorkPolicy`
+
+### New Features
+* Add `NotificationDebugHandler` for debug notifications with configurable channels
+* Add `LoggingDebugHandler` for system log-based debugging
+* Add `TaskStatus.SCHEDULED` and `TaskStatus.RESCHEDULED` for better task lifecycle tracking
 
 ### Bug Fixes
-* Fix issue #622: Periodic tasks running at incorrect frequencies when re-registered
-  * Changed default `ExistingPeriodicWorkPolicy` from `KEEP` to `UPDATE`
-  * Ensures new task configurations properly replace existing ones
-* Fix null callback crash in BackgroundWorker when FlutterCallbackInformation is null (thanks to @jonathanduke, @Muneeza-PT)
-
-### Improvements
-* Improve SharedPreferenceHelper callback handling - now calls callback immediately when preferences are already loaded
+* Fix periodic tasks running at wrong frequency when re-registered (#622)
+  * Changed default policy from `KEEP` to `UPDATE`
+  * `UPDATE` ensures new task configurations replace existing ones
+* Fix crash when background task callback is null (thanks @jonathanduke, @Muneeza-PT)
+* Fix retry detection using `runAttemptCount` to properly identify retrying tasks
 
 ## 0.8.0
 

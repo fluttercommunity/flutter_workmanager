@@ -17,12 +17,13 @@ class WorkmanagerAndroid extends WorkmanagerPlatform {
   @override
   Future<void> initialize(
     Function callbackDispatcher, {
+    @Deprecated(
+        'Use WorkmanagerDebug handlers instead. This parameter has no effect.')
     bool isInDebugMode = false,
   }) async {
     final callback = PluginUtilities.getCallbackHandle(callbackDispatcher);
     await _api.initialize(InitializeRequest(
       callbackHandle: callback!.toRawHandle(),
-      isInDebugMode: isInDebugMode,
     ));
   }
 

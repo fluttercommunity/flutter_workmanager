@@ -135,6 +135,24 @@ func deepHashWorkmanagerApi(value: Any?, hasher: inout Hasher) {
 
     
 
+/// Task status for debugging and monitoring.
+enum TaskStatus: Int {
+  /// Task has been scheduled
+  case scheduled = 0
+  /// Task has started execution
+  case started = 1
+  /// Task completed successfully
+  case completed = 2
+  /// Task failed
+  case failed = 3
+  /// Task was cancelled
+  case cancelled = 4
+  /// Task is being retried
+  case retrying = 5
+  /// Task was rescheduled for later execution
+  case rescheduled = 6
+}
+
 /// An enumeration of various network types that can be used as Constraints for work.
 ///
 /// Fully supported on Android.
@@ -304,23 +322,19 @@ struct BackoffPolicyConfig: Hashable {
 /// Generated class from Pigeon that represents data sent in messages.
 struct InitializeRequest: Hashable {
   var callbackHandle: Int64
-  var isInDebugMode: Bool
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> InitializeRequest? {
     let callbackHandle = pigeonVar_list[0] as! Int64
-    let isInDebugMode = pigeonVar_list[1] as! Bool
 
     return InitializeRequest(
-      callbackHandle: callbackHandle,
-      isInDebugMode: isInDebugMode
+      callbackHandle: callbackHandle
     )
   }
   func toList() -> [Any?] {
     return [
-      callbackHandle,
-      isInDebugMode,
+      callbackHandle
     ]
   }
   static func == (lhs: InitializeRequest, rhs: InitializeRequest) -> Bool {
@@ -499,44 +513,50 @@ private class WorkmanagerApiPigeonCodecReader: FlutterStandardReader {
     case 129:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return NetworkType(rawValue: enumResultAsInt)
+        return TaskStatus(rawValue: enumResultAsInt)
       }
       return nil
     case 130:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return BackoffPolicy(rawValue: enumResultAsInt)
+        return NetworkType(rawValue: enumResultAsInt)
       }
       return nil
     case 131:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return ExistingWorkPolicy(rawValue: enumResultAsInt)
+        return BackoffPolicy(rawValue: enumResultAsInt)
       }
       return nil
     case 132:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return ExistingPeriodicWorkPolicy(rawValue: enumResultAsInt)
+        return ExistingWorkPolicy(rawValue: enumResultAsInt)
       }
       return nil
     case 133:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return OutOfQuotaPolicy(rawValue: enumResultAsInt)
+        return ExistingPeriodicWorkPolicy(rawValue: enumResultAsInt)
       }
       return nil
     case 134:
-      return Constraints.fromList(self.readValue() as! [Any?])
+      let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
+      if let enumResultAsInt = enumResultAsInt {
+        return OutOfQuotaPolicy(rawValue: enumResultAsInt)
+      }
+      return nil
     case 135:
-      return BackoffPolicyConfig.fromList(self.readValue() as! [Any?])
+      return Constraints.fromList(self.readValue() as! [Any?])
     case 136:
-      return InitializeRequest.fromList(self.readValue() as! [Any?])
+      return BackoffPolicyConfig.fromList(self.readValue() as! [Any?])
     case 137:
-      return OneOffTaskRequest.fromList(self.readValue() as! [Any?])
+      return InitializeRequest.fromList(self.readValue() as! [Any?])
     case 138:
-      return PeriodicTaskRequest.fromList(self.readValue() as! [Any?])
+      return OneOffTaskRequest.fromList(self.readValue() as! [Any?])
     case 139:
+      return PeriodicTaskRequest.fromList(self.readValue() as! [Any?])
+    case 140:
       return ProcessingTaskRequest.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
@@ -546,38 +566,41 @@ private class WorkmanagerApiPigeonCodecReader: FlutterStandardReader {
 
 private class WorkmanagerApiPigeonCodecWriter: FlutterStandardWriter {
   override func writeValue(_ value: Any) {
-    if let value = value as? NetworkType {
+    if let value = value as? TaskStatus {
       super.writeByte(129)
       super.writeValue(value.rawValue)
-    } else if let value = value as? BackoffPolicy {
+    } else if let value = value as? NetworkType {
       super.writeByte(130)
       super.writeValue(value.rawValue)
-    } else if let value = value as? ExistingWorkPolicy {
+    } else if let value = value as? BackoffPolicy {
       super.writeByte(131)
       super.writeValue(value.rawValue)
-    } else if let value = value as? ExistingPeriodicWorkPolicy {
+    } else if let value = value as? ExistingWorkPolicy {
       super.writeByte(132)
       super.writeValue(value.rawValue)
-    } else if let value = value as? OutOfQuotaPolicy {
+    } else if let value = value as? ExistingPeriodicWorkPolicy {
       super.writeByte(133)
       super.writeValue(value.rawValue)
-    } else if let value = value as? Constraints {
+    } else if let value = value as? OutOfQuotaPolicy {
       super.writeByte(134)
-      super.writeValue(value.toList())
-    } else if let value = value as? BackoffPolicyConfig {
+      super.writeValue(value.rawValue)
+    } else if let value = value as? Constraints {
       super.writeByte(135)
       super.writeValue(value.toList())
-    } else if let value = value as? InitializeRequest {
+    } else if let value = value as? BackoffPolicyConfig {
       super.writeByte(136)
       super.writeValue(value.toList())
-    } else if let value = value as? OneOffTaskRequest {
+    } else if let value = value as? InitializeRequest {
       super.writeByte(137)
       super.writeValue(value.toList())
-    } else if let value = value as? PeriodicTaskRequest {
+    } else if let value = value as? OneOffTaskRequest {
       super.writeByte(138)
       super.writeValue(value.toList())
-    } else if let value = value as? ProcessingTaskRequest {
+    } else if let value = value as? PeriodicTaskRequest {
       super.writeByte(139)
+      super.writeValue(value.toList())
+    } else if let value = value as? ProcessingTaskRequest {
+      super.writeByte(140)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)

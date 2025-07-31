@@ -13,6 +13,24 @@ import workmanager_apple
         GeneratedPluginRegistrant.register(with: self)
         UNUserNotificationCenter.current().delegate = self
 
+        // Request notification permission for debug handler
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
+            if granted {
+                print("Notification permission granted for debug handler")
+            } else if let error = error {
+                print("Error requesting notification permission: \(error)")
+            }
+        }
+
+        // EXAMPLE: Enable debug notifications for background tasks
+        // Uncomment one of the following lines to enable debug output:
+
+        // Option 1: Notification-based debug handler (shows debug info as notifications)
+        WorkmanagerDebug.setCurrent(NotificationDebugHandler())
+
+        // Option 2: Logging-based debug handler (writes to system log)
+        // WorkmanagerDebug.setCurrent(LoggingDebugHandler())
+
         WorkmanagerPlugin.setPluginRegistrantCallback { registry in
             // Registry in this case is the FlutterEngine that is created in Workmanager's
             // performFetchWithCompletionHandler or BGAppRefreshTask.

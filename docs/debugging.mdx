@@ -5,18 +5,128 @@ description: Debug and troubleshoot background tasks on Android and iOS
 
 Background tasks can be tricky to debug since they run when your app is closed. Here's how to effectively debug and troubleshoot them on both platforms.
 
-## Enable Debug Mode
+## Hook-Based Debug System
 
-Always start by enabling debug notifications:
+The Workmanager plugin uses a hook-based debug system that allows you to customize how debug information is handled.
+
+### Quick Setup
+
+Initialize Workmanager without any debug parameters:
 
 ```dart
-Workmanager().initialize(
-  callbackDispatcher,
-  isInDebugMode: true, // Shows notifications when tasks execute
-);
+await Workmanager().initialize(callbackDispatcher);
 ```
 
-This shows system notifications whenever background tasks run, making it easy to verify execution.
+Then set up platform-specific debug handlers as needed.
+
+## Android Debug Handlers
+
+### Logging Debug Handler (Recommended)
+
+Shows debug information in Android's Log system (visible in `adb logcat`):
+
+```kotlin
+// In your Application class
+import dev.fluttercommunity.workmanager.WorkmanagerDebug
+import dev.fluttercommunity.workmanager.LoggingDebugHandler
+
+class MyApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        WorkmanagerDebug.setCurrent(LoggingDebugHandler())
+    }
+}
+```
+
+### Notification Debug Handler
+
+Shows debug information as notifications (requires notification permissions):
+
+```kotlin
+import dev.fluttercommunity.workmanager.NotificationDebugHandler
+
+class MyApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        WorkmanagerDebug.setCurrent(NotificationDebugHandler())
+    }
+}
+```
+
+## iOS Debug Handlers
+
+### Logging Debug Handler (Recommended)
+
+Shows debug information in iOS's unified logging system:
+
+```swift
+// In your AppDelegate.swift
+import workmanager_apple
+
+@main
+class AppDelegate: FlutterAppDelegate {
+    override func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+    ) -> Bool {
+        WorkmanagerDebug.setCurrent(LoggingDebugHandler())
+        return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+    }
+}
+```
+
+### Notification Debug Handler
+
+Shows debug information as notifications:
+
+```swift
+WorkmanagerDebug.setCurrent(NotificationDebugHandler())
+```
+
+## Custom Debug Handlers
+
+Create your own debug handler for custom logging needs:
+
+<Tabs>
+  <TabItem label="Android" value="android">
+
+```kotlin
+class CustomDebugHandler : WorkmanagerDebug() {
+    override fun onTaskStatusUpdate(context: Context, taskInfo: TaskDebugInfo, status: TaskStatus, result: TaskResult?) {
+        // Custom status handling logic
+        // See Task Status documentation for detailed status information
+    }
+    
+    override fun onExceptionEncountered(context: Context, taskInfo: TaskDebugInfo?, exception: Throwable) {
+        // Handle exceptions
+    }
+}
+
+WorkmanagerDebug.setCurrent(CustomDebugHandler())
+```
+
+  </TabItem>
+  <TabItem label="iOS" value="ios">
+
+```swift
+class CustomDebugHandler: WorkmanagerDebug {
+    override func onTaskStatusUpdate(taskInfo: TaskDebugInfo, status: TaskStatus, result: TaskResult?) {
+        // Custom status handling logic  
+        // See Task Status documentation for detailed status information
+    }
+    
+    override func onExceptionEncountered(taskInfo: TaskDebugInfo?, exception: Error) {
+        // Handle exceptions
+    }
+}
+
+WorkmanagerDebug.setCurrent(CustomDebugHandler())
+```
+
+  </TabItem>
+</Tabs>
+
+For detailed information about task statuses, lifecycle, and notification formats, see the [Task Status Tracking](task-status) guide.
 
 ## Android Debugging
 
@@ -243,7 +353,7 @@ Future<bool> isTaskHealthy(String taskName, Duration maxAge) async {
 - [ ] Workmanager initialized in main()
 - [ ] Task names are unique
 - [ ] Platform setup completed ([iOS setup guide](quickstart#ios))
-- [ ] Debug notifications enabled (`isInDebugMode: kDebugMode`)
+- [ ] Debug handler configured (see [Debug Handlers](#debug-handlers))
 
 **Performance & Reliability:**
 - [ ] Task logic optimized for background execution

@@ -118,12 +118,16 @@ class Workmanager {
   /// Initialize the Workmanager with a [callbackDispatcher].
   ///
   /// The [callbackDispatcher] is a top level function which will be invoked by Android or iOS whenever a scheduled task is due.
-  /// The [isInDebugMode] will post local notifications for every background worker that ran. This is very useful when trying to debug what's happening in the background.
+  ///
+  /// [isInDebugMode] is deprecated and has no effect. Use WorkmanagerDebug handlers instead.
   Future<void> initialize(
     Function callbackDispatcher, {
+    @Deprecated(
+        'Use WorkmanagerDebug handlers instead. This parameter has no effect.')
     bool isInDebugMode = false,
   }) async {
     return _platform.initialize(callbackDispatcher,
+        // ignore: deprecated_member_use
         isInDebugMode: isInDebugMode);
   }
 

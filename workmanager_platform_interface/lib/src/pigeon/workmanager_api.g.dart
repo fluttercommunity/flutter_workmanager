@@ -42,6 +42,24 @@ bool _deepEquals(Object? a, Object? b) {
 }
 
 
+/// Task status for debugging and monitoring.
+enum TaskStatus {
+  /// Task has been scheduled
+  scheduled,
+  /// Task has started execution
+  started,
+  /// Task completed successfully
+  completed,
+  /// Task failed
+  failed,
+  /// Task was cancelled
+  cancelled,
+  /// Task is being retried
+  retrying,
+  /// Task was rescheduled for later execution
+  rescheduled,
+}
+
 /// An enumeration of various network types that can be used as Constraints for work.
 ///
 /// Fully supported on Android.
@@ -248,17 +266,13 @@ class BackoffPolicyConfig {
 class InitializeRequest {
   InitializeRequest({
     required this.callbackHandle,
-    required this.isInDebugMode,
   });
 
   int callbackHandle;
 
-  bool isInDebugMode;
-
   List<Object?> _toList() {
     return <Object?>[
       callbackHandle,
-      isInDebugMode,
     ];
   }
 
@@ -269,7 +283,6 @@ class InitializeRequest {
     result as List<Object?>;
     return InitializeRequest(
       callbackHandle: result[0]! as int,
-      isInDebugMode: result[1]! as bool,
     );
   }
 
@@ -532,38 +545,41 @@ class _PigeonCodec extends StandardMessageCodec {
     if (value is int) {
       buffer.putUint8(4);
       buffer.putInt64(value);
-    }    else if (value is NetworkType) {
+    }    else if (value is TaskStatus) {
       buffer.putUint8(129);
       writeValue(buffer, value.index);
-    }    else if (value is BackoffPolicy) {
+    }    else if (value is NetworkType) {
       buffer.putUint8(130);
       writeValue(buffer, value.index);
-    }    else if (value is ExistingWorkPolicy) {
+    }    else if (value is BackoffPolicy) {
       buffer.putUint8(131);
       writeValue(buffer, value.index);
-    }    else if (value is ExistingPeriodicWorkPolicy) {
+    }    else if (value is ExistingWorkPolicy) {
       buffer.putUint8(132);
       writeValue(buffer, value.index);
-    }    else if (value is OutOfQuotaPolicy) {
+    }    else if (value is ExistingPeriodicWorkPolicy) {
       buffer.putUint8(133);
       writeValue(buffer, value.index);
-    }    else if (value is Constraints) {
+    }    else if (value is OutOfQuotaPolicy) {
       buffer.putUint8(134);
-      writeValue(buffer, value.encode());
-    }    else if (value is BackoffPolicyConfig) {
+      writeValue(buffer, value.index);
+    }    else if (value is Constraints) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
-    }    else if (value is InitializeRequest) {
+    }    else if (value is BackoffPolicyConfig) {
       buffer.putUint8(136);
       writeValue(buffer, value.encode());
-    }    else if (value is OneOffTaskRequest) {
+    }    else if (value is InitializeRequest) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
-    }    else if (value is PeriodicTaskRequest) {
+    }    else if (value is OneOffTaskRequest) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
-    }    else if (value is ProcessingTaskRequest) {
+    }    else if (value is PeriodicTaskRequest) {
       buffer.putUint8(139);
+      writeValue(buffer, value.encode());
+    }    else if (value is ProcessingTaskRequest) {
+      buffer.putUint8(140);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -575,30 +591,33 @@ class _PigeonCodec extends StandardMessageCodec {
     switch (type) {
       case 129: 
         final int? value = readValue(buffer) as int?;
-        return value == null ? null : NetworkType.values[value];
+        return value == null ? null : TaskStatus.values[value];
       case 130: 
         final int? value = readValue(buffer) as int?;
-        return value == null ? null : BackoffPolicy.values[value];
+        return value == null ? null : NetworkType.values[value];
       case 131: 
         final int? value = readValue(buffer) as int?;
-        return value == null ? null : ExistingWorkPolicy.values[value];
+        return value == null ? null : BackoffPolicy.values[value];
       case 132: 
         final int? value = readValue(buffer) as int?;
-        return value == null ? null : ExistingPeriodicWorkPolicy.values[value];
+        return value == null ? null : ExistingWorkPolicy.values[value];
       case 133: 
         final int? value = readValue(buffer) as int?;
-        return value == null ? null : OutOfQuotaPolicy.values[value];
+        return value == null ? null : ExistingPeriodicWorkPolicy.values[value];
       case 134: 
-        return Constraints.decode(readValue(buffer)!);
+        final int? value = readValue(buffer) as int?;
+        return value == null ? null : OutOfQuotaPolicy.values[value];
       case 135: 
-        return BackoffPolicyConfig.decode(readValue(buffer)!);
+        return Constraints.decode(readValue(buffer)!);
       case 136: 
-        return InitializeRequest.decode(readValue(buffer)!);
+        return BackoffPolicyConfig.decode(readValue(buffer)!);
       case 137: 
-        return OneOffTaskRequest.decode(readValue(buffer)!);
+        return InitializeRequest.decode(readValue(buffer)!);
       case 138: 
-        return PeriodicTaskRequest.decode(readValue(buffer)!);
+        return OneOffTaskRequest.decode(readValue(buffer)!);
       case 139: 
+        return PeriodicTaskRequest.decode(readValue(buffer)!);
+      case 140: 
         return ProcessingTaskRequest.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);

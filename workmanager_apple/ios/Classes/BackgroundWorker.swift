@@ -85,12 +85,14 @@ class BackgroundWorker {
         let taskSessionStart = Date()
         let taskSessionIdentifier = UUID()
 
-        let debugHelper = DebugNotificationHelper(taskSessionIdentifier)
-        debugHelper.showStartFetchNotification(
-            startDate: taskSessionStart,
-            callBackHandle: callbackHandle,
-            callbackInfo: flutterCallbackInformation
+        let taskInfo = TaskDebugInfo(
+            taskName: "background_fetch",
+            startTime: taskSessionStart.timeIntervalSince1970,
+            callbackHandle: callbackHandle,
+            callbackInfo: flutterCallbackInformation.callbackName
         )
+
+        WorkmanagerDebug.onTaskStatusUpdate(taskInfo: taskInfo, status: .started)
 
         var flutterEngine: FlutterEngine? = FlutterEngine(
             name: backgroundMode.flutterThreadlabelPrefix,
@@ -131,11 +133,24 @@ class BackgroundWorker {
                     let taskSessionCompleter = Date()
 
                     let fetchResult: UIBackgroundFetchResult
+                    let status: TaskStatus
+                    let errorMessage: String?
+
                     switch taskResult {
                     case .success(let wasSuccessful):
-                        fetchResult = wasSuccessful ? .newData : .failed
-                    case .failure:
+                        if wasSuccessful {
+                            fetchResult = .newData
+                            status = .completed
+                            errorMessage = nil
+                        } else {
+                            fetchResult = .failed
+                            status = .retrying
+                            errorMessage = nil
+                        }
+                    case .failure(let error):
                         fetchResult = .failed
+                        status = .failed
+                        errorMessage = error.localizedDescription
                     }
 
                     let taskDuration = taskSessionCompleter.timeIntervalSince(taskSessionStart)
@@ -143,11 +158,12 @@ class BackgroundWorker {
                         "[\(String(describing: self))] \(#function) -> performBackgroundRequest.\(fetchResult) (finished in \(taskDuration.formatToSeconds()))"
                     )
 
-                    debugHelper.showCompletedFetchNotification(
-                        completedDate: taskSessionCompleter,
-                        result: fetchResult,
-                        elapsedTime: taskDuration
+                    let taskResult = TaskResult(
+                        success: status == .completed,
+                        duration: Int64(taskDuration * 1000), // Convert to milliseconds
+                        error: errorMessage
                     )
+                    WorkmanagerDebug.onTaskStatusUpdate(taskInfo: taskInfo, status: status, result: taskResult)
                     completionHandler(fetchResult)
                 }
             case .failure(let error):
