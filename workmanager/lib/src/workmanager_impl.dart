@@ -126,8 +126,8 @@ class Workmanager {
         'Use WorkmanagerDebug handlers instead. This parameter has no effect.')
     bool isInDebugMode = false,
   }) async {
-    // ignore: deprecated_member_use
     return _platform.initialize(callbackDispatcher,
+        // ignore: deprecated_member_use
         isInDebugMode: isInDebugMode);
   }
 
