@@ -32,6 +32,7 @@ class LoggingDebugHandler : WorkmanagerDebug() {
             }
             TaskStatus.CANCELLED -> Log.w(TAG, "Task cancelled: ${taskInfo.taskName}")
             TaskStatus.RETRYING -> Log.w(TAG, "Task retrying: ${taskInfo.taskName}")
+            TaskStatus.RESCHEDULED -> Log.w(TAG, "Task rescheduled: ${taskInfo.taskName}")
         }
     }
 

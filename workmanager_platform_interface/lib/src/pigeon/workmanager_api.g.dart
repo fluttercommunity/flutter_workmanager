@@ -56,6 +56,8 @@ enum TaskStatus {
   cancelled,
   /// Task is being retried
   retrying,
+  /// Task was rescheduled for later execution
+  rescheduled,
 }
 
 /// An enumeration of various network types that can be used as Constraints for work.

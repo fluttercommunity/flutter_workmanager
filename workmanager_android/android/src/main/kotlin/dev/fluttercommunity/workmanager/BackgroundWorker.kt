@@ -28,8 +28,6 @@ class BackgroundWorker(
     private lateinit var flutterApi: WorkmanagerFlutterApi
 
     companion object {
-        const val TAG = "BackgroundWorker"
-
         const val PAYLOAD_KEY = "dev.fluttercommunity.workmanager.INPUT_DATA"
         const val DART_TASK_KEY = "dev.fluttercommunity.workmanager.DART_TASK"
 
@@ -51,6 +49,7 @@ class BackgroundWorker(
     private val dartTask
         get() = workerParams.inputData.getString(DART_TASK_KEY)!!
 
+    private val runAttemptCount = workerParams.runAttemptCount
     private val randomThreadIdentifier = Random().nextInt()
     private var engine: FlutterEngine? = null
 
@@ -83,7 +82,6 @@ class BackgroundWorker(
 
             if (callbackInfo == null) {
                 val exception = IllegalStateException("Failed to resolve Dart callback for handle $callbackHandle")
-                Log.e(TAG, exception.message ?: "Unknown error")
                 WorkmanagerDebug.onExceptionEncountered(applicationContext, null, exception)
                 completer?.set(Result.failure())
                 return@ensureInitializationCompleteAsync
@@ -100,7 +98,8 @@ class BackgroundWorker(
                     callbackInfo = callbackInfo?.callbackName,
                 )
 
-            WorkmanagerDebug.onTaskStatusUpdate(applicationContext, taskInfo, TaskStatus.STARTED)
+            val startStatus = if (runAttemptCount > 0) TaskStatus.RETRYING else TaskStatus.STARTED
+            WorkmanagerDebug.onTaskStatusUpdate(applicationContext, taskInfo, startStatus)
 
             engine?.let { engine ->
                 flutterApi = WorkmanagerFlutterApi(engine.dartExecutor.binaryMessenger)
@@ -128,7 +127,7 @@ class BackgroundWorker(
         stopEngine(null)
     }
 
-    private fun stopEngine(result: Result?) {
+    private fun stopEngine(result: Result?, errorMessage: String? = null) {
         val fetchDuration = System.currentTimeMillis() - startTime
 
         val taskInfo =
@@ -142,10 +141,17 @@ class BackgroundWorker(
             TaskResult(
                 success = result is Result.Success,
                 duration = fetchDuration,
-                error = if (result is Result.Failure) "Task failed" else null,
+                error = when (result) {
+                    is Result.Failure -> errorMessage ?: "Task failed"
+                    else -> null
+                },
             )
 
-        val status = if (result is Result.Success) TaskStatus.COMPLETED else TaskStatus.FAILED
+        val status = when (result) {
+            is Result.Success -> TaskStatus.COMPLETED
+            is Result.Retry -> TaskStatus.RESCHEDULED
+            else -> TaskStatus.FAILED
+        }
         WorkmanagerDebug.onTaskStatusUpdate(applicationContext, taskInfo, status, taskResult)
 
         // No result indicates we were signalled to stop by WorkManager.  The result is already
@@ -173,17 +179,9 @@ class BackgroundWorker(
                 }
                 result.isFailure -> {
                     val exception = result.exceptionOrNull()
-                    Log.e(TAG, "Error executing task: ${exception?.message}")
-                    if (exception != null) {
-                        val taskInfo =
-                            TaskDebugInfo(
-                                taskName = dartTask,
-                                inputData = payload,
-                                startTime = startTime,
-                            )
-                        WorkmanagerDebug.onExceptionEncountered(applicationContext, taskInfo, exception)
-                    }
-                    stopEngine(Result.failure())
+                    // Don't call onExceptionEncountered for Dart task failures
+                    // These are handled as normal failures via onTaskStatusUpdate
+                    stopEngine(Result.failure(), exception?.message)
                 }
             }
         }

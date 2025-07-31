@@ -172,6 +172,14 @@ public class WorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
                 inputData: request.inputData as? [String: Any],
                 delaySeconds: delaySeconds
             )
+            
+            let taskInfo = TaskDebugInfo(
+                taskName: request.taskName,
+                uniqueName: request.uniqueName,
+                inputData: request.inputData as? [String: Any],
+                startTime: Date().timeIntervalSince1970
+            )
+            WorkmanagerDebug.getCurrent().onTaskStatusUpdate(taskInfo: taskInfo, status: .scheduled, result: nil)
         }
     }
 
@@ -187,6 +195,14 @@ public class WorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
                 taskIdentifier: request.uniqueName,
                 earliestBeginInSeconds: initialDelaySeconds
             )
+            
+            let taskInfo = TaskDebugInfo(
+                taskName: request.taskName,
+                uniqueName: request.uniqueName,
+                inputData: request.inputData as? [String: Any],
+                startTime: Date().timeIntervalSince1970
+            )
+            WorkmanagerDebug.getCurrent().onTaskStatusUpdate(taskInfo: taskInfo, status: .scheduled, result: nil)
         }
     }
 

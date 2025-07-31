@@ -149,6 +149,8 @@ enum TaskStatus: Int {
   case cancelled = 4
   /// Task is being retried
   case retrying = 5
+  /// Task was rescheduled for later execution
+  case rescheduled = 6
 }
 
 /// An enumeration of various network types that can be used as Constraints for work.

@@ -133,11 +133,24 @@ class BackgroundWorker {
                     let taskSessionCompleter = Date()
 
                     let fetchResult: UIBackgroundFetchResult
+                    let status: TaskStatus
+                    let errorMessage: String?
+                    
                     switch taskResult {
                     case .success(let wasSuccessful):
-                        fetchResult = wasSuccessful ? .newData : .failed
-                    case .failure:
+                        if wasSuccessful {
+                            fetchResult = .newData
+                            status = .completed
+                            errorMessage = nil
+                        } else {
+                            fetchResult = .failed
+                            status = .retrying
+                            errorMessage = nil
+                        }
+                    case .failure(let error):
                         fetchResult = .failed
+                        status = .failed
+                        errorMessage = error.localizedDescription
                     }
 
                     let taskDuration = taskSessionCompleter.timeIntervalSince(taskSessionStart)
@@ -146,12 +159,10 @@ class BackgroundWorker {
                     )
 
                     let taskResult = TaskResult(
-                        success: fetchResult == .newData,
+                        success: status == .completed,
                         duration: Int64(taskDuration * 1000), // Convert to milliseconds
-                        error: fetchResult == .failed ? "Background fetch failed" : nil
+                        error: errorMessage
                     )
-
-                    let status: TaskStatus = fetchResult == .newData ? .completed : .failed
                     WorkmanagerDebug.onTaskStatusUpdate(taskInfo: taskInfo, status: status, result: taskResult)
                     completionHandler(fetchResult)
                 }

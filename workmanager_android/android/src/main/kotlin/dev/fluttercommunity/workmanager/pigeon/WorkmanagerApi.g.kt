@@ -97,7 +97,9 @@ enum class TaskStatus(val raw: Int) {
   /** Task was cancelled */
   CANCELLED(4),
   /** Task is being retried */
-  RETRYING(5);
+  RETRYING(5),
+  /** Task was rescheduled for later execution */
+  RESCHEDULED(6);
 
   companion object {
     fun ofRaw(raw: Int): TaskStatus? {

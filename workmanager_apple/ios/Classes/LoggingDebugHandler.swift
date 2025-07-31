@@ -26,6 +26,8 @@ public class LoggingDebugHandler: WorkmanagerDebug {
             logger.info("Task cancelled: \(taskInfo.taskName)")
         case .retrying:
             logger.info("Task retrying: \(taskInfo.taskName)")
+        case .rescheduled:
+            logger.info("Task rescheduled: \(taskInfo.taskName)")
         }
     }
 

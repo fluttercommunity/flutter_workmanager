@@ -14,19 +14,27 @@ import kotlin.random.Random
 /**
  * A debug handler that shows notifications for task events.
  * Note: You need to ensure your app has notification permissions.
+ * 
+ * @param channelId Custom notification channel ID (defaults to "WorkmanagerDebugChannelId")
+ * @param channelName Custom notification channel name (defaults to "Workmanager Debug")
+ * @param groupKey Custom notification group key for grouping notifications (optional)
  */
-class NotificationDebugHandler : WorkmanagerDebug() {
+class NotificationDebugHandler(
+    private val channelId: String = "WorkmanagerDebugChannelId",
+    private val channelName: String = "Workmanager Debug",
+    private val groupKey: String? = null
+) : WorkmanagerDebug() {
+    private val isUsingDefaultChannel = channelId == "WorkmanagerDebugChannelId"
     companion object {
-        private const val DEBUG_CHANNEL_ID = "WorkmanagerDebugChannelId"
-        private const val DEBUG_CHANNEL_NAME = "Workmanager Debug Notifications"
         private val debugDateFormatter =
-            DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM)
+            DateFormat.getTimeInstance(DateFormat.SHORT)
     }
 
-    private val workEmoji get() = listOf("👷‍♀️", "👷‍♂️").random()
-    private val successEmoji = "🎉"
-    private val failureEmoji = "🔥"
-    private val warningEmoji = "⚠️"
+    private val startEmoji = "▶️"
+    private val retryEmoji = "🔄"
+    private val successEmoji = "✅"
+    private val failureEmoji = "❌"
+    private val stopEmoji = "⏹️"
     private val currentTime get() = debugDateFormatter.format(Date())
 
     override fun onTaskStatusUpdate(
@@ -41,49 +49,57 @@ class NotificationDebugHandler : WorkmanagerDebug() {
                 TaskStatus.SCHEDULED ->
                     Triple(
                         "📅",
-                        "Task Scheduled",
-                        "• Task: ${taskInfo.taskName}\n• Input Data: ${taskInfo.inputData ?: "none"}",
+                        "Scheduled",
+                        taskInfo.taskName,
                     )
                 TaskStatus.STARTED ->
                     Triple(
-                        workEmoji,
-                        "Task Starting",
-                        "• Task: ${taskInfo.taskName}\n• Callback Handle: ${taskInfo.callbackHandle}",
+                        startEmoji,
+                        "Started",
+                        taskInfo.taskName,
+                    )
+                TaskStatus.RETRYING ->
+                    Triple(
+                        retryEmoji,
+                        "Retrying",
+                        taskInfo.taskName,
+                    )
+                TaskStatus.RESCHEDULED ->
+                    Triple(
+                        retryEmoji,
+                        "Rescheduled",
+                        taskInfo.taskName,
                     )
                 TaskStatus.COMPLETED -> {
                     val success = result?.success ?: false
                     val duration = MILLISECONDS.toSeconds(result?.duration ?: 0)
                     Triple(
                         if (success) successEmoji else failureEmoji,
-                        if (success) "Task Completed" else "Task Failed",
-                        "• Task: ${taskInfo.taskName}\n• Duration: ${duration}s${if (result?.error != null) "\n• Error: ${result.error}" else ""}",
+                        if (success) "Success ${duration}s" else "Failed ${duration}s",
+                        taskInfo.taskName,
                     )
                 }
-                TaskStatus.FAILED ->
+                TaskStatus.FAILED -> {
+                    val duration = MILLISECONDS.toSeconds(result?.duration ?: 0)
                     Triple(
                         failureEmoji,
-                        "Task Failed",
-                        "• Task: ${taskInfo.taskName}\n• Error: ${result?.error ?: "Unknown error"}",
+                        "Failed ${duration}s",
+                        "${taskInfo.taskName}\n${result?.error ?: "Unknown"}",
                     )
+                }
                 TaskStatus.CANCELLED ->
                     Triple(
-                        warningEmoji,
-                        "Task Cancelled",
-                        "• Task: ${taskInfo.taskName}",
-                    )
-                TaskStatus.RETRYING ->
-                    Triple(
-                        "🔄",
-                        "Task Retrying",
-                        "• Task: ${taskInfo.taskName}",
+                        stopEmoji,
+                        "Cancelled",
+                        taskInfo.taskName,
                     )
             }
 
         postNotification(
             context,
             notificationId,
-            "$emoji $currentTime",
-            "$title\n$content",
+            "$emoji $title",
+            content,
         )
     }
 
@@ -97,8 +113,8 @@ class NotificationDebugHandler : WorkmanagerDebug() {
         postNotification(
             context,
             notificationId,
-            "$failureEmoji $currentTime",
-            "Exception in Task\n• Task: $taskName\n• Error: ${exception.message}",
+            "$failureEmoji Exception",
+            "$taskName\n${exception.message}",
         )
     }
 
@@ -110,20 +126,28 @@ class NotificationDebugHandler : WorkmanagerDebug() {
     ) {
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        createNotificationChannel(notificationManager)
+        // Only create notification channel if using default parameters
+        if (isUsingDefaultChannel) {
+            createNotificationChannel(notificationManager)
+        }
 
-        val notification =
-            NotificationCompat
-                .Builder(context, DEBUG_CHANNEL_ID)
-                .setContentTitle(title)
-                .setContentText(contentText)
-                .setStyle(
-                    NotificationCompat
-                        .BigTextStyle()
-                        .bigText(contentText),
-                ).setSmallIcon(android.R.drawable.stat_notify_sync)
-                .setPriority(NotificationCompat.PRIORITY_LOW)
-                .build()
+        val notificationBuilder = NotificationCompat
+            .Builder(context, channelId)
+            .setContentTitle(title)
+            .setContentText(contentText)
+            .setStyle(
+                NotificationCompat
+                    .BigTextStyle()
+                    .bigText(contentText),
+            ).setSmallIcon(android.R.drawable.stat_notify_sync)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+
+        // Add group key if specified
+        groupKey?.let { 
+            notificationBuilder.setGroup(it)
+        }
+
+        val notification = notificationBuilder.build()
 
         notificationManager.notify(notificationId, notification)
     }
@@ -132,8 +156,8 @@ class NotificationDebugHandler : WorkmanagerDebug() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel =
                 NotificationChannel(
-                    DEBUG_CHANNEL_ID,
-                    DEBUG_CHANNEL_NAME,
+                    channelId,
+                    channelName,
                     NotificationManager.IMPORTANCE_LOW,
                 )
             notificationManager.createNotificationChannel(channel)

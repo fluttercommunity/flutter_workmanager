@@ -13,6 +13,7 @@ import androidx.work.OutOfQuotaPolicy
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
 import dev.fluttercommunity.workmanager.BackgroundWorker.Companion.DART_TASK_KEY
+import dev.fluttercommunity.workmanager.pigeon.TaskStatus
 import java.util.concurrent.TimeUnit
 
 // Constants
@@ -134,6 +135,14 @@ class WorkManagerWrapper(
                     ?: defaultOneOffExistingWorkPolicy,
                 oneOffTaskRequest,
             )
+            
+            val taskInfo = TaskDebugInfo(
+                taskName = request.taskName,
+                uniqueName = request.uniqueName,
+                inputData = request.inputData?.filterNotNullKeys(),
+                startTime = System.currentTimeMillis(),
+            )
+            WorkmanagerDebug.onTaskStatusUpdate(context, taskInfo, TaskStatus.SCHEDULED)
         } catch (e: Exception) {
             throw e
         }
@@ -177,6 +186,14 @@ class WorkManagerWrapper(
                 ?: defaultPeriodExistingWorkPolicy,
             periodicTaskRequest,
         )
+        
+        val taskInfo = TaskDebugInfo(
+            taskName = request.taskName,
+            uniqueName = request.uniqueName,
+            inputData = request.inputData?.filterNotNullKeys(),
+            startTime = System.currentTimeMillis(),
+        )
+        WorkmanagerDebug.onTaskStatusUpdate(context, taskInfo, TaskStatus.SCHEDULED)
     }
 
     private fun buildTaskInputData(

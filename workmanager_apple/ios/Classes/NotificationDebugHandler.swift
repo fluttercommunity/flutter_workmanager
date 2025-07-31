@@ -4,64 +4,65 @@ import UserNotifications
 /**
  * A debug handler that shows notifications for task events.
  * Note: You need to ensure your app has notification permissions.
+ * 
+ * @param categoryIdentifier Custom notification category identifier (optional)
+ * @param threadIdentifier Custom thread identifier for grouping notifications (optional)
  */
 public class NotificationDebugHandler: WorkmanagerDebug {
     private let identifier = UUID().uuidString
-    private let workEmojis = ["👷‍♀️", "👷‍♂️"]
-    private let successEmoji = "🎉"
-    private let failureEmoji = "🔥"
+    private let startEmoji = "▶️"
+    private let retryEmoji = "🔄"
+    private let successEmoji = "✅"
+    private let failureEmoji = "❌"
+    private let stopEmoji = "⏹️"
+    
+    private let categoryIdentifier: String?
+    private let threadIdentifier: String?
 
-    public override init() {}
+    public init(categoryIdentifier: String? = nil, threadIdentifier: String? = nil) {
+        self.categoryIdentifier = categoryIdentifier
+        self.threadIdentifier = threadIdentifier
+        super.init()
+    }
 
     override func onTaskStatusUpdate(taskInfo: TaskDebugInfo, status: TaskStatus, result: TaskResult?) {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        formatter.timeStyle = .medium
-
         let (emoji, title, message) = formatNotification(taskInfo: taskInfo, status: status, result: result)
-
         scheduleNotification(
-            title: "\(emoji) \(formatter.string(from: Date()))",
-            body: "\(title)\n\(message)"
+            title: "\(emoji) \(title)",
+            body: message
         )
     }
 
     override func onExceptionEncountered(taskInfo: TaskDebugInfo?, exception: Error) {
         let taskName = taskInfo?.taskName ?? "unknown"
-        let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        formatter.timeStyle = .medium
-
         scheduleNotification(
-            title: "\(failureEmoji) \(formatter.string(from: Date()))",
-            body: "Exception in Task\n• Task: \(taskName)\n• Error: \(exception.localizedDescription)"
+            title: "\(failureEmoji) Exception",
+            body: "\(taskName)\n\(exception.localizedDescription)"
         )
     }
 
     private func formatNotification(taskInfo: TaskDebugInfo, status: TaskStatus, result: TaskResult?) -> (String, String, String) {
         switch status {
         case .scheduled:
-            return ("📅", "Task Scheduled", "• Task: \(taskInfo.taskName)\n• Input Data: \(taskInfo.inputData?.description ?? "none")")
+            return ("📅", "Scheduled", taskInfo.taskName)
         case .started:
-            let workEmoji = workEmojis.randomElement() ?? "👷"
-            return (workEmoji, "Task Starting", "• Task: \(taskInfo.taskName)\n• Callback Handle: \(taskInfo.callbackHandle ?? -1)")
+            return (startEmoji, "Started", taskInfo.taskName)
+        case .retrying:
+            return (retryEmoji, "Retrying", taskInfo.taskName)
+        case .rescheduled:
+            return (retryEmoji, "Rescheduled", taskInfo.taskName)
         case .completed:
             let success = result?.success ?? false
-            let duration = result?.duration ?? 0
+            let duration = (result?.duration ?? 0) / 1000
             let emoji = success ? successEmoji : failureEmoji
-            let title = success ? "Task Completed" : "Task Failed"
-            var message = "• Task: \(taskInfo.taskName)\n• Duration: \(duration)ms"
-            if let error = result?.error {
-                message += "\n• Error: \(error)"
-            }
-            return (emoji, title, message)
+            let title = success ? "Success \(duration)s" : "Failed \(duration)s"
+            return (emoji, title, taskInfo.taskName)
         case .failed:
-            let error = result?.error ?? "Unknown error"
-            return (failureEmoji, "Task Failed", "• Task: \(taskInfo.taskName)\n• Error: \(error)")
+            let duration = (result?.duration ?? 0) / 1000
+            let error = result?.error ?? "Unknown"
+            return (failureEmoji, "Failed \(duration)s", "\(taskInfo.taskName)\n\(error)")
         case .cancelled:
-            return ("⚠️", "Task Cancelled", "• Task: \(taskInfo.taskName)")
-        case .retrying:
-            return ("🔄", "Task Retrying", "• Task: \(taskInfo.taskName)")
+            return (stopEmoji, "Cancelled", taskInfo.taskName)
         }
     }
 
@@ -70,6 +71,16 @@ public class NotificationDebugHandler: WorkmanagerDebug {
         content.title = title
         content.body = body
         content.sound = .default
+        
+        // Set category identifier if specified
+        if let categoryIdentifier = categoryIdentifier {
+            content.categoryIdentifier = categoryIdentifier
+        }
+        
+        // Set thread identifier if specified for grouping
+        if let threadIdentifier = threadIdentifier {
+            content.threadIdentifier = threadIdentifier
+        }
 
         let request = UNNotificationRequest(
             identifier: UUID().uuidString,

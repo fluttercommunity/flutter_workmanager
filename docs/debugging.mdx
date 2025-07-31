@@ -93,11 +93,8 @@ Create your own debug handler for custom logging needs:
 ```kotlin
 class CustomDebugHandler : WorkmanagerDebug() {
     override fun onTaskStatusUpdate(context: Context, taskInfo: TaskDebugInfo, status: TaskStatus, result: TaskResult?) {
-        when (status) {
-            TaskStatus.STARTED -> // Task started logic
-            TaskStatus.COMPLETED -> // Task completed logic
-            // Handle other statuses
-        }
+        // Custom status handling logic
+        // See Task Status documentation for detailed status information
     }
     
     override fun onExceptionEncountered(context: Context, taskInfo: TaskDebugInfo?, exception: Throwable) {
@@ -114,13 +111,8 @@ WorkmanagerDebug.setCurrent(CustomDebugHandler())
 ```swift
 class CustomDebugHandler: WorkmanagerDebug {
     override func onTaskStatusUpdate(taskInfo: TaskDebugInfo, status: TaskStatus, result: TaskResult?) {
-        switch status {
-        case .started:
-            // Task started logic
-        case .completed:
-            // Task completed logic
-        // Handle other statuses
-        }
+        // Custom status handling logic  
+        // See Task Status documentation for detailed status information
     }
     
     override func onExceptionEncountered(taskInfo: TaskDebugInfo?, exception: Error) {
@@ -133,6 +125,8 @@ WorkmanagerDebug.setCurrent(CustomDebugHandler())
 
   </TabItem>
 </Tabs>
+
+For detailed information about task statuses, lifecycle, and notification formats, see the [Task Status Tracking](task-status) guide.
 
 ## Android Debugging
 
