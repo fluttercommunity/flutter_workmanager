@@ -10,7 +10,7 @@ void main() {
     test('initialize() still accepts isInDebugMode parameter', () async {
       // This test verifies that existing code using isInDebugMode will still compile
       // The parameter is deprecated but should not break existing code
-      
+
       // This should compile without errors
       await expectLater(
         () async => await Workmanager().initialize(
@@ -20,7 +20,7 @@ void main() {
         ),
         throwsA(isA<UnimplementedError>()), // Platform not available in tests
       );
-      
+
       // This should also compile (without the parameter)
       await expectLater(
         () async => await Workmanager().initialize(callbackDispatcher),

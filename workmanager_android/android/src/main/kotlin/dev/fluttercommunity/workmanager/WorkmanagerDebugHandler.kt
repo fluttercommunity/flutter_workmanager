@@ -48,11 +48,20 @@ abstract class WorkmanagerDebug {
         fun getCurrent(): WorkmanagerDebug = current
 
         // Internal methods for the plugin to call
-        internal fun onTaskStatusUpdate(context: Context, taskInfo: TaskDebugInfo, status: TaskStatus, result: TaskResult? = null) {
+        internal fun onTaskStatusUpdate(
+            context: Context,
+            taskInfo: TaskDebugInfo,
+            status: TaskStatus,
+            result: TaskResult? = null,
+        ) {
             current.onTaskStatusUpdate(context, taskInfo, status, result)
         }
 
-        internal fun onExceptionEncountered(context: Context, taskInfo: TaskDebugInfo?, exception: Throwable) {
+        internal fun onExceptionEncountered(
+            context: Context,
+            taskInfo: TaskDebugInfo?,
+            exception: Throwable,
+        ) {
             current.onExceptionEncountered(context, taskInfo, exception)
         }
     }
@@ -60,14 +69,23 @@ abstract class WorkmanagerDebug {
     /**
      * Called when a task status changes.
      */
-    open fun onTaskStatusUpdate(context: Context, taskInfo: TaskDebugInfo, status: TaskStatus, result: TaskResult?) {
+    open fun onTaskStatusUpdate(
+        context: Context,
+        taskInfo: TaskDebugInfo,
+        status: TaskStatus,
+        result: TaskResult?,
+    ) {
         // Default: do nothing
     }
 
     /**
      * Called when an exception occurs during task processing.
      */
-    open fun onExceptionEncountered(context: Context, taskInfo: TaskDebugInfo?, exception: Throwable) {
+    open fun onExceptionEncountered(
+        context: Context,
+        taskInfo: TaskDebugInfo?,
+        exception: Throwable,
+    ) {
         // Default: do nothing
     }
 }

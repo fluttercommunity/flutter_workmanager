@@ -9,7 +9,7 @@ public class LoggingDebugHandler: WorkmanagerDebug {
     
     public override init() {}
     
-    public override func onTaskStatusUpdate(taskInfo: TaskDebugInfo, status: TaskStatus, result: TaskResult?) {
+    override func onTaskStatusUpdate(taskInfo: TaskDebugInfo, status: TaskStatus, result: TaskResult?) {
         switch status {
         case .scheduled:
             logger.debug("Task scheduled: \(taskInfo.taskName)")
@@ -29,7 +29,7 @@ public class LoggingDebugHandler: WorkmanagerDebug {
         }
     }
     
-    public override func onExceptionEncountered(taskInfo: TaskDebugInfo?, exception: Error) {
+    override func onExceptionEncountered(taskInfo: TaskDebugInfo?, exception: Error) {
         let taskName = taskInfo?.taskName ?? "unknown"
         logger.error("Exception in task: \(taskName), error: \(exception.localizedDescription)")
     }

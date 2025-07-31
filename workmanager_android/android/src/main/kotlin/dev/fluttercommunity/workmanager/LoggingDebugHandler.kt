@@ -2,6 +2,7 @@ package dev.fluttercommunity.workmanager
 
 import android.content.Context
 import android.util.Log
+import dev.fluttercommunity.workmanager.pigeon.TaskStatus
 
 /**
  * A debug handler that outputs debug information to Android's Log system.
@@ -11,7 +12,12 @@ class LoggingDebugHandler : WorkmanagerDebug() {
         private const val TAG = "WorkmanagerDebug"
     }
 
-    override fun onTaskStatusUpdate(context: Context, taskInfo: TaskDebugInfo, status: TaskStatus, result: TaskResult?) {
+    override fun onTaskStatusUpdate(
+        context: Context,
+        taskInfo: TaskDebugInfo,
+        status: TaskStatus,
+        result: TaskResult?,
+    ) {
         when (status) {
             TaskStatus.SCHEDULED -> Log.d(TAG, "Task scheduled: ${taskInfo.taskName}")
             TaskStatus.STARTED -> Log.d(TAG, "Task started: ${taskInfo.taskName}, callbackHandle: ${taskInfo.callbackHandle}")
@@ -29,7 +35,11 @@ class LoggingDebugHandler : WorkmanagerDebug() {
         }
     }
 
-    override fun onExceptionEncountered(context: Context, taskInfo: TaskDebugInfo?, exception: Throwable) {
+    override fun onExceptionEncountered(
+        context: Context,
+        taskInfo: TaskDebugInfo?,
+        exception: Throwable,
+    ) {
         val taskName = taskInfo?.taskName ?: "unknown"
         Log.e(TAG, "Exception in task: $taskName", exception)
     }

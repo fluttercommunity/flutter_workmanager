@@ -41,7 +41,7 @@ public struct TaskResult {
  * Abstract debug handler for Workmanager events.
  * Override methods to customize debug behavior. Default implementations do nothing.
  */
-open class WorkmanagerDebug {
+public class WorkmanagerDebug {
     private static var current: WorkmanagerDebug = WorkmanagerDebug()
     
     /**
@@ -61,14 +61,14 @@ open class WorkmanagerDebug {
     /**
      * Called when a task status changes.
      */
-    open func onTaskStatusUpdate(taskInfo: TaskDebugInfo, status: TaskStatus, result: TaskResult?) {
+    func onTaskStatusUpdate(taskInfo: TaskDebugInfo, status: TaskStatus, result: TaskResult?) {
         // Default: do nothing
     }
     
     /**
      * Called when an exception occurs during task processing.
      */
-    open func onExceptionEncountered(taskInfo: TaskDebugInfo?, exception: Error) {
+    func onExceptionEncountered(taskInfo: TaskDebugInfo?, exception: Error) {
         // Default: do nothing
     }
     

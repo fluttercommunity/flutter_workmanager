@@ -13,7 +13,7 @@ public class NotificationDebugHandler: WorkmanagerDebug {
     
     public override init() {}
     
-    public override func onTaskStatusUpdate(taskInfo: TaskDebugInfo, status: TaskStatus, result: TaskResult?) {
+    override func onTaskStatusUpdate(taskInfo: TaskDebugInfo, status: TaskStatus, result: TaskResult?) {
         let formatter = DateFormatter()
         formatter.dateStyle = .short
         formatter.timeStyle = .medium
@@ -26,7 +26,7 @@ public class NotificationDebugHandler: WorkmanagerDebug {
         )
     }
     
-    public override func onExceptionEncountered(taskInfo: TaskDebugInfo?, exception: Error) {
+    override func onExceptionEncountered(taskInfo: TaskDebugInfo?, exception: Error) {
         let taskName = taskInfo?.taskName ?? "unknown"
         let formatter = DateFormatter()
         formatter.dateStyle = .short

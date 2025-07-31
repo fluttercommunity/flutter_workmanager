@@ -1,10 +1,13 @@
 ## Pre-Commit Requirements
 **CRITICAL**: Always run from project root before ANY commit:
 1. `dart analyze` (check for code errors)
-2. `ktlint -F .`
-3. `find . -name "*.dart" ! -name "*.g.dart" ! -path "*/.*" -print0 | xargs -0 dart format --set-exit-if-changed`
-4. `flutter test` (all Dart tests)
-5. `cd example/android && ./gradlew :workmanager_android:test` (Android native tests)
+2. `ktlint -F .` (format Kotlin code)
+3. `swiftlint --fix` (format Swift code)
+4. `find . -name "*.dart" ! -name "*.g.dart" ! -path "*/.*" -print0 | xargs -0 dart format --set-exit-if-changed`
+5. `flutter test` (all Dart tests)
+6. `cd example/android && ./gradlew :workmanager_android:test` (Android native tests)
+7. `cd example && flutter build apk --debug` (build Android example app)
+8. `cd example && flutter build ios --debug --no-codesign` (build iOS example app)
 
 ## Code Generation
 - Regenerate Pigeon files: `melos run generate:pigeon`
@@ -47,3 +50,17 @@
   ```
 - Use `<TabItem>` not `<Tab>` - this is a common mistake that causes JavaScript errors
 - Always include both `label` and `value` props on TabItem components
+
+## Pull Request Description Guidelines
+
+Template:
+```markdown
+## Summary
+- Brief change description
+
+Fixes #123
+
+## Breaking Changes (if applicable)
+**Before:** `old code`
+**After:** `new code`
+```
