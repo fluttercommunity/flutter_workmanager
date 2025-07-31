@@ -9,7 +9,7 @@ import 'package:pigeon/pigeon.dart';
   kotlinOptions: KotlinOptions(
     package: 'dev.fluttercommunity.workmanager.pigeon',
   ),
-  swiftOut: '../workmanager_apple/ios/Classes/pigeon/WorkmanagerApi.g.swift',
+  swiftOut: '../workmanager_apple/ios/Sources/workmanager_apple/pigeon/WorkmanagerApi.g.swift',
   copyrightHeader: 'pigeons/copyright.txt',
   dartPackageName: 'workmanager_platform_interface',
 ))
