@@ -1,11 +1,10 @@
 ## Future
 
-### Dependencies & Infrastructure Updates
-* Regenerated Pigeon files with updated version 26.0.0 for enhanced multi-platform support
-
 ### Breaking Changes
-* **BREAKING**: Update `registerPeriodicTask` to use `ExistingPeriodicWorkPolicy` instead of `ExistingWorkPolicy`
-  * This provides better type safety across all platforms
+* **BREAKING**: iOS minimum deployment target increased to 14.0
+  * Update your iOS project's deployment target to 14.0+
+* **BREAKING**: `registerPeriodicTask` now uses `ExistingPeriodicWorkPolicy`
+  * Replace `ExistingWorkPolicy` parameter with `ExistingPeriodicWorkPolicy`
 
 ## 0.8.0
 

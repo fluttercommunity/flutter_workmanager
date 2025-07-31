@@ -1,21 +1,17 @@
 # Future
 
 ## Breaking Changes
-* **BREAKING**: The `isInDebugMode` parameter in `initialize()` is now deprecated and has no effect
-  * The parameter is still accepted for backward compatibility but will be removed in a future version
-  * Replace with new hook-based debug system for better flexibility
-  * See updated debugging documentation for migration guide and usage examples
-  * No debug output by default - add platform-specific debug handlers as needed
-* **BREAKING**: Separate `ExistingWorkPolicy` and `ExistingPeriodicWorkPolicy` enums for better type safety and API clarity
-  * `registerPeriodicTask` now requires `ExistingPeriodicWorkPolicy` instead of `ExistingWorkPolicy`
-  * This mirrors Android's native WorkManager API design for better consistency
+* **BREAKING**: `isInDebugMode` parameter in `initialize()` is deprecated
+  * Parameter still accepted but will be removed in future version
+  * Replace with hook-based debug system - see migration guide
+* **BREAKING**: iOS minimum deployment target increased to 14.0
+  * Update your iOS project's deployment target to 14.0+
+* **BREAKING**: `registerPeriodicTask` now uses `ExistingPeriodicWorkPolicy`
+  * Replace `ExistingWorkPolicy` parameter with `ExistingPeriodicWorkPolicy`
 
-## Bug Fixes & Improvements
-* Fix issue #622: Periodic tasks running at incorrect frequencies when re-registered with different intervals
-  * Changed default policy from `KEEP` to `UPDATE` for periodic tasks
-  * `UPDATE` policy ensures new task configurations replace existing ones without disruption
-* Fix null cast to map bug in executeTask when inputData contains null keys or values (thanks to @Dr-wgy)
-* Internal improvements to development and testing infrastructure
+## Bug Fixes
+* Fix periodic tasks running at wrong frequency when re-registered (#622)
+* Fix crash when inputData contains null values (thanks @Dr-wgy)
 
 # 0.8.0
 

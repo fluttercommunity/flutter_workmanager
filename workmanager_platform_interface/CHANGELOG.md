@@ -1,14 +1,8 @@
 ## Future
 
-### Dependencies & Infrastructure Updates
-* Updated Pigeon from 22.7.4 to 26.0.0 for enhanced multi-platform support
-* Regenerated platform interface files with new Pigeon version
-
 ### Breaking Changes
-* **BREAKING**: Separate `ExistingWorkPolicy` and `ExistingPeriodicWorkPolicy` enums for better type safety
-  * Mirrors Android's native WorkManager API design
-  * `ExistingPeriodicWorkPolicy` now used for periodic tasks with three options: `keep`, `replace`, `update`
-  * Added comprehensive documentation with upstream Android documentation links
+* **BREAKING**: Separate `ExistingWorkPolicy` and `ExistingPeriodicWorkPolicy` enums
+  * Use `ExistingPeriodicWorkPolicy` for periodic tasks: `keep`, `replace`, `update`
 
 ## 0.8.0
 

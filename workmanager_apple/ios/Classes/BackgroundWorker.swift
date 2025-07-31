@@ -91,7 +91,7 @@ class BackgroundWorker {
             callbackHandle: callbackHandle,
             callbackInfo: flutterCallbackInformation.callbackName
         )
-        
+
         WorkmanagerDebug.onTaskStatusUpdate(taskInfo: taskInfo, status: .started)
 
         var flutterEngine: FlutterEngine? = FlutterEngine(
@@ -150,7 +150,7 @@ class BackgroundWorker {
                         duration: Int64(taskDuration * 1000), // Convert to milliseconds
                         error: fetchResult == .failed ? "Background fetch failed" : nil
                     )
-                    
+
                     let status: TaskStatus = fetchResult == .newData ? .completed : .failed
                     WorkmanagerDebug.onTaskStatusUpdate(taskInfo: taskInfo, status: status, result: taskResult)
                     completionHandler(fetchResult)

@@ -10,34 +10,34 @@ public class NotificationDebugHandler: WorkmanagerDebug {
     private let workEmojis = ["👷‍♀️", "👷‍♂️"]
     private let successEmoji = "🎉"
     private let failureEmoji = "🔥"
-    
+
     public override init() {}
-    
+
     override func onTaskStatusUpdate(taskInfo: TaskDebugInfo, status: TaskStatus, result: TaskResult?) {
         let formatter = DateFormatter()
         formatter.dateStyle = .short
         formatter.timeStyle = .medium
-        
+
         let (emoji, title, message) = formatNotification(taskInfo: taskInfo, status: status, result: result)
-        
+
         scheduleNotification(
             title: "\(emoji) \(formatter.string(from: Date()))",
             body: "\(title)\n\(message)"
         )
     }
-    
+
     override func onExceptionEncountered(taskInfo: TaskDebugInfo?, exception: Error) {
         let taskName = taskInfo?.taskName ?? "unknown"
         let formatter = DateFormatter()
         formatter.dateStyle = .short
         formatter.timeStyle = .medium
-        
+
         scheduleNotification(
             title: "\(failureEmoji) \(formatter.string(from: Date()))",
             body: "Exception in Task\n• Task: \(taskName)\n• Error: \(exception.localizedDescription)"
         )
     }
-    
+
     private func formatNotification(taskInfo: TaskDebugInfo, status: TaskStatus, result: TaskResult?) -> (String, String, String) {
         switch status {
         case .scheduled:
@@ -64,19 +64,19 @@ public class NotificationDebugHandler: WorkmanagerDebug {
             return ("🔄", "Task Retrying", "• Task: \(taskInfo.taskName)")
         }
     }
-    
+
     private func scheduleNotification(title: String, body: String) {
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
         content.sound = .default
-        
+
         let request = UNNotificationRequest(
             identifier: UUID().uuidString,
             content: content,
             trigger: nil // Immediate delivery
         )
-        
+
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
                 print("Failed to schedule notification: \(error)")

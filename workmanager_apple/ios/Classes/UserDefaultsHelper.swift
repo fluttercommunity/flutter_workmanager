@@ -31,7 +31,6 @@ struct UserDefaultsHelper {
         return getValue(for: .callbackHandle)
     }
 
-
     // MARK: Private helper functions
 
     private static func store<T>(_ value: T, key: Key) {

@@ -20,14 +20,19 @@ import 'package:pigeon/pigeon.dart';
 enum TaskStatus {
   /// Task has been scheduled
   scheduled,
+
   /// Task has started execution
   started,
+
   /// Task completed successfully
   completed,
+
   /// Task failed
   failed,
+
   /// Task was cancelled
   cancelled,
+
   /// Task is being retried
   retrying,
 }

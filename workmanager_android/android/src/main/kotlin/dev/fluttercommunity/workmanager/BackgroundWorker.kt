@@ -8,8 +8,8 @@ import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
 import com.google.common.util.concurrent.ListenableFuture
-import dev.fluttercommunity.workmanager.pigeon.WorkmanagerFlutterApi
 import dev.fluttercommunity.workmanager.pigeon.TaskStatus
+import dev.fluttercommunity.workmanager.pigeon.WorkmanagerFlutterApi
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.embedding.engine.loader.FlutterLoader

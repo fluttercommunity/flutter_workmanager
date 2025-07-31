@@ -6,9 +6,9 @@ import os
  */
 public class LoggingDebugHandler: WorkmanagerDebug {
     private let logger = os.Logger(subsystem: "dev.fluttercommunity.workmanager", category: "debug")
-    
+
     public override init() {}
-    
+
     override func onTaskStatusUpdate(taskInfo: TaskDebugInfo, status: TaskStatus, result: TaskResult?) {
         switch status {
         case .scheduled:
@@ -28,7 +28,7 @@ public class LoggingDebugHandler: WorkmanagerDebug {
             logger.info("Task retrying: \(taskInfo.taskName)")
         }
     }
-    
+
     override func onExceptionEncountered(taskInfo: TaskDebugInfo?, exception: Error) {
         let taskName = taskInfo?.taskName ?? "unknown"
         logger.error("Exception in task: \(taskName), error: \(exception.localizedDescription)")
