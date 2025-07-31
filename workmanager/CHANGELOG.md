@@ -1,3 +1,13 @@
+## 0.9.0
+
+> Note: This release has breaking changes.
+
+ - **REFACTOR**: replace debug mode with extensible hook-based system (#630).
+ - **REFACTOR**: Migrate internal interfaces to pigeon (#613).
+ - **FIX**: resolve critical null handling crashes from contributor reports (#626).
+ - **FEAT**: Migrate to federated plugin architecture (#611).
+ - **BREAKING** **FIX**: resolve issue #622 - periodic tasks running at incorrect frequencies (#628).
+
 # Future
 
 ## Breaking Changes
