@@ -28,7 +28,7 @@ iOS requires a 5-minute setup in Xcode. Choose your approach based on your needs
 #### Option A: Periodic Tasks (Recommended for most use cases)
 For regular data sync, notifications, cleanup - uses iOS Background Fetch:
 
-1. **Enable Background Modes** in Xcode target capabilities ([Xcode Help](https://help.apple.com/xcode/mac/current/#/devbfa1532c4)) and add to Info.plist:
+1. **Enable Background Modes** in Xcode target capabilities ([Configuration Guide](https://developer.apple.com/documentation/xcode/configuring-background-execution-modes)) and add to Info.plist ([UIBackgroundModes reference](https://developer.apple.com/documentation/bundleresources/information-property-list/uibackgroundmodes)):
 ```xml
 <key>UIBackgroundModes</key>
 <array>
@@ -45,7 +45,7 @@ For regular data sync, notifications, cleanup - uses iOS Background Fetch:
 #### Option B: Processing Tasks (For complex operations)
 For file uploads, data processing, longer tasks - uses BGTaskScheduler:
 
-1. **Enable Background Modes** in Xcode target capabilities ([Xcode Help](https://help.apple.com/xcode/mac/current/#/devbfa1532c4)) and add to Info.plist:
+1. **Enable Background Modes** in Xcode target capabilities ([Configuration Guide](https://developer.apple.com/documentation/xcode/configuring-background-execution-modes)) and add to Info.plist ([UIBackgroundModes reference](https://developer.apple.com/documentation/bundleresources/information-property-list/uibackgroundmodes)):
 ```xml
 <key>UIBackgroundModes</key>
 <array>
@@ -75,7 +75,7 @@ WorkmanagerPlugin.registerBGProcessingTask(
 #### Option C: Periodic Tasks with Custom Frequency
 For periodic tasks with more control than Background Fetch - uses BGTaskScheduler with frequency:
 
-1. **Enable Background Modes** in Xcode target capabilities ([Xcode Help](https://help.apple.com/xcode/mac/current/#/devbfa1532c4)) and add to Info.plist:
+1. **Enable Background Modes** in Xcode target capabilities ([Configuration Guide](https://developer.apple.com/documentation/xcode/configuring-background-execution-modes)) and add to Info.plist ([UIBackgroundModes reference](https://developer.apple.com/documentation/bundleresources/information-property-list/uibackgroundmodes)):
 ```xml
 <key>UIBackgroundModes</key>
 <array>
