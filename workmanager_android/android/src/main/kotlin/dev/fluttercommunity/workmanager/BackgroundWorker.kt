@@ -46,7 +46,7 @@ class BackgroundWorker(
                 }
 
     private val dartTask
-        get() = workerParams.inputData.getString(DART_TASK_KEY)!!
+        get() = workerParams.inputData.getString(DART_TASK_KEY)
 
     private val runAttemptCount = workerParams.runAttemptCount
     private val randomThreadIdentifier = Random().nextInt()
@@ -86,11 +86,20 @@ class BackgroundWorker(
                 return@ensureInitializationCompleteAsync
             }
 
+            val localDartTask = dartTask
+
+            if (localDartTask == null) {
+                val exception = IllegalStateException("Dart task is null")
+                WorkmanagerDebug.onExceptionEncountered(applicationContext, null, exception)
+                completer?.set(Result.failure())
+                return@ensureInitializationCompleteAsync
+            }
+
             val dartBundlePath = flutterLoader.findAppBundlePath()
 
             val taskInfo =
                 TaskDebugInfo(
-                    taskName = dartTask,
+                    taskName = localDartTask,
                     inputData = payload,
                     startTime = startTime,
                     callbackHandle = callbackHandle,
@@ -132,9 +141,18 @@ class BackgroundWorker(
     ) {
         val fetchDuration = System.currentTimeMillis() - startTime
 
+        val localDartTask = dartTask
+
+        if (localDartTask == null) {
+            val exception = IllegalStateException("Dart task is null")
+            WorkmanagerDebug.onExceptionEncountered(applicationContext, null, exception)
+            completer?.set(Result.failure())
+            return
+        }
+
         val taskInfo =
             TaskDebugInfo(
-                taskName = dartTask,
+                taskName = localDartTask,
                 inputData = payload,
                 startTime = startTime,
             )
@@ -175,7 +193,17 @@ class BackgroundWorker(
         // Convert payload to the format expected by Pigeon (Map<String?, Object?>)
         val pigeonPayload = payload.mapKeys { it.key as String? }.mapValues { it.value as Object? }
 
-        flutterApi.executeTask(dartTask, pigeonPayload) { result ->
+        val localDartTask = dartTask
+
+        if (localDartTask == null) {
+            val exception = IllegalStateException("Dart task is null")
+            WorkmanagerDebug.onExceptionEncountered(applicationContext, null, exception)
+
+            stopEngine(Result.failure(), exception.message)
+            return
+        }
+
+        flutterApi.executeTask(localDartTask, pigeonPayload) { result ->
             when {
                 result.isSuccess -> {
                     val wasSuccessful = result.getOrNull() ?: false
