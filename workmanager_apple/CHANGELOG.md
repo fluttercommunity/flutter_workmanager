@@ -1,7 +1,3 @@
-## 0.9.1
-
- - **FEAT**: add iOS Swift Package Manager support (#631).
-
 ## 0.9.0
 
 > Note: This release has breaking changes.
