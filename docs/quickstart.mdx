@@ -9,7 +9,7 @@ Add `workmanager` to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  workmanager: ^0.8.0
+  workmanager: ^0.9.0
 ```
 
 Then run:
@@ -45,18 +45,18 @@ For regular data sync, notifications, cleanup - uses iOS Background Fetch:
 #### Option B: Processing Tasks (For complex operations)
 For file uploads, data processing, longer tasks - uses BGTaskScheduler:
 
-1. **Enable Background Modes** in Xcode target capabilities ([Xcode Help](https://help.apple.com/xcode/mac/current/#/devbfa1532c4)) and add to Info.plist:
+1. **Enable Background Modes** in Xcode target capabilities ([Xcode Help](https://help.apple.com/xcode/mac/current/#/devbfa1532c4)) and configure Info.plist:
 ```xml
-<key>UIBackgroundModes</key>
-<array>
-    <string>processing</string>
-</array>
-
+<!-- Note: BGTaskScheduler doesn't require UIBackgroundModes entry -->
 <key>BGTaskSchedulerPermittedIdentifiers</key>
 <array>
     <string>com.yourapp.processing_task</string>
 </array>
 ```
+
+<Info>
+**Note on UIBackgroundModes:** BGTaskScheduler processing tasks don't require a UIBackgroundModes entry. The `processing` value is not a valid UIBackgroundModes option. Only add `BGTaskSchedulerPermittedIdentifiers` to enable processing tasks. See [Apple's UIBackgroundModes documentation](https://developer.apple.com/documentation/bundleresources/information-property-list/uibackgroundmodes) for valid background modes.
+</Info>
 
 2. **Configure AppDelegate.swift** (required for BGTaskScheduler):
 ```swift
@@ -75,13 +75,9 @@ WorkmanagerPlugin.registerBGProcessingTask(
 #### Option C: Periodic Tasks with Custom Frequency
 For periodic tasks with more control than Background Fetch - uses BGTaskScheduler with frequency:
 
-1. **Enable Background Modes** in Xcode target capabilities ([Xcode Help](https://help.apple.com/xcode/mac/current/#/devbfa1532c4)) and add to Info.plist:
+1. **Configure Info.plist** for BGTaskScheduler:
 ```xml
-<key>UIBackgroundModes</key>
-<array>
-    <string>processing</string>
-</array>
-
+<!-- Note: BGTaskScheduler doesn't require UIBackgroundModes entry -->
 <key>BGTaskSchedulerPermittedIdentifiers</key>
 <array>
     <string>com.yourapp.periodic_task</string>
