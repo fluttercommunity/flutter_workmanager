@@ -1,3 +1,7 @@
+## 0.9.0+1
+
+ - **FIX**: prevent NullPointerException in BackgroundWorker.getDartTask (#636).
+
 ## 0.9.0
 
 > Note: This release has breaking changes.

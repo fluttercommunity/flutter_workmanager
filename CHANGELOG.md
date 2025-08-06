@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-08-06
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`workmanager_android` - `v0.9.0+1`](#workmanager_android---v0901)
+ - [`workmanager_platform_interface` - `v0.9.1`](#workmanager_platform_interface---v091)
+ - [`workmanager` - `v0.9.0+2`](#workmanager---v0902)
+ - [`workmanager_apple` - `v0.9.1+1`](#workmanager_apple---v0911)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `workmanager` - `v0.9.0+2`
+ - `workmanager_apple` - `v0.9.1+1`
+
+---
+
+#### `workmanager_android` - `v0.9.0+1`
+
+ - **FIX**: prevent NullPointerException in BackgroundWorker.getDartTask (#636).
+
+#### `workmanager_platform_interface` - `v0.9.1`
+
+ - **FEAT**: add iOS Swift Package Manager support (#631).
+
+
 ## 2025-08-01
 
 ### Changes

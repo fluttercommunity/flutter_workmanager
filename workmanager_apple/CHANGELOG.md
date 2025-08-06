@@ -1,3 +1,7 @@
+## 0.9.1+1
+
+ - Update a dependency to the latest release.
+
 ## 0.9.1
 
  - **FEAT**: add iOS Swift Package Manager support (#631).
