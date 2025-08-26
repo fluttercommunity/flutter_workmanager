@@ -11,6 +11,9 @@ private const val INIT_REQUIRED =
     "You have not properly initialized the Flutter WorkManager Package. " +
         "You should ensure you have called the 'initialize' function first!"
 
+private const val INIT_FAILED =
+    "Workmanager.initialize failed because 'callbackHandle' was invalid."
+
 /**
  * Pigeon-based implementation of WorkmanagerHostApi for Android.
  * Replaces the manual method channel and data extraction approach.
@@ -47,7 +50,14 @@ class WorkmanagerPlugin :
         callback: (Result<Unit>) -> Unit,
     ) {
         try {
-            preferenceManager.saveCallbackDispatcherHandleKey(request.callbackHandle)
+            val handle = request.callbackHandle
+            if (handle <= 0L) {
+                callback(Result.failure(Exception(INIT_FAILED)))
+                return
+            }
+
+            preferenceManager.saveCallbackDispatcherHandleKey(handle)
+            currentDispatcherHandle = handle
             callback(Result.success(Unit))
         } catch (e: Exception) {
             callback(Result.failure(e))
