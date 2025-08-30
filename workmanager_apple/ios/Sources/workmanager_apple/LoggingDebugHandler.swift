@@ -3,7 +3,9 @@ import os
 
 /**
  * A debug handler that outputs debug information to iOS's unified logging system.
+ * Note: This class requires iOS 14.0 or later due to the use of os.Logger.
  */
+@available(iOS 14.0, *)
 public class LoggingDebugHandler: WorkmanagerDebug {
     private let logger = os.Logger(subsystem: "dev.fluttercommunity.workmanager", category: "debug")
 
