@@ -49,12 +49,6 @@ class WorkmanagerPlugin :
         try {
             val handle = request.callbackHandle
 
-            // Validate the handle
-            if (handle <= 0L) {
-                callback(Result.failure(Exception("Invalid callback handle provided to initialize")))
-                return
-            }
-
             // Save to SharedPreferences
             preferenceManager.saveCallbackDispatcherHandleKey(handle)
 
