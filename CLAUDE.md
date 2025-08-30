@@ -1,3 +1,12 @@
+## Version Management
+- **DO NOT manually edit CHANGELOG.md files** - Melos handles changelog generation automatically
+- **Use semantic commit messages** for proper versioning:
+  - `fix:` for bug fixes (patch version bump)
+  - `feat:` for new features (minor version bump) 
+  - `BREAKING CHANGE:` or `!` for breaking changes (major version bump)
+  - Example: `fix: prevent iOS build errors with Logger availability`
+- Melos will generate changelog entries from commit messages during release
+
 ## Pre-Commit Requirements
 **CRITICAL**: Always run from project root before ANY commit:
 1. `dart analyze` (check for code errors)
