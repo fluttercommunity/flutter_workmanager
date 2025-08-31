@@ -23,6 +23,15 @@ flutter pub get
 Android works automatically - no additional setup required! ✅
 
 ### iOS
+
+<Warning>
+**iOS Minimum Deployment Target:** iOS 14.0 or later is required. Update your project's deployment target in Xcode:
+1. Open `ios/Runner.xcodeproj` in Xcode
+2. Select the Runner target
+3. Set "Minimum Deployments" to iOS 14.0 or later
+4. Or edit `ios/Runner.xcodeproj/project.pbxproj` and set `IPHONEOS_DEPLOYMENT_TARGET = 14.0;`
+</Warning>
+
 iOS requires a 5-minute setup in Xcode. Choose your approach based on your needs:
 
 #### Option A: Periodic Tasks (Recommended for most use cases)
