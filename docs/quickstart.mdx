@@ -176,6 +176,19 @@ Workmanager().registerPeriodicTask(
   "cleanup",
   frequency: Duration(hours: 24),
 );
+
+// Schedule a periodic task with input data
+Workmanager().registerPeriodicTask(
+  "sync-task",
+  "data_sync",
+  frequency: Duration(hours: 6),
+  inputData: <String, dynamic>{
+    'server_url': 'https://api.example.com',
+    'sync_type': 'full',
+    'max_retries': 3,
+  },
+);
+```
 ```
 
 ## Task Results

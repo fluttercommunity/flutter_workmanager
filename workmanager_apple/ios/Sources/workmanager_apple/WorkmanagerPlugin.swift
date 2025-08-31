@@ -32,8 +32,18 @@ public class WorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
         operationQueue.addOperation(operation)
     }
 
+    /// Handles execution of a periodic background task.
+    ///
+    /// This method is called by iOS when a BGAppRefreshTask is triggered.
+    /// It retrieves stored inputData and executes the Flutter task.
+    ///
+    /// - Parameters:
+    ///   - identifier: Task identifier
+    ///   - task: The BGAppRefreshTask instance from iOS
+    ///   - earliestBeginInSeconds: Optional delay before scheduling next occurrence
+    ///   - inputData: Input data passed from the Dart side (may be nil)
     @available(iOS 13.0, *)
-    public static func handlePeriodicTask(identifier: String, task: BGAppRefreshTask, earliestBeginInSeconds: Double?) {
+    public static func handlePeriodicTask(identifier: String, task: BGAppRefreshTask, earliestBeginInSeconds: NSNumber?, inputData: [String: Any]?) {
         guard let callbackHandle = UserDefaultsHelper.getStoredCallbackHandle(),
               let _ = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)
         else {
@@ -41,22 +51,36 @@ public class WorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
             return
         }
 
-        // If frequency is not provided it will default to 15 minutes
-        schedulePeriodicTask(taskIdentifier: task.identifier, earliestBeginInSeconds: earliestBeginInSeconds ?? (15 * 60))
+        // Schedule the next occurrence (iOS will determine actual timing based on usage patterns)
+        schedulePeriodicTask(taskIdentifier: task.identifier, earliestBeginInSeconds: earliestBeginInSeconds?.doubleValue)
 
-        let operationQueue = OperationQueue()
-        let operation = createBackgroundOperation(
-            identifier: task.identifier,
-            inputData: nil,
-            backgroundMode: .backgroundPeriodicTask(identifier: identifier)
+        // Execute the Flutter task directly
+        let worker = BackgroundWorker(
+            mode: .backgroundPeriodicTask(identifier: identifier),
+            inputData: inputData,
+            flutterPluginRegistrantCallback: flutterPluginRegistrantCallback
         )
 
-        task.expirationHandler = { operation.cancel() }
-        operation.completionBlock = { task.setTaskCompleted(success: !operation.isCancelled) }
+        // Set up expiration handler
+        task.expirationHandler = {
+            logInfo("BGAppRefreshTask expired: \(identifier)")
+        }
 
-        operationQueue.addOperation(operation)
+        // Execute on main thread (required for Flutter)
+        DispatchQueue.main.async {
+            worker.performBackgroundRequest { result in
+                task.setTaskCompleted(success: result == .newData)
+            }
+        }
     }
 
+    /// Starts a one-off background task with the specified input data.
+    ///
+    /// - Parameters:
+    ///   - identifier: Task identifier
+    ///   - taskIdentifier: iOS background task identifier for lifecycle management
+    ///   - inputData: Input data to pass to the Flutter task
+    ///   - delaySeconds: Delay before task execution
     @available(iOS 13.0, *)
     public static func startOneOffTask(identifier: String, taskIdentifier: UIBackgroundTaskIdentifier, inputData: [String: Any]?, delaySeconds: Int64) {
         let operationQueue = OperationQueue()
@@ -70,38 +94,67 @@ public class WorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
         operationQueue.addOperation(operation)
     }
 
+    /// Registers a periodic background task with iOS BGTaskScheduler.
+    ///
+    /// This method must be called during app initialization (typically in AppDelegate)
+    /// to register the task identifier with iOS. The actual task scheduling with inputData
+    /// happens later when called from the Dart/Flutter side.
+    ///
+    /// - Parameters:
+    ///   - identifier: Unique task identifier that matches the one used in Dart
+    ///   - earliestBeginInSeconds: Optional delay before scheduling next occurrence
+    ///
+    /// - Note: This registers the task handler only. Use Workmanager.registerPeriodicTask()
+    ///   from Dart to actually schedule the task with inputData.
     @objc
-    public static func registerPeriodicTask(withIdentifier identifier: String, frequency: NSNumber?) {
+    public static func registerPeriodicTask(withIdentifier identifier: String, earliestBeginInSeconds: NSNumber? = nil) {
         if #available(iOS 13.0, *) {
-            var frequencyInSeconds: Double?
-            if let frequencyValue = frequency {
-                frequencyInSeconds = frequencyValue.doubleValue
-            }
-
             BGTaskScheduler.shared.register(
                 forTaskWithIdentifier: identifier,
                 using: nil
             ) { task in
                 if let task = task as? BGAppRefreshTask {
-                    handlePeriodicTask(identifier: identifier, task: task, earliestBeginInSeconds: frequencyInSeconds)
+                    // Retrieve the stored inputData for this periodic task
+                    let storedInputData = UserDefaultsHelper.getStoredPeriodicTaskInputData(forTaskIdentifier: task.identifier)
+                    handlePeriodicTask(identifier: identifier, task: task, earliestBeginInSeconds: earliestBeginInSeconds, inputData: storedInputData)
                 }
             }
         }
     }
 
+    /// Registers a periodic background task with iOS BGTaskScheduler.
+    ///
+    /// - Parameters:
+    ///   - identifier: Unique task identifier that matches the one used in Dart
+    ///   - frequency: Frequency hint in seconds (deprecated, use earliestBeginInSeconds instead)
+    ///
+    /// - Note: Deprecated. Use registerPeriodicTask(withIdentifier:frequency:earliestBeginInSeconds:) instead.
+    @available(*, deprecated, message: "Use registerPeriodicTask(withIdentifier:earliestBeginInSeconds:) instead")
     @objc
+    public static func registerPeriodicTask(withIdentifier identifier: String, frequency: NSNumber?) {
+        registerPeriodicTask(withIdentifier: identifier, earliestBeginInSeconds: frequency)
+    }
+
     @available(iOS 13.0, *)
-    private static func schedulePeriodicTask(taskIdentifier identifier: String, earliestBeginInSeconds begin: Double) {
+    private static func schedulePeriodicTask(taskIdentifier identifier: String, earliestBeginInSeconds begin: Double?) {
         let request = BGAppRefreshTaskRequest(identifier: identifier)
-        request.earliestBeginDate = Date(timeIntervalSinceNow: begin)
+        if let begin = begin {
+            request.earliestBeginDate = Date(timeIntervalSinceNow: begin)
+        }
         do {
             try BGTaskScheduler.shared.submit(request)
-            logInfo("BGAppRefreshTask submitted \(identifier) earliestBeginInSeconds:\(begin)")
+            logInfo("BGAppRefreshTask submitted \(identifier) earliestBeginInSeconds:\(String(describing: begin))")
         } catch {
             logInfo("Could not schedule BGAppRefreshTask \(error.localizedDescription)")
         }
     }
 
+    /// Registers a background processing task with iOS BGTaskScheduler.
+    ///
+    /// This method must be called during app initialization (typically in AppDelegate)
+    /// to register the task identifier with iOS for background processing tasks.
+    ///
+    /// - Parameter identifier: Unique task identifier that matches the one used in Dart
     @objc
     public static func registerBGProcessingTask(withIdentifier identifier: String) {
         if #available(iOS 13.0, *) {
@@ -140,6 +193,12 @@ public class WorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
 
     // MARK: - FlutterPlugin conformance
 
+    /// Sets the plugin registrant callback for background task execution.
+    ///
+    /// This callback is used to register additional plugins when background tasks
+    /// run in a separate Flutter engine instance.
+    ///
+    /// - Parameter callback: The callback to register plugins in the background engine
     @objc
     public static func setPluginRegistrantCallback(_ callback: @escaping FlutterPluginRegistrantCallback) {
         flutterPluginRegistrantCallback = callback
@@ -191,6 +250,13 @@ public class WorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
 
         executeIfSupportedVoid(completion: completion, feature: "PeriodicTask") {
             let initialDelaySeconds = Double(request.initialDelaySeconds ?? 0)
+
+            // Store the inputData for later retrieval when the task executes
+            UserDefaultsHelper.storePeriodicTaskInputData(
+                request.inputData as? [String: Any],
+                forTaskIdentifier: request.uniqueName
+            )
+
             WorkmanagerPlugin.schedulePeriodicTask(
                 taskIdentifier: request.uniqueName,
                 earliestBeginInSeconds: initialDelaySeconds
