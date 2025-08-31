@@ -1,6 +1,6 @@
 name: workmanager_apple
 description: Apple platform (iOS/macOS) implementation of the workmanager plugin.
-version: 0.9.1+1
+version: 0.9.1+2
 # publish_to: none
 homepage: https://github.com/fluttercommunity/flutter_workmanager
 repository: https://github.com/fluttercommunity/flutter_workmanager
@@ -13,7 +13,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  workmanager_platform_interface: ^0.9.1
+  workmanager_platform_interface: ^0.9.1+1
 
 dev_dependencies:
   flutter_test:

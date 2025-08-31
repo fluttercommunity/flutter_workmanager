@@ -1,3 +1,7 @@
+## 0.9.0+2
+
+ - **FIX**: Android initialization bug and iOS 14 availability annotations (#647).
+
 ## 0.9.0+1
 
  - **FIX**: prevent NullPointerException in BackgroundWorker.getDartTask (#636).

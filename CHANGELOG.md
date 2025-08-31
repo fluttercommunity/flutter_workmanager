@@ -3,6 +3,44 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-08-31
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`workmanager_android` - `v0.9.0+2`](#workmanager_android---v0902)
+ - [`workmanager_apple` - `v0.9.1+2`](#workmanager_apple---v0912)
+ - [`workmanager_platform_interface` - `v0.9.1+1`](#workmanager_platform_interface---v0911)
+ - [`workmanager` - `v0.9.0+3`](#workmanager---v0903)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `workmanager` - `v0.9.0+3`
+
+---
+
+#### `workmanager_android` - `v0.9.0+2`
+
+ - **FIX**: Android initialization bug and iOS 14 availability annotations (#647).
+
+#### `workmanager_apple` - `v0.9.1+2`
+
+ - **FIX**: Android initialization bug and iOS 14 availability annotations (#647).
+
+#### `workmanager_platform_interface` - `v0.9.1+1`
+
+ - **FIX**: Android initialization bug and iOS 14 availability annotations (#647).
+
+
 ## 2025-08-06
 
 ### Changes

@@ -1,6 +1,6 @@
 name: workmanager_platform_interface
 description: A common platform interface for the workmanager plugin.
-version: 0.9.1
+version: 0.9.1+1
 # publish_to: none
 homepage: https://github.com/fluttercommunity/flutter_workmanager
 repository: https://github.com/fluttercommunity/flutter_workmanager
