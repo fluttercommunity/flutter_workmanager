@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 extension UIBackgroundFetchResult: CustomDebugStringConvertible {
     public var debugDescription: String {
