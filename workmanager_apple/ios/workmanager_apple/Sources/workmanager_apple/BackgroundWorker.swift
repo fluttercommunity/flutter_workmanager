@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 #if os(iOS)
 import Flutter
