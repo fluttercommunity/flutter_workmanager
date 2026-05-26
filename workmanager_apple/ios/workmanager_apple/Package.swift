@@ -10,16 +10,17 @@ let package = Package(
     ],
     products: [
         .library(
-            name: "workmanager_apple",
+            name: "workmanager-apple",
             targets: ["workmanager_apple"]
         )
     ],
+    dependencies: [],
     targets: [
         .target(
             name: "workmanager_apple",
-            path: "Sources/workmanager_apple",
+            dependencies: [],
             resources: [
-                .process("../Resources")
+                .process("Resources")
             ]
         )
     ]

@@ -12,12 +12,12 @@ Flutter Android Workmanager
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Your Company' => 'email@example.com' }
   s.source           = { :path => '.' }
-  s.source_files = 'Sources/workmanager_apple/**/*'
+  s.source_files = 'workmanager_apple/Sources/workmanager_apple/**/*.swift'
   s.dependency 'Flutter'
 
   s.ios.deployment_target = '14.0'
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
   s.swift_version = '5.0'
-  s.resource_bundles = { 'flutter_workmanager_privacy' => ['Resources/PrivacyInfo.xcprivacy'] }
+  s.resource_bundles = { 'flutter_workmanager_privacy' => ['workmanager_apple/Sources/workmanager_apple/Resources/PrivacyInfo.xcprivacy'] }
 end
 
