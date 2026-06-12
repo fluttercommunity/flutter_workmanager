@@ -9,17 +9,18 @@ let package = Package(
         .iOS(.v14)
     ],
     products: [
+        // The library name uses a hyphen because Flutter requires SwiftPM product
+        // names to not contain underscores. The target keeps the underscore.
         .library(
-            name: "workmanager_apple",
+            name: "workmanager-apple",
             targets: ["workmanager_apple"]
         )
     ],
     targets: [
         .target(
             name: "workmanager_apple",
-            path: "Sources/workmanager_apple",
             resources: [
-                .process("../Resources")
+                .process("PrivacyInfo.xcprivacy")
             ]
         )
     ]
