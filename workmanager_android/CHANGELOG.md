@@ -1,7 +1,3 @@
-## 0.9.1
-
-- **FIX**: NullPointerException on io.flutter.embedding.engine.loader.FlutterApplicationInfo.flutterAssetsDir, when App and WorkManager task triggers at the same time
-
 ## 0.9.0+2
 
  - **FIX**: Android initialization bug and iOS 14 availability annotations (#647).
