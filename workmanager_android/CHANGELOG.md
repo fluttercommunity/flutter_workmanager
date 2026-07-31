@@ -1,8 +1,3 @@
-## 0.10.0
-
-- **FIX**: Failed host lookup when WorkManager initiates network calls in a background task on Android 15+
-- **BREAKING** Bumps Android minSdkVersion to 23 due to androidx.work:work-runtime:2.11.2
-
 ## 0.9.0+2
 
  - **FIX**: Android initialization bug and iOS 14 availability annotations (#647).
