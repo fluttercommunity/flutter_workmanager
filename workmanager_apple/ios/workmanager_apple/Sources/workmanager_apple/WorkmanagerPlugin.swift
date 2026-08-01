@@ -77,7 +77,7 @@ public class WorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
     /// Starts a one-off background task with the specified input data.
     ///
     /// - Parameters:
-    ///   - identifier: Task identifier
+    ///   - identifier: Task identifier (used for the task name passed to the Dart callback)
     ///   - taskIdentifier: iOS background task identifier for lifecycle management
     ///   - inputData: Input data to pass to the Flutter task
     ///   - delaySeconds: Delay before task execution
@@ -91,7 +91,13 @@ public class WorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
         )
 
         operation.completionBlock = { UIApplication.shared.endBackgroundTask(taskIdentifier) }
-        operationQueue.addOperation(operation)
+        if delaySeconds > 0 {
+            DispatchQueue.global().asyncAfter(deadline: .now() + Double(delaySeconds)) {
+                operationQueue.addOperation(operation)
+            }
+        } else {
+            operationQueue.addOperation(operation)
+        }
     }
 
     /// Registers a periodic background task with iOS BGTaskScheduler.
@@ -226,7 +232,10 @@ public class WorkmanagerPlugin: FlutterPluginAppLifeCycleDelegate, FlutterPlugin
             })
 
             WorkmanagerPlugin.startOneOffTask(
-                identifier: request.uniqueName,
+                // The callback task name must match the `taskName` provided from Dart
+                // (Android already forwards `taskName`). The `uniqueName` is still
+                // used for the background task debug name above.
+                identifier: request.taskName,
                 taskIdentifier: taskIdentifier,
                 inputData: request.inputData as? [String: Any],
                 delaySeconds: delaySeconds

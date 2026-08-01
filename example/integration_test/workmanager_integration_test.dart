@@ -10,6 +10,10 @@ import 'package:workmanager/workmanager.dart';
 const String dataTransferTaskName =
     'dev.fluttercommunity.integrationTest.dataTransferTask';
 const String retryTaskName = 'dev.fluttercommunity.integrationTest.retryTask';
+const String oneOffUniqueName =
+    'dev.fluttercommunity.integrationTest.oneOffUniqueName';
+const String oneOffTaskName =
+    'dev.fluttercommunity.integrationTest.oneOffTaskName';
 
 /// One retry is enough to test the retry logic
 const int kMaxRetryAttempts = 1;
@@ -53,6 +57,12 @@ void callbackDispatcher() {
           print('Unsupported data type for key $key: $value');
         }
       }
+    }
+    if (task == oneOffTaskName) {
+      // Verifies that the callback receives the `taskName` (not the
+      // `uniqueName`) when they differ, matching Android behavior.
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString(inputData!['result_key'], task);
     }
     return true;
   });
@@ -196,6 +206,32 @@ void main() {
           rethrow;
         }
       }
+    });
+
+    testWidgets(
+        'registerOneOffTask passes taskName (not uniqueName) to callback',
+        (WidgetTester tester) async {
+      await workmanager.initialize(callbackDispatcher);
+
+      final resultKey = Uuid().v4().toString();
+
+      await workmanager.registerOneOffTask(
+        oneOffUniqueName,
+        oneOffTaskName,
+        inputData: {'result_key': resultKey},
+      );
+
+      // The task runs immediately; poll for the callback result.
+      for (int i = 0; i < 20; i++) {
+        await Future.delayed(const Duration(seconds: 1));
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.reload();
+        if (prefs.getString(resultKey) == oneOffTaskName) {
+          return;
+        }
+      }
+      fail(
+          'Callback did not receive the taskName (received uniqueName instead).');
     });
 
     testWidgets('registerOneOffTask with all parameters (Android)',

@@ -138,6 +138,9 @@ class Workmanager {
   /// This is used by iOS and Android to identify which task was selected to run in the background.
   /// The [BackgroundTaskHandler] will provide you with the [taskName] and the [inputData].
   /// The [taskName] will always be the value you provided when registering the task.
+  /// On iOS, periodic and processing tasks are identified by the BGTaskScheduler
+  /// identifier, so for those task types the handler receives the [uniqueName]
+  /// you registered the task with.
   /// The [inputData] will contain all the data you registered the task with.
   ///
   /// You need to return a [Future<bool>] that will tell the OS if the task was successful or not.
@@ -161,9 +164,13 @@ class Workmanager {
   ///
   /// Calling this method again with the same [uniqueName] will update the current pending task, unless an [ExistingWorkPolicy] is provided.
   ///
-  /// - [taskName]: is the value that will be returned in the [BackgroundTaskHandler], ignored on iOS where you should use [uniqueName].
+  /// - [taskName]: is the value that will be returned in the [BackgroundTaskHandler]. Supported on both Android and iOS.
   /// - [inputData]: is the input data for task. Valid value types are: int, bool, double, String and their list
-  /// - [initialDelay]: is an [Duration] after which the task will run. Ignored on iOS where you should schedule the task in AppDelegate.swift
+  /// - [initialDelay]: is an [Duration] after which the task will run.
+  ///   On Android the task is scheduled by the OS and survives app restarts.
+  ///   On iOS the delay is honored while the app stays alive, but iOS may
+  ///   terminate the app before the task can run (background execution is
+  ///   limited to a short budget). Use a processing task for long-running work.
   /// - [constraints]: are the requirements that need to be met before the task runs.
   /// - [backoffPolicy]: is the backoff policy to use when retrying work.
   /// - [backoffPolicyDelay]: is the delay for the backoff policy.
@@ -203,14 +210,16 @@ class Workmanager {
   /// it's frequency if it takes more than 30 seconds.
   ///
   /// A [uniqueName] is required so only one task can be registered.
-  /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler], ignored on iOS where you should use [uniqueName].
+  /// The [taskName] is the value that will be returned in the [BackgroundTaskHandler].
+  /// On iOS the handler receives the BGTaskScheduler identifier (the [uniqueName]),
+  /// because the identifier is what you register in Info.plist and AppDelegate.
   /// a [frequency] is not required and will be defaulted to 15 minutes if not provided.
   /// a [frequency] has a minimum of 15 min. Android will automatically change your frequency to 15 min if you have configured a lower frequency.
   /// the [flexInterval] If the nature of the work is time-sensitive, you can configure the PeriodicWorkRequest to run in a flexible period at each interval.
   /// The [inputData] is the input data for task. Valid value types are: int, bool, double, String and their list
   ///
   /// Unlike Android, you cannot set [frequency] for iOS here rather you have to set in `AppDelegate.swift` while registering the task.
-  /// The [inputData] is the input data for task. Valid value types are: int, bool, double, String and their list. It is not supported on iOS.
+  /// The [inputData] is the input data for task. Valid value types are: int, bool, double, String and their list.
   ///
   /// For iOS see Apple docs:
   /// [iOS 13+ Using background tasks to update your app](https://developer.apple.com/documentation/uikit/app_and_environment/scenes/preparing_your_ui_to_run_in_the_background/using_background_tasks_to_update_your_app/)
