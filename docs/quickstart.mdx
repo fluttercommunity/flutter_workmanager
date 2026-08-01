@@ -77,6 +77,10 @@ WorkmanagerPlugin.registerBGProcessingTask(
 )
 ```
 
+<Warning>
+**iOS Task Identifier Matching:** The task name in your Dart code must **exactly match** the identifier in Info.plist and AppDelegate. Using short names like `"data_sync"` in Dart while having `com.yourapp.processing_task` in native code will cause `BGTaskSchedulerErrorDomain Code 3` errors.
+</Warning>
+
 <Info>
 **Why BGTaskScheduler registration is needed:** iOS requires explicit registration of background task identifiers for security and system resource management. The task identifier in Info.plist tells iOS which background tasks your app can schedule, while the AppDelegate registration connects the identifier to the actual task handler. Background Fetch (Option A) doesn't require this since it uses the simpler, system-managed approach.
 </Info>
@@ -108,6 +112,10 @@ WorkmanagerPlugin.registerPeriodicTask(
 )
 ```
 
+<Warning>
+**iOS Task Identifier Matching:** The task name in your Dart code must **exactly match** the identifier in Info.plist and AppDelegate. Using short names like `"cleanup"` in Dart while having `com.yourapp.periodic_task` in native code will cause `BGTaskSchedulerErrorDomain Code 3` errors.
+</Warning>
+
 <Success>
 **Which option to choose?** 
 - **Option A (Background Fetch)** for non-critical updates that can happen once daily (data sync, content refresh)
@@ -124,10 +132,10 @@ WorkmanagerPlugin.registerPeriodicTask(
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     switch (task) {
-      case "data_sync":
+      case "com.yourapp.processing_task":  // Must match Info.plist and AppDelegate
         await syncDataWithServer();
         break;
-      case "cleanup": 
+      case "com.yourapp.periodic_task":  // Must match Info.plist and AppDelegate
         await cleanupOldFiles();
         break;
       case Workmanager.iOSBackgroundTask:
@@ -166,14 +174,14 @@ void main() {
 // Schedule a one-time task
 Workmanager().registerOneOffTask(
   "sync-task",
-  "data_sync",
+  "com.yourapp.processing_task",  // Must match Info.plist and AppDelegate
   initialDelay: Duration(seconds: 10),
 );
 
 // Schedule a periodic task
 Workmanager().registerPeriodicTask(
   "cleanup-task",
-  "cleanup",
+  "com.yourapp.periodic_task",  // Must match Info.plist and AppDelegate
   frequency: Duration(hours: 24),
 );
 ```
@@ -191,6 +199,7 @@ Your background tasks can return:
 
 - **Callback Dispatcher**: Must be a top-level function (not inside a class)
 - **Separate Isolate**: Background tasks run in isolation - initialize dependencies inside the task
+- **iOS Task Identifiers**: When using BGTaskScheduler (Options B & C), task names in Dart must exactly match identifiers in Info.plist and AppDelegate
 - **Platform Differences**: 
   - Android: Reliable background execution, 15-minute minimum frequency
   - iOS: 30-second limit, execution depends on user patterns and device state
