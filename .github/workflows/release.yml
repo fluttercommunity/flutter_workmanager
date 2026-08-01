@@ -48,7 +48,10 @@ jobs:
       - uses: bluefireteam/melos-action@v3
 
       - name: Analyze
-        run: melos exec -- "flutter analyze"
+        # Serialize to avoid concurrent `flutter` startup-lock contention
+        # across packages (observed as "Waiting for another flutter command..."
+        # errors in earlier gate runs).
+        run: melos exec -c 1 -- "flutter analyze"
 
       - name: Test
         run: melos run test

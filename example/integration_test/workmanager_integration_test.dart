@@ -1,5 +1,11 @@
+// Integration tests run under `flutter test integration_test`; flutter_test is
+// provided transitively by integration_test, so it is intentionally not listed
+// in dev_dependencies (listing it would pull this package into `melos run test`).
+// ignore_for_file: depend_on_referenced_packages
+
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -21,7 +27,7 @@ const int kMaxRetryAttempts = 1;
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
-    print(
+    debugPrint(
         'CallbackDispatcher called with task: $task and inputData: $inputData');
 
     if (task == retryTaskName) {
@@ -54,7 +60,7 @@ void callbackDispatcher() {
         } else if (value is Map) {
           await prefs.setString(key, value.toString());
         } else {
-          print('Unsupported data type for key $key: $value');
+          debugPrint('Unsupported data type for key $key: $value');
         }
       }
     }
@@ -126,11 +132,11 @@ void main() {
       fail('Input data was not transferred correctly to native side.');
     });
 
-    testWidgets('retry task should retry up to ${kMaxRetryAttempts} times',
+    testWidgets('retry task should retry up to $kMaxRetryAttempts times',
         (WidgetTester tester) async {
       await workmanager.initialize(callbackDispatcher);
 
-      final counterName = Uuid().v4().toString() + 'retryCounter';
+      final counterName = '${Uuid().v4()}retryCounter';
       final initialCount = 0;
 
       // Set initial count in shared preferences

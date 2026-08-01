@@ -49,42 +49,42 @@ void callbackDispatcher() {
     final prefs = await SharedPreferences.getInstance();
     await prefs.reload();
 
-    print("$task started. inputData = $inputData");
+    debugPrint("$task started. inputData = $inputData");
     await prefs.setString(task, 'Last ran at: ${DateTime.now().toString()}');
 
     switch (task) {
       case simpleTaskKey:
         await prefs.setBool("test", true);
-        print("Bool from prefs: ${prefs.getBool("test")}");
+        debugPrint("Bool from prefs: ${prefs.getBool("test")}");
         break;
       case rescheduledTaskKey:
         final key = inputData!['key']!;
         if (prefs.containsKey('unique-$key')) {
-          print('has been running before, task is successful');
+          debugPrint('has been running before, task is successful');
           return true;
         } else {
           await prefs.setBool('unique-$key', true);
-          print('reschedule task');
+          debugPrint('reschedule task');
           return false;
         }
       case failedTaskKey:
-        print('failed task');
+        debugPrint('failed task');
         return Future.error('failed');
       case simpleDelayedTask:
-        print("$simpleDelayedTask was executed");
+        debugPrint("$simpleDelayedTask was executed");
         break;
       case simplePeriodicTask:
-        print("$simplePeriodicTask was executed");
+        debugPrint("$simplePeriodicTask was executed");
         break;
       case simplePeriodic1HourTask:
-        print("$simplePeriodic1HourTask was executed");
+        debugPrint("$simplePeriodic1HourTask was executed");
         break;
       case iOSBackgroundAppRefresh:
         // To test, follow the instructions on https://developer.apple.com/documentation/backgroundtasks/starting_and_terminating_tasks_during_development
         // and https://github.com/fluttercommunity/flutter_workmanager/blob/main/IOS_SETUP.md
         Directory? tempDir = await getTemporaryDirectory();
         String? tempPath = tempDir.path;
-        print(
+        debugPrint(
             "You can access other plugins in the background, for example Directory.getTemporaryDirectory(): $tempPath");
         break;
       case iOSBackgroundProcessingTask:
@@ -93,11 +93,11 @@ void callbackDispatcher() {
         // Processing tasks are started by iOS only when phone is idle, hence
         // you need to manually trigger by following the docs and putting the App to background
         await Future<void>.delayed(Duration(seconds: 40));
-        print("$task finished");
+        debugPrint("$task finished");
         break;
       case periodicUpdatePolicyTask:
         final frequency = inputData?['frequency'] ?? 'unknown';
-        print(
+        debugPrint(
             "$periodicUpdatePolicyTask executed with frequency: $frequency minutes at ${DateTime.now()}");
         break;
       default:
@@ -105,14 +105,16 @@ void callbackDispatcher() {
     }
 
     // Return true to indicate that the task was successful
-    print("$task finished successfully");
+    debugPrint("$task finished successfully");
     return Future.value(true);
   });
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   @override
-  _MyAppState createState() => _MyAppState();
+  State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
@@ -143,6 +145,7 @@ class _MyAppState extends State<MyApp> {
                     if (Platform.isIOS) {
                       final status = await Permission.backgroundRefresh.status;
                       if (status != PermissionStatus.granted) {
+                        if (!context.mounted) return;
                         _showNoPermission(context, status);
                         return;
                       }
@@ -151,7 +154,7 @@ class _MyAppState extends State<MyApp> {
                       try {
                         await Workmanager().initialize(callbackDispatcher);
                       } catch (e) {
-                        print('Error initializing Workmanager: $e');
+                        debugPrint('Error initializing Workmanager: $e');
                         return;
                       }
                       setState(() => workmanagerInitialized = true);
@@ -224,7 +227,6 @@ class _MyAppState extends State<MyApp> {
                 //It will wait at least 10 seconds before its first launch
                 //Since we have not provided a frequency it will be the default 15 minutes
                 ElevatedButton(
-                  child: Text("Register Periodic Task (Android)"),
                   onPressed: Platform.isAndroid
                       ? () {
                           Workmanager().registerPeriodicTask(
@@ -234,11 +236,11 @@ class _MyAppState extends State<MyApp> {
                           );
                         }
                       : null,
+                  child: Text("Register Periodic Task (Android)"),
                 ),
                 //This task runs periodically
                 //It will run about every hour
                 ElevatedButton(
-                    child: Text("Register 1 hour Periodic Task (Android)"),
                     onPressed: Platform.isAndroid
                         ? () {
                             Workmanager().registerPeriodicTask(
@@ -248,7 +250,8 @@ class _MyAppState extends State<MyApp> {
                               frequency: Duration(hours: 1),
                             );
                           }
-                        : null),
+                        : null,
+                    child: Text("Register 1 hour Periodic Task (Android)")),
 
                 SizedBox(height: 16),
                 Text(
@@ -313,7 +316,6 @@ class _MyAppState extends State<MyApp> {
                 // Currently we cannot provide frequency for iOS, hence it will be
                 // minimum 15 minutes after which iOS will reschedule
                 ElevatedButton(
-                  child: Text('Register Periodic Background App Refresh (iOS)'),
                   onPressed: Platform.isIOS
                       ? () async {
                           if (!workmanagerInitialized) {
@@ -328,6 +330,7 @@ class _MyAppState extends State<MyApp> {
                           );
                         }
                       : null,
+                  child: Text('Register Periodic Background App Refresh (iOS)'),
                 ),
 
                 // This task runs only once, to perform a time consuming task at
@@ -336,7 +339,6 @@ class _MyAppState extends State<MyApp> {
                 // terminate any running background processing tasks when the
                 // user starts using the device.
                 ElevatedButton(
-                  child: Text('Register BackgroundProcessingTask (iOS)'),
                   onPressed: Platform.isIOS
                       ? () async {
                           if (!workmanagerInitialized) {
@@ -350,19 +352,20 @@ class _MyAppState extends State<MyApp> {
                           );
                         }
                       : null,
+                  child: Text('Register BackgroundProcessingTask (iOS)'),
                 ),
                 SizedBox(height: 16),
                 ElevatedButton(
-                    child: Text("isscheduled (Android)"),
                     onPressed: Platform.isAndroid
                         ? () async {
                             final workInfo =
                                 await Workmanager().isScheduledByUniqueName(
                               simplePeriodicTask,
                             );
-                            print('isscheduled = $workInfo');
+                            debugPrint('isscheduled = $workInfo');
                           }
-                        : null),
+                        : null,
+                    child: Text("isscheduled (Android)")),
                 SizedBox(height: 8),
                 Text(
                   "Task cancellation",
@@ -372,13 +375,13 @@ class _MyAppState extends State<MyApp> {
                   child: Text("Cancel All"),
                   onPressed: () async {
                     await Workmanager().cancelAll();
-                    print('Cancel all tasks completed');
+                    debugPrint('Cancel all tasks completed');
                   },
                 ),
                 SizedBox(height: 15),
                 ElevatedButton(
-                  child: Text('Refresh stats'),
                   onPressed: _refreshStats,
+                  child: Text('Refresh stats'),
                 ),
                 SizedBox(height: 10),
                 SingleChildScrollView(
