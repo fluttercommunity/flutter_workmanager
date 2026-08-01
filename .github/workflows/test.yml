@@ -42,8 +42,11 @@ jobs:
           flutter pub get
       - name: Build iOS App
         run: cd example && flutter build ios --debug --no-codesign --verbose
+      - name: Resolve latest iOS simulator
+        id: sim
+        uses: ./.github/actions/resolve-ios-simulator
       - name: Run native iOS tests
-        run: cd example/ios && xcodebuild -workspace Runner.xcworkspace -scheme Runner -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' test
+        run: cd example/ios && xcodebuild -workspace Runner.xcworkspace -scheme Runner -sdk iphonesimulator -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.udid }}" test
 
   native_android_tests:
     runs-on: ubuntu-latest
@@ -65,11 +68,6 @@ jobs:
         run: cd example/android && ./gradlew :workmanager_android:test
 
   drive_ios:
-    strategy:
-      matrix:
-        device:
-          - "iPhone 16 Pro"
-      fail-fast: false
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v7
@@ -77,9 +75,13 @@ jobs:
         with:
           channel: 'stable'
           cache: true
-      - uses: futureware-tech/simulator-action@v3
-        with:
-          model: '${{ matrix.device }}'
+      - name: Resolve latest iOS simulator
+        id: sim
+        uses: ./.github/actions/resolve-ios-simulator
+      - name: Boot iOS simulator
+        run: |
+          xcrun simctl boot "${{ steps.sim.outputs.udid }}" 2>/dev/null || true
+          xcrun simctl bootstatus "${{ steps.sim.outputs.udid }}" -b
       - uses: bluefireteam/melos-action@v3
       # Run flutter integrate tests
       - name: Run Flutter integration tests
