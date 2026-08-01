@@ -1,3 +1,4 @@
 excluded:
   - "**/*.g.swift"
   - "**/pigeon/*.swift"
+  - "**/GeneratedPluginRegistrant.swift"

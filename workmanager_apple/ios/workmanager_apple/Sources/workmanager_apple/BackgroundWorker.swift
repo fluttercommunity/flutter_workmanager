@@ -15,6 +15,15 @@ import FlutterMacOS
 #error("Unsupported platform.")
 #endif
 
+/// Cross-platform alias for the closure that registers plugins on a Flutter
+/// engine. iOS exposes `FlutterPluginRegistrantCallback`; macOS does not, so we
+/// use an equivalent closure over `FlutterPluginRegistry`.
+#if os(iOS)
+typealias WMPFlutterPluginRegistrantCallback = FlutterPluginRegistrantCallback
+#elseif os(macOS)
+typealias WMPFlutterPluginRegistrantCallback = (FlutterPluginRegistry) -> Void
+#endif
+
 enum BackgroundMode {
     case backgroundFetch
     case backgroundProcessingTask(identifier: String)
@@ -48,15 +57,35 @@ enum BackgroundMode {
     }
 }
 
+/// Platform-neutral result of a background request execution.
+///
+/// iOS maps these to `UIBackgroundFetchResult` at the call site; macOS uses
+/// them directly with `NSBackgroundActivityScheduler`.
+enum BackgroundRequestResult {
+    case newData
+    case failed
+}
+
+extension BackgroundRequestResult: CustomDebugStringConvertible {
+    var debugDescription: String {
+        switch self {
+        case .newData:
+            return "newData"
+        case .failed:
+            return "failed"
+        }
+    }
+}
+
 class BackgroundWorker {
 
     let backgroundMode: BackgroundMode
-    let flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?
+    let flutterPluginRegistrantCallback: WMPFlutterPluginRegistrantCallback?
     let inputData: [String: Any]?
 
     init(
         mode: BackgroundMode, inputData: [String: Any]?,
-        flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?
+        flutterPluginRegistrantCallback: WMPFlutterPluginRegistrantCallback?
     ) {
         backgroundMode = mode
         self.inputData = inputData
@@ -71,25 +100,21 @@ class BackgroundWorker {
 
     /// The result is discardable due to how [BackgroundTaskOperation] works.
     @discardableResult
-    func performBackgroundRequest(_ completionHandler: @escaping (UIBackgroundFetchResult) -> Void)
+    func performBackgroundRequest(_ completionHandler: @escaping (BackgroundRequestResult) -> Void)
         -> Bool {
-        guard let callbackHandle = UserDefaultsHelper.getStoredCallbackHandle(),
-            let flutterCallbackInformation = FlutterCallbackCache.lookupCallbackInformation(
-                callbackHandle)
-        else {
+        guard let resolved = resolveBackgroundEntrypoint() else {
             logError("[\(String(describing: self))] \(WMPError.workmanagerNotInitialized.message)")
             completionHandler(.failed)
             return false
         }
 
         let taskSessionStart = Date()
-        let taskSessionIdentifier = UUID()
 
         let taskInfo = TaskDebugInfo(
             taskName: "background_fetch",
             startTime: taskSessionStart.timeIntervalSince1970,
-            callbackHandle: callbackHandle,
-            callbackInfo: flutterCallbackInformation.callbackName
+            callbackHandle: resolved.handle,
+            callbackInfo: resolved.entrypoint.name
         )
 
         WorkmanagerDebug.onTaskStatusUpdate(taskInfo: taskInfo, status: .started)
@@ -100,16 +125,24 @@ class BackgroundWorker {
             allowHeadlessExecution: true
         )
 
+#if os(iOS)
         flutterEngine!.run(
-            withEntrypoint: flutterCallbackInformation.callbackName,
-            libraryURI: flutterCallbackInformation.callbackLibraryPath
+            withEntrypoint: resolved.entrypoint.name,
+            libraryURI: resolved.entrypoint.libraryURI!
         )
+#elseif os(macOS)
+        flutterEngine!.run(withEntrypoint: resolved.entrypoint.name)
+#endif
         flutterPluginRegistrantCallback?(flutterEngine!)
 
         var flutterApi: WorkmanagerFlutterApi? = WorkmanagerFlutterApi(binaryMessenger: flutterEngine!.binaryMessenger)
 
         func cleanupFlutterResources() {
+#if os(iOS)
             flutterEngine?.destroyContext()
+#elseif os(macOS)
+            flutterEngine?.shutDownEngine()
+#endif
             flutterApi = nil
             flutterEngine = nil
         }
@@ -132,7 +165,7 @@ class BackgroundWorker {
                     cleanupFlutterResources()
                     let taskSessionCompleter = Date()
 
-                    let fetchResult: UIBackgroundFetchResult
+                    let fetchResult: BackgroundRequestResult
                     let status: TaskStatus
                     let errorMessage: String?
 
@@ -169,10 +202,47 @@ class BackgroundWorker {
             case .failure(let error):
                 logError("Background channel initialization failed: \(error)")
                 cleanupFlutterResources()
-                completionHandler(UIBackgroundFetchResult.failed)
+                completionHandler(.failed)
             }
         }
 
         return true
+    }
+
+    /// Entrypoint information used to start the background engine.
+    private struct BackgroundEntrypoint {
+        let name: String
+        let libraryURI: String?
+    }
+
+    /// Resolves the stored callback handle and the engine entrypoint.
+    ///
+    /// iOS looks the callback up by handle via FlutterCallbackCache. macOS has
+    /// no equivalent API: the dispatcher must be a top-level function named
+    /// `callbackDispatcher` in the app's main library.
+    private func resolveBackgroundEntrypoint() -> (handle: Int64, entrypoint: BackgroundEntrypoint)? {
+#if os(iOS)
+        guard let callbackHandle = UserDefaultsHelper.getStoredCallbackHandle(),
+            let callbackInformation = FlutterCallbackCache.lookupCallbackInformation(
+                callbackHandle)
+        else {
+            return nil
+        }
+        return (
+            callbackHandle,
+            BackgroundEntrypoint(
+                name: callbackInformation.callbackName,
+                libraryURI: callbackInformation.callbackLibraryPath
+            )
+        )
+#elseif os(macOS)
+        guard let callbackHandle = UserDefaultsHelper.getStoredCallbackHandle() else {
+            return nil
+        }
+        return (
+            callbackHandle,
+            BackgroundEntrypoint(name: "callbackDispatcher", libraryURI: nil)
+        )
+#endif
     }
 }

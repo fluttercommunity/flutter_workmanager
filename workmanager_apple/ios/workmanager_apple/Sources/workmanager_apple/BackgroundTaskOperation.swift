@@ -18,13 +18,13 @@ import FlutterMacOS
 class BackgroundTaskOperation: Operation, @unchecked Sendable {
 
     private let identifier: String
-    private let flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?
+    private let flutterPluginRegistrantCallback: WMPFlutterPluginRegistrantCallback?
     private let inputData: [String: Any]?
     private let backgroundMode: BackgroundMode
 
     init(_ identifier: String,
          inputData: [String: Any]?,
-         flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?,
+         flutterPluginRegistrantCallback: WMPFlutterPluginRegistrantCallback?,
          backgroundMode: BackgroundMode) {
         self.identifier = identifier
         self.inputData = inputData

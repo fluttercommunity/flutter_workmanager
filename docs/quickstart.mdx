@@ -123,6 +123,42 @@ WorkmanagerPlugin.registerPeriodicTask(
 - **Option C (Periodic Tasks)** for regular tasks with custom frequency control (15+ minutes)
 </Success>
 
+### macOS
+
+macOS uses `NSBackgroundActivityScheduler` (the macOS equivalent of
+BGTaskScheduler). No Info.plist keys or AppDelegate registration are needed to
+schedule tasks — scheduling happens directly from Dart.
+
+1. **Wire the plugin registrant callback** in your macOS `AppDelegate.swift` so
+   other plugins are available in the background engine:
+
+```swift
+import Cocoa
+import FlutterMacOS
+import workmanager_apple
+
+@main
+class AppDelegate: FlutterAppDelegate {
+  override func applicationDidFinishLaunching(_ notification: Notification) {
+    WorkmanagerPlugin.setPluginRegistrantCallback { registry in
+      RegisterGeneratedPlugins(registry: registry)
+    }
+    super.applicationDidFinishLaunching(notification)
+  }
+}
+```
+
+2. **Name your dispatcher `callbackDispatcher`** — see the Basic Usage section
+   below. On macOS the function must be a top-level function in your app's main
+   library (e.g. `main.dart`) with that exact name.
+
+<Warning>
+**macOS limitations:** Tasks only run while the app is running or backgrounded
+and the Mac is awake. They do **not** run after the app is quit. Timing is
+best-effort — the system may defer activities while the Mac is busy, and
+network/charging constraints are not supported.
+</Warning>
+
 ## Basic Usage
 
 ### 1. Create Background Task Handler

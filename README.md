@@ -7,7 +7,7 @@
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/fluttercommunity/flutter_workmanager/test.yml?branch=main&label=tests)](https://github.com/fluttercommunity/flutter_workmanager/actions)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/fluttercommunity/flutter_workmanager/blob/main/LICENSE)
 
-Execute Dart code in the background, even when your app is closed. Perfect for data sync, file uploads, and periodic maintenance tasks.
+Execute Dart code in the background, even when your app is closed (Android and iOS). On macOS, background tasks run while the app is running or backgrounded and the Mac is awake. Perfect for data sync, file uploads, and periodic maintenance tasks.
 
 ## 📖 Documentation
 

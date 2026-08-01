@@ -33,3 +33,5 @@ flutter:
         default_package: workmanager_android
       ios:
         default_package: workmanager_apple
+      macos:
+        default_package: workmanager_apple

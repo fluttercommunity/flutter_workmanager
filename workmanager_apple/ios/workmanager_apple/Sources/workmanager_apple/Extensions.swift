@@ -6,6 +6,8 @@
 //
 
 import Foundation
+
+#if os(iOS)
 import UIKit
 
 extension UIBackgroundFetchResult: CustomDebugStringConvertible {
@@ -22,6 +24,7 @@ extension UIBackgroundFetchResult: CustomDebugStringConvertible {
         }
     }
 }
+#endif
 
 internal extension Date {
     func formatted() -> String {

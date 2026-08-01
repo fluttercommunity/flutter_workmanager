@@ -18,30 +18,30 @@ Execute Dart code in the background, even when your app is closed. Perfect for d
 |----------|---------|--------|
 | Android | ✅ Full | All WorkManager features supported |
 | iOS | ✅ Full | Background Fetch + BGTaskScheduler APIs |
-| macOS | 🚧 Planned | Future support through NSBackgroundActivityScheduler |
+| macOS | ⚠️ Partial | One-off + periodic tasks via NSBackgroundActivityScheduler while the app is running (not after quit) |
 | Web | ❌ Not supported | Background execution not available |
 | Windows/Linux | ❌ Not supported | No background task APIs |
 
 ## Platform Capability Matrix
 
-Not every feature behaves the same on Android and iOS. The table below
-summarizes what works where, so you can design your tasks around the
-capabilities of each platform.
+Not every feature behaves the same across platforms. The table below summarizes
+what works where, so you can design your tasks around the capabilities of each
+platform.
 
-| Feature | Android | iOS |
-|---|---|---|
-| One-off tasks (`registerOneOffTask`) | ✅ Scheduled by the OS; survives app restarts | ⚠️ Runs via `beginBackgroundTask` while the app is alive (foreground or shortly after backgrounding). Not guaranteed after the app is terminated |
-| Periodic tasks (`registerPeriodicTask`) | ✅ Reliable, 15-minute minimum frequency | ⚠️ Best-effort. iOS decides when (and whether) background fetch runs, based on app usage; 15-minute minimum hint |
-| Processing tasks (`registerProcessingTask`) | ❌ Not supported | ✅ BGProcessingTask (longer work, requires registration in AppDelegate) |
-| `initialDelay` | ✅ Honored for one-off tasks. For periodic tasks it is best-effort (see below) | ⚠️ One-off: honored while the app stays alive. Periodic: used as the earliest-begin hint for BGTaskScheduler |
-| `inputData` | ✅ All supported types | ✅ Supported for one-off and periodic tasks |
-| `taskName` in callback | ✅ The value you passed as `taskName` | ✅ One-off tasks receive the `taskName` you passed. Periodic/processing tasks receive the BGTaskScheduler identifier (the `uniqueName` you registered) |
-| `frequency` | ✅ Configured from Dart | ❌ Configured in `AppDelegate.swift` via `registerPeriodicTask(withIdentifier:frequency:)` |
-| Constraints (network, charging, battery) | ✅ Supported | ❌ iOS applies its own system-level constraints |
-| `cancelByUniqueName` / `cancelAll` | ✅ | ✅ Only cancels BGTaskScheduler requests (periodic/processing) |
-| `cancelByTag` | ✅ | ❌ Not supported (no-op) |
-| Task execution after app is killed | ✅ Yes (one-off/periodic) | ❌ No — iOS does not run tasks after the app is terminated |
-| Minimum run time budget | No hard limit, but WorkManager may defer work | ~30 seconds per task execution |
+| Feature | Android | iOS | macOS |
+|---|---|---|---|
+| One-off tasks (`registerOneOffTask`) | ✅ Scheduled by the OS; survives app restarts | ⚠️ Runs via `beginBackgroundTask` while the app is alive (foreground or shortly after backgrounding). Not guaranteed after the app is terminated | ⚠️ Runs via `NSBackgroundActivityScheduler` while the app is running/backgrounded and the Mac is awake. Tasks with no `initialDelay` run immediately; delayed tasks are best-effort |
+| Periodic tasks (`registerPeriodicTask`) | ✅ Reliable, 15-minute minimum frequency | ⚠️ Best-effort. iOS decides when (and whether) background fetch runs, based on app usage; 15-minute minimum hint | ⚠️ Best-effort. `NSBackgroundActivityScheduler` decides timing; the Dart `frequency` is the interval hint |
+| Processing tasks (`registerProcessingTask`) | ❌ Not supported | ✅ BGProcessingTask (longer work, requires registration in AppDelegate) | ⚠️ Mapped to a one-off `NSBackgroundActivityScheduler` activity; network/charging constraints are ignored |
+| `initialDelay` | ✅ Honored for one-off tasks. For periodic tasks it is best-effort (see below) | ⚠️ One-off: honored while the app stays alive. Periodic: used as the earliest-begin hint for BGTaskScheduler | ⚠️ Best-effort via the activity interval (0 = run as soon as possible); the system may defer the run |
+| `inputData` | ✅ All supported types | ✅ Supported for one-off and periodic tasks | ✅ Supported for one-off and periodic tasks (captured at schedule time) |
+| `taskName` in callback | ✅ The value you passed as `taskName` | ✅ One-off tasks receive the `taskName` you passed. Periodic/processing tasks receive the BGTaskScheduler identifier (the `uniqueName` you registered) | ✅ Tasks receive the activity identifier (the `uniqueName` you registered) |
+| `frequency` | ✅ Configured from Dart | ❌ Configured in `AppDelegate.swift` via `registerPeriodicTask(withIdentifier:frequency:)` | ✅ Configured from Dart (interval hint) |
+| Constraints (network, charging, battery) | ✅ Supported | ❌ iOS applies its own system-level constraints | ❌ Not supported (ignored) |
+| `cancelByUniqueName` / `cancelAll` | ✅ | ✅ Only cancels BGTaskScheduler requests (periodic/processing) | ✅ Invalidates scheduled activities |
+| `cancelByTag` | ✅ | ❌ Not supported (no-op) | ❌ Not supported (no-op) |
+| Task execution after app is killed | ✅ Yes (one-off/periodic) | ❌ No — iOS does not run tasks after the app is terminated | ❌ No — the app process must be alive |
+| Minimum run time budget | No hard limit, but WorkManager may defer work | ~30 seconds per task execution | No hard budget; the system may defer activities while the Mac is busy |
 
 <Warning>
 **Periodic `initialDelay` on Android:** WorkManager treats the initial delay of a
@@ -59,6 +59,13 @@ case the task does not run. For work that must run later regardless, use a
 processing task.
 </Warning>
 
+<Warning>
+**macOS `callbackDispatcher` naming:** macOS cannot look up the dispatcher by
+handle (there is no `FlutterCallbackCache` on macOS), so the callback function
+must be a top-level function named exactly `callbackDispatcher` in your app's
+main library (e.g. `main.dart`).
+</Warning>
+
 ## Common Use Cases
 
 | Use Case | Description |
@@ -74,7 +81,7 @@ processing task.
 This plugin uses a **federated architecture**:
 - `workmanager` - Main package that provides the unified API
 - `workmanager_android` - Android implementation using WorkManager
-- `workmanager_apple` - iOS/macOS implementation using BGTaskScheduler
+- `workmanager_apple` - iOS implementation using BGTaskScheduler + macOS implementation using NSBackgroundActivityScheduler
 - `workmanager_platform_interface` - Shared interface for platform implementations
 
 All packages are automatically included when you add `workmanager` to pubspec.yaml.

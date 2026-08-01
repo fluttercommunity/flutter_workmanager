@@ -7,7 +7,7 @@
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/fluttercommunity/flutter_workmanager/test.yml?branch=main&label=tests)](https://github.com/fluttercommunity/flutter_workmanager/actions)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/fluttercommunity/flutter_workmanager/blob/main/LICENSE)
 
-Execute Dart code in the background, even when your app is closed. A Flutter wrapper around [Android's WorkManager](https://developer.android.com/topic/libraries/architecture/workmanager) and [iOS Background Tasks](https://developer.apple.com/documentation/backgroundtasks).
+Execute Dart code in the background, even when your app is closed. A Flutter wrapper around [Android's WorkManager](https://developer.android.com/topic/libraries/architecture/workmanager), [iOS Background Tasks](https://developer.apple.com/documentation/backgroundtasks), and macOS `NSBackgroundActivityScheduler` (tasks run while the app is running/backgrounded; not after quit).
 
 ## 📖 Documentation
 
@@ -51,7 +51,7 @@ This plugin uses a federated architecture with platform-specific implementations
 
 - **workmanager**: Main package providing the unified API
 - **workmanager_android**: Android implementation using WorkManager
-- **workmanager_apple**: iOS/macOS implementation using Background Tasks
+- **workmanager_apple**: iOS implementation using BGTaskScheduler + macOS implementation using NSBackgroundActivityScheduler
 
 ## 🐛 Support & Issues
 

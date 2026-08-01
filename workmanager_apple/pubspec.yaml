@@ -26,3 +26,5 @@ flutter:
     platforms:
       ios:
         pluginClass: WorkmanagerPlugin
+      macos:
+        pluginClass: WorkmanagerPlugin

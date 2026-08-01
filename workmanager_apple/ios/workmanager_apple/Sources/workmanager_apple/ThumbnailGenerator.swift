@@ -1,3 +1,4 @@
+#if os(iOS)
 //
 //  ThumbnailGenerator.swift
 //  workmanager
@@ -101,3 +102,4 @@ private extension UIImage {
     }
 
 }
+#endif

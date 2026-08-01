@@ -1,0 +1,1 @@
+../../../../ios/workmanager_apple/Sources/workmanager_apple/MacOSActivityScheduler.swift
