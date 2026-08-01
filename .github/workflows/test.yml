@@ -69,6 +69,7 @@ jobs:
 
   drive_ios:
     runs-on: macos-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
       - uses: subosito/flutter-action@v2
@@ -78,13 +79,13 @@ jobs:
       - name: Resolve latest iOS simulator
         id: sim
         uses: ./.github/actions/resolve-ios-simulator
-      - name: Boot iOS simulator
-        run: |
-          xcrun simctl boot "${{ steps.sim.outputs.udid }}" 2>/dev/null || true
-          xcrun simctl bootstatus "${{ steps.sim.outputs.udid }}" -b
+      - uses: futureware-tech/simulator-action@v3
+        with:
+          model: '${{ steps.sim.outputs.model }}'
       - uses: bluefireteam/melos-action@v3
       # Run flutter integrate tests
       - name: Run Flutter integration tests
+        timeout-minutes: 30
         run: cd example && flutter test integration_test/workmanager_integration_test.dart
 
 
