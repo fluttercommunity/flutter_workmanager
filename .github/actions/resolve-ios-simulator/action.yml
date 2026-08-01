@@ -1,0 +1,31 @@
+name: Resolve latest iOS simulator
+description: >-
+  Finds the newest available iPhone simulator on the runner and exposes its
+  UDID. Runner images only ship recent device models, so never hardcode a
+  specific simulator.
+outputs:
+  udid:
+    description: UDID of the newest available iPhone simulator
+    value: ${{ steps.resolve.outputs.udid }}
+  model:
+    description: Name of the selected simulator model
+    value: ${{ steps.resolve.outputs.model }}
+runs:
+  using: composite
+  steps:
+    - id: resolve
+      shell: bash
+      run: |
+        for MODEL in "iPhone 17 Pro Max" "iPhone 17 Pro" "iPhone 17" "iPhone Air" "iPhone 16 Pro Max" "iPhone 16 Pro" "iPhone 16"; do
+          UDID=$(xcrun simctl list devices available -j | jq -r --arg m "$MODEL" '[.devices[][] | select(.name == $m)][0].udid // empty')
+          if [ -n "$UDID" ]; then
+            echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+            echo "model=$MODEL" >> "$GITHUB_OUTPUT"
+            echo "Picked $MODEL ($UDID)"
+            break
+          fi
+        done
+        if [ -z "${UDID:-}" ]; then
+          echo "::error::No iPhone simulator available on this runner"
+          exit 1
+        fi

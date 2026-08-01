@@ -8,10 +8,11 @@ jobs:
       matrix:
         package: [workmanager, workmanager_platform_interface, workmanager_android, workmanager_apple]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: subosito/flutter-action@v2
         with:
           channel: "stable"
+          fvm: true
           cache: true
       - uses: bluefireteam/melos-action@v3
 
