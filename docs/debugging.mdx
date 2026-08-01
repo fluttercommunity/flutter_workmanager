@@ -69,7 +69,10 @@ class AppDelegate: FlutterAppDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
+        GeneratedPluginRegistrant.register(with: self)
+        
         WorkmanagerDebug.setCurrent(LoggingDebugHandler())
+        
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
 }
@@ -77,11 +80,49 @@ class AppDelegate: FlutterAppDelegate {
 
 ### Notification Debug Handler
 
-Shows debug information as notifications:
+Shows debug information as notifications (helpful for seeing background task execution):
 
 ```swift
-WorkmanagerDebug.setCurrent(NotificationDebugHandler())
+// In your AppDelegate.swift
+import workmanager_apple
+
+@main
+class AppDelegate: FlutterAppDelegate {
+    override func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+    ) -> Bool {
+        GeneratedPluginRegistrant.register(with: self)
+        
+        // Set notification delegate first
+        UNUserNotificationCenter.current().delegate = self
+        
+        // Request notification permission
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
+            if granted {
+                print("Notification permission granted")
+            }
+        }
+        
+        // Enable notification debug handler
+        WorkmanagerDebug.setCurrent(NotificationDebugHandler())
+        
+        return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+    }
+    
+    // REQUIRED: Override to show notifications when app is in foreground
+    override func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+            completionHandler(.alert)  // Show notification banner even if app is in foreground
+    }
+}
 ```
+
+<Warning>
+**Important:** The `userNotificationCenter` override is required to display debug notifications when your app is in the foreground. Without it, you'll only see notifications when the app is in the background.
+</Warning>
 
 ## Custom Debug Handlers
 
