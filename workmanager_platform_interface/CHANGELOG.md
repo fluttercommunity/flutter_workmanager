@@ -1,3 +1,7 @@
+## 0.9.2
+
+ - **FEAT**: add Swift Package Manager support for iOS (#683).
+
 ## 0.9.1+1
 
  - **FIX**: Android initialization bug and iOS 14 availability annotations (#647).

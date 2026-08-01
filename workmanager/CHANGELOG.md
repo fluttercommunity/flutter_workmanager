@@ -1,3 +1,7 @@
+## 0.9.0+4
+
+ - **FIX**(ios): pass taskName to callback and honor initialDelay for one-off tasks (#687).
+
 ## 0.9.0+3
 
  - Update a dependency to the latest release.

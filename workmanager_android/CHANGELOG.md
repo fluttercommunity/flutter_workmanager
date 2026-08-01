@@ -1,3 +1,9 @@
+## 0.9.0+3
+
+ - **FIX**: remove kotlin-android since AGP 9 supports it https://github.com/fluttercommunity/flutter_workmanager/issues/667 (#682).
+ - **FIX**: Failed host lookup, by bumping androidx.work:work-runtime to 2.11.2 and Android minSdkVersion to 23 (#679).
+ - **FIX**: NullPointerException by replacing companion FlutterLoader with FlutterInjector singleton (#678).
+
 ## 0.9.0+2
 
  - **FIX**: Android initialization bug and iOS 14 availability annotations (#647).

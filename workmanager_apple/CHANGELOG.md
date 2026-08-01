@@ -1,3 +1,9 @@
+## 0.9.2
+
+ - **FIX**(ios): pass taskName to callback and honor initialDelay for one-off tasks (#687).
+ - **FIX**(ios): pass inputData to periodic background tasks (#648).
+ - **FEAT**: add Swift Package Manager support for iOS (#683).
+
 ## 0.9.1+2
 
  - **FIX**: Android initialization bug and iOS 14 availability annotations (#647).
