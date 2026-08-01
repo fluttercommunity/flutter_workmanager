@@ -40,7 +40,14 @@ struct UserDefaultsHelper {
     // MARK: periodicTaskInputData
 
     static func storePeriodicTaskInputData(_ inputData: [String: Any]?, forTaskIdentifier taskIdentifier: String) {
-        store(inputData, key: .periodicTaskInputData(taskIdentifier: taskIdentifier))
+        let key = Key.periodicTaskInputData(taskIdentifier: taskIdentifier)
+        if let inputData = inputData {
+            store(inputData, key: key)
+        } else {
+            // Storing nil crashes UserDefaults (NSInvalidArgumentException),
+            // and re-registering without inputData should drop stale data.
+            userDefaults.removeObject(forKey: key.stringValue)
+        }
     }
 
     static func getStoredPeriodicTaskInputData(forTaskIdentifier taskIdentifier: String) -> [String: Any]? {
