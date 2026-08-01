@@ -1,3 +1,8 @@
+## 0.9.1
+
+ - **FEAT**: support typed Lists/Maps in inputData (fixes #426) (#690).
+ - **FEAT**: macOS support via NSBackgroundActivityScheduler (fixes #424) (#689).
+
 ## 0.9.0+4
 
  - **FIX**(ios): pass taskName to callback and honor initialDelay for one-off tasks (#687).
