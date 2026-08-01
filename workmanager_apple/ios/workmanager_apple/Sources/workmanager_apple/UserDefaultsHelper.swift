@@ -15,9 +15,15 @@ struct UserDefaultsHelper {
 
     enum Key {
         case callbackHandle
+        case periodicTaskInputData(taskIdentifier: String)
 
         var stringValue: String {
-            return "\(WorkmanagerPlugin.identifier).\(self)"
+            switch self {
+            case .callbackHandle:
+                return "\(WorkmanagerPlugin.identifier).callbackHandle"
+            case .periodicTaskInputData(let taskIdentifier):
+                return "\(WorkmanagerPlugin.identifier).periodicTaskInputData.\(taskIdentifier)"
+            }
         }
     }
 
@@ -29,6 +35,23 @@ struct UserDefaultsHelper {
 
     static func getStoredCallbackHandle() -> Int64? {
         return getValue(for: .callbackHandle)
+    }
+
+    // MARK: periodicTaskInputData
+
+    static func storePeriodicTaskInputData(_ inputData: [String: Any]?, forTaskIdentifier taskIdentifier: String) {
+        let key = Key.periodicTaskInputData(taskIdentifier: taskIdentifier)
+        if let inputData = inputData {
+            store(inputData, key: key)
+        } else {
+            // Storing nil crashes UserDefaults (NSInvalidArgumentException),
+            // and re-registering without inputData should drop stale data.
+            userDefaults.removeObject(forKey: key.stringValue)
+        }
+    }
+
+    static func getStoredPeriodicTaskInputData(forTaskIdentifier taskIdentifier: String) -> [String: Any]? {
+        return getValue(for: .periodicTaskInputData(taskIdentifier: taskIdentifier))
     }
 
     // MARK: Private helper functions

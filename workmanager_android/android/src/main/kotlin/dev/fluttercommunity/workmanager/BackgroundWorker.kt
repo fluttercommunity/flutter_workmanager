@@ -9,11 +9,12 @@ import androidx.work.WorkerParameters
 import com.google.common.util.concurrent.ListenableFuture
 import dev.fluttercommunity.workmanager.pigeon.TaskStatus
 import dev.fluttercommunity.workmanager.pigeon.WorkmanagerFlutterApi
+import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.embedding.engine.loader.FlutterLoader
 import io.flutter.view.FlutterCallbackInformation
-import java.util.Random
+import java.security.SecureRandom
 
 /**
  * A simple worker that posts your input back to your Flutter application.
@@ -29,8 +30,6 @@ class BackgroundWorker(
     companion object {
         const val PAYLOAD_KEY = "dev.fluttercommunity.workmanager.INPUT_DATA"
         const val DART_TASK_KEY = "dev.fluttercommunity.workmanager.DART_TASK"
-
-        private val flutterLoader = FlutterLoader()
     }
 
     private val payload
@@ -49,7 +48,7 @@ class BackgroundWorker(
         get() = workerParams.inputData.getString(DART_TASK_KEY)
 
     private val runAttemptCount = workerParams.runAttemptCount
-    private val randomThreadIdentifier = Random().nextInt()
+    private val randomThreadIdentifier = SecureRandom().nextInt()
     private var engine: FlutterEngine? = null
 
     private var startTime: Long = 0
@@ -65,7 +64,7 @@ class BackgroundWorker(
     override fun startWork(): ListenableFuture<Result> {
         startTime = System.currentTimeMillis()
 
-        engine = FlutterEngine(applicationContext)
+        val flutterLoader: FlutterLoader = FlutterInjector.instance().flutterLoader()
 
         if (!flutterLoader.initialized()) {
             flutterLoader.startInitialization(applicationContext)
@@ -76,6 +75,7 @@ class BackgroundWorker(
             null,
             Handler(Looper.getMainLooper()),
         ) {
+            engine = FlutterEngine(applicationContext)
             val callbackHandle = SharedPreferenceHelper.getCallbackHandle(applicationContext)
             val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle)
 

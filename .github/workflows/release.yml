@@ -1,0 +1,141 @@
+name: release
+
+# Automatic release pipeline.
+#
+# Every push to `main` runs melos version + publish + GitHub release when any
+# publishable package actually changed (melos no-ops otherwise). No manual
+# release pushes required.
+#
+# The whole workflow is dormant until the repository variable RELEASE_ENABLED
+# is set to 'true' (repo Settings -> Secrets and variables -> Actions, or
+# `gh variable set RELEASE_ENABLED true`). This must be done AFTER the pub.dev
+# trusted publishers are configured, so the first enabled merge publishes.
+#
+# Prerequisites (one-time, see MAINTENANCE_PLAN.md):
+#   1. All CI checks green on main (especially `generated-files` and `format_kotlin`).
+#   2. pub.dev "Trusted publisher" configured for all four packages
+#      (repository: fluttercommunity/flutter_workmanager, workflow: release.yml).
+#      The id-token: write permission below lets `dart pub publish` exchange an
+#      OIDC token automatically. Fallback: store a pub.dev token in a PUB_TOKEN secret.
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  gate:
+    name: Quality gate
+    runs-on: ubuntu-latest
+    # Do not re-run on the release commit itself (avoids the push-to-main loop).
+    if: "vars.RELEASE_ENABLED == 'true' && (github.event_name == 'workflow_dispatch' || !startsWith(github.event.head_commit.message, 'chore(release): publish packages'))"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          fvm: true
+          cache: true
+      - uses: bluefireteam/melos-action@v3
+
+      - name: Analyze
+        run: melos exec -- "flutter analyze"
+
+      - name: Test
+        run: melos run test
+
+      - name: Generated files up-to-date
+        run: |
+          melos run generate
+          if ! git diff --quiet; then
+            echo "::error::Generated files are not up to date. Run 'melos run generate' and commit the result."
+            git diff --name-only
+            exit 1
+          fi
+
+      - name: Publish dry-run
+        run: melos publish --dry-run
+
+  release:
+    name: Version, publish, tag and release
+    runs-on: ubuntu-latest
+    needs: gate
+    timeout-minutes: 45
+    if: "vars.RELEASE_ENABLED == 'true' && (github.event_name == 'workflow_dispatch' || !startsWith(github.event.head_commit.message, 'chore(release): publish packages'))"
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          fvm: true
+          cache: true
+
+      - name: Activate melos
+        run: dart pub global activate melos
+
+      - name: Bootstrap
+        run: melos bootstrap
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump versions and write changelogs
+        run: melos version --yes
+
+      - name: Detect changes
+        id: detect
+        run: |
+          if [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" ] && git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No package changes; nothing to release."
+          else
+            VERSION="$(sed -n 's/^version: //p' workmanager/pubspec.yaml)"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "RELEASE_VERSION=$VERSION" >> "$GITHUB_ENV"
+            echo "RELEASE_TAG=v$VERSION" >> "$GITHUB_ENV"
+            echo "Releasing v$VERSION"
+          fi
+
+      - name: Push version commit and tags
+        if: steps.detect.outputs.changed == 'true'
+        run: |
+          # melos creates per-package annotated tags (workmanager-v0.9.0+3, ...);
+          # --follow-tags pushes them. The aggregate lightweight v<version> tag
+          # (repo convention) is pushed explicitly.
+          git push origin main --follow-tags
+          git push origin "$RELEASE_TAG"
+
+      - name: Publish to pub.dev
+        if: steps.detect.outputs.changed == 'true'
+        run: melos publish --yes
+        # Publishes in dependency order (platform_interface -> android/apple -> workmanager).
+        # Uses pub.dev trusted publisher OIDC (id-token: write above).
+        # Recovery on partial failure: delete the just-published version on pub.dev
+        # (allowed within 60 minutes) and re-run this workflow via workflow_dispatch
+        # after pushing an empty commit, or finish manually with `melos publish`.
+
+      - name: Extract release notes
+        if: steps.detect.outputs.changed == 'true'
+        run: |
+          # Top section of the melos workspace changelog for this release.
+          awk 'BEGIN{n=0} /^## /{n++} n==1{print} n>1{exit}' CHANGELOG.md > /tmp/release_notes.md
+
+      - name: Create GitHub release
+        if: steps.detect.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$RELEASE_TAG" --title "$RELEASE_VERSION" --notes-file /tmp/release_notes.md
