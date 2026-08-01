@@ -1,3 +1,7 @@
+## 0.9.3+1
+
+ - **FIX**(ios): auto-register BGTask launch handlers for scheduled tasks (#692).
+
 ## 0.9.3
 
  - **FEAT**: macOS support via NSBackgroundActivityScheduler (fixes #424) (#689).

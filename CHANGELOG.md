@@ -15,6 +15,37 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`workmanager` - `v0.9.1+1`](#workmanager---v0911)
+ - [`workmanager_android` - `v0.9.1+1`](#workmanager_android---v0911)
+ - [`workmanager_apple` - `v0.9.3+1`](#workmanager_apple---v0931)
+
+---
+
+#### `workmanager` - `v0.9.1+1`
+
+ - **FIX**(ios): auto-register BGTask launch handlers for scheduled tasks (#692).
+
+#### `workmanager_android` - `v0.9.1+1`
+
+ - **FIX**(android): honor initialDelay for periodic tasks without a flex window (#691).
+
+#### `workmanager_apple` - `v0.9.3+1`
+
+ - **FIX**(ios): auto-register BGTask launch handlers for scheduled tasks (#692).
+
+
+## 2026-08-01
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`workmanager` - `v0.9.1`](#workmanager---v091)
  - [`workmanager_android` - `v0.9.1`](#workmanager_android---v091)
  - [`workmanager_apple` - `v0.9.3`](#workmanager_apple---v093)

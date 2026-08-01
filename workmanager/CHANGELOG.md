@@ -1,3 +1,7 @@
+## 0.9.1+1
+
+ - **FIX**(ios): auto-register BGTask launch handlers for scheduled tasks (#692).
+
 ## 0.9.1
 
  - **FEAT**: support typed Lists/Maps in inputData (fixes #426) (#690).
