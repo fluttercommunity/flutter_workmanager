@@ -43,7 +43,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
-          fvm: true
+          flutter-version-file: .fvmrc
           cache: true
       - uses: bluefireteam/melos-action@v3
 
@@ -82,7 +82,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
-          fvm: true
+          flutter-version-file: .fvmrc
           cache: true
 
       - name: Activate melos
@@ -118,7 +118,9 @@ jobs:
         run: |
           # melos creates per-package annotated tags (workmanager-v0.9.0+3, ...);
           # --follow-tags pushes them. The aggregate lightweight v<version> tag
-          # (repo convention) is pushed explicitly.
+          # (repo convention) is created here (melos does not create it) and
+          # pushed explicitly.
+          git tag "$RELEASE_TAG" 2>/dev/null || true
           git push origin main --follow-tags
           git push origin "$RELEASE_TAG"
 

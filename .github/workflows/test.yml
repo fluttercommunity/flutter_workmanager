@@ -14,7 +14,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          fvm: true
+          flutter-version-file: .fvmrc
           cache: true
       - uses: bluefireteam/melos-action@v3
       - name: Test
@@ -59,7 +59,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          fvm: true
+          flutter-version-file: .fvmrc
           cache: true
       - uses: bluefireteam/melos-action@v3
       - name: Build Android App
