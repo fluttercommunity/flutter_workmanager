@@ -85,40 +85,31 @@ jobs:
       - uses: bluefireteam/melos-action@v3
       # Run flutter integrate tests
       - name: Run Flutter integration tests
-        timeout-minutes: 10
+        timeout-minutes: 35
         run: |
-          xcrun simctl spawn "${{ steps.sim.outputs.udid }}" log stream --style compact > /tmp/simctl.log 2>&1 &
-          LOG_PID=$!
-          cd example && flutter test integration_test/workmanager_integration_test.dart -d "${{ steps.sim.outputs.udid }}" --verbose > /tmp/flutter_test.log 2>&1 &
-          TEST_PID=$!
-          sleep 270
-          echo "=== App process state (launchctl) ==="
-          xcrun simctl spawn "${{ steps.sim.outputs.udid }}" launchctl list 2>/dev/null | grep -i "workmanagerExample" || echo "APP NOT RUNNING (crashed or killed)"
-          echo "=== Simulator screenshot ==="
-          xcrun simctl io "${{ steps.sim.outputs.udid }}" screenshot /tmp/sim_screenshot.png 2>/dev/null && echo "screenshot saved" || echo "screenshot failed"
-          echo "=== Host crash reports ==="
-          ls -lat ~/Library/Logs/DiagnosticReports/ 2>/dev/null | head -10 || echo "no crash reports dir"
-          echo "=== Runner / app log lines (wide) ==="
-          grep -aiE "workmanagerExample|UIScene|vm service|listening on|fatal|exception|dyld" /tmp/simctl.log | tail -50 || true
-          echo "=== flutter test log so far ==="
-          tail -40 /tmp/flutter_test.log
-          wait "$TEST_PID"
-          STATUS=$?
-          kill "$LOG_PID" 2>/dev/null || true
-          exit "$STATUS"
-      - name: Dump simulator logs
-        if: always()
-        run: |
-          echo "=== Crash reports ==="
-          ls -lat ~/Library/Logs/DiagnosticReports/ 2>/dev/null | head -20 || true
-          for f in $(ls -t ~/Library/Logs/DiagnosticReports/ 2>/dev/null | head -3); do
-            echo "--- $f ---"
-            head -c 3000 "$HOME/Library/Logs/DiagnosticReports/$f" 2>/dev/null || true
+          # `flutter test` on iOS simulators intermittently stalls before the
+          # Dart VM service becomes available (flutter/flutter#153433). Retry a
+          # few times with a per-attempt timeout; cached builds make retries fast.
+          cd example
+          for attempt in 1 2 3; do
+            echo "=== drive_ios attempt $attempt ==="
+            if perl -e 'alarm shift; exec @ARGV' 480 flutter test integration_test/workmanager_integration_test.dart -d "${{ steps.sim.outputs.udid }}" > /tmp/flutter_test_$attempt.log 2>&1; then
+              echo "drive_ios passed on attempt $attempt"
+              exit 0
+            fi
+            echo "drive_ios attempt $attempt failed (exit $?)"
+            xcrun simctl terminate "${{ steps.sim.outputs.udid }}" dev.fluttercommunity.workmanagerExample 2>/dev/null || true
           done
-          echo "=== App log via log show (wide window) ==="
-          xcrun simctl spawn "${{ steps.sim.outputs.udid }}" log show --last 30m --predicate 'process == "Runner" OR eventMessage CONTAINS[c] "workmanagerExample" OR eventMessage CONTAINS[c] "UIScene"' --style compact 2>/dev/null | tail -150 || true
-          echo "=== Last 60 lines of raw simctl stream ==="
-          tail -60 /tmp/simctl.log || true
+          echo "All attempts failed; dumping last attempt log:"
+          tail -100 /tmp/flutter_test_3.log
+          exit 1
+      - name: Dump simulator logs
+        if: failure()
+        run: |
+          echo "=== Last 100 lines of flutter test log ==="
+          tail -100 /tmp/flutter_test_3.log || true
+          echo "=== Runner app logs (last 10m) ==="
+          xcrun simctl spawn "${{ steps.sim.outputs.udid }}" log show --last 10m --predicate 'process == "Runner"' --style compact 2>/dev/null | tail -80 || true
 
 
   drive_android:
