@@ -10,10 +10,11 @@ jobs:
   format_dart:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          fvm: true
       - name: Format
         run: |
           flutter pub get
@@ -25,27 +26,29 @@ jobs:
 
     steps:
       - name: "checkout"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: ktlint
-        uses: ScaCap/action-ktlint@master
+        uses: ScaCap/action-ktlint@v1.9.0
         with:
           github_token: ${{ secrets.github_token }}
+          ktlint_version: "1.7.1"
 
   format_swift:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: GitHub Action for SwiftLint
         uses: norio-nomura/action-swiftlint@3.2.1
 
   publishable:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          fvm: true
 
       - uses: bluefireteam/melos-action@v3
       - name: publish checks
