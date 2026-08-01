@@ -92,7 +92,7 @@ For periodic tasks with more control than Background Fetch - uses BGTaskSchedule
 ```xml
 <key>UIBackgroundModes</key>
 <array>
-    <string>processing</string>
+    <string>fetch</string>
 </array>
 
 <key>BGTaskSchedulerPermittedIdentifiers</key>
@@ -156,6 +156,47 @@ void callbackDispatcher() {
 **Important:** The `callbackDispatcher` must be a top-level function (not inside a class) since it runs in a separate isolate.
 </Info>
 
+### What is `callbackDispatcher`?
+
+`callbackDispatcher` is the *entry point* of your background isolate. It is not
+the task itself: it is the function that iOS and Android start whenever a
+scheduled task becomes due, and inside it you tell the plugin which handler to
+run via `Workmanager().executeTask(...)`.
+
+```dart
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    // This closure is where your background work actually runs.
+    switch (task) {
+      case 'data_sync':
+        await syncData(inputData);
+        break;
+    }
+    return Future.value(true);
+  });
+}
+```
+
+Requirements and behavior:
+
+- It must be a **top-level function** or a **static method**. Flutter needs to
+  look it up by handle when the app is started from the background, which is
+  only possible for top-level/static functions (`PluginUtilities.getCallbackHandle`
+  returns `null` for anything else).
+- It must be annotated with `@pragma('vm:entry-point')` so the Dart compiler
+  keeps it reachable for background starts.
+- It runs in a **separate isolate** from your UI. Initialize plugins and
+  dependencies (e.g. `DartPluginRegistrant.ensureInitialized()`,
+  `SharedPreferences`, `Firebase.initializeApp`) *inside* the handler, not in
+  `main()`.
+- You register exactly one dispatcher per app (in `main()`) and dispatch on
+  `task` inside it. You do not need a separate `callbackDispatcher` per task.
+
+The name can be confusing: the function is really your *task runner*, but the
+name is kept for historical reasons. Feel free to name it `taskRunner` or
+`backgroundTaskHandler` in your own code.
+
 ### 2. Initialize in main()
 
 ```dart
@@ -174,7 +215,7 @@ void main() {
 // Schedule a one-time task
 Workmanager().registerOneOffTask(
   "sync-task",
-  "com.yourapp.processing_task",  // Must match Info.plist and AppDelegate
+  "data_sync",  // taskName: the value your callback receives (no AppDelegate setup needed)
   initialDelay: Duration(seconds: 10),
 );
 
@@ -197,6 +238,16 @@ Workmanager().registerPeriodicTask(
   },
 );
 ```
+
+<Warning>
+**iOS: `registerPeriodicTask` requires BGTaskScheduler setup.** On iOS the
+`uniqueName` you pass here is submitted to BGTaskScheduler, so it must appear in
+`BGTaskSchedulerPermittedIdentifiers` in Info.plist **and** be registered in
+AppDelegate via `WorkmanagerPlugin.registerPeriodicTask(withIdentifier:)`
+(see Option C above). Without that you'll get `BGTaskSchedulerErrorDomain
+Code 3` ("not advertised in the application's Info.plist"). On Android no
+native setup is needed.
+</Warning>
 
 ## Task Results
 

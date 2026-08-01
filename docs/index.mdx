@@ -22,6 +22,43 @@ Execute Dart code in the background, even when your app is closed. Perfect for d
 | Web | ❌ Not supported | Background execution not available |
 | Windows/Linux | ❌ Not supported | No background task APIs |
 
+## Platform Capability Matrix
+
+Not every feature behaves the same on Android and iOS. The table below
+summarizes what works where, so you can design your tasks around the
+capabilities of each platform.
+
+| Feature | Android | iOS |
+|---|---|---|
+| One-off tasks (`registerOneOffTask`) | ✅ Scheduled by the OS; survives app restarts | ⚠️ Runs via `beginBackgroundTask` while the app is alive (foreground or shortly after backgrounding). Not guaranteed after the app is terminated |
+| Periodic tasks (`registerPeriodicTask`) | ✅ Reliable, 15-minute minimum frequency | ⚠️ Best-effort. iOS decides when (and whether) background fetch runs, based on app usage; 15-minute minimum hint |
+| Processing tasks (`registerProcessingTask`) | ❌ Not supported | ✅ BGProcessingTask (longer work, requires registration in AppDelegate) |
+| `initialDelay` | ✅ Honored for one-off tasks. For periodic tasks it is best-effort (see below) | ⚠️ One-off: honored while the app stays alive. Periodic: used as the earliest-begin hint for BGTaskScheduler |
+| `inputData` | ✅ All supported types | ✅ Supported for one-off and periodic tasks |
+| `taskName` in callback | ✅ The value you passed as `taskName` | ✅ One-off tasks receive the `taskName` you passed. Periodic/processing tasks receive the BGTaskScheduler identifier (the `uniqueName` you registered) |
+| `frequency` | ✅ Configured from Dart | ❌ Configured in `AppDelegate.swift` via `registerPeriodicTask(withIdentifier:frequency:)` |
+| Constraints (network, charging, battery) | ✅ Supported | ❌ iOS applies its own system-level constraints |
+| `cancelByUniqueName` / `cancelAll` | ✅ | ✅ Only cancels BGTaskScheduler requests (periodic/processing) |
+| `cancelByTag` | ✅ | ❌ Not supported (no-op) |
+| Task execution after app is killed | ✅ Yes (one-off/periodic) | ❌ No — iOS does not run tasks after the app is terminated |
+| Minimum run time budget | No hard limit, but WorkManager may defer work | ~30 seconds per task execution |
+
+<Warning>
+**Periodic `initialDelay` on Android:** WorkManager treats the initial delay of a
+periodic task as a hint. Depending on the `androidx.work` version, the first run
+may happen anywhere within the first interval rather than exactly after the
+delay. If you need a task to run exactly once at a specific time and then repeat,
+schedule a one-off task with the desired `initialDelay` and re-register the
+periodic task from inside its callback.
+</Warning>
+
+<Warning>
+**iOS one-off `initialDelay`:** The delay is honored only while the app remains
+alive. iOS may suspend or terminate the app before the delay elapses, in which
+case the task does not run. For work that must run later regardless, use a
+processing task.
+</Warning>
+
 ## Common Use Cases
 
 | Use Case | Description |

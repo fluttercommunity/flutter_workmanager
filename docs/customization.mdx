@@ -140,10 +140,19 @@ Workmanager().registerPeriodicTask(
   "hourly-sync",
   "data_sync",
   frequency: Duration(hours: 1),        // Android: minimum 15 minutes
-  initialDelay: Duration(minutes: 5),   // Wait before first execution
+  initialDelay: Duration(minutes: 5),   // Best-effort hint for the first run (see warning below)
   inputData: {'syncType': 'incremental'}
 );
 ```
+
+<Warning>
+**Periodic `initialDelay` is best-effort.** WorkManager (Android) treats it as a
+hint: depending on the `androidx.work` version, the first run can happen anywhere
+within the first interval. On iOS it becomes the earliest-begin hint for
+BGTaskScheduler, which iOS may ignore entirely. If you need the *first* execution
+to happen at a specific time, schedule a one-off task with `initialDelay` that
+registers the periodic task when it runs.
+</Warning>
 
 ## Advanced Configuration
 
