@@ -157,12 +157,14 @@ public class WorkmanagerPlugin: WorkmanagerPluginBase, FlutterPlugin, Workmanage
     func cancelByUniqueName(uniqueName: String, completion: @escaping (Result<Void, Error>) -> Void) {
         executeIfSupportedVoid(completion: completion, feature: "cancelByUniqueName") {
             BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: uniqueName)
+            UserDefaultsHelper.removeScheduledTask(uniqueName)
         }
     }
 
     func cancelAll(completion: @escaping (Result<Void, Error>) -> Void) {
         executeIfSupportedVoid(completion: completion, feature: "cancelAll") {
             BGTaskScheduler.shared.cancelAllTaskRequests()
+            UserDefaultsHelper.removeAllScheduledTasks()
         }
     }
 
@@ -351,6 +353,12 @@ extension WorkmanagerPlugin {
 
 #if os(iOS)
 extension WorkmanagerPlugin {
+    /// Identifiers whose launch handler has already been registered in this
+    /// process. BGTaskScheduler rejects a second registration for the same
+    /// identifier, so this guards the submit-time and launch-time paths (and
+    /// user AppDelegate registrations) against double registration.
+    private static var registeredLaunchHandlers: Set<String> = []
+
     @available(iOS 13.0, *)
     private static func handleBGProcessingTask(identifier: String, task: BGProcessingTask) {
         let operationQueue = OperationQueue()
@@ -443,16 +451,11 @@ extension WorkmanagerPlugin {
     @objc
     public static func registerPeriodicTask(withIdentifier identifier: String, earliestBeginInSeconds: NSNumber? = nil) {
         if #available(iOS 13.0, *) {
-            BGTaskScheduler.shared.register(
-                forTaskWithIdentifier: identifier,
-                using: nil
-            ) { task in
-                if let task = task as? BGAppRefreshTask {
-                    // Retrieve the stored inputData for this periodic task
-                    let storedInputData = UserDefaultsHelper.getStoredPeriodicTaskInputData(forTaskIdentifier: task.identifier)
-                    handlePeriodicTask(identifier: identifier, task: task, earliestBeginInSeconds: earliestBeginInSeconds, inputData: storedInputData)
-                }
-            }
+            UserDefaultsHelper.storeScheduledTask(
+                ScheduledTaskInfo(kind: .refresh, earliestBeginInSeconds: earliestBeginInSeconds?.doubleValue),
+                forTaskIdentifier: identifier
+            )
+            registerLaunchHandlerOnce(forTaskWithIdentifier: identifier, earliestBeginInSeconds: earliestBeginInSeconds)
         }
     }
 
@@ -478,6 +481,14 @@ extension WorkmanagerPlugin {
         do {
             try BGTaskScheduler.shared.submit(request)
             logInfo("BGAppRefreshTask submitted \(identifier) earliestBeginInSeconds:\(String(describing: begin))")
+            UserDefaultsHelper.storeScheduledTask(
+                ScheduledTaskInfo(kind: .refresh, earliestBeginInSeconds: begin),
+                forTaskIdentifier: identifier
+            )
+            registerLaunchHandlerOnce(
+                forTaskWithIdentifier: identifier,
+                earliestBeginInSeconds: begin.map { NSNumber(value: $0) }
+            )
         } catch {
             logInfo("Could not schedule BGAppRefreshTask \(error.localizedDescription)")
         }
@@ -492,14 +503,11 @@ extension WorkmanagerPlugin {
     @objc
     public static func registerBGProcessingTask(withIdentifier identifier: String) {
         if #available(iOS 13.0, *) {
-            BGTaskScheduler.shared.register(
-                forTaskWithIdentifier: identifier,
-                using: nil
-            ) { task in
-                if let task = task as? BGProcessingTask {
-                    handleBGProcessingTask(identifier: identifier, task: task)
-                }
-            }
+            UserDefaultsHelper.storeScheduledTask(
+                ScheduledTaskInfo(kind: .processing, earliestBeginInSeconds: nil),
+                forTaskIdentifier: identifier
+            )
+            registerLaunchHandlerOnce(forTaskWithIdentifier: identifier, earliestBeginInSeconds: nil)
         }
     }
 
@@ -519,9 +527,47 @@ extension WorkmanagerPlugin {
         do {
             try BGTaskScheduler.shared.submit(request)
             logInfo("BGProcessingTask submitted \(uniqueTaskIdentifier) earliestBeginInSeconds:\(begin)")
+            UserDefaultsHelper.storeScheduledTask(
+                ScheduledTaskInfo(kind: .processing, earliestBeginInSeconds: begin),
+                forTaskIdentifier: uniqueTaskIdentifier
+            )
+            registerLaunchHandlerOnce(forTaskWithIdentifier: uniqueTaskIdentifier, earliestBeginInSeconds: nil)
         } catch {
             logInfo("Could not schedule BGProcessingTask identifier:\(uniqueTaskIdentifier) error:\(error.localizedDescription)")
             logInfo("Possible issues can be: running on a simulator instead of a real device, or the task name is not registered")
+        }
+    }
+
+    /// Registers the launch handler for [identifier] at most once per process.
+    ///
+    /// The handler dispatches on the delivered task type so both periodic
+    /// (BGAppRefreshTask) and processing (BGProcessingTask) identifiers can be
+    /// re-registered from persisted state at app launch.
+    @available(iOS 13.0, *)
+    private static func registerLaunchHandlerOnce(
+        forTaskWithIdentifier identifier: String,
+        earliestBeginInSeconds: NSNumber?
+    ) {
+        guard !registeredLaunchHandlers.contains(identifier) else {
+            return
+        }
+        registeredLaunchHandlers.insert(identifier)
+        BGTaskScheduler.shared.register(
+            forTaskWithIdentifier: identifier,
+            using: nil
+        ) { task in
+            if let task = task as? BGAppRefreshTask {
+                // Retrieve the stored inputData for this periodic task
+                let storedInputData = UserDefaultsHelper.getStoredPeriodicTaskInputData(forTaskIdentifier: task.identifier)
+                handlePeriodicTask(
+                    identifier: identifier,
+                    task: task,
+                    earliestBeginInSeconds: earliestBeginInSeconds,
+                    inputData: storedInputData
+                )
+            } else if let task = task as? BGProcessingTask {
+                handleBGProcessingTask(identifier: identifier, task: task)
+            }
         }
     }
 
@@ -598,6 +644,25 @@ extension WorkmanagerPlugin {
 
 #if os(iOS)
 extension WorkmanagerPlugin {
+    override public func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [AnyHashable: Any]? = nil
+    ) -> Bool {
+        // BGTaskScheduler only delivers a task to a relaunched app if a launch
+        // handler was registered during `didFinishLaunching`. Re-register the
+        // handlers for identifiers scheduled in previous sessions, so periodic
+        // and processing tasks keep working without manual AppDelegate code.
+        if #available(iOS 13.0, *) {
+            for (identifier, info) in UserDefaultsHelper.getScheduledTasks() {
+                WorkmanagerPlugin.registerLaunchHandlerOnce(
+                    forTaskWithIdentifier: identifier,
+                    earliestBeginInSeconds: info.earliestBeginInSeconds.map { NSNumber(value: $0) }
+                )
+            }
+        }
+        return true
+    }
+
     override public func application(
         _ application: UIApplication,
         performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
