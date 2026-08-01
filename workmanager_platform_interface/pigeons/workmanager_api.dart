@@ -10,7 +10,7 @@ import 'package:pigeon/pigeon.dart';
     package: 'dev.fluttercommunity.workmanager.pigeon',
   ),
   swiftOut:
-      '../workmanager_apple/ios/Sources/workmanager_apple/pigeon/WorkmanagerApi.g.swift',
+      '../workmanager_apple/ios/workmanager_apple/Sources/workmanager_apple/pigeon/WorkmanagerApi.g.swift',
   copyrightHeader: 'pigeons/copyright.txt',
   dartPackageName: 'workmanager_platform_interface',
 ))
