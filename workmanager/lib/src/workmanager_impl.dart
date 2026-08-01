@@ -299,19 +299,65 @@ class Workmanager {
   Future<String> printScheduledTasks() async => _platform.printScheduledTasks();
 }
 
-/// Converts inputData from Pigeon format, filtering out null keys
+/// Converts inputData from Pigeon format, filtering out null keys and
+/// normalizing nested containers.
+///
+/// The platform channel codec delivers nested lists as `List<dynamic>` and
+/// nested maps as `Map<dynamic, dynamic>`, which makes re-passing `inputData`
+/// into other tasks error-prone (e.g. `inputData['keys'] as List<String>`
+/// fails). This conversion:
+/// - turns nested maps into `Map<String, dynamic>`,
+/// - keeps the element type of homogeneous nested lists (e.g. `List<String>`),
+/// - leaves heterogeneous lists as `List<dynamic>`.
 @visibleForTesting
 Map<String, dynamic>? convertPigeonInputData(Map<String?, Object?>? inputData) {
-  Map<String, dynamic>? convertedInputData;
-  if (inputData != null) {
-    convertedInputData = <String, dynamic>{};
-    for (final entry in inputData.entries) {
-      if (entry.key != null) {
-        convertedInputData[entry.key!] = entry.value;
-      }
+  if (inputData == null) {
+    return null;
+  }
+  final convertedInputData = <String, dynamic>{};
+  for (final entry in inputData.entries) {
+    final key = entry.key;
+    if (key != null) {
+      convertedInputData[key] = normalizeInputDataValue(entry.value);
     }
   }
   return convertedInputData;
+}
+
+/// Recursively normalizes a single `inputData` value for delivery to the
+/// background task callback. See [convertPigeonInputData].
+@visibleForTesting
+Object? normalizeInputDataValue(Object? value) {
+  if (value is Map) {
+    final normalized = <String, dynamic>{};
+    for (final entry in value.entries) {
+      final key = entry.key;
+      if (key is String) {
+        normalized[key] = normalizeInputDataValue(entry.value);
+      }
+    }
+    return normalized;
+  }
+  if (value is List) {
+    final normalized = value.map(normalizeInputDataValue).toList();
+    if (normalized.isEmpty) {
+      return normalized;
+    }
+    if (normalized.every((element) => element is String)) {
+      return List<String>.from(normalized);
+    }
+    if (normalized.every((element) => element is int)) {
+      return List<int>.from(normalized);
+    }
+    if (normalized.every((element) => element is double)) {
+      return List<double>.from(normalized);
+    }
+    if (normalized.every((element) => element is bool)) {
+      return List<bool>.from(normalized);
+    }
+    return normalized;
+  }
+  return value;
 }
 
 /// Implementation of WorkmanagerFlutterApi for handling background task execution

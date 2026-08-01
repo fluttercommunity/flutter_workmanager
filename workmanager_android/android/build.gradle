@@ -56,4 +56,6 @@ dependencies {
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.mockito:mockito-core:4.11.0"
     testImplementation "org.mockito.kotlin:mockito-kotlin:4.1.0"
+    // Real org.json implementation for JVM unit tests (android.jar only stubs it).
+    testImplementation 'org.json:json:20240303'
 }
