@@ -1,7 +1,3 @@
-## 0.9.3
-
- - **FEAT**: macOS support via NSBackgroundActivityScheduler (fixes #424) (#689).
-
 ## 0.9.2
 
  - **FIX**(ios): pass taskName to callback and honor initialDelay for one-off tasks (#687).

@@ -15,38 +15,6 @@ Packages with breaking changes:
 
 Packages with other changes:
 
- - [`workmanager` - `v0.9.1`](#workmanager---v091)
- - [`workmanager_android` - `v0.9.1`](#workmanager_android---v091)
- - [`workmanager_apple` - `v0.9.3`](#workmanager_apple---v093)
-
----
-
-#### `workmanager` - `v0.9.1`
-
- - **FEAT**: support typed Lists/Maps in inputData (fixes #426) (#690).
- - **FEAT**: macOS support via NSBackgroundActivityScheduler (fixes #424) (#689).
-
-#### `workmanager_android` - `v0.9.1`
-
- - **FEAT**: support typed Lists/Maps in inputData (fixes #426) (#690).
-
-#### `workmanager_apple` - `v0.9.3`
-
- - **FEAT**: macOS support via NSBackgroundActivityScheduler (fixes #424) (#689).
-
-
-## 2026-08-01
-
-### Changes
-
----
-
-Packages with breaking changes:
-
- - There are no breaking changes in this release.
-
-Packages with other changes:
-
  - [`workmanager` - `v0.9.0+4`](#workmanager---v0904)
  - [`workmanager_android` - `v0.9.0+3`](#workmanager_android---v0903)
  - [`workmanager_apple` - `v0.9.2`](#workmanager_apple---v092)
