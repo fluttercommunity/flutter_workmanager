@@ -126,7 +126,10 @@ jobs:
 
       - name: Publish to pub.dev
         if: steps.detect.outputs.changed == 'true'
-        run: melos publish --yes
+        # melos 6.x has dry-run ON by default, so publishing requires
+        # --no-dry-run (--yes only skips the confirmation prompt). Without
+        # --no-dry-run the step validates and exits 0 without uploading.
+        run: melos publish --no-dry-run --yes
         # Publishes in dependency order (platform_interface -> android/apple -> workmanager).
         # Uses pub.dev trusted publisher OIDC (id-token: write above).
         # Recovery on partial failure: delete the just-published version on pub.dev
