@@ -33,16 +33,7 @@ class BackgroundWorker(
     }
 
     private val payload
-        get() =
-            workerParams.inputData.keyValueMap
-                .filter { it.key.startsWith("payload_") }
-                .mapKeys { it.key.replace("payload_", "") }
-                .mapValues {
-                    when (it.value) {
-                        is Array<*> -> (it.value as Array<*>).asList()
-                        else -> it.value
-                    }
-                }
+        get() = decodePayload(workerParams.inputData.keyValueMap)
 
     private val dartTask
         get() = workerParams.inputData.getString(DART_TASK_KEY)

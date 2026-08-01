@@ -4,7 +4,6 @@ import android.content.Context
 import android.os.Build
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
-import androidx.work.Data
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
@@ -12,7 +11,6 @@ import androidx.work.OneTimeWorkRequest
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
-import dev.fluttercommunity.workmanager.BackgroundWorker.Companion.DART_TASK_KEY
 import dev.fluttercommunity.workmanager.pigeon.TaskStatus
 import java.util.concurrent.TimeUnit
 
@@ -196,50 +194,6 @@ class WorkManagerWrapper(
                 startTime = System.currentTimeMillis(),
             )
         WorkmanagerDebug.onTaskStatusUpdate(context, taskInfo, TaskStatus.SCHEDULED)
-    }
-
-    private fun buildTaskInputData(
-        dartTask: String,
-        payload: Map<String, Any>?,
-    ): Data {
-        val builder =
-            Data
-                .Builder()
-                .putString(DART_TASK_KEY, dartTask)
-
-        // Add payload data if provided
-        payload?.forEach { (key, value) ->
-            when (value) {
-                is String -> builder.putString("payload_$key", value)
-                is Boolean -> builder.putBoolean("payload_$key", value)
-                is Int -> builder.putInt("payload_$key", value)
-                is Long -> builder.putLong("payload_$key", value)
-                is Float -> builder.putFloat("payload_$key", value)
-                is Double -> builder.putDouble("payload_$key", value)
-                is Array<*> ->
-                    builder.putStringArray(
-                        "payload_$key",
-                        value.filterIsInstance<String>().toTypedArray(),
-                    )
-
-                is List<*> ->
-                    builder.putStringArray(
-                        "payload_$key",
-                        value.filterIsInstance<String>().toTypedArray(),
-                    )
-
-                is ByteArray -> builder.putByteArray("payload_$key", value)
-
-                else -> {
-                    throw IllegalArgumentException(
-                        "Unsupported payload type for key '$key': ${value::class.java.simpleName}. " +
-                            "Consider converting it to a supported type.",
-                    )
-                }
-            }
-        }
-
-        return builder.build()
     }
 
     fun getWorkInfoByUniqueName(uniqueWorkName: String) = workManager.getWorkInfosForUniqueWork(uniqueWorkName)

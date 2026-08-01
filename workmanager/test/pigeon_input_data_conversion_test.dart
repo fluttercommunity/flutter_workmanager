@@ -91,5 +91,64 @@ void main() {
       expect(result['nullKey'], null);
       expect(result.containsKey(null), false);
     });
+
+    test('normalizes nested maps to Map<String, dynamic>', () {
+      final Map<String?, Object?> inputData = {
+        'nested': <dynamic, dynamic>{'string': 'value', 'int': 42},
+      };
+
+      final result = convertPigeonInputData(inputData);
+
+      final nested = result!['nested'];
+      expect(nested, isA<Map<String, dynamic>>());
+      expect(nested, {'string': 'value', 'int': 42});
+    });
+
+    test('keeps the element type of homogeneous nested lists', () {
+      final Map<String?, Object?> inputData = {
+        'strings': ['a', 'b'],
+        'ints': [1, 2],
+        'doubles': [1.5, 2.5],
+        'bools': [true, false],
+      };
+
+      final result = convertPigeonInputData(inputData);
+
+      expect(result!['strings'], isA<List<String>>());
+      expect(result['ints'], isA<List<int>>());
+      expect(result['doubles'], isA<List<double>>());
+      expect(result['bools'], isA<List<bool>>());
+    });
+
+    test('leaves heterogeneous or empty lists as List<dynamic>', () {
+      final Map<String?, Object?> inputData = {
+        'mixed': ['a', 1, true],
+        'empty': <Object?>[],
+      };
+
+      final result = convertPigeonInputData(inputData);
+
+      expect(result!['mixed'], isA<List<dynamic>>());
+      expect(result['empty'], isA<List<dynamic>>());
+      expect(result['empty'], isEmpty);
+    });
+
+    test('normalizes nested containers recursively', () {
+      final Map<String?, Object?> inputData = {
+        'outer': <dynamic, dynamic>{
+          'innerList': ['x', 'y'],
+          'innerMap': <dynamic, dynamic>{
+            'deep': [1, 2, 3]
+          },
+        },
+      };
+
+      final result = convertPigeonInputData(inputData);
+
+      final outer = result!['outer'] as Map<String, dynamic>;
+      expect(outer['innerList'], isA<List<String>>());
+      final innerMap = outer['innerMap'] as Map<String, dynamic>;
+      expect(innerMap['deep'], isA<List<int>>());
+    });
   });
 }
