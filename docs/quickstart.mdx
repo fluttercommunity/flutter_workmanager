@@ -82,7 +82,7 @@ WorkmanagerPlugin.registerBGProcessingTask(
 </Warning>
 
 <Info>
-**Why BGTaskScheduler registration is needed:** iOS requires explicit registration of background task identifiers for security and system resource management. The task identifier in Info.plist tells iOS which background tasks your app can schedule, while the AppDelegate registration connects the identifier to the actual task handler. Background Fetch (Option A) doesn't require this since it uses the simpler, system-managed approach.
+**Why BGTaskScheduler registration is needed:** iOS requires every background task identifier to be listed in Info.plist for security and system resource management. The plugin registers the task handler automatically (at schedule time and again on the next app launch), so no manual AppDelegate code is required. Background Fetch (Option A) doesn't require this since it uses the simpler, system-managed approach.
 </Info>
 
 #### Option C: Periodic Tasks with Custom Frequency
@@ -101,7 +101,7 @@ For periodic tasks with more control than Background Fetch - uses BGTaskSchedule
 </array>
 ```
 
-2. **Configure AppDelegate.swift** (with frequency control):
+2. **(Optional) Configure AppDelegate.swift** for custom frequency control:
 ```swift
 import workmanager_apple
 
@@ -111,6 +111,9 @@ WorkmanagerPlugin.registerPeriodicTask(
   frequency: NSNumber(value: 20 * 60) // 20 minutes (15 min minimum)
 )
 ```
+The plugin re-registers launch handlers for scheduled task identifiers on app
+launch, so this step is only needed if you want to pre-register the task or
+control the scheduling hint from native code.
 
 <Warning>
 **iOS Task Identifier Matching:** The task name in your Dart code must **exactly match** the identifier in Info.plist and AppDelegate. Using short names like `"cleanup"` in Dart while having `com.yourapp.periodic_task` in native code will cause `BGTaskSchedulerErrorDomain Code 3` errors.
@@ -278,11 +281,11 @@ Workmanager().registerPeriodicTask(
 <Warning>
 **iOS: `registerPeriodicTask` requires BGTaskScheduler setup.** On iOS the
 `uniqueName` you pass here is submitted to BGTaskScheduler, so it must appear in
-`BGTaskSchedulerPermittedIdentifiers` in Info.plist **and** be registered in
-AppDelegate via `WorkmanagerPlugin.registerPeriodicTask(withIdentifier:)`
-(see Option C above). Without that you'll get `BGTaskSchedulerErrorDomain
-Code 3` ("not advertised in the application's Info.plist"). On Android no
-native setup is needed.
+`BGTaskSchedulerPermittedIdentifiers` in Info.plist. The launch handler is
+registered automatically by the plugin (at schedule time and on the next app
+launch), so no AppDelegate code is required. Without the Info.plist entry
+you'll get `BGTaskSchedulerErrorDomain Code 3` ("not advertised in the
+application's Info.plist"). On Android no native setup is needed.
 </Warning>
 
 ## Task Results
@@ -298,7 +301,7 @@ Your background tasks can return:
 
 - **Callback Dispatcher**: Must be a top-level function (not inside a class)
 - **Separate Isolate**: Background tasks run in isolation - initialize dependencies inside the task
-- **iOS Task Identifiers**: When using BGTaskScheduler (Options B & C), task names in Dart must exactly match identifiers in Info.plist and AppDelegate
+- **iOS Task Identifiers**: When using BGTaskScheduler (Options B & C), task names in Dart must exactly match the identifiers in `BGTaskSchedulerPermittedIdentifiers` in Info.plist
 - **Platform Differences**: 
   - Android: Reliable background execution, 15-minute minimum frequency
   - iOS: 30-second limit, execution depends on user patterns and device state

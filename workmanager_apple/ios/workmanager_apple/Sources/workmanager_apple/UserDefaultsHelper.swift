@@ -7,6 +7,20 @@
 
 import Foundation
 
+/// The kind of BGTaskScheduler task a scheduled identifier refers to.
+enum ScheduledTaskKind: String, Codable {
+    case refresh
+    case processing
+}
+
+/// Metadata persisted for a scheduled BGTask identifier so launch handlers
+/// can be re-registered on the next app launch (required by BGTaskScheduler
+/// before a task can be delivered to a relaunched app).
+struct ScheduledTaskInfo: Codable {
+    let kind: ScheduledTaskKind
+    let earliestBeginInSeconds: Double?
+}
+
 struct UserDefaultsHelper {
 
     // MARK: Properties
@@ -16,6 +30,7 @@ struct UserDefaultsHelper {
     enum Key {
         case callbackHandle
         case periodicTaskInputData(taskIdentifier: String)
+        case scheduledTasks
 
         var stringValue: String {
             switch self {
@@ -23,6 +38,8 @@ struct UserDefaultsHelper {
                 return "\(WorkmanagerPlugin.identifier).callbackHandle"
             case .periodicTaskInputData(let taskIdentifier):
                 return "\(WorkmanagerPlugin.identifier).periodicTaskInputData.\(taskIdentifier)"
+            case .scheduledTasks:
+                return "\(WorkmanagerPlugin.identifier).scheduledTasks"
             }
         }
     }
@@ -52,6 +69,38 @@ struct UserDefaultsHelper {
 
     static func getStoredPeriodicTaskInputData(forTaskIdentifier taskIdentifier: String) -> [String: Any]? {
         return getValue(for: .periodicTaskInputData(taskIdentifier: taskIdentifier))
+    }
+
+    // MARK: Scheduled BGTask identifiers
+
+    static func storeScheduledTask(_ task: ScheduledTaskInfo, forTaskIdentifier taskIdentifier: String) {
+        var tasks = getScheduledTasks()
+        tasks[taskIdentifier] = task
+        if let data = try? JSONEncoder().encode(tasks) {
+            userDefaults.set(data, forKey: Key.scheduledTasks.stringValue)
+        }
+    }
+
+    static func getScheduledTasks() -> [String: ScheduledTaskInfo] {
+        guard let data = userDefaults.data(forKey: Key.scheduledTasks.stringValue),
+              let tasks = try? JSONDecoder().decode([String: ScheduledTaskInfo].self, from: data)
+        else {
+            return [:]
+        }
+        return tasks
+    }
+
+    static func removeScheduledTask(_ taskIdentifier: String) {
+        var tasks = getScheduledTasks()
+        if tasks.removeValue(forKey: taskIdentifier) != nil {
+            if let data = try? JSONEncoder().encode(tasks) {
+                userDefaults.set(data, forKey: Key.scheduledTasks.stringValue)
+            }
+        }
+    }
+
+    static func removeAllScheduledTasks() {
+        userDefaults.removeObject(forKey: Key.scheduledTasks.stringValue)
     }
 
     // MARK: Private helper functions
