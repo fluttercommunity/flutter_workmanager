@@ -44,6 +44,22 @@ platform.
 | Minimum run time budget | No hard limit, but WorkManager may defer work | ~30 seconds per task execution | No hard budget; the system may defer activities while the Mac is busy |
 
 <Warning>
+**Periodic `initialDelay` on Android:** WorkManager treats the initial delay of a
+periodic task as a hint. Depending on the `androidx.work` version, the first run
+may happen anywhere within the first interval rather than exactly after the
+delay. If you need a task to run exactly once at a specific time and then repeat,
+schedule a one-off task with the desired `initialDelay` and re-register the
+periodic task from inside its callback.
+</Warning>
+
+<Warning>
+**iOS one-off `initialDelay`:** The delay is honored only while the app remains
+alive. iOS may suspend or terminate the app before the delay elapses, in which
+case the task does not run. For work that must run later regardless, use a
+processing task.
+</Warning>
+
+<Warning>
 **macOS `callbackDispatcher` naming:** macOS cannot look up the dispatcher by
 handle (there is no `FlutterCallbackCache` on macOS), so the callback function
 must be a top-level function named exactly `callbackDispatcher` in your app's

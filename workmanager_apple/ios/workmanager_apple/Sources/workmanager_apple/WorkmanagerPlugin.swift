@@ -85,7 +85,10 @@ public class WorkmanagerPlugin: WorkmanagerPluginBase, FlutterPlugin, Workmanage
             })
 
             WorkmanagerPlugin.startOneOffTask(
-                identifier: request.uniqueName,
+                // The callback task name must match the `taskName` provided from Dart
+                // (Android already forwards `taskName`). The `uniqueName` is still
+                // used for the background task debug name above.
+                identifier: request.taskName,
                 taskIdentifier: taskIdentifier,
                 inputData: request.inputData as? [String: Any],
                 delaySeconds: delaySeconds
