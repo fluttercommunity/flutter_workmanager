@@ -85,17 +85,21 @@ jobs:
       - uses: bluefireteam/melos-action@v3
       # Run flutter integrate tests
       - name: Run Flutter integration tests
-        timeout-minutes: 15
+        timeout-minutes: 10
         run: |
           xcrun simctl spawn "${{ steps.sim.outputs.udid }}" log stream --style compact > /tmp/simctl.log 2>&1 &
           LOG_PID=$!
           cd example && flutter test integration_test/workmanager_integration_test.dart -d "${{ steps.sim.outputs.udid }}" --verbose > /tmp/flutter_test.log 2>&1 &
           TEST_PID=$!
-          sleep 120
-          echo "=== Runner process state after 120s ==="
-          xcrun simctl spawn "${{ steps.sim.outputs.udid }}" ps aux | grep -i "Runner" | grep -v grep || echo "RUNNER PROCESS NOT FOUND (crashed or never launched)"
-          echo "=== Raw simctl log: Runner / UIScene / VM service / crash lines ==="
-          grep -aiE "Runner|UIScene|vm service|listening|crash|terminated|abort" /tmp/simctl.log | tail -80 || true
+          sleep 270
+          echo "=== App process state (launchctl) ==="
+          xcrun simctl spawn "${{ steps.sim.outputs.udid }}" launchctl list 2>/dev/null | grep -i "workmanagerExample" || echo "APP NOT RUNNING (crashed or killed)"
+          echo "=== Simulator screenshot ==="
+          xcrun simctl io "${{ steps.sim.outputs.udid }}" screenshot /tmp/sim_screenshot.png 2>/dev/null && echo "screenshot saved" || echo "screenshot failed"
+          echo "=== Host crash reports ==="
+          ls -lat ~/Library/Logs/DiagnosticReports/ 2>/dev/null | head -10 || echo "no crash reports dir"
+          echo "=== Runner / app log lines (wide) ==="
+          grep -aiE "workmanagerExample|UIScene|vm service|listening on|fatal|exception|dyld" /tmp/simctl.log | tail -50 || true
           echo "=== flutter test log so far ==="
           tail -40 /tmp/flutter_test.log
           wait "$TEST_PID"
@@ -105,10 +109,16 @@ jobs:
       - name: Dump simulator logs
         if: always()
         run: |
-          echo "=== Runner-specific simulator log ==="
-          xcrun simctl spawn "${{ steps.sim.outputs.udid }}" log show --last 10m --predicate 'processImagePath ENDSWITH "Runner"' --style compact 2>/dev/null | tail -100 || true
-          echo "=== Last 100 lines of raw simctl stream ==="
-          tail -100 /tmp/simctl.log || true
+          echo "=== Crash reports ==="
+          ls -lat ~/Library/Logs/DiagnosticReports/ 2>/dev/null | head -20 || true
+          for f in $(ls -t ~/Library/Logs/DiagnosticReports/ 2>/dev/null | head -3); do
+            echo "--- $f ---"
+            head -c 3000 "$HOME/Library/Logs/DiagnosticReports/$f" 2>/dev/null || true
+          done
+          echo "=== App log via log show (wide window) ==="
+          xcrun simctl spawn "${{ steps.sim.outputs.udid }}" log show --last 30m --predicate 'process == "Runner" OR eventMessage CONTAINS[c] "workmanagerExample" OR eventMessage CONTAINS[c] "UIScene"' --style compact 2>/dev/null | tail -150 || true
+          echo "=== Last 60 lines of raw simctl stream ==="
+          tail -60 /tmp/simctl.log || true
 
 
   drive_android:
