@@ -43,6 +43,46 @@ Packages with other changes:
  - **FEAT**: add Swift Package Manager support for iOS (#683).
 
 
+## 2026-08-01
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`workmanager` - `v0.9.0+4`](#workmanager---v0904)
+ - [`workmanager_android` - `v0.9.0+3`](#workmanager_android---v0903)
+ - [`workmanager_apple` - `v0.9.2`](#workmanager_apple---v092)
+ - [`workmanager_platform_interface` - `v0.9.2`](#workmanager_platform_interface---v092)
+
+---
+
+#### `workmanager` - `v0.9.0+4`
+
+ - **FIX**(ios): pass taskName to callback and honor initialDelay for one-off tasks (#687).
+
+#### `workmanager_android` - `v0.9.0+3`
+
+ - **FIX**: remove kotlin-android since AGP 9 supports it https://github.com/fluttercommunity/flutter_workmanager/issues/667 (#682).
+ - **FIX**: Failed host lookup, by bumping androidx.work:work-runtime to 2.11.2 and Android minSdkVersion to 23 (#679).
+ - **FIX**: NullPointerException by replacing companion FlutterLoader with FlutterInjector singleton (#678).
+
+#### `workmanager_apple` - `v0.9.2`
+
+ - **FIX**(ios): pass taskName to callback and honor initialDelay for one-off tasks (#687).
+ - **FIX**(ios): pass inputData to periodic background tasks (#648).
+ - **FEAT**: add Swift Package Manager support for iOS (#683).
+
+#### `workmanager_platform_interface` - `v0.9.2`
+
+ - **FEAT**: add Swift Package Manager support for iOS (#683).
+
+
 ## 2025-08-31
 
 ### Changes
