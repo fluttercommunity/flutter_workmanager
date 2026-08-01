@@ -16,14 +16,73 @@ import java.util.concurrent.TimeUnit
 
 // Constants
 const val DEFAULT_INITIAL_DELAY_SECONDS = 0L
-const val DEFAULT_FLEX_INTERVAL_SECONDS =
-    PeriodicWorkRequest.MIN_PERIODIC_FLEX_MILLIS / 1000
 
 // Default values
 val defaultOneOffExistingWorkPolicy = ExistingWorkPolicy.KEEP
 val defaultPeriodExistingWorkPolicy = ExistingPeriodicWorkPolicy.UPDATE
 val defaultConstraints: Constraints = Constraints.NONE
 val defaultOutOfQuotaPolicy: OutOfQuotaPolicy? = null
+
+/**
+ * Builds the [PeriodicWorkRequest] for a periodic task.
+ *
+ * A flex window is only applied when the caller explicitly provides
+ * [flexIntervalSeconds]. Without an explicit flex, WorkManager defaults
+ * flex to the full interval, which means the first run is scheduled at
+ * `enqueueTime + initialDelay` exactly as requested. Applying a default
+ * flex window would push the first run to
+ * `initialDelay + (interval - flex)` and look like the initial delay is
+ * being ignored.
+ */
+internal fun createPeriodicWorkRequest(
+    taskName: String,
+    inputData: Map<String, Any?>?,
+    frequencySeconds: Long,
+    flexIntervalSeconds: Long?,
+    initialDelaySeconds: Long?,
+    constraints: Constraints,
+    backoffPolicy: dev.fluttercommunity.workmanager.pigeon.BackoffPolicyConfig?,
+    tag: String?,
+): PeriodicWorkRequest {
+    val builder =
+        if (flexIntervalSeconds != null) {
+            PeriodicWorkRequest
+                .Builder(
+                    BackgroundWorker::class.java,
+                    frequencySeconds,
+                    TimeUnit.SECONDS,
+                    flexIntervalSeconds,
+                    TimeUnit.SECONDS,
+                )
+        } else {
+            PeriodicWorkRequest
+                .Builder(
+                    BackgroundWorker::class.java,
+                    frequencySeconds,
+                    TimeUnit.SECONDS,
+                )
+        }
+    return builder
+        .setInputData(buildTaskInputData(taskName, inputData))
+        .setInitialDelay(
+            initialDelaySeconds ?: DEFAULT_INITIAL_DELAY_SECONDS,
+            TimeUnit.SECONDS,
+        ).setConstraints(constraints)
+        .apply {
+            backoffPolicy?.let { backoffConfig ->
+                if (backoffConfig.backoffPolicy != null && backoffConfig.backoffDelayMillis != null) {
+                    setBackoffCriteria(
+                        backoffConfig.backoffPolicy.toAndroidBackoffPolicy(),
+                        backoffConfig.backoffDelayMillis.toLong(),
+                        TimeUnit.MILLISECONDS,
+                    )
+                }
+            }
+        }.apply {
+            tag?.let(::addTag)
+            // Note: outOfQuotaPolicy is not supported for periodic tasks
+        }.build()
+}
 
 // Extension functions to convert Pigeon types to Android WorkManager types
 private fun dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.toAndroidWorkPolicy(): ExistingWorkPolicy =
@@ -149,36 +208,16 @@ class WorkManagerWrapper(
 
     fun enqueuePeriodicTask(request: dev.fluttercommunity.workmanager.pigeon.PeriodicTaskRequest) {
         val periodicTaskRequest =
-            PeriodicWorkRequest
-                .Builder(
-                    BackgroundWorker::class.java,
-                    request.frequencySeconds,
-                    TimeUnit.SECONDS,
-                    request.flexIntervalSeconds ?: DEFAULT_FLEX_INTERVAL_SECONDS,
-                    TimeUnit.SECONDS,
-                ).setInputData(
-                    buildTaskInputData(
-                        request.taskName,
-                        request.inputData?.filterNotNullKeys(),
-                    ),
-                ).setInitialDelay(
-                    request.initialDelaySeconds ?: DEFAULT_INITIAL_DELAY_SECONDS,
-                    TimeUnit.SECONDS,
-                ).setConstraints(request.constraints?.toAndroidConstraints() ?: defaultConstraints)
-                .apply {
-                    request.backoffPolicy?.let { backoffConfig ->
-                        if (backoffConfig.backoffPolicy != null && backoffConfig.backoffDelayMillis != null) {
-                            setBackoffCriteria(
-                                backoffConfig.backoffPolicy.toAndroidBackoffPolicy(),
-                                backoffConfig.backoffDelayMillis.toLong(),
-                                TimeUnit.MILLISECONDS,
-                            )
-                        }
-                    }
-                }.apply {
-                    request.tag?.let(::addTag)
-                    // Note: outOfQuotaPolicy is not supported for periodic tasks
-                }.build()
+            createPeriodicWorkRequest(
+                taskName = request.taskName,
+                inputData = request.inputData?.filterNotNullKeys(),
+                frequencySeconds = request.frequencySeconds,
+                flexIntervalSeconds = request.flexIntervalSeconds,
+                initialDelaySeconds = request.initialDelaySeconds,
+                constraints = request.constraints?.toAndroidConstraints() ?: defaultConstraints,
+                backoffPolicy = request.backoffPolicy,
+                tag = request.tag,
+            )
         workManager.enqueueUniquePeriodicWork(
             request.uniqueName,
             request.existingWorkPolicy?.toAndroidPeriodicWorkPolicy()
