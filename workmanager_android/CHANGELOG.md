@@ -1,3 +1,7 @@
+## 0.9.1
+
+ - **FEAT**: support typed Lists/Maps in inputData (fixes #426) (#690).
+
 ## 0.9.0+3
 
  - **FIX**: remove kotlin-android since AGP 9 supports it https://github.com/fluttercommunity/flutter_workmanager/issues/667 (#682).
