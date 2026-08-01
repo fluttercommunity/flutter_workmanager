@@ -92,7 +92,7 @@ For periodic tasks with more control than Background Fetch - uses BGTaskSchedule
 ```xml
 <key>UIBackgroundModes</key>
 <array>
-    <string>processing</string>
+    <string>fetch</string>
 </array>
 
 <key>BGTaskSchedulerPermittedIdentifiers</key>
@@ -238,6 +238,16 @@ Workmanager().registerPeriodicTask(
   },
 );
 ```
+
+<Warning>
+**iOS: `registerPeriodicTask` requires BGTaskScheduler setup.** On iOS the
+`uniqueName` you pass here is submitted to BGTaskScheduler, so it must appear in
+`BGTaskSchedulerPermittedIdentifiers` in Info.plist **and** be registered in
+AppDelegate via `WorkmanagerPlugin.registerPeriodicTask(withIdentifier:)`
+(see Option C above). Without that you'll get `BGTaskSchedulerErrorDomain
+Code 3` ("not advertised in the application's Info.plist"). On Android no
+native setup is needed.
+</Warning>
 
 ## Task Results
 
