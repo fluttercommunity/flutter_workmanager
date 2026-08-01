@@ -137,7 +137,9 @@ void main() {
       final Map<String?, Object?> inputData = {
         'outer': <dynamic, dynamic>{
           'innerList': ['x', 'y'],
-          'innerMap': <dynamic, dynamic>{'deep': [1, 2, 3]},
+          'innerMap': <dynamic, dynamic>{
+            'deep': [1, 2, 3]
+          },
         },
       };
 
