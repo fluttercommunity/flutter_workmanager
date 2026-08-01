@@ -86,7 +86,17 @@ jobs:
       # Run flutter integrate tests
       - name: Run Flutter integration tests
         timeout-minutes: 30
-        run: cd example && flutter test integration_test/workmanager_integration_test.dart
+        run: |
+          xcrun simctl spawn "${{ steps.sim.outputs.udid }}" log stream --style compact > /tmp/simctl.log 2>&1 &
+          LOG_PID=$!
+          cd example && flutter test integration_test/workmanager_integration_test.dart -d "${{ steps.sim.outputs.udid }}" --verbose
+          STATUS=$?
+          kill "$LOG_PID" 2>/dev/null || true
+          exit "$STATUS"
+      - name: Dump simulator logs
+        if: always()
+        run: |
+          tail -300 /tmp/simctl.log || true
 
 
   drive_android:
