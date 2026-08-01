@@ -102,41 +102,19 @@ class BackgroundWorker {
     @discardableResult
     func performBackgroundRequest(_ completionHandler: @escaping (BackgroundRequestResult) -> Void)
         -> Bool {
-#if os(iOS)
-        guard let callbackHandle = UserDefaultsHelper.getStoredCallbackHandle(),
-            let flutterCallbackInformation = FlutterCallbackCache.lookupCallbackInformation(
-                callbackHandle)
-        else {
+        guard let resolved = resolveBackgroundEntrypoint() else {
             logError("[\(String(describing: self))] \(WMPError.workmanagerNotInitialized.message)")
             completionHandler(.failed)
             return false
         }
-#elseif os(macOS)
-        // macOS does not expose FlutterCallbackCache (the iOS-only API used to
-        // look up the dispatcher by handle). The dispatcher must be a top-level
-        // function named `callbackDispatcher` in the app's main library, which
-        // is the entrypoint we run below.
-        let callbackHandle = UserDefaultsHelper.getStoredCallbackHandle()
-        guard callbackHandle != nil else {
-            logError("[\(String(describing: self))] \(WMPError.workmanagerNotInitialized.message)")
-            completionHandler(.failed)
-            return false
-        }
-#endif
 
         let taskSessionStart = Date()
-
-#if os(iOS)
-        let callbackInfo = flutterCallbackInformation.callbackName
-#elseif os(macOS)
-        let callbackInfo: String? = nil
-#endif
 
         let taskInfo = TaskDebugInfo(
             taskName: "background_fetch",
             startTime: taskSessionStart.timeIntervalSince1970,
-            callbackHandle: callbackHandle,
-            callbackInfo: callbackInfo
+            callbackHandle: resolved.handle,
+            callbackInfo: resolved.entrypoint.name
         )
 
         WorkmanagerDebug.onTaskStatusUpdate(taskInfo: taskInfo, status: .started)
@@ -149,13 +127,11 @@ class BackgroundWorker {
 
 #if os(iOS)
         flutterEngine!.run(
-            withEntrypoint: flutterCallbackInformation.callbackName,
-            libraryURI: flutterCallbackInformation.callbackLibraryPath
+            withEntrypoint: resolved.entrypoint.name,
+            libraryURI: resolved.entrypoint.libraryURI!
         )
 #elseif os(macOS)
-        flutterEngine!.run(
-            withEntrypoint: "callbackDispatcher"
-        )
+        flutterEngine!.run(withEntrypoint: resolved.entrypoint.name)
 #endif
         flutterPluginRegistrantCallback?(flutterEngine!)
 
@@ -231,5 +207,42 @@ class BackgroundWorker {
         }
 
         return true
+    }
+
+    /// Entrypoint information used to start the background engine.
+    private struct BackgroundEntrypoint {
+        let name: String
+        let libraryURI: String?
+    }
+
+    /// Resolves the stored callback handle and the engine entrypoint.
+    ///
+    /// iOS looks the callback up by handle via FlutterCallbackCache. macOS has
+    /// no equivalent API: the dispatcher must be a top-level function named
+    /// `callbackDispatcher` in the app's main library.
+    private func resolveBackgroundEntrypoint() -> (handle: Int64, entrypoint: BackgroundEntrypoint)? {
+#if os(iOS)
+        guard let callbackHandle = UserDefaultsHelper.getStoredCallbackHandle(),
+            let callbackInformation = FlutterCallbackCache.lookupCallbackInformation(
+                callbackHandle)
+        else {
+            return nil
+        }
+        return (
+            callbackHandle,
+            BackgroundEntrypoint(
+                name: callbackInformation.callbackName,
+                libraryURI: callbackInformation.callbackLibraryPath
+            )
+        )
+#elseif os(macOS)
+        guard let callbackHandle = UserDefaultsHelper.getStoredCallbackHandle() else {
+            return nil
+        }
+        return (
+            callbackHandle,
+            BackgroundEntrypoint(name: "callbackDispatcher", libraryURI: nil)
+        )
+#endif
     }
 }

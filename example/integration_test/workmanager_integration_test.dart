@@ -298,11 +298,11 @@ void main() {
       }
     });
 
-    testWidgets('registerProcessingTask should work on iOS only',
+    testWidgets('registerProcessingTask should work on iOS/macOS',
         (WidgetTester tester) async {
       await workmanager.initialize(callbackDispatcher);
 
-      if (Platform.isIOS) {
+      if (Platform.isIOS || Platform.isMacOS) {
         try {
           await workmanager.registerProcessingTask(
             'test.processing',
@@ -414,11 +414,11 @@ void main() {
       }
     });
 
-    testWidgets('printScheduledTasks should work on iOS only',
+    testWidgets('printScheduledTasks should work on iOS/macOS',
         (WidgetTester tester) async {
       await workmanager.initialize(callbackDispatcher);
 
-      if (Platform.isIOS) {
+      if (Platform.isIOS || Platform.isMacOS) {
         final result = await workmanager.printScheduledTasks();
         expect(result, isA<String>());
       } else {

@@ -16,7 +16,8 @@ import FlutterMacOS
  * Replaces the manual method channel and data extraction approach.
  *
  * - iOS uses BGTaskScheduler (BGAppRefreshTask / BGProcessingTask).
- * - macOS uses NSBackgroundActivityScheduler, the equivalent API for macOS.
+ * - macOS uses NSBackgroundActivityScheduler (see MacOSActivityScheduler),
+ *   the equivalent API for macOS.
  *
  * Note: Pigeon guarantees that host API handlers are not called when the plugin
  * is detached, so properties can be safely used without null checks in API methods.
@@ -32,83 +33,321 @@ public typealias WorkmanagerPluginBase = NSObject
 public class WorkmanagerPlugin: WorkmanagerPluginBase, FlutterPlugin, WorkmanagerHostApi {
     static let identifier = "dev.fluttercommunity.workmanager"
 
-#if os(iOS)
     private static var flutterPluginRegistrantCallback: WMPFlutterPluginRegistrantCallback?
-#elseif os(macOS)
-    private static var flutterPluginRegistrantCallback: WMPFlutterPluginRegistrantCallback?
-#endif
 
-    // MARK: - macOS NSBackgroundActivityScheduler
-
-#if os(macOS)
-    private static let activityRegistryLock = NSLock()
-    private static var scheduledActivities: [String: NSBackgroundActivityScheduler] = [:]
-
-    /// Schedules a task with NSBackgroundActivityScheduler.
+    /// Sets the plugin registrant callback for background task execution.
     ///
-    /// macOS has no BGTaskScheduler. `NSBackgroundActivityScheduler` runs the
-    /// activity while the app process is alive (foreground or backgrounded) and
-    /// the Mac is awake. Activities do not run after the app is quit.
+    /// This callback is used to register additional plugins when background tasks
+    /// run in a separate Flutter engine instance.
     ///
-    /// - Parameters:
-    ///   - uniqueName: Unique task identifier (also used as the activity identifier).
-    ///   - isPeriodic: `true` for repeating activities, `false` for one-off tasks.
-    ///   - interval: For one-off tasks this is the delay before the run; for
-    ///     periodic tasks it is the repeat interval in seconds.
-    ///   - inputData: Input data passed from the Dart side.
-    private static func scheduleActivity(
-        uniqueName: String,
-        isPeriodic: Bool,
-        interval: TimeInterval,
-        tolerance: TimeInterval?,
-        inputData: [String: Any]?,
-        taskName: String
-    ) {
-        let activity = NSBackgroundActivityScheduler(identifier: uniqueName)
-        activity.repeats = isPeriodic
-        activity.interval = interval
-        if let tolerance = tolerance {
-            activity.tolerance = tolerance
+    /// - Parameter callback: The callback to register plugins in the background engine
+    #if os(iOS)
+    @objc
+    public static func setPluginRegistrantCallback(_ callback: @escaping FlutterPluginRegistrantCallback) {
+        flutterPluginRegistrantCallback = callback
+    }
+    #elseif os(macOS)
+    /// macOS has no `FlutterPluginRegistrantCallback` typealias; the app wires the
+    /// generated registrant (e.g. `RegisterGeneratedPlugins(registry:)`) through a
+    /// closure that receives the headless engine's plugin registry.
+    public static func setPluginRegistrantCallback(_ callback: @escaping (FlutterPluginRegistry) -> Void) {
+        flutterPluginRegistrantCallback = callback
+    }
+    #endif
+
+    // MARK: - WorkmanagerHostApi implementation (shared)
+
+    func initialize(request: InitializeRequest, completion: @escaping (Result<Void, Error>) -> Void) {
+        UserDefaultsHelper.storeCallbackHandle(request.callbackHandle)
+        completion(.success(()))
+    }
+
+    func cancelByTag(tag: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        // Tags are not supported on iOS/macOS - this is an Android-specific feature
+        completion(.success(()))
+    }
+
+    // MARK: - WorkmanagerHostApi implementation (iOS)
+
+    #if os(iOS)
+    func registerOneOffTask(request: OneOffTaskRequest, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard validateCallbackHandle() else {
+            completion(.failure(createInitializationError()))
+            return
         }
-        activity.qualityOfService = .utility
 
-        activity.schedule { completion in
-            logInfo("[NSBackgroundActivityScheduler] Activity fired: \(uniqueName)")
+        executeIfSupportedVoid(completion: completion, feature: "OneOffTask") {
+            var taskIdentifier: UIBackgroundTaskIdentifier = .invalid
+            let delaySeconds = request.initialDelaySeconds ?? 0
 
-            let worker = BackgroundWorker(
-                mode: isPeriodic
-                    ? .backgroundPeriodicTask(identifier: uniqueName)
-                    : .backgroundOneOffTask(identifier: uniqueName),
-                inputData: inputData,
-                flutterPluginRegistrantCallback: flutterPluginRegistrantCallback
+            taskIdentifier = UIApplication.shared.beginBackgroundTask(withName: request.uniqueName, expirationHandler: {
+                UIApplication.shared.endBackgroundTask(taskIdentifier)
+            })
+
+            WorkmanagerPlugin.startOneOffTask(
+                identifier: request.uniqueName,
+                taskIdentifier: taskIdentifier,
+                inputData: request.inputData as? [String: Any],
+                delaySeconds: delaySeconds
             )
 
-            // Flutter engine operations must happen on the main thread.
-            DispatchQueue.main.async {
-                worker.performBackgroundRequest { result in
-                    logInfo(
-                        "[NSBackgroundActivityScheduler] Activity \(uniqueName) finished with \(result.debugDescription)"
-                    )
-                    completion(.finished)
-                }
-            }
+            let taskInfo = TaskDebugInfo(
+                taskName: request.taskName,
+                uniqueName: request.uniqueName,
+                inputData: request.inputData as? [String: Any],
+                startTime: Date().timeIntervalSince1970
+            )
+            WorkmanagerDebug.getCurrent().onTaskStatusUpdate(taskInfo: taskInfo, status: .scheduled, result: nil)
+        }
+    }
+
+    func registerPeriodicTask(request: PeriodicTaskRequest, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard validateCallbackHandle() else {
+            completion(.failure(createInitializationError()))
+            return
         }
 
-        WorkmanagerPlugin.activityRegistryLock.lock()
-        WorkmanagerPlugin.scheduledActivities[uniqueName]?.invalidate()
-        WorkmanagerPlugin.scheduledActivities[uniqueName] = activity
-        WorkmanagerPlugin.activityRegistryLock.unlock()
+        executeIfSupportedVoid(completion: completion, feature: "PeriodicTask") {
+            let initialDelaySeconds = Double(request.initialDelaySeconds ?? 0)
 
-        logInfo(
-            "[NSBackgroundActivityScheduler] Scheduled \(isPeriodic ? "periodic" : "one-off") activity " +
-                "\(uniqueName) interval: \(interval)s"
+            // Store the inputData for later retrieval when the task executes
+            UserDefaultsHelper.storePeriodicTaskInputData(
+                request.inputData as? [String: Any],
+                forTaskIdentifier: request.uniqueName
+            )
+
+            WorkmanagerPlugin.schedulePeriodicTask(
+                taskIdentifier: request.uniqueName,
+                earliestBeginInSeconds: initialDelaySeconds
+            )
+
+            let taskInfo = TaskDebugInfo(
+                taskName: request.taskName,
+                uniqueName: request.uniqueName,
+                inputData: request.inputData as? [String: Any],
+                startTime: Date().timeIntervalSince1970
+            )
+            WorkmanagerDebug.getCurrent().onTaskStatusUpdate(taskInfo: taskInfo, status: .scheduled, result: nil)
+        }
+    }
+
+    func registerProcessingTask(request: ProcessingTaskRequest, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard validateCallbackHandle() else {
+            completion(.failure(createInitializationError()))
+            return
+        }
+
+        executeIfSupportedVoid(completion: completion, feature: "BackgroundProcessingTask") {
+            let delaySeconds = Double(request.initialDelaySeconds ?? 0)
+            let requiresCharging = request.requiresCharging ?? false
+            let requiresNetwork = request.networkType == .connected || request.networkType == .metered
+
+            WorkmanagerPlugin.scheduleBackgroundProcessingTask(
+                withIdentifier: request.uniqueName,
+                earliestBeginInSeconds: delaySeconds,
+                requiresNetworkConnectivity: requiresNetwork,
+                requiresExternalPower: requiresCharging
+            )
+        }
+    }
+
+    func cancelByUniqueName(uniqueName: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        executeIfSupportedVoid(completion: completion, feature: "cancelByUniqueName") {
+            BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: uniqueName)
+        }
+    }
+
+    func cancelAll(completion: @escaping (Result<Void, Error>) -> Void) {
+        executeIfSupportedVoid(completion: completion, feature: "cancelAll") {
+            BGTaskScheduler.shared.cancelAllTaskRequests()
+        }
+    }
+
+    func isScheduledByUniqueName(uniqueName: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        if #available(iOS 13.0, *) {
+            BGTaskScheduler.shared.getPendingTaskRequests { taskRequests in
+                let isScheduled = taskRequests.contains { $0.identifier == uniqueName }
+                completion(.success(isScheduled))
+            }
+        } else {
+            completion(.success(false))
+        }
+    }
+
+    func printScheduledTasks(completion: @escaping (Result<String, Error>) -> Void) {
+        if #available(iOS 13.0, *) {
+            BGTaskScheduler.shared.getPendingTaskRequests { taskRequests in
+                if taskRequests.isEmpty {
+                    let message = "[BGTaskScheduler] There are no scheduled tasks"
+                    log(message)
+                    completion(.success(message))
+                    return
+                }
+
+                var message = "[BGTaskScheduler] Scheduled Tasks:"
+                for taskRequest in taskRequests {
+                    message += "\n[BGTaskScheduler] Task Identifier: \(taskRequest.identifier) earliestBeginDate: \(taskRequest.earliestBeginDate?.formatted() ?? "")"
+                }
+                log("\(message)")
+                completion(.success(message))
+            }
+        } else {
+            completion(.failure(PigeonError(
+                code: "99",
+                message: "printScheduledTasks is only supported on iOS 13+",
+                details: "BGTaskScheduler.getPendingTaskRequests is only supported on iOS 13+"
+            )))
+        }
+    }
+    #endif
+
+    // MARK: - Helper methods
+
+    private func validateCallbackHandle() -> Bool {
+        return UserDefaultsHelper.getStoredCallbackHandle() != nil
+    }
+
+    private func createInitializationError() -> PigeonError {
+        return PigeonError(
+            code: "1",
+            message: "You have not properly initialized the Flutter WorkManager Package. " +
+                    "You should ensure you have called the 'initialize' function first! " +
+                    "Example: \n" +
+                    "\n" +
+                    "`Workmanager().initialize(\n" +
+                    "  callbackDispatcher,\n" +
+                    " )`" +
+                    "\n" +
+                    "\n" +
+                    "The `callbackDispatcher` is a top level function. See example in repository.",
+            details: nil
         )
     }
+}
+
+// MARK: - WorkmanagerHostApi implementation (macOS)
+
+#if os(macOS)
+extension WorkmanagerPlugin {
+    func registerOneOffTask(request: OneOffTaskRequest, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard validateCallbackHandle() else {
+            completion(.failure(createInitializationError()))
+            return
+        }
+
+        let delaySeconds = Double(request.initialDelaySeconds ?? 0)
+        if delaySeconds > 0 {
+            MacOSActivityScheduler.shared.scheduleActivity(
+                uniqueName: request.uniqueName,
+                isPeriodic: false,
+                interval: delaySeconds,
+                inputData: request.inputData as? [String: Any],
+                flutterPluginRegistrantCallback: WorkmanagerPlugin.flutterPluginRegistrantCallback
+            )
+        } else {
+            MacOSActivityScheduler.shared.runOneOffTaskNow(
+                uniqueName: request.uniqueName,
+                taskName: request.taskName,
+                inputData: request.inputData as? [String: Any],
+                flutterPluginRegistrantCallback: WorkmanagerPlugin.flutterPluginRegistrantCallback
+            )
+        }
+
+        let taskInfo = TaskDebugInfo(
+            taskName: request.taskName,
+            uniqueName: request.uniqueName,
+            inputData: request.inputData as? [String: Any],
+            startTime: Date().timeIntervalSince1970
+        )
+        WorkmanagerDebug.getCurrent().onTaskStatusUpdate(taskInfo: taskInfo, status: .scheduled, result: nil)
+        completion(.success(()))
+    }
+
+    func registerPeriodicTask(request: PeriodicTaskRequest, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard validateCallbackHandle() else {
+            completion(.failure(createInitializationError()))
+            return
+        }
+
+        let frequencySeconds = max(Double(request.frequencySeconds), 1)
+        MacOSActivityScheduler.shared.scheduleActivity(
+            uniqueName: request.uniqueName,
+            isPeriodic: true,
+            interval: frequencySeconds,
+            inputData: request.inputData as? [String: Any],
+            flutterPluginRegistrantCallback: WorkmanagerPlugin.flutterPluginRegistrantCallback
+        )
+
+        let taskInfo = TaskDebugInfo(
+            taskName: request.taskName,
+            uniqueName: request.uniqueName,
+            inputData: request.inputData as? [String: Any],
+            startTime: Date().timeIntervalSince1970
+        )
+        WorkmanagerDebug.getCurrent().onTaskStatusUpdate(taskInfo: taskInfo, status: .scheduled, result: nil)
+        completion(.success(()))
+    }
+
+    func registerProcessingTask(request: ProcessingTaskRequest, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard validateCallbackHandle() else {
+            completion(.failure(createInitializationError()))
+            return
+        }
+
+        // NSBackgroundActivityScheduler has no network/charging constraints;
+        // processing tasks map to a one-off task scheduled best-effort.
+        let delaySeconds = Double(request.initialDelaySeconds ?? 0)
+        if delaySeconds > 0 {
+            MacOSActivityScheduler.shared.scheduleActivity(
+                uniqueName: request.uniqueName,
+                isPeriodic: false,
+                interval: delaySeconds,
+                inputData: request.inputData as? [String: Any],
+                flutterPluginRegistrantCallback: WorkmanagerPlugin.flutterPluginRegistrantCallback
+            )
+        } else {
+            MacOSActivityScheduler.shared.runOneOffTaskNow(
+                uniqueName: request.uniqueName,
+                taskName: request.taskName,
+                inputData: request.inputData as? [String: Any],
+                flutterPluginRegistrantCallback: WorkmanagerPlugin.flutterPluginRegistrantCallback
+            )
+        }
+
+        let taskInfo = TaskDebugInfo(
+            taskName: request.taskName,
+            uniqueName: request.uniqueName,
+            inputData: request.inputData as? [String: Any],
+            startTime: Date().timeIntervalSince1970
+        )
+        WorkmanagerDebug.getCurrent().onTaskStatusUpdate(taskInfo: taskInfo, status: .scheduled, result: nil)
+        completion(.success(()))
+    }
+
+    func cancelByUniqueName(uniqueName: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        MacOSActivityScheduler.shared.cancel(uniqueName: uniqueName)
+        completion(.success(()))
+    }
+
+    func cancelAll(completion: @escaping (Result<Void, Error>) -> Void) {
+        MacOSActivityScheduler.shared.cancelAll()
+        completion(.success(()))
+    }
+
+    func isScheduledByUniqueName(uniqueName: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        completion(.success(MacOSActivityScheduler.shared.isScheduled(uniqueName: uniqueName)))
+    }
+
+    func printScheduledTasks(completion: @escaping (Result<String, Error>) -> Void) {
+        completion(.success(MacOSActivityScheduler.shared.printScheduledActivities()))
+    }
+}
 #endif
 
-    // MARK: - Static Background Task Handlers (iOS)
+// MARK: - Background task scheduling (iOS only)
 
 #if os(iOS)
+extension WorkmanagerPlugin {
     @available(iOS 13.0, *)
     private static func handleBGProcessingTask(identifier: String, task: BGProcessingTask) {
         let operationQueue = OperationQueue()
@@ -282,307 +521,7 @@ public class WorkmanagerPlugin: WorkmanagerPluginBase, FlutterPlugin, Workmanage
             logInfo("Possible issues can be: running on a simulator instead of a real device, or the task name is not registered")
         }
     }
-#endif
 
-    // MARK: - FlutterPlugin conformance
-
-    /// Sets the plugin registrant callback for background task execution.
-    ///
-    /// This callback is used to register additional plugins when background tasks
-    /// run in a separate Flutter engine instance.
-    ///
-    /// - Parameter callback: The callback to register plugins in the background engine
-    #if os(iOS)
-    @objc
-    public static func setPluginRegistrantCallback(_ callback: @escaping FlutterPluginRegistrantCallback) {
-        flutterPluginRegistrantCallback = callback
-    }
-    #elseif os(macOS)
-    /// macOS has no `FlutterPluginRegistrantCallback` typealias; the app wires the
-    /// generated registrant (e.g. `RegisterGeneratedPlugins(registry:)`) through a
-    /// closure that receives the headless engine's plugin registry.
-    public static func setPluginRegistrantCallback(_ callback: @escaping (FlutterPluginRegistry) -> Void) {
-        flutterPluginRegistrantCallback = callback
-    }
-    #endif
-
-    // MARK: - WorkmanagerHostApi implementation
-
-    func initialize(request: InitializeRequest, completion: @escaping (Result<Void, Error>) -> Void) {
-        UserDefaultsHelper.storeCallbackHandle(request.callbackHandle)
-        completion(.success(()))
-    }
-
-    func registerOneOffTask(request: OneOffTaskRequest, completion: @escaping (Result<Void, Error>) -> Void) {
-        guard validateCallbackHandle() else {
-            completion(.failure(createInitializationError()))
-            return
-        }
-
-        #if os(iOS)
-        executeIfSupportedVoid(completion: completion, feature: "OneOffTask") {
-            var taskIdentifier: UIBackgroundTaskIdentifier = .invalid
-            let delaySeconds = request.initialDelaySeconds ?? 0
-
-            taskIdentifier = UIApplication.shared.beginBackgroundTask(withName: request.uniqueName, expirationHandler: {
-                UIApplication.shared.endBackgroundTask(taskIdentifier)
-            })
-
-            WorkmanagerPlugin.startOneOffTask(
-                identifier: request.uniqueName,
-                taskIdentifier: taskIdentifier,
-                inputData: request.inputData as? [String: Any],
-                delaySeconds: delaySeconds
-            )
-
-            let taskInfo = TaskDebugInfo(
-                taskName: request.taskName,
-                uniqueName: request.uniqueName,
-                inputData: request.inputData as? [String: Any],
-                startTime: Date().timeIntervalSince1970
-            )
-            WorkmanagerDebug.getCurrent().onTaskStatusUpdate(taskInfo: taskInfo, status: .scheduled, result: nil)
-        }
-        #elseif os(macOS)
-        let delaySeconds = Double(request.initialDelaySeconds ?? 0)
-
-        WorkmanagerPlugin.scheduleActivity(
-            uniqueName: request.uniqueName,
-            isPeriodic: false,
-            interval: delaySeconds,
-            tolerance: 0,
-            inputData: request.inputData as? [String: Any],
-            taskName: request.taskName
-        )
-
-        let taskInfo = TaskDebugInfo(
-            taskName: request.taskName,
-            uniqueName: request.uniqueName,
-            inputData: request.inputData as? [String: Any],
-            startTime: Date().timeIntervalSince1970
-        )
-        WorkmanagerDebug.getCurrent().onTaskStatusUpdate(taskInfo: taskInfo, status: .scheduled, result: nil)
-        completion(.success(()))
-        #endif
-    }
-
-    func registerPeriodicTask(request: PeriodicTaskRequest, completion: @escaping (Result<Void, Error>) -> Void) {
-        guard validateCallbackHandle() else {
-            completion(.failure(createInitializationError()))
-            return
-        }
-
-        #if os(iOS)
-        executeIfSupportedVoid(completion: completion, feature: "PeriodicTask") {
-            let initialDelaySeconds = Double(request.initialDelaySeconds ?? 0)
-
-            // Store the inputData for later retrieval when the task executes
-            UserDefaultsHelper.storePeriodicTaskInputData(
-                request.inputData as? [String: Any],
-                forTaskIdentifier: request.uniqueName
-            )
-
-            WorkmanagerPlugin.schedulePeriodicTask(
-                taskIdentifier: request.uniqueName,
-                earliestBeginInSeconds: initialDelaySeconds
-            )
-
-            let taskInfo = TaskDebugInfo(
-                taskName: request.taskName,
-                uniqueName: request.uniqueName,
-                inputData: request.inputData as? [String: Any],
-                startTime: Date().timeIntervalSince1970
-            )
-            WorkmanagerDebug.getCurrent().onTaskStatusUpdate(taskInfo: taskInfo, status: .scheduled, result: nil)
-        }
-        #elseif os(macOS)
-        let frequencySeconds = max(Double(request.frequencySeconds), 1)
-
-        WorkmanagerPlugin.scheduleActivity(
-            uniqueName: request.uniqueName,
-            isPeriodic: true,
-            interval: frequencySeconds,
-            tolerance: nil,
-            inputData: request.inputData as? [String: Any],
-            taskName: request.taskName
-        )
-
-        let taskInfo = TaskDebugInfo(
-            taskName: request.taskName,
-            uniqueName: request.uniqueName,
-            inputData: request.inputData as? [String: Any],
-            startTime: Date().timeIntervalSince1970
-        )
-        WorkmanagerDebug.getCurrent().onTaskStatusUpdate(taskInfo: taskInfo, status: .scheduled, result: nil)
-        completion(.success(()))
-        #endif
-    }
-
-    func registerProcessingTask(request: ProcessingTaskRequest, completion: @escaping (Result<Void, Error>) -> Void) {
-        guard validateCallbackHandle() else {
-            completion(.failure(createInitializationError()))
-            return
-        }
-
-        #if os(iOS)
-        executeIfSupportedVoid(completion: completion, feature: "BackgroundProcessingTask") {
-            let delaySeconds = Double(request.initialDelaySeconds ?? 0)
-            let requiresCharging = request.requiresCharging ?? false
-            let requiresNetwork = request.networkType == .connected || request.networkType == .metered
-
-            WorkmanagerPlugin.scheduleBackgroundProcessingTask(
-                withIdentifier: request.uniqueName,
-                earliestBeginInSeconds: delaySeconds,
-                requiresNetworkConnectivity: requiresNetwork,
-                requiresExternalPower: requiresCharging
-            )
-        }
-        #elseif os(macOS)
-        // NSBackgroundActivityScheduler has no network/charging constraints;
-        // processing tasks map to a one-off activity scheduled best-effort.
-        let delaySeconds = Double(request.initialDelaySeconds ?? 0)
-
-        WorkmanagerPlugin.scheduleActivity(
-            uniqueName: request.uniqueName,
-            isPeriodic: false,
-            interval: delaySeconds,
-            tolerance: 0,
-            inputData: request.inputData as? [String: Any],
-            taskName: request.taskName
-        )
-
-        let taskInfo = TaskDebugInfo(
-            taskName: request.taskName,
-            uniqueName: request.uniqueName,
-            inputData: request.inputData as? [String: Any],
-            startTime: Date().timeIntervalSince1970
-        )
-        WorkmanagerDebug.getCurrent().onTaskStatusUpdate(taskInfo: taskInfo, status: .scheduled, result: nil)
-        completion(.success(()))
-        #endif
-    }
-
-    func cancelByUniqueName(uniqueName: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        #if os(iOS)
-        executeIfSupportedVoid(completion: completion, feature: "cancelByUniqueName") {
-            BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: uniqueName)
-        }
-        #elseif os(macOS)
-        WorkmanagerPlugin.activityRegistryLock.lock()
-        WorkmanagerPlugin.scheduledActivities.removeValue(forKey: uniqueName)?.invalidate()
-        WorkmanagerPlugin.activityRegistryLock.unlock()
-        completion(.success(()))
-        #endif
-    }
-
-    func cancelByTag(tag: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        // Tags are not supported on iOS/macOS - this is an Android-specific feature
-        completion(.success(()))
-    }
-
-    func cancelAll(completion: @escaping (Result<Void, Error>) -> Void) {
-        #if os(iOS)
-        executeIfSupportedVoid(completion: completion, feature: "cancelAll") {
-            BGTaskScheduler.shared.cancelAllTaskRequests()
-        }
-        #elseif os(macOS)
-        WorkmanagerPlugin.activityRegistryLock.lock()
-        let activities = Array(WorkmanagerPlugin.scheduledActivities.values)
-        WorkmanagerPlugin.scheduledActivities.removeAll()
-        WorkmanagerPlugin.activityRegistryLock.unlock()
-        activities.forEach { $0.invalidate() }
-        completion(.success(()))
-        #endif
-    }
-
-    func isScheduledByUniqueName(uniqueName: String, completion: @escaping (Result<Bool, Error>) -> Void) {
-        #if os(iOS)
-        if #available(iOS 13.0, *) {
-            BGTaskScheduler.shared.getPendingTaskRequests { taskRequests in
-                let isScheduled = taskRequests.contains { $0.identifier == uniqueName }
-                completion(.success(isScheduled))
-            }
-        } else {
-            completion(.success(false))
-        }
-        #elseif os(macOS)
-        WorkmanagerPlugin.activityRegistryLock.lock()
-        let isScheduled = WorkmanagerPlugin.scheduledActivities[uniqueName] != nil
-        WorkmanagerPlugin.activityRegistryLock.unlock()
-        completion(.success(isScheduled))
-        #endif
-    }
-
-    func printScheduledTasks(completion: @escaping (Result<String, Error>) -> Void) {
-        #if os(iOS)
-        if #available(iOS 13.0, *) {
-            BGTaskScheduler.shared.getPendingTaskRequests { taskRequests in
-                if taskRequests.isEmpty {
-                    let message = "[BGTaskScheduler] There are no scheduled tasks"
-                    log(message)
-                    completion(.success(message))
-                    return
-                }
-
-                var message = "[BGTaskScheduler] Scheduled Tasks:"
-                for taskRequest in taskRequests {
-                    message += "\n[BGTaskScheduler] Task Identifier: \(taskRequest.identifier) earliestBeginDate: \(taskRequest.earliestBeginDate?.formatted() ?? "")"
-                }
-                log("\(message)")
-                completion(.success(message))
-            }
-        } else {
-            completion(.failure(PigeonError(
-                code: "99",
-                message: "printScheduledTasks is only supported on iOS 13+",
-                details: "BGTaskScheduler.getPendingTaskRequests is only supported on iOS 13+"
-            )))
-        }
-        #elseif os(macOS)
-        WorkmanagerPlugin.activityRegistryLock.lock()
-        let activities = Array(WorkmanagerPlugin.scheduledActivities.values)
-        WorkmanagerPlugin.activityRegistryLock.unlock()
-
-        if activities.isEmpty {
-            let message = "[NSBackgroundActivityScheduler] There are no scheduled activities"
-            log(message)
-            completion(.success(message))
-            return
-        }
-
-        var message = "[NSBackgroundActivityScheduler] Scheduled Activities:"
-        for activity in activities {
-            message += "\n[NSBackgroundActivityScheduler] Activity Identifier: \(activity.identifier) interval: \(activity.interval)s repeats: \(activity.repeats)"
-        }
-        log("\(message)")
-        completion(.success(message))
-        #endif
-    }
-
-    // MARK: - Helper methods
-
-    private func validateCallbackHandle() -> Bool {
-        return UserDefaultsHelper.getStoredCallbackHandle() != nil
-    }
-
-    private func createInitializationError() -> PigeonError {
-        return PigeonError(
-            code: "1",
-            message: "You have not properly initialized the Flutter WorkManager Package. " +
-                    "You should ensure you have called the 'initialize' function first! " +
-                    "Example: \n" +
-                    "\n" +
-                    "`Workmanager().initialize(\n" +
-                    "  callbackDispatcher,\n" +
-                    " )`" +
-                    "\n" +
-                    "\n" +
-                    "The `callbackDispatcher` is a top level function. See example in repository.",
-            details: nil
-        )
-    }
-
-    #if os(iOS)
     private func createUnsupportedVersionError(feature: String) -> PigeonError {
         return PigeonError(
             code: "99",
@@ -635,8 +574,8 @@ public class WorkmanagerPlugin: WorkmanagerPluginBase, FlutterPlugin, Workmanage
             backgroundMode: backgroundMode
         )
     }
-    #endif
 }
+#endif
 
 // MARK: - FlutterPlugin conformance
 
@@ -645,11 +584,9 @@ extension WorkmanagerPlugin {
         let instance = WorkmanagerPlugin()
         #if os(iOS)
         WorkmanagerHostApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
+        registrar.addApplicationDelegate(instance)
         #elseif os(macOS)
         WorkmanagerHostApiSetup.setUp(binaryMessenger: registrar.messenger, api: instance)
-        #endif
-        #if os(iOS)
-        registrar.addApplicationDelegate(instance)
         #endif
     }
 }

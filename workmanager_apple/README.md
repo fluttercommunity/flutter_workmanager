@@ -8,7 +8,9 @@ The Apple platform (iOS/macOS) implementation of [`workmanager`][workmanager].
 
 ## Description
 
-This package provides the Apple platform-specific implementation for the workmanager plugin, supporting iOS background fetch and BGTaskScheduler APIs for background task execution in Flutter applications on iOS and macOS.
+This package provides the Apple platform-specific implementation for the workmanager plugin,
+supporting iOS background fetch and BGTaskScheduler APIs, and macOS `NSBackgroundActivityScheduler`
+based background task execution in Flutter applications on iOS and macOS.
 
 ## Usage
 

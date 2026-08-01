@@ -85,7 +85,7 @@ class Workmanager {
         WorkmanagerPlatform.instance is! WorkmanagerApple) {
       if (Platform.isAndroid) {
         WorkmanagerPlatform.instance = WorkmanagerAndroid();
-      } else if (Platform.isIOS) {
+      } else if (Platform.isIOS || Platform.isMacOS) {
         WorkmanagerPlatform.instance = WorkmanagerApple();
       }
     }
@@ -147,6 +147,11 @@ class Workmanager {
   /// Scheduling other background tasks inside the [BackgroundTaskHandler] is allowed.
   void executeTask(BackgroundTaskHandler backgroundTaskHandler) async {
     WidgetsFlutterBinding.ensureInitialized();
+    try {
+      final marker =
+          File('${Directory.systemTemp.path}/wm_execute_task_marker');
+      marker.writeAsStringSync('executeTask called ${DateTime.now()}');
+    } catch (_) {}
 
     _backgroundTaskHandler = backgroundTaskHandler;
     _flutterApi = _WorkmanagerFlutterApiImpl();
