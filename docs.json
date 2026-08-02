@@ -36,6 +36,10 @@
         {
           "title": "Debugging",
           "href": "/debugging"
+        },
+        {
+          "title": "Troubleshooting",
+          "href": "/troubleshooting"
         }
       ]
     }
