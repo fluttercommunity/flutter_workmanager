@@ -1,6 +1,7 @@
 package dev.fluttercommunity.workmanager
 
 import dev.fluttercommunity.workmanager.pigeon.InitializeRequest
+import dev.fluttercommunity.workmanager.pigeon.HealthResearchTaskRequest
 import dev.fluttercommunity.workmanager.pigeon.OneOffTaskRequest
 import dev.fluttercommunity.workmanager.pigeon.PeriodicTaskRequest
 import dev.fluttercommunity.workmanager.pigeon.ProcessingTaskRequest
