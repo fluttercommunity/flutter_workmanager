@@ -124,6 +124,19 @@ class WorkmanagerAndroid extends WorkmanagerPlatform {
   }
 
   @override
+  Future<void> registerContinuedProcessingTask(
+    String uniqueName,
+    String taskName, {
+    String? title,
+    String? subtitle,
+    Map<String, dynamic>? inputData,
+  }) async {
+    // Continued processing tasks are iOS 26+-specific, so this is a no-op on Android
+    throw UnsupportedError(
+        'Continued processing tasks are not supported on Android');
+  }
+
+  @override
   Future<void> cancelByUniqueName(String uniqueName) async {
     await _api.cancelByUniqueName(uniqueName);
   }

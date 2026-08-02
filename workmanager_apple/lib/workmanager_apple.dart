@@ -132,6 +132,23 @@ class WorkmanagerApple extends WorkmanagerPlatform {
   }
 
   @override
+  Future<void> registerContinuedProcessingTask(
+    String uniqueName,
+    String taskName, {
+    String? title,
+    String? subtitle,
+    Map<String, dynamic>? inputData,
+  }) async {
+    await _api.registerContinuedProcessingTask(ContinuedProcessingTaskRequest(
+      uniqueName: uniqueName,
+      taskName: taskName,
+      title: title,
+      subtitle: subtitle,
+      inputData: inputData?.cast<String?, Object?>(),
+    ));
+  }
+
+  @override
   Future<void> cancelByUniqueName(String uniqueName) async {
     await _api.cancelByUniqueName(uniqueName);
   }
