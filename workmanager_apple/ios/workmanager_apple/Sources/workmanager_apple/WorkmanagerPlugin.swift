@@ -35,6 +35,16 @@ public class WorkmanagerPlugin: WorkmanagerPluginBase, FlutterPlugin, Workmanage
 
     private static var flutterPluginRegistrantCallback: WMPFlutterPluginRegistrantCallback?
 
+    /// The binary messenger of the engine the plugin was registered on (the
+    /// main app engine on iOS).
+    ///
+    /// One-off tasks are executed through this messenger when the app is
+    /// alive, instead of spawning a second full Flutter engine. Spawning a
+    /// second engine reloads the AOT snapshot into a fresh isolate group and
+    /// can abort with an allocation failure on memory-constrained devices
+    /// (fluttercommunity/flutter_workmanager#653).
+    static var mainBinaryMessenger: FlutterBinaryMessenger?
+
     /// Sets the plugin registrant callback for background task execution.
     ///
     /// This callback is used to register additional plugins when background tasks
@@ -476,6 +486,146 @@ extension WorkmanagerPlugin {
     ///   - delaySeconds: Delay before task execution
     @available(iOS 13.0, *)
     public static func startOneOffTask(identifier: String, taskIdentifier: UIBackgroundTaskIdentifier, inputData: [String: Any]?, delaySeconds: Int64) {
+        let runTask = {
+            if let messenger = mainBinaryMessenger {
+                runOneOffTaskOnMainEngine(
+                    identifier: identifier,
+                    taskIdentifier: taskIdentifier,
+                    inputData: inputData,
+                    messenger: messenger
+                )
+            } else {
+                runOneOffTaskWithHeadlessEngine(
+                    identifier: identifier,
+                    taskIdentifier: taskIdentifier,
+                    inputData: inputData
+                )
+            }
+        }
+        if delaySeconds > 0 {
+            DispatchQueue.global().asyncAfter(deadline: .now() + Double(delaySeconds)) {
+                runTask()
+            }
+        } else {
+            runTask()
+        }
+    }
+
+    /// Executes a one-off task on the running (main) Flutter engine.
+    ///
+    /// The Dart side registers its task handler on the main engine's messenger
+    /// during `initialize` (running the callbackDispatcher lazily on the first
+    /// task), so the task can be executed without loading the AOT snapshot a
+    /// second time. Falls back to a dedicated headless engine when the Dart
+    /// side is not ready (e.g. initialize has not completed yet).
+    @available(iOS 13.0, *)
+    private static func runOneOffTaskOnMainEngine(
+        identifier: String,
+        taskIdentifier: UIBackgroundTaskIdentifier,
+        inputData: [String: Any]?,
+        messenger: FlutterBinaryMessenger
+    ) {
+        let taskSessionStart = Date()
+        let taskInfo = TaskDebugInfo(
+            taskName: identifier,
+            uniqueName: nil,
+            inputData: inputData,
+            startTime: taskSessionStart.timeIntervalSince1970,
+            callbackHandle: UserDefaultsHelper.getStoredCallbackHandle(),
+            callbackInfo: identifier
+        )
+        WorkmanagerDebug.onTaskStatusUpdate(taskInfo: taskInfo, status: .started)
+
+        let flutterApi = WorkmanagerFlutterApi(binaryMessenger: messenger)
+        flutterApi.backgroundChannelInitialized { result in
+            switch result {
+            case .success:
+                flutterApi.executeTask(
+                    taskName: identifier,
+                    inputData: pigeonInputData(for: inputData)
+                ) { taskResult in
+                    completeOneOffTaskOnMainEngine(
+                        identifier: identifier,
+                        taskIdentifier: taskIdentifier,
+                        taskInfo: taskInfo,
+                        taskSessionStart: taskSessionStart,
+                        taskResult: taskResult
+                    )
+                }
+            case .failure:
+                // The Dart side has not registered an in-process handler yet;
+                // fall back to the dedicated headless engine so the task still
+                // runs via its own callbackDispatcher execution.
+                logError(
+                    "[\(String(describing: self))] in-process execution unavailable for \(identifier), " +
+                        "falling back to headless engine"
+                )
+                runOneOffTaskWithHeadlessEngine(
+                    identifier: identifier,
+                    taskIdentifier: taskIdentifier,
+                    inputData: inputData
+                )
+            }
+        }
+    }
+
+    /// Converts inputData to the key/value format expected by Pigeon.
+    private static func pigeonInputData(for inputData: [String: Any]?) -> [String?: Any?]? {
+        guard let inputData = inputData else {
+            return nil
+        }
+        return Dictionary(uniqueKeysWithValues: inputData.map { ($0.key as String?, $0.value as Any?) })
+    }
+
+    /// Ends the background task and reports the debug status for a one-off task
+    /// that executed on the main engine.
+    @available(iOS 13.0, *)
+    private static func completeOneOffTaskOnMainEngine(
+        identifier: String,
+        taskIdentifier: UIBackgroundTaskIdentifier,
+        taskInfo: TaskDebugInfo,
+        taskSessionStart: Date,
+        taskResult: Result<Bool, PigeonError>
+    ) {
+        UIApplication.shared.endBackgroundTask(taskIdentifier)
+
+        let taskDuration = Date().timeIntervalSince(taskSessionStart)
+        let status: TaskStatus
+        let errorMessage: String?
+        switch taskResult {
+        case .success:
+            status = .completed
+            errorMessage = nil
+        case .failure(let error):
+            status = .failed
+            errorMessage = error.localizedDescription
+        }
+
+        logInfo(
+            "[\(String(describing: self))] one-off task \(identifier) -> .\(status) " +
+                "(finished in \(taskDuration.formatToSeconds()))"
+        )
+        WorkmanagerDebug.onTaskStatusUpdate(
+            taskInfo: taskInfo,
+            status: status,
+            result: TaskResult(
+                success: status == .completed,
+                duration: Int64(taskDuration * 1000),
+                error: errorMessage
+            )
+        )
+    }
+
+    /// Executes a one-off task in a dedicated headless Flutter engine.
+    ///
+    /// Kept as the fallback path (and for apps that never register the plugin
+    /// on the main engine); see [runOneOffTaskOnMainEngine].
+    @available(iOS 13.0, *)
+    private static func runOneOffTaskWithHeadlessEngine(
+        identifier: String,
+        taskIdentifier: UIBackgroundTaskIdentifier,
+        inputData: [String: Any]?
+    ) {
         let operationQueue = OperationQueue()
         let operation = createBackgroundOperation(
             identifier: identifier,
@@ -484,13 +634,7 @@ extension WorkmanagerPlugin {
         )
 
         operation.completionBlock = { UIApplication.shared.endBackgroundTask(taskIdentifier) }
-        if delaySeconds > 0 {
-            DispatchQueue.global().asyncAfter(deadline: .now() + Double(delaySeconds)) {
-                operationQueue.addOperation(operation)
-            }
-        } else {
-            operationQueue.addOperation(operation)
-        }
+        operationQueue.addOperation(operation)
     }
 
     /// Registers a periodic background task with iOS BGTaskScheduler.
@@ -788,6 +932,7 @@ extension WorkmanagerPlugin {
     public static func register(with registrar: FlutterPluginRegistrar) {
         let instance = WorkmanagerPlugin()
         #if os(iOS)
+        mainBinaryMessenger = registrar.messenger()
         WorkmanagerHostApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
         registrar.addApplicationDelegate(instance)
         registrar.addSceneDelegate(instance)

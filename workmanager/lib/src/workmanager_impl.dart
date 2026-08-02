@@ -112,6 +112,18 @@ class Workmanager {
   static BackgroundTaskHandler? _backgroundTaskHandler;
   static late final WorkmanagerFlutterApi _flutterApi;
 
+  /// The callback dispatcher registered via [initialize], kept so in-process
+  /// (main-engine) one-off tasks can lazily register their task handler on
+  /// first execution without spawning a second Flutter engine.
+  static Function? _callbackDispatcher;
+
+  /// Whether [_callbackDispatcher] has already run in the current isolate.
+  static bool _inProcessDispatcherStarted = false;
+
+  /// Flutter API handler registered on the current isolate's messenger by
+  /// [initialize] so the native side can execute tasks on the running engine.
+  static WorkmanagerFlutterApi? _inProcessFlutterApi;
+
   /// Platform implementation
   static WorkmanagerPlatform get _platform => WorkmanagerPlatform.instance;
 
@@ -126,9 +138,23 @@ class Workmanager {
         'Use WorkmanagerDebug handlers instead. This parameter has no effect.')
     bool isInDebugMode = false,
   }) async {
-    return _platform.initialize(callbackDispatcher,
+    await _platform.initialize(callbackDispatcher,
         // ignore: deprecated_member_use
         isInDebugMode: isInDebugMode);
+    _prepareInProcessExecution(callbackDispatcher);
+  }
+
+  /// Registers the Flutter API surface on the current isolate's messenger so
+  /// one-off tasks can execute on the running (main) engine instead of a second
+  /// full Flutter engine. The [callbackDispatcher] itself runs lazily on the
+  /// first in-process task (see
+  /// [_WorkmanagerFlutterApiImpl.backgroundChannelInitialized]).
+  void _prepareInProcessExecution(Function callbackDispatcher) {
+    _callbackDispatcher = callbackDispatcher;
+    if (_inProcessFlutterApi == null) {
+      _inProcessFlutterApi = _WorkmanagerFlutterApiImpl();
+      WorkmanagerFlutterApi.setUp(_inProcessFlutterApi!);
+    }
   }
 
   /// This method needs to be called from within your [callbackDispatcher].
@@ -432,7 +458,17 @@ Object? normalizeInputDataValue(Object? value) {
 /// Implementation of WorkmanagerFlutterApi for handling background task execution
 class _WorkmanagerFlutterApiImpl extends WorkmanagerFlutterApi {
   @override
-  Future<void> backgroundChannelInitialized() async {}
+  Future<void> backgroundChannelInitialized() async {
+    // On the main engine the callbackDispatcher has not run yet (it normally
+    // runs inside a dedicated headless engine). Run it once so the task
+    // handler is registered before executeTask is invoked, letting one-off
+    // tasks execute in-process without spawning a second engine (fixes #653).
+    final dispatcher = Workmanager._callbackDispatcher;
+    if (dispatcher != null && !Workmanager._inProcessDispatcherStarted) {
+      Workmanager._inProcessDispatcherStarted = true;
+      dispatcher();
+    }
+  }
 
   @override
   Future<bool> executeTask(
