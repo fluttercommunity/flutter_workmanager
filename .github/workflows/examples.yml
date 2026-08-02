@@ -7,7 +7,45 @@ on:
     branches: [ main ]
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      docs: ${{ steps.filter.outputs.docs }}
+      android: ${{ steps.filter.outputs.android }}
+      ios: ${{ steps.filter.outputs.ios }}
+    steps:
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            docs:
+              - 'docs/**'
+              - 'README.md'
+              - '**/*.md'
+            android:
+              - 'workmanager_android/**'
+              - 'example/android/**'
+              - 'workmanager_platform_interface/**'
+              - 'workmanager/**'
+              - 'melos.yaml'
+              - '.fvmrc'
+              - 'pubspec.yaml'
+              - '.github/workflows/**'
+              - '.github/actions/**'
+            ios:
+              - 'workmanager_apple/**'
+              - 'example/ios/**'
+              - 'workmanager_platform_interface/**'
+              - 'workmanager/**'
+              - 'melos.yaml'
+              - '.fvmrc'
+              - 'pubspec.yaml'
+              - '.github/workflows/**'
+              - '.github/actions/**'
+
   example_android:
+    needs: changes
+    if: needs.changes.outputs.android == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -28,6 +66,8 @@ jobs:
           cd example && flutter build apk --debug
 
   example_ios:
+    needs: changes
+    if: needs.changes.outputs.ios == 'true'
     runs-on: macos-latest
     strategy:
       fail-fast: false
