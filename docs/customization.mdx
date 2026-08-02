@@ -193,6 +193,81 @@ to happen at a specific time, schedule a one-off task with `initialDelay` that
 registers the periodic task when it runs.
 </Warning>
 
+## iOS: Periodic Timing & Chaining One-off Tasks
+
+On iOS there is no fixed-interval scheduler. `registerPeriodicTask` submits a
+`BGAppRefreshTaskRequest` and hands all timing to the system: the `frequency`
+you pass from Dart is **ignored on iOS**, and `initialDelay` is used as the
+earliest-begin hint (`earliestBeginDate`). iOS then decides *when — and whether
+—* the task runs, based on app usage patterns, device state, and battery. 15
+minutes is the *minimum gap*, never a cadence: expect runs to be deferred by
+hours or skipped entirely.
+
+### Chaining one-off tasks
+
+The Apple-recommended way to approximate periodic work is to schedule the next
+run from inside the callback:
+
+```dart
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((taskName, inputData) async {
+    // ... do the work ...
+
+    // Schedule the next run. Submitting to BGTaskScheduler (rather than a
+    // plain one-off) means the next link survives app relaunches; the plugin
+    // re-registers the launch handler from UserDefaults on the next launch.
+    Workmanager().registerPeriodicTask(
+      "com.example.sync",
+      "sync",
+      initialDelay: Duration(hours: 1),
+    );
+    return true;
+  });
+}
+```
+
+For work that should run when the device is idle (and may take minutes), chain
+`registerProcessingTask` the same way instead — `BGProcessingTask` gets a
+larger budget but only runs while the device is idle, often overnight.
+
+### What chaining buys you — and what it does not
+
+- **"At least N apart", never "every N".** `initialDelay` is a floor, not a
+  time. Each link runs whenever iOS chooses, so intervals drift and can
+  stretch to hours.
+- **The chain advances only when a link runs and re-submits.** If the app is
+  force-quit, iOS stops launching it for background work until the user opens
+  it again, so a chain that only re-submits from inside the callback stalls.
+- **App updates can break the chain.** BGTaskScheduler requests do not
+  reliably survive app updates. The plugin's UserDefaults persistence
+  re-registers the *launch handlers* on the next launch, but *requests* are
+  only re-submitted when your code registers the task again — re-seed the
+  chain from your normal startup path (e.g. `main`) if continuity across
+  updates matters.
+- **Failures reduce future scheduling.** Returning `false` reports the task
+  as failed to the system, and repeated failures cause iOS to defer future
+  runs. There is no Android-style backoff policy on iOS; implement your own
+  by choosing the next `initialDelay`.
+- **Energy is metered.** Each opportunistic run costs battery and network.
+  Asking for more than the user's usage justifies gets the chain throttled.
+
+### Periodic vs chaining
+
+- **Keep `registerPeriodicTask`** for best-effort content refresh (news,
+  sync, cleanup) that tolerates the system pacing it around the user's usage.
+- **Chain** when you need a tighter floor between runs, want to vary the gap
+  dynamically (e.g. backoff), or need idle-gated heavy work
+  (`registerProcessingTask`).
+- **Neither gives precision.** Exact-interval background work is not possible
+  on iOS. For work that must *start now* on a user action and keep running
+  while the app is backgrounded, use `registerContinuedProcessingTask`
+  (`BGContinuedProcessingTask`, iOS 26+, shipped in 0.10.0) instead — it is a
+  long-running complement, not a scheduling mechanism.
+
+See the [platform capability matrix](index#platform-capability-matrix) for a
+side-by-side summary of every task type.
+
 ## Advanced Configuration
 
 ### Task Identification
