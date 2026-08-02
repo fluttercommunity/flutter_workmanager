@@ -1,3 +1,7 @@
+## 0.9.2+1
+
+ - Update a dependency to the latest release.
+
 ## 0.9.2
 
  - **FEAT**(ios): add BGHealthResearchTaskRequest support (fixes #532) (#693).

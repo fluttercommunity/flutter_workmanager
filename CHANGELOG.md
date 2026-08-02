@@ -15,6 +15,34 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`workmanager_apple` - `v0.9.5`](#workmanager_apple---v095)
+ - [`workmanager` - `v0.9.2+1`](#workmanager---v0921)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `workmanager` - `v0.9.2+1`
+
+---
+
+#### `workmanager_apple` - `v0.9.5`
+
+ - **FEAT**(ios): add UIScene lifecycle support (fixes #662) (#696).
+
+
+## 2026-08-02
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`workmanager` - `v0.9.2`](#workmanager---v092)
  - [`workmanager_android` - `v0.9.2`](#workmanager_android---v092)
  - [`workmanager_apple` - `v0.9.4`](#workmanager_apple---v094)

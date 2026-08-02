@@ -1,3 +1,7 @@
+## 0.9.5
+
+ - **FEAT**(ios): add UIScene lifecycle support (fixes #662) (#696).
+
 ## 0.9.4
 
  - **FEAT**(ios): add BGHealthResearchTaskRequest support (fixes #532) (#693).
