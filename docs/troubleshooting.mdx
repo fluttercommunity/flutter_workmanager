@@ -82,10 +82,14 @@ important rules:
 - They are intended for short, user-visible work, not long-running processing.
 
 For genuinely **long-running** work (minutes of active processing), the
-recommended solution is the plugin's upcoming foreground-service support
-([PR #573](https://github.com/fluttercommunity/flutter_workmanager/pull/573)) -
-it keeps a foreground service alive so the OS will not kill your task while it
-runs. Watch that PR for the API shape; this page will be updated when it lands.
+recommended solution is the plugin's foreground-service support (shipped in
+the 0.10.0 line, [PR #698](https://github.com/fluttercommunity/flutter_workmanager/pull/698)):
+pass a `foregroundServiceConfig` to `registerOneOffTask` or
+`registerPeriodicTask`. The worker is promoted to a foreground service as soon
+as it starts and shows a persistent notification for the whole duration of the
+task, so the OS will not kill it while it runs. See
+[Quick Start → Long-running tasks (foreground service)](quickstart#long-running-tasks-foreground-service)
+for the config shape and Android 14+ service-type requirements.
 
 ## Android: constraint gotchas
 
