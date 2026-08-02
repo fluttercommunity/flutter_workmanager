@@ -12,10 +12,9 @@ const String _oneOffTask = 'dev.fluttercommunity.workmanagerExample.webOneOff';
 const String _periodicTask =
     'dev.fluttercommunity.workmanagerExample.webPeriodic';
 
-/// Web-only demo: registers tasks through [WorkmanagerWeb], shows a live
-/// background-execution log and a two-way "worker chat" (page <-> background
-/// worker via postMessage), and offers a PWA install button so Periodic
-/// Background Sync can be tested.
+/// Web-only demo: registers tasks through [WorkmanagerWeb], shows a two-way
+/// "worker chat" (page <-> background worker via postMessage) and a task log
+/// with background-execution events (incl. Service Worker replay).
 class WebDemoApp extends StatelessWidget {
   const WebDemoApp({super.key});
 
@@ -40,6 +39,7 @@ class _WebDemoPageState extends State<WebDemoPage> {
   final List<_ChatLine> _chat = <_ChatLine>[];
   final TextEditingController _messageController = TextEditingController();
   bool _initializing = true;
+  bool _periodicRegistered = false;
 
   @override
   void initState() {
@@ -61,8 +61,20 @@ class _WebDemoPageState extends State<WebDemoPage> {
       webCallbackDispatcher,
       dispatcherUrl: WorkmanagerWeb.defaultDispatcherUrl,
     );
+    // Register the demo task automatically so the demo works with zero
+    // setup; use DevTools -> Application -> Periodic Background Sync to
+    // trigger it while the page is closed.
+    await WorkmanagerWeb().registerPeriodicTask(
+      _periodicTask,
+      _periodicTask,
+      inputData: <String, dynamic>{'ticker': 'eth', 'threshold': 2400},
+      frequency: const Duration(minutes: 15),
+    );
     if (mounted) {
-      setState(() => _initializing = false);
+      setState(() {
+        _initializing = false;
+        _periodicRegistered = true;
+      });
     }
   }
 
@@ -100,165 +112,139 @@ class _WebDemoPageState extends State<WebDemoPage> {
     _sendToWorker(<String, Object?>{'op': 'text', 'text': trimmed});
   }
 
-  Future<void> _registerOneOff() async {
-    await WorkmanagerWeb().registerOneOffTask(
-      _oneOffTask,
-      _oneOffTask,
-      inputData: <String, dynamic>{
-        'via': 'oneOff',
-        'ticker': 'btc',
-        'threshold': 58000,
-      },
-      initialDelay: const Duration(seconds: 5),
-    );
-  }
-
-  Future<void> _registerPeriodic() async {
-    await WorkmanagerWeb().registerPeriodicTask(
-      _periodicTask,
-      _periodicTask,
-      inputData: <String, dynamic>{
-        'via': 'periodic',
-        'ticker': 'eth',
-        'threshold': 2400,
-      },
-      frequency: const Duration(minutes: 15),
-    );
-  }
-
-  Future<void> _triggerNow() async {
+  Future<void> _runCheckNow() async {
     await WorkmanagerWeb().triggerTask(
       _oneOffTask,
-      inputData: <String, dynamic>{
-        'via': 'manual trigger',
-        'ticker': 'btc',
-        'threshold': 60000,
-      },
+      inputData: <String, dynamic>{'ticker': 'btc', 'threshold': 60000},
     );
   }
 
   Future<void> _cancelAll() async {
     await WorkmanagerWeb().cancelAll();
+    if (mounted) {
+      setState(() => _periodicRegistered = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Workmanager Web (experimental)'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
-      body: Column(
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Text(
-                  _initializing
-                      ? 'Initializing…'
-                      : 'Tasks run in a Web Worker (page open) or the Service '
-                          'Worker (page closed, via Periodic Sync / Push) and '
-                          'results are replayed from IndexedDB on load. The '
-                          'chat below talks to the worker over postMessage. '
-                          'Install the PWA for real background sync.',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: <Widget>[
-                    FilledButton(
-                      onPressed: _initializing ? null : _registerOneOff,
-                      child: const Text('One-off (5 s)'),
-                    ),
-                    FilledButton(
-                      onPressed: _initializing ? null : _registerPeriodic,
-                      child: const Text('Periodic (15 min)'),
-                    ),
-                    FilledButton.tonal(
-                      onPressed: _initializing ? null : _triggerNow,
-                      child: const Text('Run now'),
-                    ),
-                    OutlinedButton(
-                      onPressed: _initializing ? null : _cancelAll,
-                      child: const Text('Cancel all'),
-                    ),
-                    if (InstallGlue.canPrompt)
-                      FilledButton.icon(
-                        onPressed: InstallGlue.promptInstall,
-                        icon: const Icon(Icons.download),
-                        label: const Text('Install PWA'),
-                      ),
-                  ],
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Workmanager Web Demo'),
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          bottom: const TabBar(
+            tabs: <Widget>[
+              Tab(icon: Icon(Icons.chat_bubble_outline), text: 'Worker chat'),
+              Tab(icon: Icon(Icons.receipt_long_outlined), text: 'Task log'),
+            ],
+          ),
+          actions: <Widget>[
+            PopupMenuButton<String>(
+              enabled: !_initializing,
+              onSelected: (String value) {
+                if (value == 'cancel') {
+                  _cancelAll();
+                }
+              },
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                const PopupMenuItem<String>(
+                  value: 'cancel',
+                  child: Text('Cancel all tasks'),
                 ),
               ],
             ),
+          ],
+        ),
+        body: Column(
+          children: <Widget>[
+            _buildStatusStrip(context),
+            const Divider(height: 1),
+            Expanded(
+              child: TabBarView(
+                children: <Widget>[
+                  _buildChatTab(context),
+                  _buildTaskLogTab(context),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusStrip(BuildContext context) {
+    final theme = Theme.of(context);
+    final ready = !_initializing && _periodicRegistered;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        children: <Widget>[
+          Icon(
+            ready ? Icons.check_circle : Icons.hourglass_top,
+            size: 16,
+            color: ready ? Colors.green : theme.colorScheme.outline,
           ),
-          const Divider(height: 1),
-          _buildChatPanel(context),
-          const Divider(height: 1),
+          const SizedBox(width: 6),
           Expanded(
-            child: _events.isEmpty
-                ? const Center(
-                    child: Text(
-                      'No background events yet.\n'
-                      'Events executed by the Web Worker, the Service Worker '
-                      '(page closed) and replayed on load appear here.',
-                      textAlign: TextAlign.center,
-                    ),
-                  )
-                : ListView.builder(
-                    itemCount: _events.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return _EventTile(event: _events[index]);
-                    },
-                  ),
+            child: Text(
+              _initializing
+                  ? 'Starting worker…'
+                  : _periodicRegistered
+                      ? 'Worker online · price check scheduled every 15 min '
+                          '(runs in the background via Service Worker)'
+                      : 'Worker online · no tasks scheduled',
+              style: theme.textTheme.bodySmall,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildChatPanel(BuildContext context) {
+  Widget _buildChatTab(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+      padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           Text(
-            'Worker chat — page ↔ background worker (postMessage)',
-            style: theme.textTheme.titleSmall,
+            'Talk to the worker — it replies from a separate thread '
+            '(postMessage). Try a watch, or type anything.',
+            style: theme.textTheme.bodySmall,
           ),
-          const SizedBox(height: 6),
-          Container(
-            height: 170,
-            decoration: BoxDecoration(
-              border: Border.all(color: theme.colorScheme.outlineVariant),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: _chat.isEmpty
-                ? const Center(
-                    child: Text(
-                      'Send a message or tap a suggestion below.\n'
-                      'The worker replies from a separate thread.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 12),
+          const SizedBox(height: 8),
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: theme.colorScheme.outlineVariant),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: _chat.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'Messages appear here.\n'
+                        'Tap "Watch BTC" below to see live replies.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 12),
+                      ),
+                    )
+                  : ListView.builder(
+                      reverse: true,
+                      padding: const EdgeInsets.all(6),
+                      itemCount: _chat.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return _ChatBubble(line: _chat[index]);
+                      },
                     ),
-                  )
-                : ListView.builder(
-                    reverse: true,
-                    padding: const EdgeInsets.all(6),
-                    itemCount: _chat.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return _ChatBubble(line: _chat[index]);
-                    },
-                  ),
+            ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Row(
             children: <Widget>[
               Expanded(
@@ -267,7 +253,7 @@ class _WebDemoPageState extends State<WebDemoPage> {
                   onSubmitted: _sendFreeText,
                   decoration: const InputDecoration(
                     isDense: true,
-                    hintText: 'Type a message for the worker…',
+                    hintText: 'Message the worker…',
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -282,13 +268,14 @@ class _WebDemoPageState extends State<WebDemoPage> {
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Wrap(
             spacing: 6,
             runSpacing: 6,
             children: <Widget>[
               ActionChip(
-                label: const Text('Watch BTC (<\$58k)'),
+                avatar: const Icon(Icons.trending_up, size: 16),
+                label: const Text('Watch BTC'),
                 onPressed: _initializing
                     ? null
                     : () => _sendToWorker(<String, Object?>{
@@ -298,7 +285,8 @@ class _WebDemoPageState extends State<WebDemoPage> {
                         }),
               ),
               ActionChip(
-                label: const Text('Watch ETH (<\$2.5k)'),
+                avatar: const Icon(Icons.trending_up, size: 16),
+                label: const Text('Watch ETH'),
                 onPressed: _initializing
                     ? null
                     : () => _sendToWorker(<String, Object?>{
@@ -308,24 +296,67 @@ class _WebDemoPageState extends State<WebDemoPage> {
                         }),
               ),
               ActionChip(
-                label: const Text('Stop watch'),
+                avatar: const Icon(Icons.stop, size: 16),
+                label: const Text('Stop'),
                 onPressed: _initializing
                     ? null
                     : () => _sendToWorker(<String, Object?>{'op': 'stop'}),
-              ),
-              ActionChip(
-                label: const Text('Background check (task)'),
-                onPressed: _initializing
-                    ? null
-                    : () => _sendToWorker(<String, Object?>{
-                          'op': 'check',
-                          'ticker': 'ada',
-                        }),
               ),
             ],
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildTaskLogTab(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: <Widget>[
+              FilledButton.tonalIcon(
+                onPressed: _initializing ? null : _runCheckNow,
+                icon: const Icon(Icons.play_arrow),
+                label: const Text('Run check now'),
+              ),
+              if (InstallGlue.canPrompt)
+                FilledButton.icon(
+                  onPressed: InstallGlue.promptInstall,
+                  icon: const Icon(Icons.download),
+                  label: const Text('Install app'),
+                ),
+            ],
+          ),
+        ),
+        const Divider(height: 1),
+        Expanded(
+          child: _events.isEmpty
+              ? Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(
+                    'No background events yet.\n\n'
+                    'Events executed by the Web Worker (page open) or the '
+                    'Service Worker (page closed, via Periodic Background '
+                    'Sync / Push) appear here, replayed from IndexedDB on '
+                    'load.',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodySmall,
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: _events.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return _EventTile(event: _events[index]);
+                  },
+                ),
+        ),
+      ],
     );
   }
 
@@ -340,8 +371,6 @@ class _WebDemoPageState extends State<WebDemoPage> {
         return '📨 stop';
       case 'text':
         return '📨 ${message['text']}';
-      case 'check':
-        return '📨 background check ${message['ticker']}';
       default:
         return '📨 $message';
     }
