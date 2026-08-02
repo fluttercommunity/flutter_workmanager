@@ -43,7 +43,14 @@ fails with `PlatformException(channel-error, Unable to establish connection on
 channel...)`.
 
 To make plugins available in the background engine, wire the plugin
-registrant callback in your `AppDelegate.swift`:
+registrant callback in your `AppDelegate.swift`. The snippet below also follows
+Flutter's [UIScene lifecycle migration](https://docs.flutter.dev/release/breaking-changes/uiscenedelegate):
+plugins are registered in `didInitializeImplicitFlutterEngine` (instead of
+`application(_:didFinishLaunchingWithOptions:)`), and
+`WorkmanagerPlugin.registerLaunchHandlers()` re-registers the BGTaskScheduler
+launch handlers persisted from previous sessions — iOS requires those to be
+registered before app launch finishes, and under UIScene the plugin's own
+`application` callback runs too late for that:
 
 ```swift
 import Flutter
@@ -51,12 +58,12 @@ import UIKit
 import workmanager_apple
 
 @main
-@objc class AppDelegate: FlutterAppDelegate {
+@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    GeneratedPluginRegistrant.register(with: self)
+    WorkmanagerPlugin.registerLaunchHandlers()
 
     WorkmanagerPlugin.setPluginRegistrantCallback { registry in
       GeneratedPluginRegistrant.register(with: registry)
@@ -64,8 +71,23 @@ import workmanager_apple
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
+
+  func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
+    GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+  }
 }
 ```
+
+<Info>
+**UIScene lifecycle:** Apple requires UIKit apps to adopt the UIScene lifecycle
+from the release following iOS 26. After migration, call
+`WorkmanagerPlugin.registerLaunchHandlers()` in your AppDelegate's
+`application(_:didFinishLaunchingWithOptions:)` so BGTaskScheduler launch
+handlers are registered before app launch finishes (the plugin re-registers
+every identifier it persisted in previous sessions, so tasks scheduled from
+Dart keep being delivered after a relaunch). Apps that haven't migrated to
+UIScene keep working without this call.
+</Info>
 
 <Warning>
 **Background-isolate plugins:** only plugins that are safe to use from a
@@ -116,6 +138,11 @@ WorkmanagerPlugin.registerBGProcessingTask(
 )
 ```
 
+Apps that adopted the UIScene lifecycle must also call
+`WorkmanagerPlugin.registerLaunchHandlers()` in
+`application(_:didFinishLaunchingWithOptions:)` — see the
+[registrant wiring section above](#use-other-flutter-plugins-inside-background-tasks-ios).
+
 <Warning>
 **iOS Task Identifier Matching:** The task name in your Dart code must **exactly match** the identifier in Info.plist and AppDelegate. Using short names like `"data_sync"` in Dart while having `com.yourapp.processing_task` in native code will cause `BGTaskSchedulerErrorDomain Code 3` errors.
 </Warning>
@@ -152,7 +179,10 @@ WorkmanagerPlugin.registerPeriodicTask(
 ```
 The plugin re-registers launch handlers for scheduled task identifiers on app
 launch, so this step is only needed if you want to pre-register the task or
-control the scheduling hint from native code.
+control the scheduling hint from native code. Apps that adopted the UIScene
+lifecycle must also call `WorkmanagerPlugin.registerLaunchHandlers()` in
+`application(_:didFinishLaunchingWithOptions:)` — see the
+[registrant wiring section above](#use-other-flutter-plugins-inside-background-tasks-ios).
 
 <Warning>
 **iOS Task Identifier Matching:** The task name in your Dart code must **exactly match** the identifier in Info.plist and AppDelegate. Using short names like `"cleanup"` in Dart while having `com.yourapp.periodic_task` in native code will cause `BGTaskSchedulerErrorDomain Code 3` errors.

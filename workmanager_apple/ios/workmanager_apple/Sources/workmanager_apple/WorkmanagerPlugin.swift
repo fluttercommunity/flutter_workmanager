@@ -703,6 +703,30 @@ extension WorkmanagerPlugin {
         }
     }
 
+    /// Re-registers the BGTaskScheduler launch handler for every task
+    /// identifier persisted from a previous session.
+    ///
+    /// BGTaskScheduler only delivers a task to a relaunched app if its launch
+    /// handler was registered during `application(_:didFinishLaunchingWithOptions:)`.
+    /// With the UIScene lifecycle, Flutter registers plugins after
+    /// `didFinishLaunching` returns (during scene connection), so the plugin's
+    /// own `application` callback can no longer re-register the handlers in
+    /// time. Apps that adopt UIScene must call this method from their
+    /// AppDelegate's `application(_:didFinishLaunchingWithOptions:)` before it
+    /// returns. Non-scene apps keep working without it because the plugin
+    /// performs the same re-registration in its `application` callback.
+    @objc
+    public static func registerLaunchHandlers() {
+        if #available(iOS 13.0, *) {
+            for (identifier, info) in UserDefaultsHelper.getScheduledTasks() {
+                WorkmanagerPlugin.registerLaunchHandlerOnce(
+                    forTaskWithIdentifier: identifier,
+                    earliestBeginInSeconds: info.earliestBeginInSeconds.map { NSNumber(value: $0) }
+                )
+            }
+        }
+    }
+
     private func createUnsupportedVersionError(feature: String) -> PigeonError {
         return PigeonError(
             code: "99",
@@ -766,11 +790,24 @@ extension WorkmanagerPlugin {
         #if os(iOS)
         WorkmanagerHostApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
         registrar.addApplicationDelegate(instance)
+        registrar.addSceneDelegate(instance)
         #elseif os(macOS)
         WorkmanagerHostApiSetup.setUp(binaryMessenger: registrar.messenger, api: instance)
         #endif
     }
 }
+
+// MARK: - FlutterSceneLifeCycleDelegate conformance (iOS only)
+
+#if os(iOS)
+extension WorkmanagerPlugin: FlutterSceneLifeCycleDelegate {
+    // Workmanager has no UI-lifecycle-specific work today: BGTaskScheduler
+    // registration is app-level (see `registerLaunchHandlers()`) and background
+    // fetch remains an application delegate event. Registering as a scene
+    // delegate keeps the plugin available to scene-based apps (required by
+    // Flutter's UIScene migration) and future scene events can be added here.
+}
+#endif
 
 // MARK: - AppDelegate conformance (iOS only)
 
@@ -784,14 +821,7 @@ extension WorkmanagerPlugin {
         // handler was registered during `didFinishLaunching`. Re-register the
         // handlers for identifiers scheduled in previous sessions, so periodic
         // and processing tasks keep working without manual AppDelegate code.
-        if #available(iOS 13.0, *) {
-            for (identifier, info) in UserDefaultsHelper.getScheduledTasks() {
-                WorkmanagerPlugin.registerLaunchHandlerOnce(
-                    forTaskWithIdentifier: identifier,
-                    earliestBeginInSeconds: info.earliestBeginInSeconds.map { NSNumber(value: $0) }
-                )
-            }
-        }
+        WorkmanagerPlugin.registerLaunchHandlers()
         return true
     }
 
