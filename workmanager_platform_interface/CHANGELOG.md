@@ -1,3 +1,9 @@
+## 0.10.0
+
+> Note: This release has breaking changes.
+
+ - **BREAKING** **FEAT**: align minimum Flutter version to 3.38 across packages (prep for 0.10.0) (#701).
+
 ## 0.9.4
 
  - **FEAT**(ios): add BGContinuedProcessingTask support (fixes #638) (#700).

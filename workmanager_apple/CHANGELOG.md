@@ -1,3 +1,7 @@
+## 0.9.6+1
+
+ - Update a dependency to the latest release.
+
 ## 0.9.6
 
  - **FIX**(ios): run one-off tasks on the main engine to avoid release crash (fixes #653) (#697).

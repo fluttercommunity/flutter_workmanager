@@ -11,6 +11,43 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 Packages with breaking changes:
 
+ - [`workmanager` - `v0.10.0`](#workmanager---v0100)
+ - [`workmanager_android` - `v0.10.0`](#workmanager_android---v0100)
+ - [`workmanager_platform_interface` - `v0.10.0`](#workmanager_platform_interface---v0100)
+
+Packages with other changes:
+
+ - [`workmanager_apple` - `v0.9.6+1`](#workmanager_apple---v0961)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `workmanager_apple` - `v0.9.6+1`
+
+---
+
+#### `workmanager` - `v0.10.0`
+
+ - **BREAKING** **FEAT**: align minimum Flutter version to 3.38 across packages (prep for 0.10.0) (#701).
+
+#### `workmanager_android` - `v0.10.0`
+
+ - **BREAKING** **FEAT**: align minimum Flutter version to 3.38 across packages (prep for 0.10.0) (#701).
+
+#### `workmanager_platform_interface` - `v0.10.0`
+
+ - **BREAKING** **FEAT**: align minimum Flutter version to 3.38 across packages (prep for 0.10.0) (#701).
+
+
+## 2026-08-02
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
  - There are no breaking changes in this release.
 
 Packages with other changes:
