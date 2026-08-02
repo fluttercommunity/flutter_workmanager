@@ -1,3 +1,9 @@
+## 0.9.6
+
+ - **FIX**(ios): run one-off tasks on the main engine to avoid release crash (fixes #653) (#697).
+ - **FEAT**(ios): add BGContinuedProcessingTask support (fixes #638) (#700).
+ - **FEAT**(android): long-running workers via foreground service (#698).
+
 ## 0.9.5
 
  - **FEAT**(ios): add UIScene lifecycle support (fixes #662) (#696).

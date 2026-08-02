@@ -15,6 +15,48 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`workmanager` - `v0.9.3`](#workmanager---v093)
+ - [`workmanager_android` - `v0.9.3`](#workmanager_android---v093)
+ - [`workmanager_apple` - `v0.9.6`](#workmanager_apple---v096)
+ - [`workmanager_platform_interface` - `v0.9.4`](#workmanager_platform_interface---v094)
+
+---
+
+#### `workmanager` - `v0.9.3`
+
+ - **FIX**(ios): run one-off tasks on the main engine to avoid release crash (fixes #653) (#697).
+ - **FEAT**(ios): add BGContinuedProcessingTask support (fixes #638) (#700).
+ - **FEAT**(android): long-running workers via foreground service (#698).
+
+#### `workmanager_android` - `v0.9.3`
+
+ - **FEAT**(ios): add BGContinuedProcessingTask support (fixes #638) (#700).
+ - **FEAT**(android): long-running workers via foreground service (#698).
+
+#### `workmanager_apple` - `v0.9.6`
+
+ - **FIX**(ios): run one-off tasks on the main engine to avoid release crash (fixes #653) (#697).
+ - **FEAT**(ios): add BGContinuedProcessingTask support (fixes #638) (#700).
+ - **FEAT**(android): long-running workers via foreground service (#698).
+
+#### `workmanager_platform_interface` - `v0.9.4`
+
+ - **FEAT**(ios): add BGContinuedProcessingTask support (fixes #638) (#700).
+ - **FEAT**(android): long-running workers via foreground service (#698).
+
+
+## 2026-08-02
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`workmanager_apple` - `v0.9.5`](#workmanager_apple---v095)
  - [`workmanager` - `v0.9.2+1`](#workmanager---v0921)
 

@@ -1,3 +1,9 @@
+## 0.9.3
+
+ - **FIX**(ios): run one-off tasks on the main engine to avoid release crash (fixes #653) (#697).
+ - **FEAT**(ios): add BGContinuedProcessingTask support (fixes #638) (#700).
+ - **FEAT**(android): long-running workers via foreground service (#698).
+
 ## 0.9.2+1
 
  - Update a dependency to the latest release.

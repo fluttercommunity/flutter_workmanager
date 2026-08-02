@@ -1,3 +1,8 @@
+## 0.9.3
+
+ - **FEAT**(ios): add BGContinuedProcessingTask support (fixes #638) (#700).
+ - **FEAT**(android): long-running workers via foreground service (#698).
+
 ## 0.9.2
 
  - **FEAT**(ios): add BGHealthResearchTaskRequest support (fixes #532) (#693).
