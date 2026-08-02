@@ -14,34 +14,9 @@ jobs:
       android: ${{ steps.filter.outputs.android }}
       ios: ${{ steps.filter.outputs.ios }}
     steps:
-      - uses: dorny/paths-filter@v3
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/check-changes
         id: filter
-        with:
-          filters: |
-            docs:
-              - 'docs/**'
-              - 'README.md'
-              - '**/*.md'
-            android:
-              - 'workmanager_android/**'
-              - 'example/android/**'
-              - 'workmanager_platform_interface/**'
-              - 'workmanager/**'
-              - 'melos.yaml'
-              - '.fvmrc'
-              - 'pubspec.yaml'
-              - '.github/workflows/**'
-              - '.github/actions/**'
-            ios:
-              - 'workmanager_apple/**'
-              - 'example/ios/**'
-              - 'workmanager_platform_interface/**'
-              - 'workmanager/**'
-              - 'melos.yaml'
-              - '.fvmrc'
-              - 'pubspec.yaml'
-              - '.github/workflows/**'
-              - '.github/actions/**'
 
   test:
     runs-on: ubuntu-latest
