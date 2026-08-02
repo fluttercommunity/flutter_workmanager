@@ -34,6 +34,45 @@ Android works automatically - no additional setup required! ✅
 
 iOS requires a 5-minute setup in Xcode. Choose your approach based on your needs:
 
+#### Use other Flutter plugins inside background tasks (iOS)
+
+Background tasks run in a **separate Flutter engine/isolate**. Flutter plugins
+(Firebase, `shared_preferences`, networking, etc.) are **not** registered in
+that engine by default — calling them from inside your `callbackDispatcher`
+fails with `PlatformException(channel-error, Unable to establish connection on
+channel...)`.
+
+To make plugins available in the background engine, wire the plugin
+registrant callback in your `AppDelegate.swift`:
+
+```swift
+import Flutter
+import UIKit
+import workmanager_apple
+
+@main
+@objc class AppDelegate: FlutterAppDelegate {
+  override func application(
+    _ application: UIApplication,
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+  ) -> Bool {
+    GeneratedPluginRegistrant.register(with: self)
+
+    WorkmanagerPlugin.setPluginRegistrantCallback { registry in
+      GeneratedPluginRegistrant.register(with: registry)
+    }
+
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+}
+```
+
+<Warning>
+**Background-isolate plugins:** only plugins that are safe to use from a
+background isolate (no UI, no views) work there. Plugins that are not
+isolate-safe can still crash the background task.
+</Warning>
+
 #### Option A: Periodic Tasks (Recommended for most use cases)
 For regular data sync, notifications, cleanup - uses iOS Background Fetch:
 
