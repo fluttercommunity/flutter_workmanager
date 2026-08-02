@@ -15,6 +15,32 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`workmanager` - `v0.10.1`](#workmanager---v0101)
+ - [`workmanager_web` - `v0.1.1`](#workmanager_web---v011)
+
+---
+
+#### `workmanager` - `v0.10.1`
+
+ - **FEAT**(web): service worker based background execution (experimental) (#707).
+
+#### `workmanager_web` - `v0.1.1`
+
+ - **FEAT**(web): service worker based background execution (experimental) (#707).
+
+
+## 2026-08-02
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`workmanager` - `v0.10.0+1`](#workmanager---v01001)
  - [`workmanager_android` - `v0.10.0+1`](#workmanager_android---v01001)
  - [`workmanager_apple` - `v0.9.6+2`](#workmanager_apple---v0962)

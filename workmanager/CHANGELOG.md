@@ -1,3 +1,7 @@
+## 0.10.1
+
+ - **FEAT**(web): service worker based background execution (experimental) (#707).
+
 ## 0.10.0+1
 
  - **FIX**(android): notify running callbacks when work is cancelled (fixes #432) (#705).
