@@ -1,3 +1,7 @@
+## 0.10.0+1
+
+ - **FIX**(android): notify running callbacks when work is cancelled (fixes #432) (#705).
+
 ## 0.10.0
 
 > Note: This release has breaking changes.

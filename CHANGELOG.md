@@ -11,6 +11,42 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 Packages with breaking changes:
 
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`workmanager` - `v0.10.0+1`](#workmanager---v01001)
+ - [`workmanager_android` - `v0.10.0+1`](#workmanager_android---v01001)
+ - [`workmanager_apple` - `v0.9.6+2`](#workmanager_apple---v0962)
+ - [`workmanager_platform_interface` - `v0.10.0+1`](#workmanager_platform_interface---v01001)
+
+---
+
+#### `workmanager` - `v0.10.0+1`
+
+ - **FIX**(android): notify running callbacks when work is cancelled (fixes #432) (#705).
+
+#### `workmanager_android` - `v0.10.0+1`
+
+ - **FIX**(android): notify running callbacks when work is cancelled (fixes #432) (#705).
+
+#### `workmanager_apple` - `v0.9.6+2`
+
+ - **FIX**(android): notify running callbacks when work is cancelled (fixes #432) (#705).
+
+#### `workmanager_platform_interface` - `v0.10.0+1`
+
+ - **FIX**(android): notify running callbacks when work is cancelled (fixes #432) (#705).
+
+
+## 2026-08-02
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
  - [`workmanager` - `v0.10.0`](#workmanager---v0100)
  - [`workmanager_android` - `v0.10.0`](#workmanager_android---v0100)
  - [`workmanager_platform_interface` - `v0.10.0`](#workmanager_platform_interface---v0100)

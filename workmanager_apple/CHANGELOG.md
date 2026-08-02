@@ -1,3 +1,7 @@
+## 0.9.6+2
+
+ - **FIX**(android): notify running callbacks when work is cancelled (fixes #432) (#705).
+
 ## 0.9.6+1
 
  - Update a dependency to the latest release.
