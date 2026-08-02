@@ -149,6 +149,63 @@ enum OutOfQuotaPolicy {
   dropWorkRequest,
 }
 
+/// Foreground service types supported for Android long-running workers.
+///
+/// These map to the foreground service types introduced by Android 14
+/// (API level 34), when specifying a type became mandatory for apps targeting
+/// SDK 34+. See:
+/// https://developer.android.com/about/versions/14/changes/fgs-types-required
+enum ForegroundServiceType {
+  /// Used for long-running data synchronization, uploads and downloads that
+  /// are important to the user.
+  dataSync,
+
+  /// Used for short, critical work that the user is aware of and that must
+  /// complete quickly (a few minutes at most).
+  shortService,
+}
+
+/// Android-only configuration that promotes a worker to a foreground service
+/// while it runs, keeping the process alive for long-running work.
+///
+/// When provided to [OneOffTaskRequest.foregroundServiceConfig] or
+/// [PeriodicTaskRequest.foregroundServiceConfig], the worker calls
+/// WorkManager's `setForegroundAsync` as soon as it starts and shows a
+/// notification for the whole duration of the task.
+///
+/// All fields are optional; the platform implementation fills in sane
+/// defaults for anything that is not provided.
+class ForegroundServiceConfig {
+  ForegroundServiceConfig({
+    this.notificationTitle,
+    this.notificationText,
+    this.notificationChannelId,
+    this.notificationChannelName,
+    this.notificationId,
+    this.foregroundServiceType,
+  });
+
+  /// Title shown in the foreground service notification.
+  String? notificationTitle;
+
+  /// Body text shown in the foreground service notification.
+  String? notificationText;
+
+  /// Id of the notification channel used for the foreground service
+  /// notification (Android 8.0+).
+  String? notificationChannelId;
+
+  /// User-visible name of the notification channel.
+  String? notificationChannelName;
+
+  /// Id used for the foreground service notification.
+  int? notificationId;
+
+  /// Foreground service type to start with (Android 14+). Defaults to
+  /// [ForegroundServiceType.dataSync].
+  ForegroundServiceType? foregroundServiceType;
+}
+
 // Data classes
 class Constraints {
   Constraints({
@@ -193,6 +250,7 @@ class OneOffTaskRequest {
     this.tag,
     this.existingWorkPolicy,
     this.outOfQuotaPolicy,
+    this.foregroundServiceConfig,
   });
 
   String uniqueName;
@@ -204,6 +262,9 @@ class OneOffTaskRequest {
   String? tag;
   ExistingWorkPolicy? existingWorkPolicy;
   OutOfQuotaPolicy? outOfQuotaPolicy;
+
+  /// When set, the worker runs as an Android foreground service.
+  ForegroundServiceConfig? foregroundServiceConfig;
 }
 
 class PeriodicTaskRequest {
@@ -218,6 +279,7 @@ class PeriodicTaskRequest {
     this.backoffPolicy,
     this.tag,
     this.existingWorkPolicy,
+    this.foregroundServiceConfig,
   });
 
   String uniqueName;
@@ -230,6 +292,9 @@ class PeriodicTaskRequest {
   BackoffPolicyConfig? backoffPolicy;
   String? tag;
   ExistingPeriodicWorkPolicy? existingWorkPolicy;
+
+  /// When set, the worker runs as an Android foreground service.
+  ForegroundServiceConfig? foregroundServiceConfig;
 }
 
 // iOS specific request

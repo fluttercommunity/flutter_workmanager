@@ -376,6 +376,112 @@ enum class OutOfQuotaPolicy(val raw: Int) {
   }
 }
 
+/**
+ * Foreground service types supported for Android long-running workers.
+ *
+ * These map to the foreground service types introduced by Android 14
+ * (API level 34), when specifying a type became mandatory for apps targeting
+ * SDK 34+. See:
+ * https://developer.android.com/about/versions/14/changes/fgs-types-required
+ */
+enum class ForegroundServiceType(val raw: Int) {
+  /**
+   * Used for long-running data synchronization, uploads and downloads that
+   * are important to the user.
+   */
+  DATA_SYNC(0),
+  /**
+   * Used for short, critical work that the user is aware of and that must
+   * complete quickly (a few minutes at most).
+   */
+  SHORT_SERVICE(1);
+
+  companion object {
+    fun ofRaw(raw: Int): ForegroundServiceType? {
+      return values().firstOrNull { it.raw == raw }
+    }
+  }
+}
+
+/**
+ * Android-only configuration that promotes a worker to a foreground service
+ * while it runs, keeping the process alive for long-running work.
+ *
+ * When provided to [OneOffTaskRequest.foregroundServiceConfig] or
+ * [PeriodicTaskRequest.foregroundServiceConfig], the worker calls
+ * WorkManager's `setForegroundAsync` as soon as it starts and shows a
+ * notification for the whole duration of the task.
+ *
+ * All fields are optional; the platform implementation fills in sane
+ * defaults for anything that is not provided.
+ *
+ * Generated class from Pigeon that represents data sent in messages.
+ */
+data class ForegroundServiceConfig (
+  /** Title shown in the foreground service notification. */
+  val notificationTitle: String? = null,
+  /** Body text shown in the foreground service notification. */
+  val notificationText: String? = null,
+  /**
+   * Id of the notification channel used for the foreground service
+   * notification (Android 8.0+).
+   */
+  val notificationChannelId: String? = null,
+  /** User-visible name of the notification channel. */
+  val notificationChannelName: String? = null,
+  /** Id used for the foreground service notification. */
+  val notificationId: Long? = null,
+  /**
+   * Foreground service type to start with (Android 14+). Defaults to
+   * [ForegroundServiceType.dataSync].
+   */
+  val foregroundServiceType: ForegroundServiceType? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): ForegroundServiceConfig {
+      val notificationTitle = pigeonVar_list[0] as String?
+      val notificationText = pigeonVar_list[1] as String?
+      val notificationChannelId = pigeonVar_list[2] as String?
+      val notificationChannelName = pigeonVar_list[3] as String?
+      val notificationId = pigeonVar_list[4] as Long?
+      val foregroundServiceType = pigeonVar_list[5] as ForegroundServiceType?
+      return ForegroundServiceConfig(notificationTitle, notificationText, notificationChannelId, notificationChannelName, notificationId, foregroundServiceType)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      notificationTitle,
+      notificationText,
+      notificationChannelId,
+      notificationChannelName,
+      notificationId,
+      foregroundServiceType,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as ForegroundServiceConfig
+    return WorkmanagerApiPigeonUtils.deepEquals(this.notificationTitle, other.notificationTitle) && WorkmanagerApiPigeonUtils.deepEquals(this.notificationText, other.notificationText) && WorkmanagerApiPigeonUtils.deepEquals(this.notificationChannelId, other.notificationChannelId) && WorkmanagerApiPigeonUtils.deepEquals(this.notificationChannelName, other.notificationChannelName) && WorkmanagerApiPigeonUtils.deepEquals(this.notificationId, other.notificationId) && WorkmanagerApiPigeonUtils.deepEquals(this.foregroundServiceType, other.foregroundServiceType)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.notificationTitle)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.notificationText)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.notificationChannelId)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.notificationChannelName)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.notificationId)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.foregroundServiceType)
+    return result
+  }
+}
+
 /** Generated class from Pigeon that represents data sent in messages. */
 data class Constraints (
   val networkType: NetworkType? = null,
@@ -508,7 +614,9 @@ data class OneOffTaskRequest (
   val backoffPolicy: BackoffPolicyConfig? = null,
   val tag: String? = null,
   val existingWorkPolicy: ExistingWorkPolicy? = null,
-  val outOfQuotaPolicy: OutOfQuotaPolicy? = null
+  val outOfQuotaPolicy: OutOfQuotaPolicy? = null,
+  /** When set, the worker runs as an Android foreground service. */
+  val foregroundServiceConfig: ForegroundServiceConfig? = null
 )
  {
   companion object {
@@ -522,7 +630,8 @@ data class OneOffTaskRequest (
       val tag = pigeonVar_list[6] as String?
       val existingWorkPolicy = pigeonVar_list[7] as ExistingWorkPolicy?
       val outOfQuotaPolicy = pigeonVar_list[8] as OutOfQuotaPolicy?
-      return OneOffTaskRequest(uniqueName, taskName, inputData, initialDelaySeconds, constraints, backoffPolicy, tag, existingWorkPolicy, outOfQuotaPolicy)
+      val foregroundServiceConfig = pigeonVar_list[9] as ForegroundServiceConfig?
+      return OneOffTaskRequest(uniqueName, taskName, inputData, initialDelaySeconds, constraints, backoffPolicy, tag, existingWorkPolicy, outOfQuotaPolicy, foregroundServiceConfig)
     }
   }
   fun toList(): List<Any?> {
@@ -536,6 +645,7 @@ data class OneOffTaskRequest (
       tag,
       existingWorkPolicy,
       outOfQuotaPolicy,
+      foregroundServiceConfig,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -546,7 +656,7 @@ data class OneOffTaskRequest (
       return true
     }
     val other = other as OneOffTaskRequest
-    return WorkmanagerApiPigeonUtils.deepEquals(this.uniqueName, other.uniqueName) && WorkmanagerApiPigeonUtils.deepEquals(this.taskName, other.taskName) && WorkmanagerApiPigeonUtils.deepEquals(this.inputData, other.inputData) && WorkmanagerApiPigeonUtils.deepEquals(this.initialDelaySeconds, other.initialDelaySeconds) && WorkmanagerApiPigeonUtils.deepEquals(this.constraints, other.constraints) && WorkmanagerApiPigeonUtils.deepEquals(this.backoffPolicy, other.backoffPolicy) && WorkmanagerApiPigeonUtils.deepEquals(this.tag, other.tag) && WorkmanagerApiPigeonUtils.deepEquals(this.existingWorkPolicy, other.existingWorkPolicy) && WorkmanagerApiPigeonUtils.deepEquals(this.outOfQuotaPolicy, other.outOfQuotaPolicy)
+    return WorkmanagerApiPigeonUtils.deepEquals(this.uniqueName, other.uniqueName) && WorkmanagerApiPigeonUtils.deepEquals(this.taskName, other.taskName) && WorkmanagerApiPigeonUtils.deepEquals(this.inputData, other.inputData) && WorkmanagerApiPigeonUtils.deepEquals(this.initialDelaySeconds, other.initialDelaySeconds) && WorkmanagerApiPigeonUtils.deepEquals(this.constraints, other.constraints) && WorkmanagerApiPigeonUtils.deepEquals(this.backoffPolicy, other.backoffPolicy) && WorkmanagerApiPigeonUtils.deepEquals(this.tag, other.tag) && WorkmanagerApiPigeonUtils.deepEquals(this.existingWorkPolicy, other.existingWorkPolicy) && WorkmanagerApiPigeonUtils.deepEquals(this.outOfQuotaPolicy, other.outOfQuotaPolicy) && WorkmanagerApiPigeonUtils.deepEquals(this.foregroundServiceConfig, other.foregroundServiceConfig)
   }
 
   override fun hashCode(): Int {
@@ -560,6 +670,7 @@ data class OneOffTaskRequest (
     result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.tag)
     result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.existingWorkPolicy)
     result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.outOfQuotaPolicy)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.foregroundServiceConfig)
     return result
   }
 }
@@ -575,7 +686,9 @@ data class PeriodicTaskRequest (
   val constraints: Constraints? = null,
   val backoffPolicy: BackoffPolicyConfig? = null,
   val tag: String? = null,
-  val existingWorkPolicy: ExistingPeriodicWorkPolicy? = null
+  val existingWorkPolicy: ExistingPeriodicWorkPolicy? = null,
+  /** When set, the worker runs as an Android foreground service. */
+  val foregroundServiceConfig: ForegroundServiceConfig? = null
 )
  {
   companion object {
@@ -590,7 +703,8 @@ data class PeriodicTaskRequest (
       val backoffPolicy = pigeonVar_list[7] as BackoffPolicyConfig?
       val tag = pigeonVar_list[8] as String?
       val existingWorkPolicy = pigeonVar_list[9] as ExistingPeriodicWorkPolicy?
-      return PeriodicTaskRequest(uniqueName, taskName, frequencySeconds, flexIntervalSeconds, inputData, initialDelaySeconds, constraints, backoffPolicy, tag, existingWorkPolicy)
+      val foregroundServiceConfig = pigeonVar_list[10] as ForegroundServiceConfig?
+      return PeriodicTaskRequest(uniqueName, taskName, frequencySeconds, flexIntervalSeconds, inputData, initialDelaySeconds, constraints, backoffPolicy, tag, existingWorkPolicy, foregroundServiceConfig)
     }
   }
   fun toList(): List<Any?> {
@@ -605,6 +719,7 @@ data class PeriodicTaskRequest (
       backoffPolicy,
       tag,
       existingWorkPolicy,
+      foregroundServiceConfig,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -615,7 +730,7 @@ data class PeriodicTaskRequest (
       return true
     }
     val other = other as PeriodicTaskRequest
-    return WorkmanagerApiPigeonUtils.deepEquals(this.uniqueName, other.uniqueName) && WorkmanagerApiPigeonUtils.deepEquals(this.taskName, other.taskName) && WorkmanagerApiPigeonUtils.deepEquals(this.frequencySeconds, other.frequencySeconds) && WorkmanagerApiPigeonUtils.deepEquals(this.flexIntervalSeconds, other.flexIntervalSeconds) && WorkmanagerApiPigeonUtils.deepEquals(this.inputData, other.inputData) && WorkmanagerApiPigeonUtils.deepEquals(this.initialDelaySeconds, other.initialDelaySeconds) && WorkmanagerApiPigeonUtils.deepEquals(this.constraints, other.constraints) && WorkmanagerApiPigeonUtils.deepEquals(this.backoffPolicy, other.backoffPolicy) && WorkmanagerApiPigeonUtils.deepEquals(this.tag, other.tag) && WorkmanagerApiPigeonUtils.deepEquals(this.existingWorkPolicy, other.existingWorkPolicy)
+    return WorkmanagerApiPigeonUtils.deepEquals(this.uniqueName, other.uniqueName) && WorkmanagerApiPigeonUtils.deepEquals(this.taskName, other.taskName) && WorkmanagerApiPigeonUtils.deepEquals(this.frequencySeconds, other.frequencySeconds) && WorkmanagerApiPigeonUtils.deepEquals(this.flexIntervalSeconds, other.flexIntervalSeconds) && WorkmanagerApiPigeonUtils.deepEquals(this.inputData, other.inputData) && WorkmanagerApiPigeonUtils.deepEquals(this.initialDelaySeconds, other.initialDelaySeconds) && WorkmanagerApiPigeonUtils.deepEquals(this.constraints, other.constraints) && WorkmanagerApiPigeonUtils.deepEquals(this.backoffPolicy, other.backoffPolicy) && WorkmanagerApiPigeonUtils.deepEquals(this.tag, other.tag) && WorkmanagerApiPigeonUtils.deepEquals(this.existingWorkPolicy, other.existingWorkPolicy) && WorkmanagerApiPigeonUtils.deepEquals(this.foregroundServiceConfig, other.foregroundServiceConfig)
   }
 
   override fun hashCode(): Int {
@@ -630,6 +745,7 @@ data class PeriodicTaskRequest (
     result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.backoffPolicy)
     result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.tag)
     result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.existingWorkPolicy)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.foregroundServiceConfig)
     return result
   }
 }
@@ -775,36 +891,46 @@ private open class WorkmanagerApiPigeonCodec : StandardMessageCodec() {
         }
       }
       135.toByte() -> {
-        return (readValue(buffer) as? List<Any?>)?.let {
-          Constraints.fromList(it)
+        return (readValue(buffer) as Long?)?.let {
+          ForegroundServiceType.ofRaw(it.toInt())
         }
       }
       136.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          BackoffPolicyConfig.fromList(it)
+          ForegroundServiceConfig.fromList(it)
         }
       }
       137.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          InitializeRequest.fromList(it)
+          Constraints.fromList(it)
         }
       }
       138.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          OneOffTaskRequest.fromList(it)
+          BackoffPolicyConfig.fromList(it)
         }
       }
       139.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PeriodicTaskRequest.fromList(it)
+          InitializeRequest.fromList(it)
         }
       }
       140.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          ProcessingTaskRequest.fromList(it)
+          OneOffTaskRequest.fromList(it)
         }
       }
       141.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          PeriodicTaskRequest.fromList(it)
+        }
+      }
+      142.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          ProcessingTaskRequest.fromList(it)
+        }
+      }
+      143.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           HealthResearchTaskRequest.fromList(it)
         }
@@ -838,32 +964,40 @@ private open class WorkmanagerApiPigeonCodec : StandardMessageCodec() {
         stream.write(134)
         writeValue(stream, value.raw.toLong())
       }
-      is Constraints -> {
+      is ForegroundServiceType -> {
         stream.write(135)
-        writeValue(stream, value.toList())
+        writeValue(stream, value.raw.toLong())
       }
-      is BackoffPolicyConfig -> {
+      is ForegroundServiceConfig -> {
         stream.write(136)
         writeValue(stream, value.toList())
       }
-      is InitializeRequest -> {
+      is Constraints -> {
         stream.write(137)
         writeValue(stream, value.toList())
       }
-      is OneOffTaskRequest -> {
+      is BackoffPolicyConfig -> {
         stream.write(138)
         writeValue(stream, value.toList())
       }
-      is PeriodicTaskRequest -> {
+      is InitializeRequest -> {
         stream.write(139)
         writeValue(stream, value.toList())
       }
-      is ProcessingTaskRequest -> {
+      is OneOffTaskRequest -> {
         stream.write(140)
         writeValue(stream, value.toList())
       }
-      is HealthResearchTaskRequest -> {
+      is PeriodicTaskRequest -> {
         stream.write(141)
+        writeValue(stream, value.toList())
+      }
+      is ProcessingTaskRequest -> {
+        stream.write(142)
+        writeValue(stream, value.toList())
+      }
+      is HealthResearchTaskRequest -> {
+        stream.write(143)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)

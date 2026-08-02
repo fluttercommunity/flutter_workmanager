@@ -224,6 +224,104 @@ enum OutOfQuotaPolicy {
   dropWorkRequest,
 }
 
+/// Foreground service types supported for Android long-running workers.
+///
+/// These map to the foreground service types introduced by Android 14
+/// (API level 34), when specifying a type became mandatory for apps targeting
+/// SDK 34+. See:
+/// https://developer.android.com/about/versions/14/changes/fgs-types-required
+enum ForegroundServiceType {
+  /// Used for long-running data synchronization, uploads and downloads that
+  /// are important to the user.
+  dataSync,
+  /// Used for short, critical work that the user is aware of and that must
+  /// complete quickly (a few minutes at most).
+  shortService,
+}
+
+/// Android-only configuration that promotes a worker to a foreground service
+/// while it runs, keeping the process alive for long-running work.
+///
+/// When provided to [OneOffTaskRequest.foregroundServiceConfig] or
+/// [PeriodicTaskRequest.foregroundServiceConfig], the worker calls
+/// WorkManager's `setForegroundAsync` as soon as it starts and shows a
+/// notification for the whole duration of the task.
+///
+/// All fields are optional; the platform implementation fills in sane
+/// defaults for anything that is not provided.
+class ForegroundServiceConfig {
+  ForegroundServiceConfig({
+    this.notificationTitle,
+    this.notificationText,
+    this.notificationChannelId,
+    this.notificationChannelName,
+    this.notificationId,
+    this.foregroundServiceType,
+  });
+
+  /// Title shown in the foreground service notification.
+  String? notificationTitle;
+
+  /// Body text shown in the foreground service notification.
+  String? notificationText;
+
+  /// Id of the notification channel used for the foreground service
+  /// notification (Android 8.0+).
+  String? notificationChannelId;
+
+  /// User-visible name of the notification channel.
+  String? notificationChannelName;
+
+  /// Id used for the foreground service notification.
+  int? notificationId;
+
+  /// Foreground service type to start with (Android 14+). Defaults to
+  /// [ForegroundServiceType.dataSync].
+  ForegroundServiceType? foregroundServiceType;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      notificationTitle,
+      notificationText,
+      notificationChannelId,
+      notificationChannelName,
+      notificationId,
+      foregroundServiceType,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static ForegroundServiceConfig decode(Object result) {
+    result as List<Object?>;
+    return ForegroundServiceConfig(
+      notificationTitle: result[0] as String?,
+      notificationText: result[1] as String?,
+      notificationChannelId: result[2] as String?,
+      notificationChannelName: result[3] as String?,
+      notificationId: result[4] as int?,
+      foregroundServiceType: result[5] as ForegroundServiceType?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! ForegroundServiceConfig || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(notificationTitle, other.notificationTitle) && _deepEquals(notificationText, other.notificationText) && _deepEquals(notificationChannelId, other.notificationChannelId) && _deepEquals(notificationChannelName, other.notificationChannelName) && _deepEquals(notificationId, other.notificationId) && _deepEquals(foregroundServiceType, other.foregroundServiceType);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+}
+
 class Constraints {
   Constraints({
     this.networkType,
@@ -380,6 +478,7 @@ class OneOffTaskRequest {
     this.tag,
     this.existingWorkPolicy,
     this.outOfQuotaPolicy,
+    this.foregroundServiceConfig,
   });
 
   String uniqueName;
@@ -400,6 +499,9 @@ class OneOffTaskRequest {
 
   OutOfQuotaPolicy? outOfQuotaPolicy;
 
+  /// When set, the worker runs as an Android foreground service.
+  ForegroundServiceConfig? foregroundServiceConfig;
+
   List<Object?> _toList() {
     return <Object?>[
       uniqueName,
@@ -411,6 +513,7 @@ class OneOffTaskRequest {
       tag,
       existingWorkPolicy,
       outOfQuotaPolicy,
+      foregroundServiceConfig,
     ];
   }
 
@@ -429,6 +532,7 @@ class OneOffTaskRequest {
       tag: result[6] as String?,
       existingWorkPolicy: result[7] as ExistingWorkPolicy?,
       outOfQuotaPolicy: result[8] as OutOfQuotaPolicy?,
+      foregroundServiceConfig: result[9] as ForegroundServiceConfig?,
     );
   }
 
@@ -441,7 +545,7 @@ class OneOffTaskRequest {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(uniqueName, other.uniqueName) && _deepEquals(taskName, other.taskName) && _deepEquals(inputData, other.inputData) && _deepEquals(initialDelaySeconds, other.initialDelaySeconds) && _deepEquals(constraints, other.constraints) && _deepEquals(backoffPolicy, other.backoffPolicy) && _deepEquals(tag, other.tag) && _deepEquals(existingWorkPolicy, other.existingWorkPolicy) && _deepEquals(outOfQuotaPolicy, other.outOfQuotaPolicy);
+    return _deepEquals(uniqueName, other.uniqueName) && _deepEquals(taskName, other.taskName) && _deepEquals(inputData, other.inputData) && _deepEquals(initialDelaySeconds, other.initialDelaySeconds) && _deepEquals(constraints, other.constraints) && _deepEquals(backoffPolicy, other.backoffPolicy) && _deepEquals(tag, other.tag) && _deepEquals(existingWorkPolicy, other.existingWorkPolicy) && _deepEquals(outOfQuotaPolicy, other.outOfQuotaPolicy) && _deepEquals(foregroundServiceConfig, other.foregroundServiceConfig);
   }
 
   @override
@@ -461,6 +565,7 @@ class PeriodicTaskRequest {
     this.backoffPolicy,
     this.tag,
     this.existingWorkPolicy,
+    this.foregroundServiceConfig,
   });
 
   String uniqueName;
@@ -483,6 +588,9 @@ class PeriodicTaskRequest {
 
   ExistingPeriodicWorkPolicy? existingWorkPolicy;
 
+  /// When set, the worker runs as an Android foreground service.
+  ForegroundServiceConfig? foregroundServiceConfig;
+
   List<Object?> _toList() {
     return <Object?>[
       uniqueName,
@@ -495,6 +603,7 @@ class PeriodicTaskRequest {
       backoffPolicy,
       tag,
       existingWorkPolicy,
+      foregroundServiceConfig,
     ];
   }
 
@@ -514,6 +623,7 @@ class PeriodicTaskRequest {
       backoffPolicy: result[7] as BackoffPolicyConfig?,
       tag: result[8] as String?,
       existingWorkPolicy: result[9] as ExistingPeriodicWorkPolicy?,
+      foregroundServiceConfig: result[10] as ForegroundServiceConfig?,
     );
   }
 
@@ -526,7 +636,7 @@ class PeriodicTaskRequest {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(uniqueName, other.uniqueName) && _deepEquals(taskName, other.taskName) && _deepEquals(frequencySeconds, other.frequencySeconds) && _deepEquals(flexIntervalSeconds, other.flexIntervalSeconds) && _deepEquals(inputData, other.inputData) && _deepEquals(initialDelaySeconds, other.initialDelaySeconds) && _deepEquals(constraints, other.constraints) && _deepEquals(backoffPolicy, other.backoffPolicy) && _deepEquals(tag, other.tag) && _deepEquals(existingWorkPolicy, other.existingWorkPolicy);
+    return _deepEquals(uniqueName, other.uniqueName) && _deepEquals(taskName, other.taskName) && _deepEquals(frequencySeconds, other.frequencySeconds) && _deepEquals(flexIntervalSeconds, other.flexIntervalSeconds) && _deepEquals(inputData, other.inputData) && _deepEquals(initialDelaySeconds, other.initialDelaySeconds) && _deepEquals(constraints, other.constraints) && _deepEquals(backoffPolicy, other.backoffPolicy) && _deepEquals(tag, other.tag) && _deepEquals(existingWorkPolicy, other.existingWorkPolicy) && _deepEquals(foregroundServiceConfig, other.foregroundServiceConfig);
   }
 
   @override
@@ -690,26 +800,32 @@ class _PigeonCodec extends StandardMessageCodec {
     }    else if (value is OutOfQuotaPolicy) {
       buffer.putUint8(134);
       writeValue(buffer, value.index);
-    }    else if (value is Constraints) {
+    }    else if (value is ForegroundServiceType) {
       buffer.putUint8(135);
-      writeValue(buffer, value.encode());
-    }    else if (value is BackoffPolicyConfig) {
+      writeValue(buffer, value.index);
+    }    else if (value is ForegroundServiceConfig) {
       buffer.putUint8(136);
       writeValue(buffer, value.encode());
-    }    else if (value is InitializeRequest) {
+    }    else if (value is Constraints) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
-    }    else if (value is OneOffTaskRequest) {
+    }    else if (value is BackoffPolicyConfig) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
-    }    else if (value is PeriodicTaskRequest) {
+    }    else if (value is InitializeRequest) {
       buffer.putUint8(139);
       writeValue(buffer, value.encode());
-    }    else if (value is ProcessingTaskRequest) {
+    }    else if (value is OneOffTaskRequest) {
       buffer.putUint8(140);
       writeValue(buffer, value.encode());
-    }    else if (value is HealthResearchTaskRequest) {
+    }    else if (value is PeriodicTaskRequest) {
       buffer.putUint8(141);
+      writeValue(buffer, value.encode());
+    }    else if (value is ProcessingTaskRequest) {
+      buffer.putUint8(142);
+      writeValue(buffer, value.encode());
+    }    else if (value is HealthResearchTaskRequest) {
+      buffer.putUint8(143);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -738,18 +854,23 @@ class _PigeonCodec extends StandardMessageCodec {
         final value = readValue(buffer) as int?;
         return value == null ? null : OutOfQuotaPolicy.values[value];
       case 135:
-        return Constraints.decode(readValue(buffer)!);
+        final value = readValue(buffer) as int?;
+        return value == null ? null : ForegroundServiceType.values[value];
       case 136:
-        return BackoffPolicyConfig.decode(readValue(buffer)!);
+        return ForegroundServiceConfig.decode(readValue(buffer)!);
       case 137:
-        return InitializeRequest.decode(readValue(buffer)!);
+        return Constraints.decode(readValue(buffer)!);
       case 138:
-        return OneOffTaskRequest.decode(readValue(buffer)!);
+        return BackoffPolicyConfig.decode(readValue(buffer)!);
       case 139:
-        return PeriodicTaskRequest.decode(readValue(buffer)!);
+        return InitializeRequest.decode(readValue(buffer)!);
       case 140:
-        return ProcessingTaskRequest.decode(readValue(buffer)!);
+        return OneOffTaskRequest.decode(readValue(buffer)!);
       case 141:
+        return PeriodicTaskRequest.decode(readValue(buffer)!);
+      case 142:
+        return ProcessingTaskRequest.decode(readValue(buffer)!);
+      case 143:
         return HealthResearchTaskRequest.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);

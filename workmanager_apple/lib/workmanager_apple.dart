@@ -39,7 +39,9 @@ class WorkmanagerApple extends WorkmanagerPlatform {
     Duration? backoffPolicyDelay,
     String? tag,
     OutOfQuotaPolicy? outOfQuotaPolicy,
+    ForegroundServiceConfig? foregroundServiceConfig,
   }) async {
+    // Foreground service config is Android-only; it is intentionally ignored.
     await _api.registerOneOffTask(OneOffTaskRequest(
       uniqueName: uniqueName,
       taskName: taskName,
@@ -71,7 +73,9 @@ class WorkmanagerApple extends WorkmanagerPlatform {
     BackoffPolicy? backoffPolicy,
     Duration? backoffPolicyDelay,
     String? tag,
+    ForegroundServiceConfig? foregroundServiceConfig,
   }) async {
+    // Foreground service config is Android-only; it is intentionally ignored.
     await _api.registerPeriodicTask(PeriodicTaskRequest(
       uniqueName: uniqueName,
       taskName: taskName,

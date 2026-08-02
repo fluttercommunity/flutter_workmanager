@@ -415,6 +415,83 @@ you'll get `BGTaskSchedulerErrorDomain Code 3` ("not advertised in the
 application's Info.plist"). On Android no native setup is needed.
 </Warning>
 
+## Long-running tasks (foreground service)
+
+Android's WorkManager runs background workers for a limited time (typically a
+few minutes). For work that legitimately takes longer — bulk uploads or
+downloads, ML processing, large file operations — Android's first-class answer
+is a **foreground service**: the worker is promoted to the foreground, the
+process is kept alive, and a notification stays visible for the whole duration
+of the task.
+
+To run a task as a foreground service, pass a `foregroundServiceConfig` when
+registering the task:
+
+```dart
+await Workmanager().registerOneOffTask(
+  "upload-task",
+  "upload_files",
+  inputData: <String, dynamic>{
+    'destination': 'https://api.example.com/uploads',
+  },
+  foregroundServiceConfig: ForegroundServiceConfig(
+    notificationTitle: "Uploading files",
+    notificationText: "Your files are being uploaded",
+  ),
+);
+```
+
+The same option is available on `registerPeriodicTask`. The notification is
+shown as soon as the task starts and is removed automatically when the task
+finishes (or is cancelled). The worker keeps running even if the app is in the
+background or closed, for as long as the task takes.
+
+`ForegroundServiceConfig` has sane defaults for every field; you only need to
+provide the notification text you want to show:
+
+| Field | Default |
+| --- | --- |
+| `notificationTitle` | `Task in progress` |
+| `notificationText` | `Your task is still running` |
+| `notificationChannelId` | `workmanager_foreground_tasks` |
+| `notificationChannelName` | `Long-running tasks` |
+| `notificationId` | `0` |
+| `foregroundServiceType` | `ForegroundServiceType.dataSync` |
+
+The supported foreground service types are `dataSync` (default; for
+synchronization, uploads and downloads) and `shortService` (short, critical
+work that must complete quickly):
+
+```dart
+foregroundServiceConfig: ForegroundServiceConfig(
+  notificationTitle: "Cleanup",
+  notificationText: "Removing temporary files",
+  foregroundServiceType: ForegroundServiceType.shortService,
+),
+```
+
+<Warning>
+**Android 13+ notification permission:** on Android 13 (API 33) and newer the
+foreground service still runs, but the notification is only visible when the
+app holds the `POST_NOTIFICATIONS` runtime permission. Request it from your UI
+before registering the task if you want the notification to be shown.
+</Warning>
+
+<Warning>
+**Android 14+ foreground service types:** apps targeting SDK 34+ must declare
+the foreground service type in the manifest and hold the matching permission.
+The plugin already declares `dataSync` and `shortService` (and their
+permissions) for you — no native setup is required.
+</Warning>
+
+<Info>
+**Android 15+ limitations:** on Android 15 (API 35), `dataSync` foreground
+services may run for at most 6 hours in any 24-hour period, and work launched
+directly from `BOOT_COMPLETED` may be blocked from starting a `dataSync` or
+`shortService` foreground service by the system. In that case the task simply
+falls back to running as a regular background worker within the usual limits.
+</Info>
+
 ## Task Results
 
 Your background tasks can return:

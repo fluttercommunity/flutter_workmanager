@@ -28,6 +28,27 @@ Background tasks are perfect for:
 - **Fetch notifications** - Check for new messages
 - **Database maintenance** - Optimize and clean databases
 
+## ⏱ Long-Running Tasks (Android)
+
+For work that takes longer than the regular background execution window (bulk
+uploads/downloads, ML processing), Android tasks can run as a **foreground
+service** with a persistent notification. Pass a `foregroundServiceConfig` to
+`registerOneOffTask` or `registerPeriodicTask`:
+
+```dart
+await Workmanager().registerOneOffTask(
+  "upload-task",
+  "upload_files",
+  foregroundServiceConfig: ForegroundServiceConfig(
+    notificationTitle: "Uploading files",
+    notificationText: "Your files are being uploaded",
+  ),
+);
+```
+
+See the [Quick Start guide](https://docs.page/fluttercommunity/flutter_workmanager/quickstart)
+for details and platform caveats.
+
 
 ## 🐛 Issues & Support
 

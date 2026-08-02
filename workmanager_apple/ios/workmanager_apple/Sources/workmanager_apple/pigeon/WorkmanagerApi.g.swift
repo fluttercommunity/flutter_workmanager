@@ -295,6 +295,96 @@ enum OutOfQuotaPolicy: Int {
   case dropWorkRequest = 1
 }
 
+/// Foreground service types supported for Android long-running workers.
+///
+/// These map to the foreground service types introduced by Android 14
+/// (API level 34), when specifying a type became mandatory for apps targeting
+/// SDK 34+. See:
+/// https://developer.android.com/about/versions/14/changes/fgs-types-required
+enum ForegroundServiceType: Int {
+  /// Used for long-running data synchronization, uploads and downloads that
+  /// are important to the user.
+  case dataSync = 0
+  /// Used for short, critical work that the user is aware of and that must
+  /// complete quickly (a few minutes at most).
+  case shortService = 1
+}
+
+/// Android-only configuration that promotes a worker to a foreground service
+/// while it runs, keeping the process alive for long-running work.
+///
+/// When provided to [OneOffTaskRequest.foregroundServiceConfig] or
+/// [PeriodicTaskRequest.foregroundServiceConfig], the worker calls
+/// WorkManager's `setForegroundAsync` as soon as it starts and shows a
+/// notification for the whole duration of the task.
+///
+/// All fields are optional; the platform implementation fills in sane
+/// defaults for anything that is not provided.
+///
+/// Generated class from Pigeon that represents data sent in messages.
+struct ForegroundServiceConfig: Hashable {
+  /// Title shown in the foreground service notification.
+  var notificationTitle: String? = nil
+  /// Body text shown in the foreground service notification.
+  var notificationText: String? = nil
+  /// Id of the notification channel used for the foreground service
+  /// notification (Android 8.0+).
+  var notificationChannelId: String? = nil
+  /// User-visible name of the notification channel.
+  var notificationChannelName: String? = nil
+  /// Id used for the foreground service notification.
+  var notificationId: Int64? = nil
+  /// Foreground service type to start with (Android 14+). Defaults to
+  /// [ForegroundServiceType.dataSync].
+  var foregroundServiceType: ForegroundServiceType? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> ForegroundServiceConfig? {
+    let notificationTitle: String? = nilOrValue(pigeonVar_list[0])
+    let notificationText: String? = nilOrValue(pigeonVar_list[1])
+    let notificationChannelId: String? = nilOrValue(pigeonVar_list[2])
+    let notificationChannelName: String? = nilOrValue(pigeonVar_list[3])
+    let notificationId: Int64? = nilOrValue(pigeonVar_list[4])
+    let foregroundServiceType: ForegroundServiceType? = nilOrValue(pigeonVar_list[5])
+
+    return ForegroundServiceConfig(
+      notificationTitle: notificationTitle,
+      notificationText: notificationText,
+      notificationChannelId: notificationChannelId,
+      notificationChannelName: notificationChannelName,
+      notificationId: notificationId,
+      foregroundServiceType: foregroundServiceType
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      notificationTitle,
+      notificationText,
+      notificationChannelId,
+      notificationChannelName,
+      notificationId,
+      foregroundServiceType,
+    ]
+  }
+  static func == (lhs: ForegroundServiceConfig, rhs: ForegroundServiceConfig) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsWorkmanagerApi(lhs.notificationTitle, rhs.notificationTitle) && deepEqualsWorkmanagerApi(lhs.notificationText, rhs.notificationText) && deepEqualsWorkmanagerApi(lhs.notificationChannelId, rhs.notificationChannelId) && deepEqualsWorkmanagerApi(lhs.notificationChannelName, rhs.notificationChannelName) && deepEqualsWorkmanagerApi(lhs.notificationId, rhs.notificationId) && deepEqualsWorkmanagerApi(lhs.foregroundServiceType, rhs.foregroundServiceType)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("ForegroundServiceConfig")
+    deepHashWorkmanagerApi(value: notificationTitle, hasher: &hasher)
+    deepHashWorkmanagerApi(value: notificationText, hasher: &hasher)
+    deepHashWorkmanagerApi(value: notificationChannelId, hasher: &hasher)
+    deepHashWorkmanagerApi(value: notificationChannelName, hasher: &hasher)
+    deepHashWorkmanagerApi(value: notificationId, hasher: &hasher)
+    deepHashWorkmanagerApi(value: foregroundServiceType, hasher: &hasher)
+  }
+}
+
 /// Generated class from Pigeon that represents data sent in messages.
 struct Constraints: Hashable {
   var networkType: NetworkType? = nil
@@ -424,6 +514,8 @@ struct OneOffTaskRequest: Hashable {
   var tag: String? = nil
   var existingWorkPolicy: ExistingWorkPolicy? = nil
   var outOfQuotaPolicy: OutOfQuotaPolicy? = nil
+  /// When set, the worker runs as an Android foreground service.
+  var foregroundServiceConfig: ForegroundServiceConfig? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -437,6 +529,7 @@ struct OneOffTaskRequest: Hashable {
     let tag: String? = nilOrValue(pigeonVar_list[6])
     let existingWorkPolicy: ExistingWorkPolicy? = nilOrValue(pigeonVar_list[7])
     let outOfQuotaPolicy: OutOfQuotaPolicy? = nilOrValue(pigeonVar_list[8])
+    let foregroundServiceConfig: ForegroundServiceConfig? = nilOrValue(pigeonVar_list[9])
 
     return OneOffTaskRequest(
       uniqueName: uniqueName,
@@ -447,7 +540,8 @@ struct OneOffTaskRequest: Hashable {
       backoffPolicy: backoffPolicy,
       tag: tag,
       existingWorkPolicy: existingWorkPolicy,
-      outOfQuotaPolicy: outOfQuotaPolicy
+      outOfQuotaPolicy: outOfQuotaPolicy,
+      foregroundServiceConfig: foregroundServiceConfig
     )
   }
   func toList() -> [Any?] {
@@ -461,13 +555,14 @@ struct OneOffTaskRequest: Hashable {
       tag,
       existingWorkPolicy,
       outOfQuotaPolicy,
+      foregroundServiceConfig,
     ]
   }
   static func == (lhs: OneOffTaskRequest, rhs: OneOffTaskRequest) -> Bool {
     if Swift.type(of: lhs) != Swift.type(of: rhs) {
       return false
     }
-    return deepEqualsWorkmanagerApi(lhs.uniqueName, rhs.uniqueName) && deepEqualsWorkmanagerApi(lhs.taskName, rhs.taskName) && deepEqualsWorkmanagerApi(lhs.inputData, rhs.inputData) && deepEqualsWorkmanagerApi(lhs.initialDelaySeconds, rhs.initialDelaySeconds) && deepEqualsWorkmanagerApi(lhs.constraints, rhs.constraints) && deepEqualsWorkmanagerApi(lhs.backoffPolicy, rhs.backoffPolicy) && deepEqualsWorkmanagerApi(lhs.tag, rhs.tag) && deepEqualsWorkmanagerApi(lhs.existingWorkPolicy, rhs.existingWorkPolicy) && deepEqualsWorkmanagerApi(lhs.outOfQuotaPolicy, rhs.outOfQuotaPolicy)
+    return deepEqualsWorkmanagerApi(lhs.uniqueName, rhs.uniqueName) && deepEqualsWorkmanagerApi(lhs.taskName, rhs.taskName) && deepEqualsWorkmanagerApi(lhs.inputData, rhs.inputData) && deepEqualsWorkmanagerApi(lhs.initialDelaySeconds, rhs.initialDelaySeconds) && deepEqualsWorkmanagerApi(lhs.constraints, rhs.constraints) && deepEqualsWorkmanagerApi(lhs.backoffPolicy, rhs.backoffPolicy) && deepEqualsWorkmanagerApi(lhs.tag, rhs.tag) && deepEqualsWorkmanagerApi(lhs.existingWorkPolicy, rhs.existingWorkPolicy) && deepEqualsWorkmanagerApi(lhs.outOfQuotaPolicy, rhs.outOfQuotaPolicy) && deepEqualsWorkmanagerApi(lhs.foregroundServiceConfig, rhs.foregroundServiceConfig)
   }
 
   func hash(into hasher: inout Hasher) {
@@ -481,6 +576,7 @@ struct OneOffTaskRequest: Hashable {
     deepHashWorkmanagerApi(value: tag, hasher: &hasher)
     deepHashWorkmanagerApi(value: existingWorkPolicy, hasher: &hasher)
     deepHashWorkmanagerApi(value: outOfQuotaPolicy, hasher: &hasher)
+    deepHashWorkmanagerApi(value: foregroundServiceConfig, hasher: &hasher)
   }
 }
 
@@ -496,6 +592,8 @@ struct PeriodicTaskRequest: Hashable {
   var backoffPolicy: BackoffPolicyConfig? = nil
   var tag: String? = nil
   var existingWorkPolicy: ExistingPeriodicWorkPolicy? = nil
+  /// When set, the worker runs as an Android foreground service.
+  var foregroundServiceConfig: ForegroundServiceConfig? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -510,6 +608,7 @@ struct PeriodicTaskRequest: Hashable {
     let backoffPolicy: BackoffPolicyConfig? = nilOrValue(pigeonVar_list[7])
     let tag: String? = nilOrValue(pigeonVar_list[8])
     let existingWorkPolicy: ExistingPeriodicWorkPolicy? = nilOrValue(pigeonVar_list[9])
+    let foregroundServiceConfig: ForegroundServiceConfig? = nilOrValue(pigeonVar_list[10])
 
     return PeriodicTaskRequest(
       uniqueName: uniqueName,
@@ -521,7 +620,8 @@ struct PeriodicTaskRequest: Hashable {
       constraints: constraints,
       backoffPolicy: backoffPolicy,
       tag: tag,
-      existingWorkPolicy: existingWorkPolicy
+      existingWorkPolicy: existingWorkPolicy,
+      foregroundServiceConfig: foregroundServiceConfig
     )
   }
   func toList() -> [Any?] {
@@ -536,13 +636,14 @@ struct PeriodicTaskRequest: Hashable {
       backoffPolicy,
       tag,
       existingWorkPolicy,
+      foregroundServiceConfig,
     ]
   }
   static func == (lhs: PeriodicTaskRequest, rhs: PeriodicTaskRequest) -> Bool {
     if Swift.type(of: lhs) != Swift.type(of: rhs) {
       return false
     }
-    return deepEqualsWorkmanagerApi(lhs.uniqueName, rhs.uniqueName) && deepEqualsWorkmanagerApi(lhs.taskName, rhs.taskName) && deepEqualsWorkmanagerApi(lhs.frequencySeconds, rhs.frequencySeconds) && deepEqualsWorkmanagerApi(lhs.flexIntervalSeconds, rhs.flexIntervalSeconds) && deepEqualsWorkmanagerApi(lhs.inputData, rhs.inputData) && deepEqualsWorkmanagerApi(lhs.initialDelaySeconds, rhs.initialDelaySeconds) && deepEqualsWorkmanagerApi(lhs.constraints, rhs.constraints) && deepEqualsWorkmanagerApi(lhs.backoffPolicy, rhs.backoffPolicy) && deepEqualsWorkmanagerApi(lhs.tag, rhs.tag) && deepEqualsWorkmanagerApi(lhs.existingWorkPolicy, rhs.existingWorkPolicy)
+    return deepEqualsWorkmanagerApi(lhs.uniqueName, rhs.uniqueName) && deepEqualsWorkmanagerApi(lhs.taskName, rhs.taskName) && deepEqualsWorkmanagerApi(lhs.frequencySeconds, rhs.frequencySeconds) && deepEqualsWorkmanagerApi(lhs.flexIntervalSeconds, rhs.flexIntervalSeconds) && deepEqualsWorkmanagerApi(lhs.inputData, rhs.inputData) && deepEqualsWorkmanagerApi(lhs.initialDelaySeconds, rhs.initialDelaySeconds) && deepEqualsWorkmanagerApi(lhs.constraints, rhs.constraints) && deepEqualsWorkmanagerApi(lhs.backoffPolicy, rhs.backoffPolicy) && deepEqualsWorkmanagerApi(lhs.tag, rhs.tag) && deepEqualsWorkmanagerApi(lhs.existingWorkPolicy, rhs.existingWorkPolicy) && deepEqualsWorkmanagerApi(lhs.foregroundServiceConfig, rhs.foregroundServiceConfig)
   }
 
   func hash(into hasher: inout Hasher) {
@@ -557,6 +658,7 @@ struct PeriodicTaskRequest: Hashable {
     deepHashWorkmanagerApi(value: backoffPolicy, hasher: &hasher)
     deepHashWorkmanagerApi(value: tag, hasher: &hasher)
     deepHashWorkmanagerApi(value: existingWorkPolicy, hasher: &hasher)
+    deepHashWorkmanagerApi(value: foregroundServiceConfig, hasher: &hasher)
   }
 }
 
@@ -712,18 +814,26 @@ private class WorkmanagerApiPigeonCodecReader: FlutterStandardReader {
       }
       return nil
     case 135:
-      return Constraints.fromList(self.readValue() as! [Any?])
+      let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
+      if let enumResultAsInt = enumResultAsInt {
+        return ForegroundServiceType(rawValue: enumResultAsInt)
+      }
+      return nil
     case 136:
-      return BackoffPolicyConfig.fromList(self.readValue() as! [Any?])
+      return ForegroundServiceConfig.fromList(self.readValue() as! [Any?])
     case 137:
-      return InitializeRequest.fromList(self.readValue() as! [Any?])
+      return Constraints.fromList(self.readValue() as! [Any?])
     case 138:
-      return OneOffTaskRequest.fromList(self.readValue() as! [Any?])
+      return BackoffPolicyConfig.fromList(self.readValue() as! [Any?])
     case 139:
-      return PeriodicTaskRequest.fromList(self.readValue() as! [Any?])
+      return InitializeRequest.fromList(self.readValue() as! [Any?])
     case 140:
-      return ProcessingTaskRequest.fromList(self.readValue() as! [Any?])
+      return OneOffTaskRequest.fromList(self.readValue() as! [Any?])
     case 141:
+      return PeriodicTaskRequest.fromList(self.readValue() as! [Any?])
+    case 142:
+      return ProcessingTaskRequest.fromList(self.readValue() as! [Any?])
+    case 143:
       return HealthResearchTaskRequest.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
@@ -751,26 +861,32 @@ private class WorkmanagerApiPigeonCodecWriter: FlutterStandardWriter {
     } else if let value = value as? OutOfQuotaPolicy {
       super.writeByte(134)
       super.writeValue(value.rawValue)
-    } else if let value = value as? Constraints {
+    } else if let value = value as? ForegroundServiceType {
       super.writeByte(135)
-      super.writeValue(value.toList())
-    } else if let value = value as? BackoffPolicyConfig {
+      super.writeValue(value.rawValue)
+    } else if let value = value as? ForegroundServiceConfig {
       super.writeByte(136)
       super.writeValue(value.toList())
-    } else if let value = value as? InitializeRequest {
+    } else if let value = value as? Constraints {
       super.writeByte(137)
       super.writeValue(value.toList())
-    } else if let value = value as? OneOffTaskRequest {
+    } else if let value = value as? BackoffPolicyConfig {
       super.writeByte(138)
       super.writeValue(value.toList())
-    } else if let value = value as? PeriodicTaskRequest {
+    } else if let value = value as? InitializeRequest {
       super.writeByte(139)
       super.writeValue(value.toList())
-    } else if let value = value as? ProcessingTaskRequest {
+    } else if let value = value as? OneOffTaskRequest {
       super.writeByte(140)
       super.writeValue(value.toList())
-    } else if let value = value as? HealthResearchTaskRequest {
+    } else if let value = value as? PeriodicTaskRequest {
       super.writeByte(141)
+      super.writeValue(value.toList())
+    } else if let value = value as? ProcessingTaskRequest {
+      super.writeByte(142)
+      super.writeValue(value.toList())
+    } else if let value = value as? HealthResearchTaskRequest {
+      super.writeByte(143)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)

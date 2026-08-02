@@ -71,6 +71,7 @@ class MockWorkmanager extends _i1.Mock implements _i2.Workmanager {
     Duration? backoffPolicyDelay,
     String? tag,
     _i4.OutOfQuotaPolicy? outOfQuotaPolicy,
+    _i4.ForegroundServiceConfig? foregroundServiceConfig,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -88,6 +89,7 @@ class MockWorkmanager extends _i1.Mock implements _i2.Workmanager {
             #backoffPolicyDelay: backoffPolicyDelay,
             #tag: tag,
             #outOfQuotaPolicy: outOfQuotaPolicy,
+            #foregroundServiceConfig: foregroundServiceConfig,
           },
         ),
         returnValue: _i3.Future<void>.value(),
@@ -107,6 +109,7 @@ class MockWorkmanager extends _i1.Mock implements _i2.Workmanager {
     _i4.BackoffPolicy? backoffPolicy,
     Duration? backoffPolicyDelay,
     String? tag,
+    _i4.ForegroundServiceConfig? foregroundServiceConfig,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -125,6 +128,7 @@ class MockWorkmanager extends _i1.Mock implements _i2.Workmanager {
             #backoffPolicy: backoffPolicy,
             #backoffPolicyDelay: backoffPolicyDelay,
             #tag: tag,
+            #foregroundServiceConfig: foregroundServiceConfig,
           },
         ),
         returnValue: _i3.Future<void>.value(),
