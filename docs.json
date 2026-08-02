@@ -38,6 +38,10 @@
           "href": "/debugging"
         },
         {
+          "title": "Web (experimental)",
+          "href": "/web"
+        },
+        {
           "title": "Troubleshooting",
           "href": "/troubleshooting"
         }

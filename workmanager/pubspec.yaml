@@ -16,6 +16,7 @@ dependencies:
   workmanager_platform_interface: ^0.10.0+1
   workmanager_android: ^0.10.0+1
   workmanager_apple: ^0.9.6+2
+  workmanager_web: ^0.1.0
 
 dev_dependencies:
   test: ^1.25.15
@@ -35,3 +36,5 @@ flutter:
         default_package: workmanager_apple
       macos:
         default_package: workmanager_apple
+      web:
+        default_package: workmanager_web
