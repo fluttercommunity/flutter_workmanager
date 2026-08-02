@@ -433,7 +433,13 @@ extension WorkmanagerPlugin {
         )
 
         operation.completionBlock = { UIApplication.shared.endBackgroundTask(taskIdentifier) }
-        operationQueue.addOperation(operation)
+        if delaySeconds > 0 {
+            DispatchQueue.global().asyncAfter(deadline: .now() + Double(delaySeconds)) {
+                operationQueue.addOperation(operation)
+            }
+        } else {
+            operationQueue.addOperation(operation)
+        }
     }
 
     /// Registers a periodic background task with iOS BGTaskScheduler.
