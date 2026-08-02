@@ -1,3 +1,7 @@
+## 0.9.3
+
+ - **FEAT**(ios): add BGHealthResearchTaskRequest support (fixes #532) (#693).
+
 ## 0.9.2
 
  - **FEAT**: add Swift Package Manager support for iOS (#683).

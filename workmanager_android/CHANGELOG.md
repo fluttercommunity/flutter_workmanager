@@ -1,3 +1,7 @@
+## 0.9.2
+
+ - **FEAT**(ios): add BGHealthResearchTaskRequest support (fixes #532) (#693).
+
 ## 0.9.1+1
 
  - **FIX**(android): honor initialDelay for periodic tasks without a flex window (#691).

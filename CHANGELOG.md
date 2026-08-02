@@ -15,6 +15,42 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`workmanager` - `v0.9.2`](#workmanager---v092)
+ - [`workmanager_android` - `v0.9.2`](#workmanager_android---v092)
+ - [`workmanager_apple` - `v0.9.4`](#workmanager_apple---v094)
+ - [`workmanager_platform_interface` - `v0.9.3`](#workmanager_platform_interface---v093)
+
+---
+
+#### `workmanager` - `v0.9.2`
+
+ - **FEAT**(ios): add BGHealthResearchTaskRequest support (fixes #532) (#693).
+
+#### `workmanager_android` - `v0.9.2`
+
+ - **FEAT**(ios): add BGHealthResearchTaskRequest support (fixes #532) (#693).
+
+#### `workmanager_apple` - `v0.9.4`
+
+ - **FEAT**(ios): add BGHealthResearchTaskRequest support (fixes #532) (#693).
+
+#### `workmanager_platform_interface` - `v0.9.3`
+
+ - **FEAT**(ios): add BGHealthResearchTaskRequest support (fixes #532) (#693).
+
+
+## 2026-08-02
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`workmanager_apple` - `v0.9.3+2`](#workmanager_apple---v0932)
  - [`workmanager` - `v0.9.1+2`](#workmanager---v0912)
 

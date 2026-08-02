@@ -1,3 +1,7 @@
+## 0.9.4
+
+ - **FEAT**(ios): add BGHealthResearchTaskRequest support (fixes #532) (#693).
+
 ## 0.9.3+2
 
  - **FIX**(ios): restore initialDelay for one-off tasks (#695).
