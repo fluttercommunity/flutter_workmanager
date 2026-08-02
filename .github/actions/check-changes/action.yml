@@ -1,0 +1,48 @@
+name: Check changes
+description: >-
+  Single source of truth for the paths-filter map shared by the examples and
+  test workflows. Detects whether docs, Android, or iOS files changed.
+inputs: {}
+
+outputs:
+  docs:
+    description: Whether docs-related files changed
+    value: ${{ steps.filter.outputs.docs }}
+  android:
+    description: Whether Android-related files changed
+    value: ${{ steps.filter.outputs.android }}
+  ios:
+    description: Whether iOS-related files changed
+    value: ${{ steps.filter.outputs.ios }}
+
+runs:
+  using: composite
+  steps:
+    - uses: dorny/paths-filter@v3
+      id: filter
+      with:
+        filters: |
+          docs:
+            - 'docs/**'
+            - 'README.md'
+            - '**/*.md'
+          android:
+            - 'workmanager_android/**'
+            - 'example/android/**'
+            - 'workmanager_platform_interface/**'
+            - 'workmanager/**'
+            - 'melos.yaml'
+            - '.fvmrc'
+            - 'pubspec.yaml'
+            - '.github/workflows/**'
+            - '.github/actions/**'
+          ios:
+            - 'workmanager_apple/**'
+            - 'example/ios/**'
+            - 'workmanager_platform_interface/**'
+            - 'workmanager/**'
+            - 'melos.yaml'
+            - '.fvmrc'
+            - 'pubspec.yaml'
+            - '.github/workflows/**'
+            - '.github/actions/**'

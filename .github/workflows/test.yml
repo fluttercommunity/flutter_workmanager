@@ -7,6 +7,17 @@ on:
     branches: [ main ]
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      docs: ${{ steps.filter.outputs.docs }}
+      android: ${{ steps.filter.outputs.android }}
+      ios: ${{ steps.filter.outputs.ios }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/check-changes
+        id: filter
+
   test:
     runs-on: ubuntu-latest
     steps:
@@ -23,6 +34,8 @@ jobs:
           flutter test
 
   native_ios_tests:
+    needs: changes
+    if: needs.changes.outputs.ios == 'true'
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v7
@@ -49,6 +62,8 @@ jobs:
         run: cd example/ios && xcodebuild -workspace Runner.xcworkspace -scheme Runner -sdk iphonesimulator -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.udid }}" test
 
   native_android_tests:
+    needs: changes
+    if: needs.changes.outputs.android == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -68,6 +83,8 @@ jobs:
         run: cd example/android && ./gradlew :workmanager_android:test
 
   drive_ios:
+    needs: changes
+    if: needs.changes.outputs.ios == 'true'
     runs-on: macos-latest
     timeout-minutes: 45
     steps:
@@ -113,6 +130,8 @@ jobs:
 
 
   drive_android:
+    needs: changes
+    if: needs.changes.outputs.android == 'true'
     runs-on: ubuntu-latest
     #creates a build matrix for your jobs
     strategy:
