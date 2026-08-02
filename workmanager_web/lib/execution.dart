@@ -31,6 +31,21 @@ typedef BackgroundTaskHandler = Future<bool> Function(
   Map<String, dynamic>? inputData,
 );
 
+/// Signature of the handler invoked when the page sends a free-form message
+/// to the background worker (see `WorkmanagerWeb.sendMessageToWorker`).
+///
+/// The handler runs in the same context as the task handler (Web Worker,
+/// Service Worker or in-page fallback), so it must stay Flutter-free too.
+typedef WorkerMessageHandler = void Function(Object? payload);
+
+/// Signature used by dispatcher code to push a free-form message back to the
+/// page while a task or message handler is running.
+///
+/// The page receives it on `WorkmanagerWeb.workerMessages`. In the Service
+/// Worker context the message is delivered to open pages via
+/// `clients.postMessage`; when no page is open it is dropped.
+typedef PageMessageSender = void Function(Object? payload);
+
 /// Shared registry that holds the currently registered background task
 /// handler.
 ///
@@ -45,6 +60,21 @@ class WorkmanagerExecution {
 
   /// The handler registered by the most recent [executeTask] call.
   BackgroundTaskHandler? taskHandler;
+
+  /// The handler invoked when the page sends a message to the worker.
+  ///
+  /// Registered by the callback dispatcher (mirrors [executeTask]); the Web
+  /// Worker and Service Worker runtimes route page messages here.
+  WorkerMessageHandler? messageHandler;
+
+  /// Sends a message back to the page, when a page is reachable.
+  ///
+  /// Wired by the runtime: the compiled worker bundle sets it to post to the
+  /// owning page (or to open pages via `clients.postMessage` in the Service
+  /// Worker context); the page sets it for the in-page fallback path. Dispatcher
+  /// code can call this at any time; the page observes the message on
+  /// `WorkmanagerWeb.workerMessages`.
+  PageMessageSender? sendToPage;
 
   /// The callback dispatcher passed to `WorkmanagerWeb().initialize(...)`.
   ///

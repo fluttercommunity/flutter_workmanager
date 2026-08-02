@@ -48,6 +48,38 @@ self.onmessage = (event) => {
     expect(decoded.error, isNull);
     expect(decoded.result, 'ok:demoTask:{"a":1,"b":"two"}');
   });
+
+  test('free-form messages round-trip in a real Web Worker', () async {
+    final workerUrl = _createBlobWorkerUrl('''
+self.onmessage = (event) => {
+  const data = event.data || {};
+  if (data.type === 'message') {
+    self.postMessage({
+      type: 'workerMessage',
+      payload: { kind: 'echo', text: data.payload.text },
+    });
+  }
+};
+''');
+    final worker = _createWorker(workerUrl);
+    addTearDown(() => worker.callMethod('terminate'.toJS));
+
+    final reply = await _postAndAwait(
+      worker,
+      WorkerProtocol.encodeMessage(<String, Object?>{
+        'text': 'hello worker',
+      }),
+    );
+
+    expect(reply, isA<Map>());
+    final decoded = WorkerProtocol.decodeWorkerMessage(
+      (reply! as Map).cast<Object?, Object?>(),
+    );
+    expect(
+      decoded,
+      <String, Object?>{'kind': 'echo', 'text': 'hello worker'},
+    );
+  });
 }
 
 String _createBlobWorkerUrl(String code) {

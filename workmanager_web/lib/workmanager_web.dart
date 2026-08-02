@@ -146,6 +146,8 @@ class WorkmanagerWeb extends WorkmanagerPlatform {
 
   final StreamController<WorkmanagerWebEvent> _events =
       StreamController<WorkmanagerWebEvent>.broadcast();
+  final StreamController<Object?> _workerMessages =
+      StreamController<Object?>.broadcast();
   final Map<String, _RegisteredTask> _tasks = <String, _RegisteredTask>{};
   final Map<String, Timer> _oneOffTimers = <String, Timer>{};
   final Map<int, Completer<Object?>> _pendingWorkerRequests =
@@ -161,6 +163,16 @@ class WorkmanagerWeb extends WorkmanagerPlatform {
   /// Live stream of background-execution events, including events replayed
   /// from the Service Worker after the page was closed.
   Stream<WorkmanagerWebEvent> get backgroundEvents => _events.stream;
+
+  /// Live stream of free-form messages pushed by the background worker (or,
+  /// on the in-page fallback path, by the dispatcher running in the page).
+  ///
+  /// Dispatcher code sends messages via
+  /// `WorkmanagerExecution.instance.sendToPage`. Messages from a Service
+  /// Worker execution are delivered to open pages via `clients.postMessage`;
+  /// when no page is open they are dropped (persistent task results still
+  /// arrive through [backgroundEvents] on the next load).
+  Stream<Object?> get workerMessages => _workerMessages.stream;
 
   @override
   Future<void> initialize(
@@ -210,6 +222,15 @@ class WorkmanagerWeb extends WorkmanagerPlatform {
     if (useWebWorker) {
       _initializeWebWorker(resolvedDispatcherUrl);
     }
+
+    // In-page fallback path: when no Web Worker is available the dispatcher
+    // runs inside the page itself, so its `sendToPage` calls must surface on
+    // the page's [workerMessages] stream instead of posting to a worker.
+    WorkmanagerExecution.instance.sendToPage = (Object? payload) {
+      if (!_workerMessages.isClosed) {
+        _workerMessages.add(payload);
+      }
+    };
 
     await _syncTasksToServiceWorker();
   }
@@ -393,6 +414,25 @@ class WorkmanagerWeb extends WorkmanagerPlatform {
   }) async {
     _checkInitialized();
     await _runTask(taskName, inputData, 'trigger');
+  }
+
+  /// Sends a free-form message to the background worker's dispatcher.
+  ///
+  /// The message is delivered to the handler registered with
+  /// `WorkmanagerExecution.instance.messageHandler` in the compiled dispatcher
+  /// bundle. When no Web Worker is available the message is delivered
+  /// directly to the in-page dispatcher instead. The call never throws for
+  /// missing handlers — it is fire-and-forget, like `postMessage`.
+  void sendMessageToWorker(Object? payload) {
+    _checkInitialized();
+    if (_worker != null && !_workerFailed) {
+      BrowserGlue.workerPostMessage(
+        _worker,
+        WorkerProtocol.encodeMessage(payload),
+      );
+      return;
+    }
+    WorkmanagerExecution.instance.messageHandler?.call(payload);
   }
 
   Future<void> _initializeServiceWorker(
@@ -610,7 +650,15 @@ class WorkmanagerWeb extends WorkmanagerPlatform {
     if (raw is! Map) {
       return;
     }
-    final result = WorkerProtocol.decodeResult(raw.cast<Object?, Object?>());
+    final map = raw.cast<Object?, Object?>();
+    final message = WorkerProtocol.decodeWorkerMessage(map);
+    if (message != null || map['type'] == WorkerProtocol.typeWorkerMessage) {
+      if (!_workerMessages.isClosed) {
+        _workerMessages.add(message);
+      }
+      return;
+    }
+    final result = WorkerProtocol.decodeResult(map);
     if (result == null) {
       return;
     }
@@ -670,6 +718,13 @@ class WorkmanagerWeb extends WorkmanagerPlatform {
         final event = map['event'];
         if (event is Map) {
           _emitEventFromMap(event.cast<Object?, Object?>());
+        }
+      case 'workerMessage':
+        // Free-form message pushed by the dispatcher bundle while running in
+        // the Service Worker global (delivered via clients.postMessage).
+        final payload = map['payload'];
+        if (!_workerMessages.isClosed) {
+          _workerMessages.add(payload);
         }
     }
   }

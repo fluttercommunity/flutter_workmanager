@@ -54,5 +54,25 @@ void main() {
       );
       expect(execution.normalizeInputData(null), isNull);
     });
+
+    test('messageHandler receives messages sent to the worker', () {
+      final execution = WorkmanagerExecution.instance;
+      Object? received;
+      execution.messageHandler = (Object? payload) {
+        received = payload;
+      };
+      execution.messageHandler?.call(<String, Object?>{'op': 'watch'});
+      expect(received, <String, Object?>{'op': 'watch'});
+    });
+
+    test('sendToPage delivers messages back to the page', () {
+      final execution = WorkmanagerExecution.instance;
+      Object? delivered;
+      execution.sendToPage = (Object? payload) {
+        delivered = payload;
+      };
+      execution.sendToPage?.call(<String, Object?>{'kind': 'tick'});
+      expect(delivered, <String, Object?>{'kind': 'tick'});
+    });
   });
 }

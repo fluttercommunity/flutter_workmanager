@@ -61,3 +61,35 @@ The demo includes practical examples:
 ## Documentation
 
 For detailed guides and real-world use cases, visit: **[docs.page/fluttercommunity/flutter_workmanager →](https://docs.page/fluttercommunity/flutter_workmanager)**
+
+## Web Demo (experimental)
+
+Run `flutter run -d chrome` (or `flutter build web` and serve over HTTPS or
+localhost) to get the web-only demo. It demonstrates the experimental
+`workmanager_web` package:
+
+- **Background tasks in a Web Worker** — register one-off / periodic tasks
+  and watch them execute off the main thread (the UI stays responsive while
+  the task's CPU loop runs).
+- **Worker chat** — a two-way `postMessage` conversation between the page and
+  the background worker (suggestions: watch a simulated BTC/ETH price, stop
+  the watch, or run an on-demand background check). Replies arrive on
+  `WorkmanagerWeb.workerMessages`; the same pattern applies to real data.
+- **Service Worker execution** — install the PWA, trigger Periodic Background
+  Sync from DevTools, close the page, trigger it again and reopen: the task
+  ran inside the Service Worker (compiled Dart dispatcher) and the result is
+  replayed from IndexedDB into the event log.
+
+The background handler lives in `lib/web/background_tasks.dart` — a
+Flutter-free file compiled with plain `dart compile js` into
+`web/background.dart.js` (see `tool/build_web_background.sh`). Prices in the
+demo are simulated so it works offline; swap `_simulatedPrice()` for a real
+fetch to see the same pattern with live data.
+
+## Key Files
+
+- `lib/main.dart` - Main app with task scheduling UI
+- `lib/web/` - Web-only demo (Flutter-free dispatcher, worker chat, PWA install glue)
+- `lib/callback_dispatcher.dart` - Background task execution logic
+- `ios/Runner/AppDelegate.swift` - iOS background task registration
+- `ios/Runner/Info.plist` - iOS background modes configuration
