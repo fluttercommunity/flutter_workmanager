@@ -167,6 +167,31 @@ class MockWorkmanager extends _i1.Mock implements _i2.Workmanager {
       ) as _i3.Future<void>);
 
   @override
+  _i3.Future<void> registerHealthResearchTask(
+    String? uniqueName,
+    String? taskName, {
+    Duration? initialDelay,
+    Map<String, dynamic>? inputData,
+    _i4.Constraints? constraints,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #registerHealthResearchTask,
+          [
+            uniqueName,
+            taskName,
+          ],
+          {
+            #initialDelay: initialDelay,
+            #inputData: inputData,
+            #constraints: constraints,
+          },
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
   _i3.Future<void> cancelByUniqueName(String? uniqueName) =>
       (super.noSuchMethod(
         Invocation.method(

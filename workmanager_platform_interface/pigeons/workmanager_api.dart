@@ -251,6 +251,29 @@ class ProcessingTaskRequest {
   bool? requiresCharging;
 }
 
+// iOS specific request
+// BGHealthResearchTaskRequest (iOS 17+) for apps participating in health
+// research studies. It extends BGProcessingTaskRequest and is scheduled the
+// same way, but is delivered with higher priority/reliability for study-
+// essential processing.
+class HealthResearchTaskRequest {
+  HealthResearchTaskRequest({
+    required this.uniqueName,
+    required this.taskName,
+    this.inputData,
+    this.initialDelaySeconds,
+    this.networkType,
+    this.requiresCharging,
+  });
+
+  String uniqueName;
+  String taskName;
+  Map<String?, Object?>? inputData;
+  int? initialDelaySeconds;
+  NetworkType? networkType;
+  bool? requiresCharging;
+}
+
 // Host API (Flutter calls native)
 @HostApi()
 abstract class WorkmanagerHostApi {
@@ -265,6 +288,9 @@ abstract class WorkmanagerHostApi {
 
   @async
   void registerProcessingTask(ProcessingTaskRequest request);
+
+  @async
+  void registerHealthResearchTask(HealthResearchTaskRequest request);
 
   @async
   void cancelByUniqueName(String uniqueName);

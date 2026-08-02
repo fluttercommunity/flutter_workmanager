@@ -27,6 +27,19 @@ void main() {
       });
 
       test(
+          'should throw UnsupportedError for registerHealthResearchTask (Android does not support BGHealthResearchTask)',
+          () {
+        expect(
+          () => workmanager.registerHealthResearchTask('task', 'name'),
+          throwsA(isA<UnsupportedError>().having(
+            (e) => e.message,
+            'message',
+            contains('Health research tasks are not supported on Android'),
+          )),
+        );
+      });
+
+      test(
           'should throw UnsupportedError for printScheduledTasks (Android WorkManager does not expose task lists)',
           () {
         expect(

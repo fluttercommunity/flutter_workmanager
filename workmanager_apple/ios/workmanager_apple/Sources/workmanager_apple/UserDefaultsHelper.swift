@@ -11,6 +11,7 @@ import Foundation
 enum ScheduledTaskKind: String, Codable {
     case refresh
     case processing
+    case healthResearch
 }
 
 /// Metadata persisted for a scheduled BGTask identifier so launch handlers

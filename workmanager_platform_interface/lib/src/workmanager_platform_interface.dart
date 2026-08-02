@@ -116,6 +116,24 @@ abstract class WorkmanagerPlatform extends PlatformInterface {
         'registerProcessingTask() has not been implemented.');
   }
 
+  /// Register a health research task (iOS 17+ only).
+  ///
+  /// [uniqueName] is the unique identifier for this task.
+  /// [taskName] is the name of the task that will be passed to the callback.
+  /// [initialDelay] is the delay before the task is executed.
+  /// [inputData] is optional data that will be passed to the callback.
+  /// [constraints] are the constraints that must be met for the task to run.
+  Future<void> registerHealthResearchTask(
+    String uniqueName,
+    String taskName, {
+    Duration? initialDelay,
+    Map<String, dynamic>? inputData,
+    Constraints? constraints,
+  }) {
+    throw UnimplementedError(
+        'registerHealthResearchTask() has not been implemented.');
+  }
+
   /// Cancel a task by its unique name.
   Future<void> cancelByUniqueName(String uniqueName) {
     throw UnimplementedError('cancelByUniqueName() has not been implemented.');
@@ -197,6 +215,19 @@ class _PlaceholderImplementation extends WorkmanagerPlatform {
 
   @override
   Future<void> registerProcessingTask(
+    String uniqueName,
+    String taskName, {
+    Duration? initialDelay,
+    Map<String, dynamic>? inputData,
+    Constraints? constraints,
+  }) async {
+    throw UnimplementedError(
+      'No implementation found for workmanager on this platform.',
+    );
+  }
+
+  @override
+  Future<void> registerHealthResearchTask(
     String uniqueName,
     String taskName, {
     Duration? initialDelay,

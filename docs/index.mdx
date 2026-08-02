@@ -33,6 +33,7 @@ platform.
 | One-off tasks (`registerOneOffTask`) | ✅ Scheduled by the OS; survives app restarts | ⚠️ Runs via `beginBackgroundTask` while the app is alive (foreground or shortly after backgrounding). Not guaranteed after the app is terminated | ⚠️ Runs via `NSBackgroundActivityScheduler` while the app is running/backgrounded and the Mac is awake. Tasks with no `initialDelay` run immediately; delayed tasks are best-effort |
 | Periodic tasks (`registerPeriodicTask`) | ✅ Reliable, 15-minute minimum frequency | ⚠️ Best-effort. iOS decides when (and whether) background fetch runs, based on app usage; 15-minute minimum hint | ⚠️ Best-effort. `NSBackgroundActivityScheduler` decides timing; the Dart `frequency` is the interval hint |
 | Processing tasks (`registerProcessingTask`) | ❌ Not supported | ✅ BGProcessingTask (longer work, requires registration in AppDelegate) | ⚠️ Mapped to a one-off `NSBackgroundActivityScheduler` activity; network/charging constraints are ignored |
+| Health research tasks (`registerHealthResearchTask`) | ❌ Not supported | ⚠️ iOS 17+ only, via `BGHealthResearchTaskRequest`. Requires a Health Research Study container + `com.apple.developer.backgroundtasks.healthresearch` entitlement and user opt-in (see below) | ❌ Not supported |
 | `initialDelay` | ✅ Honored for one-off tasks. For periodic tasks it is best-effort (see below) | ⚠️ One-off: honored while the app stays alive. Periodic: used as the earliest-begin hint for BGTaskScheduler | ⚠️ Best-effort via the activity interval (0 = run as soon as possible); the system may defer the run |
 | `inputData` | ✅ All supported types | ✅ Supported for one-off and periodic tasks | ✅ Supported for one-off and periodic tasks (captured at schedule time) |
 | `taskName` in callback | ✅ The value you passed as `taskName` | ✅ One-off tasks receive the `taskName` you passed. Periodic/processing tasks receive the BGTaskScheduler identifier (the `uniqueName` you registered) | ✅ Tasks receive the activity identifier (the `uniqueName` you registered) |
@@ -65,6 +66,67 @@ handle (there is no `FlutterCallbackCache` on macOS), so the callback function
 must be a top-level function named exactly `callbackDispatcher` in your app's
 main library (e.g. `main.dart`).
 </Warning>
+
+## iOS Background Task Strategies
+
+iOS offers several scheduling strategies. Workmanager wraps the three
+`BGTaskScheduler`-based strategies plus the legacy background-fetch path:
+
+| Strategy | workmanager API | iOS version | Runtime budget | When the system runs it | Reliability |
+|---|---|---|---|---|---|
+| `BGAppRefreshTaskRequest` | `registerPeriodicTask` | 13+ | ~30 seconds | Periodically, based on app usage; at least 15 minutes between launches | Best-effort; no guaranteed interval; does not run on a schedule |
+| `BGProcessingTaskRequest` | `registerProcessingTask` | 13+ | Minutes (typically 1–10, dynamically adjusted) | When the device is idle (often overnight, possibly while charging) | Best-effort but more generous than refresh; may be deferred or interrupted |
+| `BGHealthResearchTaskRequest` | `registerHealthResearchTask` | 17+ | Minutes, like processing tasks | When the device is idle, with additional priority for study-essential processing | Higher priority/reliability than plain processing, but only for health-research apps (entitlement + study container + user opt-in) |
+| `BGContinuedProcessingTaskRequest` | Not yet supported (planned) | 26+ | Starts in the foreground, continues in background | Immediately after submission, which must be a user action (e.g. button tap) | Continues as long as progress is reported (Live Activity + progress protocol); the system can terminate it abruptly under resource pressure |
+| Background fetch (`performFetchWithCompletionHandler`) | iOS < 13 fallback (`Workmanager.iOSBackgroundTask`) | 7–12 | ~30 seconds | System-managed; typically ~once per day based on usage | Best-effort |
+
+**Gaps in workmanager today:**
+
+- `BGContinuedProcessingTaskRequest` (iOS 26+) is not supported. It is a
+  *foreground-initiated* task (submitted as a result of a user action, showing
+  progress in a Live Activity), which does not fit the register-then-run-later
+  model of workmanager. A future API would need to run the Flutter engine in
+  the foreground and keep it alive across backgrounding — a distinct feature,
+  tracked in issue #638.
+- `registerProcessingTask` on iOS currently delivers the task without the
+  `inputData` captured at registration time (only one-off and periodic tasks
+  persist input data). Health research tasks persist input data like periodic
+  tasks.
+
+### Health research tasks (`BGHealthResearchTaskRequest`)
+
+`Workmanager().registerHealthResearchTask(...)` (iOS 17+) schedules a
+`BGHealthResearchTaskRequest` — a subclass of `BGProcessingTaskRequest` that
+iOS delivers with additional priority and reliability when the processing is
+essential to a health research study the user participates in.
+
+Apple enforces app-level requirements *before* such a task can be submitted or
+delivered; the plugin cannot bypass them:
+
+1. **Health Research Study container**: the app must be part of a HealthKit
+   "Health Research Study" container (typically provisioned with ResearchKit /
+   `HKResearchStudy`).
+2. **Entitlement**: the `com.apple.developer.backgroundtasks.healthresearch`
+   entitlement must be added to the app's `.entitlements` file (granted by
+   Apple for approved research apps).
+3. **User opt-in**: the user must have opted in to the study and remain a
+   participant.
+4. **Info.plist**: the task identifier must be listed in
+   `BGTaskSchedulerPermittedIdentifiers` (same as processing tasks).
+
+Without these, `BGTaskScheduler.shared.submit` fails and the plugin logs the
+error (the Dart call still completes; check `printScheduledTasks` or logs).
+The plugin registers the launch handler automatically at schedule time and
+again on the next app launch; you only need
+`WorkmanagerPlugin.registerBGHealthResearchTask(withIdentifier:)` in
+`AppDelegate.swift` if you want to pre-register the handler.
+
+<Info>
+**Testing constraint:** BGHealthResearchTask delivery can only be validated on
+a physical device with the health-research entitlement and an active study
+container. The plugin code is iOS-17 availability-gated, but runtime
+verification remains a TODO until tested by a health-research app.
+</Info>
 
 ## Common Use Cases
 

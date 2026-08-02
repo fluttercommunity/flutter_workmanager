@@ -154,6 +154,44 @@ public class WorkmanagerPlugin: WorkmanagerPluginBase, FlutterPlugin, Workmanage
         }
     }
 
+    func registerHealthResearchTask(
+        request: HealthResearchTaskRequest,
+        completion: @escaping (Result<Void, Error>) -> Void
+    ) {
+        guard validateCallbackHandle() else {
+            completion(.failure(createInitializationError()))
+            return
+        }
+
+        guard #available(iOS 17.0, *) else {
+            completion(.failure(PigeonError(
+                code: "99",
+                message: "HealthResearchTask could not be registered",
+                details: "BGHealthResearchTaskRequest is only supported on iOS 17+"
+            )))
+            return
+        }
+
+        let delaySeconds = Double(request.initialDelaySeconds ?? 0)
+        let requiresCharging = request.requiresCharging ?? false
+        let requiresNetwork = request.networkType == .connected || request.networkType == .metered
+
+        // Reuse the periodic inputData storage (keyed by task identifier) so
+        // the task receives the payload captured at registration time.
+        UserDefaultsHelper.storePeriodicTaskInputData(
+            request.inputData as? [String: Any],
+            forTaskIdentifier: request.uniqueName
+        )
+
+        WorkmanagerPlugin.scheduleHealthResearchTask(
+            withIdentifier: request.uniqueName,
+            earliestBeginInSeconds: delaySeconds,
+            requiresNetworkConnectivity: requiresNetwork,
+            requiresExternalPower: requiresCharging
+        )
+        completion(.success(()))
+    }
+
     func cancelByUniqueName(uniqueName: String, completion: @escaping (Result<Void, Error>) -> Void) {
         executeIfSupportedVoid(completion: completion, feature: "cancelByUniqueName") {
             BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: uniqueName)
@@ -327,6 +365,19 @@ extension WorkmanagerPlugin {
         )
         WorkmanagerDebug.getCurrent().onTaskStatusUpdate(taskInfo: taskInfo, status: .scheduled, result: nil)
         completion(.success(()))
+    }
+
+    func registerHealthResearchTask(
+        request: HealthResearchTaskRequest,
+        completion: @escaping (Result<Void, Error>) -> Void
+    ) {
+        // BGHealthResearchTaskRequest is iOS 17+-only and requires the health
+        // research study entitlement; it is not available on macOS.
+        completion(.failure(PigeonError(
+            code: "99",
+            message: "HealthResearchTask could not be registered",
+            details: "BGHealthResearchTaskRequest is only supported on iOS 17+"
+        )))
     }
 
     func cancelByUniqueName(uniqueName: String, completion: @escaping (Result<Void, Error>) -> Void) {
@@ -511,6 +562,27 @@ extension WorkmanagerPlugin {
         }
     }
 
+    /// Registers a health research task with iOS BGTaskScheduler.
+    ///
+    /// Health research tasks are delivered to apps participating in a Health
+    /// Research Study container (iOS 17+) with the
+    /// `com.apple.developer.backgroundtasks.healthresearch` entitlement, where
+    /// the user has opted in to the study. The identifier must also be listed
+    /// in `BGTaskSchedulerPermittedIdentifiers` in Info.plist.
+    ///
+    /// - Parameter identifier: Unique task identifier that matches the one used in Dart
+    @objc
+    public static func registerBGHealthResearchTask(withIdentifier identifier: String) {
+        guard #available(iOS 17.0, *) else {
+            return
+        }
+        UserDefaultsHelper.storeScheduledTask(
+            ScheduledTaskInfo(kind: .healthResearch, earliestBeginInSeconds: nil),
+            forTaskIdentifier: identifier
+        )
+        registerLaunchHandlerOnce(forTaskWithIdentifier: identifier, earliestBeginInSeconds: nil)
+    }
+
     @objc
     @available(iOS 13.0, *)
     private static func scheduleBackgroundProcessingTask(
@@ -538,11 +610,61 @@ extension WorkmanagerPlugin {
         }
     }
 
+    /// Handles execution of a health research background task.
+    ///
+    /// BGHealthResearchTask is a subclass of BGProcessingTask: the task can
+    /// run for minutes while the device is idle, but the system can still
+    /// interrupt it (the expiration handler cancels the operation).
+    @available(iOS 17.0, *)
+    private static func handleBGHealthResearchTask(identifier: String, task: BGHealthResearchTask) {
+        let operationQueue = OperationQueue()
+        // Deliver the inputData stored at registration time (mirroring the
+        // periodic task path, keyed by task identifier).
+        let storedInputData = UserDefaultsHelper.getStoredPeriodicTaskInputData(forTaskIdentifier: task.identifier)
+        let operation = createBackgroundOperation(
+            identifier: task.identifier,
+            inputData: storedInputData,
+            backgroundMode: .backgroundHealthResearchTask(identifier: identifier)
+        )
+
+        task.expirationHandler = { operation.cancel() }
+        operation.completionBlock = { task.setTaskCompleted(success: !operation.isCancelled) }
+
+        operationQueue.addOperation(operation)
+    }
+
+    @available(iOS 17.0, *)
+    private static func scheduleHealthResearchTask(
+        withIdentifier uniqueTaskIdentifier: String,
+        earliestBeginInSeconds begin: Double,
+        requiresNetworkConnectivity: Bool,
+        requiresExternalPower: Bool
+    ) {
+        let request = BGHealthResearchTaskRequest(identifier: uniqueTaskIdentifier)
+        request.earliestBeginDate = Date(timeIntervalSinceNow: begin)
+        request.requiresNetworkConnectivity = requiresNetworkConnectivity
+        request.requiresExternalPower = requiresExternalPower
+
+        do {
+            try BGTaskScheduler.shared.submit(request)
+            logInfo("BGHealthResearchTask submitted \(uniqueTaskIdentifier) earliestBeginInSeconds:\(begin)")
+            UserDefaultsHelper.storeScheduledTask(
+                ScheduledTaskInfo(kind: .healthResearch, earliestBeginInSeconds: begin),
+                forTaskIdentifier: uniqueTaskIdentifier
+            )
+            registerLaunchHandlerOnce(forTaskWithIdentifier: uniqueTaskIdentifier, earliestBeginInSeconds: nil)
+        } catch {
+            logInfo("Could not schedule BGHealthResearchTask identifier:\(uniqueTaskIdentifier) error:\(error.localizedDescription)")
+            logInfo("Possible issues: iOS 17+ required, or the app is missing the health research study entitlement / the user has not opted in")
+        }
+    }
+
     /// Registers the launch handler for [identifier] at most once per process.
     ///
-    /// The handler dispatches on the delivered task type so both periodic
-    /// (BGAppRefreshTask) and processing (BGProcessingTask) identifiers can be
-    /// re-registered from persisted state at app launch.
+    /// The handler dispatches on the delivered task type so periodic
+    /// (BGAppRefreshTask), processing (BGProcessingTask) and health research
+    /// (BGHealthResearchTask) identifiers can be re-registered from persisted
+    /// state at app launch.
     @available(iOS 13.0, *)
     private static func registerLaunchHandlerOnce(
         forTaskWithIdentifier identifier: String,
@@ -565,6 +687,10 @@ extension WorkmanagerPlugin {
                     earliestBeginInSeconds: earliestBeginInSeconds,
                     inputData: storedInputData
                 )
+            } else if #available(iOS 17.0, *), let task = task as? BGHealthResearchTask {
+                // BGHealthResearchTask is a subclass of BGProcessingTask, so it
+                // must be checked before the generic BGProcessingTask branch.
+                handleBGHealthResearchTask(identifier: identifier, task: task)
             } else if let task = task as? BGProcessingTask {
                 handleBGProcessingTask(identifier: identifier, task: task)
             }

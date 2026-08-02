@@ -103,6 +103,20 @@ class WorkmanagerPlugin :
         callback(Result.failure(UnsupportedOperationException("Processing tasks are not supported on Android")))
     }
 
+    override fun registerHealthResearchTask(
+        request: HealthResearchTaskRequest,
+        callback: (Result<Unit>) -> Unit,
+    ) {
+        // Health research tasks are iOS 17+-specific
+        callback(
+            Result.failure(
+                UnsupportedOperationException(
+                    "Health research tasks are not supported on Android",
+                ),
+            ),
+        )
+    }
+
     override fun cancelByUniqueName(
         uniqueName: String,
         callback: (Result<Unit>) -> Unit,
