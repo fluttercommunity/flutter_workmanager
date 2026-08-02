@@ -23,6 +23,24 @@ import 'package:workmanager_apple/workmanager_apple.dart';
 typedef BackgroundTaskHandler = Future<bool> Function(
     String taskName, Map<String, dynamic>? inputData);
 
+/// Callback invoked when a running background task is stopped by the platform
+/// before it finished.
+///
+/// This is Android-only: it fires when WorkManager stops a worker that is
+/// currently running (cancelled, timed out, preempted, ...). iOS has no
+/// equivalent concept — `cancelByUniqueName` there only removes pending
+/// BGTaskScheduler requests.
+///
+/// [taskName] is the same value passed to the [BackgroundTaskHandler].
+/// [stopReason] describes why the task was stopped; on Android versions
+/// before 12 (API 31) it is always [StopReason.unknown].
+///
+/// Return promptly: the platform tears the task's engine down once this
+/// handler completes, so long-running work should be kept to quick state
+/// persistence and cleanup.
+typedef BackgroundTaskStoppedHandler = Future<void> Function(
+    String taskName, StopReason stopReason);
+
 /// Make sure you followed the platform setup steps first before trying to register any task.
 ///
 /// Android:
@@ -110,6 +128,7 @@ class Workmanager {
   static const String iOSBackgroundTask = "iOSPerformFetch";
 
   static BackgroundTaskHandler? _backgroundTaskHandler;
+  static BackgroundTaskStoppedHandler? _onTaskStoppedHandler;
   static late final WorkmanagerFlutterApi _flutterApi;
 
   /// The callback dispatcher registered via [initialize], kept so in-process
@@ -174,7 +193,14 @@ class Workmanager {
   /// You can perfectly call other Flutter plugins inside this callback, as the callback is simply running within a Flutter background isolate.
   ///
   /// Scheduling other background tasks inside the [BackgroundTaskHandler] is allowed.
-  void executeTask(BackgroundTaskHandler backgroundTaskHandler) async {
+  ///
+  /// [onTaskStopped] is an optional handler invoked when the platform stops a
+  /// running task before it finishes (Android only, see
+  /// [BackgroundTaskStoppedHandler]).
+  void executeTask(
+    BackgroundTaskHandler backgroundTaskHandler, {
+    BackgroundTaskStoppedHandler? onTaskStopped,
+  }) async {
     WidgetsFlutterBinding.ensureInitialized();
     try {
       final marker =
@@ -183,6 +209,7 @@ class Workmanager {
     } catch (_) {}
 
     _backgroundTaskHandler = backgroundTaskHandler;
+    _onTaskStoppedHandler = onTaskStopped;
     _flutterApi = _WorkmanagerFlutterApiImpl();
     WorkmanagerFlutterApi.setUp(_flutterApi);
 
@@ -540,5 +567,13 @@ class _WorkmanagerFlutterApiImpl extends WorkmanagerFlutterApi {
     final result = await Workmanager._backgroundTaskHandler
         ?.call(taskName, convertedInputData);
     return result ?? false;
+  }
+
+  @override
+  Future<void> onTaskStopped(String taskName, int stopReason) async {
+    final handler = Workmanager._onTaskStoppedHandler;
+    if (handler != null) {
+      await handler(taskName, StopReason.fromRawValue(stopReason));
+    }
   }
 }

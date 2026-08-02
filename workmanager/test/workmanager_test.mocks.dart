@@ -50,11 +50,15 @@ class MockWorkmanager extends _i1.Mock implements _i2.Workmanager {
       ) as _i3.Future<void>);
 
   @override
-  void executeTask(_i2.BackgroundTaskHandler? backgroundTaskHandler) =>
+  void executeTask(
+    _i2.BackgroundTaskHandler? backgroundTaskHandler, {
+    _i2.BackgroundTaskStoppedHandler? onTaskStopped,
+  }) =>
       super.noSuchMethod(
         Invocation.method(
           #executeTask,
           [backgroundTaskHandler],
+          {#onTaskStopped: onTaskStopped},
         ),
         returnValueForMissingStub: null,
       );

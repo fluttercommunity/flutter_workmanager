@@ -409,4 +409,14 @@ abstract class WorkmanagerFlutterApi {
 
   @async
   bool executeTask(String taskName, Map<String?, Object?>? inputData);
+
+  /// Notifies the Dart callback that a running task was stopped by the
+  /// platform before it finished (cancelled, timed out, preempted, ...).
+  ///
+  /// [stopReason] carries the Android WorkManager stop reason (see
+  /// [StopReason](https://developer.android.com/reference/androidx/work/StopReason)).
+  /// It is `0` (unknown) on Android versions before 12 (API 31) and on
+  /// platforms without an equivalent concept.
+  @async
+  void onTaskStopped(String taskName, int stopReason);
 }
