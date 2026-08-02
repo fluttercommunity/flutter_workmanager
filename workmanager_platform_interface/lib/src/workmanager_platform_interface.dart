@@ -53,6 +53,8 @@ abstract class WorkmanagerPlatform extends PlatformInterface {
   /// [backoffPolicyDelay] is the delay for the backoff policy.
   /// [tag] is an optional tag for the task.
   /// [outOfQuotaPolicy] determines behavior when quota is exceeded (Android only).
+  /// [foregroundServiceConfig] promotes the worker to an Android foreground
+  /// service while it runs (Android only).
   Future<void> registerOneOffTask(
     String uniqueName,
     String taskName, {
@@ -64,6 +66,7 @@ abstract class WorkmanagerPlatform extends PlatformInterface {
     Duration? backoffPolicyDelay,
     String? tag,
     OutOfQuotaPolicy? outOfQuotaPolicy,
+    ForegroundServiceConfig? foregroundServiceConfig,
   }) {
     throw UnimplementedError('registerOneOffTask() has not been implemented.');
   }
@@ -81,6 +84,8 @@ abstract class WorkmanagerPlatform extends PlatformInterface {
   /// [backoffPolicy] determines the backoff policy for retries.
   /// [backoffPolicyDelay] is the delay for the backoff policy.
   /// [tag] is an optional tag for the task.
+  /// [foregroundServiceConfig] promotes the worker to an Android foreground
+  /// service while it runs (Android only).
   Future<void> registerPeriodicTask(
     String uniqueName,
     String taskName, {
@@ -93,6 +98,7 @@ abstract class WorkmanagerPlatform extends PlatformInterface {
     BackoffPolicy? backoffPolicy,
     Duration? backoffPolicyDelay,
     String? tag,
+    ForegroundServiceConfig? foregroundServiceConfig,
   }) {
     throw UnimplementedError(
         'registerPeriodicTask() has not been implemented.');
@@ -188,6 +194,7 @@ class _PlaceholderImplementation extends WorkmanagerPlatform {
     Duration? backoffPolicyDelay,
     String? tag,
     OutOfQuotaPolicy? outOfQuotaPolicy,
+    ForegroundServiceConfig? foregroundServiceConfig,
   }) async {
     throw UnimplementedError(
       'No implementation found for workmanager on this platform.',
@@ -207,6 +214,7 @@ class _PlaceholderImplementation extends WorkmanagerPlatform {
     BackoffPolicy? backoffPolicy,
     Duration? backoffPolicyDelay,
     String? tag,
+    ForegroundServiceConfig? foregroundServiceConfig,
   }) async {
     throw UnimplementedError(
       'No implementation found for workmanager on this platform.',

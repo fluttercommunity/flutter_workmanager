@@ -7,6 +7,7 @@ import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
 import com.google.common.util.concurrent.ListenableFuture
+import dev.fluttercommunity.workmanager.pigeon.ForegroundServiceConfig
 import dev.fluttercommunity.workmanager.pigeon.TaskStatus
 import dev.fluttercommunity.workmanager.pigeon.WorkmanagerFlutterApi
 import io.flutter.FlutterInjector
@@ -15,6 +16,8 @@ import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.embedding.engine.loader.FlutterLoader
 import io.flutter.view.FlutterCallbackInformation
 import java.security.SecureRandom
+import java.util.concurrent.Executor
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * A simple worker that posts your input back to your Flutter application.
@@ -52,8 +55,21 @@ class BackgroundWorker(
             null
         }
 
+    private val foregroundServiceConfig: ForegroundServiceConfig? =
+        decodeForegroundServiceConfig(workerParams.inputData)
+
+    private val directExecutor = Executor { it.run() }
+
     override fun startWork(): ListenableFuture<Result> {
         startTime = System.currentTimeMillis()
+
+        // Promote the worker to a foreground service right away when a config
+        // was provided at registration time, so the notification (and the
+        // process priority boost) are in place while the Dart engine starts.
+        val foregroundFuture =
+            foregroundServiceConfig?.let { config ->
+                setForegroundAsync(createForegroundInfo(applicationContext, config))
+            }
 
         val flutterLoader: FlutterLoader = FlutterInjector.instance().flutterLoader()
 
@@ -119,7 +135,41 @@ class BackgroundWorker(
             }
         }
 
-        return resolvableFuture
+        return combineForegroundWithResult(foregroundFuture)
+    }
+
+    /**
+     * WorkManager requires the future returned by [setForegroundAsync] to be
+     * part of the future returned from [startWork]. The combined future only
+     * completes once both the foreground service has been started and the
+     * Dart task has finished. A failure to start the foreground service never
+     * fails the worker; it is reported through the debug handler and the task
+     * simply keeps running as a regular background worker.
+     */
+    private fun combineForegroundWithResult(foregroundFuture: ListenableFuture<*>?): ListenableFuture<Result> {
+        if (foregroundFuture == null) {
+            return resolvableFuture
+        }
+
+        return CallbackToFutureAdapter.getFuture { combinedCompleter ->
+            val completed = AtomicBoolean(false)
+            val listener =
+                Runnable {
+                    if (foregroundFuture.isDone && resolvableFuture.isDone && completed.compareAndSet(false, true)) {
+                        foregroundFuture.takeUnless { it.isCancelled }?.let {
+                            try {
+                                it.get()
+                            } catch (e: Exception) {
+                                WorkmanagerDebug.onExceptionEncountered(applicationContext, null, e)
+                            }
+                        }
+                        combinedCompleter.set(resolvableFuture.get())
+                    }
+                }
+            foregroundFuture.addListener(listener, directExecutor)
+            resolvableFuture.addListener(listener, directExecutor)
+            null
+        }
     }
 
     override fun onStopped() {

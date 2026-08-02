@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:workmanager_platform_interface/workmanager_platform_interface.dart';
 
 /// Android implementation of [WorkmanagerPlatform].
@@ -39,6 +40,7 @@ class WorkmanagerAndroid extends WorkmanagerPlatform {
     Duration? backoffPolicyDelay,
     String? tag,
     OutOfQuotaPolicy? outOfQuotaPolicy,
+    ForegroundServiceConfig? foregroundServiceConfig,
   }) async {
     await _api.registerOneOffTask(OneOffTaskRequest(
       uniqueName: uniqueName,
@@ -55,6 +57,8 @@ class WorkmanagerAndroid extends WorkmanagerPlatform {
           : null,
       tag: tag,
       outOfQuotaPolicy: outOfQuotaPolicy,
+      foregroundServiceConfig:
+          resolveForegroundServiceConfig(foregroundServiceConfig),
     ));
   }
 
@@ -71,6 +75,7 @@ class WorkmanagerAndroid extends WorkmanagerPlatform {
     BackoffPolicy? backoffPolicy,
     Duration? backoffPolicyDelay,
     String? tag,
+    ForegroundServiceConfig? foregroundServiceConfig,
   }) async {
     await _api.registerPeriodicTask(PeriodicTaskRequest(
       uniqueName: uniqueName,
@@ -88,6 +93,8 @@ class WorkmanagerAndroid extends WorkmanagerPlatform {
             )
           : null,
       tag: tag,
+      foregroundServiceConfig:
+          resolveForegroundServiceConfig(foregroundServiceConfig),
     ));
   }
 
@@ -140,4 +147,43 @@ class WorkmanagerAndroid extends WorkmanagerPlatform {
   Future<String> printScheduledTasks() async {
     throw UnsupportedError('printScheduledTasks is not supported on Android');
   }
+}
+
+/// Defaults for the Android foreground service notification.
+///
+/// The defaults are resolved on the platform implementation (rather than in
+/// the shared [ForegroundServiceConfig] class) so that the platform contract
+/// keeps every field optional and older platform implementations keep
+/// working unchanged.
+const String _defaultForegroundNotificationTitle = 'Task in progress';
+const String _defaultForegroundNotificationText = 'Your task is still running';
+const String _defaultForegroundNotificationChannelId =
+    'workmanager_foreground_tasks';
+const String _defaultForegroundNotificationChannelName = 'Long-running tasks';
+const int _defaultForegroundNotificationId = 0;
+const ForegroundServiceType _defaultForegroundServiceType =
+    ForegroundServiceType.dataSync;
+
+/// Fills in the Android-side defaults for any field not provided by the
+/// caller. Returns `null` when no config was requested.
+@visibleForTesting
+ForegroundServiceConfig? resolveForegroundServiceConfig(
+  ForegroundServiceConfig? config,
+) {
+  if (config == null) {
+    return null;
+  }
+  return ForegroundServiceConfig(
+    notificationTitle:
+        config.notificationTitle ?? _defaultForegroundNotificationTitle,
+    notificationText:
+        config.notificationText ?? _defaultForegroundNotificationText,
+    notificationChannelId:
+        config.notificationChannelId ?? _defaultForegroundNotificationChannelId,
+    notificationChannelName: config.notificationChannelName ??
+        _defaultForegroundNotificationChannelName,
+    notificationId: config.notificationId ?? _defaultForegroundNotificationId,
+    foregroundServiceType:
+        config.foregroundServiceType ?? _defaultForegroundServiceType,
+  );
 }

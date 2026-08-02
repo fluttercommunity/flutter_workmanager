@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/services.dart';
 import 'package:workmanager_android/workmanager_android.dart';
 import 'package:workmanager_platform_interface/workmanager_platform_interface.dart';
 
@@ -276,6 +277,129 @@ void main() {
         expect(periodicRequest.flexIntervalSeconds, 300);
         expect(periodicRequest.existingWorkPolicy,
             ExistingPeriodicWorkPolicy.keep);
+      });
+    });
+
+    group('Foreground service config', () {
+      const oneOffChannel =
+          'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.registerOneOffTask';
+      const periodicChannel =
+          'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.registerPeriodicTask';
+
+      test('resolves sane defaults for a minimal config', () {
+        final resolved = resolveForegroundServiceConfig(
+          ForegroundServiceConfig(notificationTitle: 'Syncing'),
+        );
+
+        expect(resolved, isNotNull);
+        expect(resolved!.notificationTitle, 'Syncing');
+        expect(resolved.notificationText, 'Your task is still running');
+        expect(resolved.notificationChannelId, 'workmanager_foreground_tasks');
+        expect(resolved.notificationChannelName, 'Long-running tasks');
+        expect(resolved.notificationId, 0);
+        expect(resolved.foregroundServiceType, ForegroundServiceType.dataSync);
+      });
+
+      test('keeps explicitly provided values', () {
+        final resolved = resolveForegroundServiceConfig(
+          ForegroundServiceConfig(
+            notificationTitle: 'Upload',
+            notificationText: 'Uploading files',
+            notificationChannelId: 'uploads',
+            notificationChannelName: 'Uploads',
+            notificationId: 42,
+            foregroundServiceType: ForegroundServiceType.shortService,
+          ),
+        );
+
+        expect(resolved, isNotNull);
+        expect(resolved!.notificationTitle, 'Upload');
+        expect(resolved.notificationText, 'Uploading files');
+        expect(resolved.notificationChannelId, 'uploads');
+        expect(resolved.notificationChannelName, 'Uploads');
+        expect(resolved.notificationId, 42);
+        expect(
+          resolved.foregroundServiceType,
+          ForegroundServiceType.shortService,
+        );
+      });
+
+      test('returns null when no config is requested', () {
+        expect(resolveForegroundServiceConfig(null), isNull);
+      });
+
+      test('registerOneOffTask forwards the resolved config through pigeon',
+          () async {
+        late OneOffTaskRequest captured;
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMessageHandler(oneOffChannel, (ByteData? message) async {
+          final decoded = WorkmanagerHostApi.pigeonChannelCodec
+              .decodeMessage(message) as List<Object?>;
+          captured = decoded[0]! as OneOffTaskRequest;
+          return WorkmanagerHostApi.pigeonChannelCodec
+              .encodeMessage(<Object?>[]);
+        });
+
+        await workmanager.registerOneOffTask(
+          'unique',
+          'task',
+          foregroundServiceConfig:
+              ForegroundServiceConfig(notificationTitle: 'Syncing'),
+        );
+
+        expect(captured.foregroundServiceConfig, isNotNull);
+        expect(captured.foregroundServiceConfig!.notificationTitle, 'Syncing');
+        expect(
+          captured.foregroundServiceConfig!.foregroundServiceType,
+          ForegroundServiceType.dataSync,
+        );
+      });
+
+      test('registerPeriodicTask forwards the resolved config through pigeon',
+          () async {
+        late PeriodicTaskRequest captured;
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMessageHandler(periodicChannel, (ByteData? message) async {
+          final decoded = WorkmanagerHostApi.pigeonChannelCodec
+              .decodeMessage(message) as List<Object?>;
+          captured = decoded[0]! as PeriodicTaskRequest;
+          return WorkmanagerHostApi.pigeonChannelCodec
+              .encodeMessage(<Object?>[]);
+        });
+
+        await workmanager.registerPeriodicTask(
+          'unique',
+          'task',
+          foregroundServiceConfig: ForegroundServiceConfig(
+            foregroundServiceType: ForegroundServiceType.shortService,
+          ),
+        );
+
+        expect(captured.foregroundServiceConfig, isNotNull);
+        expect(
+          captured.foregroundServiceConfig!.foregroundServiceType,
+          ForegroundServiceType.shortService,
+        );
+        expect(
+          captured.foregroundServiceConfig!.notificationTitle,
+          'Task in progress',
+        );
+      });
+
+      test('request carries no config when none is provided', () async {
+        late OneOffTaskRequest captured;
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMessageHandler(oneOffChannel, (ByteData? message) async {
+          final decoded = WorkmanagerHostApi.pigeonChannelCodec
+              .decodeMessage(message) as List<Object?>;
+          captured = decoded[0]! as OneOffTaskRequest;
+          return WorkmanagerHostApi.pigeonChannelCodec
+              .encodeMessage(<Object?>[]);
+        });
+
+        await workmanager.registerOneOffTask('unique', 'task');
+
+        expect(captured.foregroundServiceConfig, isNull);
       });
     });
   });

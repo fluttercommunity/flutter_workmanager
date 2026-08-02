@@ -182,6 +182,11 @@ class Workmanager {
   /// - [tag]: is an optional tag that can be used to identify or cancel the task.
   /// - [existingWorkPolicy]: is the policy to use when work with the same [uniqueName] already exists.
   /// - [outOfQuotaPolicy]: is the policy to use when the device is out of quota. (Android only)
+  /// - [foregroundServiceConfig]: when provided (Android only), the worker
+  ///   runs as an Android foreground service for the whole duration of the
+  ///   task. This allows work to keep running beyond the usual background
+  ///   execution limits, in exchange for a persistent notification. See
+  ///   [ForegroundServiceConfig] for the available options.
   Future<void> registerOneOffTask(
     String uniqueName,
     String taskName, {
@@ -193,6 +198,7 @@ class Workmanager {
     Duration? backoffPolicyDelay,
     String? tag,
     OutOfQuotaPolicy? outOfQuotaPolicy,
+    ForegroundServiceConfig? foregroundServiceConfig,
   }) async {
     return _platform.registerOneOffTask(
       uniqueName,
@@ -205,6 +211,7 @@ class Workmanager {
       backoffPolicyDelay: backoffPolicyDelay,
       tag: tag,
       outOfQuotaPolicy: outOfQuotaPolicy,
+      foregroundServiceConfig: foregroundServiceConfig,
     );
   }
 
@@ -233,6 +240,10 @@ class Workmanager {
   /// [iOS 13+ Using background tasks to update your app](https://developer.apple.com/documentation/uikit/app_and_environment/scenes/preparing_your_ui_to_run_in_the_background/using_background_tasks_to_update_your_app/)
   ///
   /// [iOS 13+ BGAppRefreshTask](https://developer.apple.com/documentation/backgroundtasks/bgapprefreshtask/)
+  ///
+  /// [foregroundServiceConfig]: when provided (Android only), the worker runs
+  /// as an Android foreground service for the whole duration of the task,
+  /// showing a persistent notification. See [ForegroundServiceConfig].
   Future<void> registerPeriodicTask(
     String uniqueName,
     String taskName, {
@@ -245,6 +256,7 @@ class Workmanager {
     BackoffPolicy? backoffPolicy,
     Duration? backoffPolicyDelay,
     String? tag,
+    ForegroundServiceConfig? foregroundServiceConfig,
   }) async {
     return _platform.registerPeriodicTask(
       uniqueName,
@@ -258,6 +270,7 @@ class Workmanager {
       backoffPolicy: backoffPolicy,
       backoffPolicyDelay: backoffPolicyDelay,
       tag: tag,
+      foregroundServiceConfig: foregroundServiceConfig,
     );
   }
 

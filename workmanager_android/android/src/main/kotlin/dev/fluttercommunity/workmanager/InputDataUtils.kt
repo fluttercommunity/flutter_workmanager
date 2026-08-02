@@ -1,6 +1,8 @@
 package dev.fluttercommunity.workmanager
 
 import androidx.work.Data
+import dev.fluttercommunity.workmanager.pigeon.ForegroundServiceConfig
+import dev.fluttercommunity.workmanager.pigeon.ForegroundServiceType
 import org.json.JSONArray
 import org.json.JSONObject
 import org.json.JSONTokener
@@ -19,6 +21,14 @@ const val PAYLOAD_PREFIX = "payload_"
 const val JSON_PAYLOAD_PREFIX = "json_payload_"
 
 /**
+ * Key under which the foreground service configuration is stored in
+ * WorkManager [Data]. Kept separate from the user payload so it is never
+ * delivered to the Dart callback and never collides with user keys.
+ */
+const val FOREGROUND_SERVICE_CONFIG_KEY =
+    "dev.fluttercommunity.workmanager.FOREGROUND_SERVICE_CONFIG"
+
+/**
  * Serializes [dartTask] and [payload] into WorkManager [Data].
  *
  * - Scalars are stored natively under `payload_<key>` (same keys as before).
@@ -27,12 +37,19 @@ const val JSON_PAYLOAD_PREFIX = "json_payload_"
  *   non-String elements.
  * - Nested maps, heterogeneous lists, and null values are JSON-encoded under
  *   `json_payload_<key>` and decoded again when the task runs.
+ * - An optional [foregroundServiceConfig] is JSON-encoded under
+ *   [FOREGROUND_SERVICE_CONFIG_KEY].
  */
 fun buildTaskInputData(
     dartTask: String,
     payload: Map<String, Any?>?,
+    foregroundServiceConfig: ForegroundServiceConfig? = null,
 ): Data {
     val builder = Data.Builder().putString(BackgroundWorker.DART_TASK_KEY, dartTask)
+
+    foregroundServiceConfig?.let {
+        builder.putString(FOREGROUND_SERVICE_CONFIG_KEY, encodeForegroundServiceConfig(it))
+    }
 
     payload?.forEach { (key, value) ->
         when (value) {
@@ -56,6 +73,40 @@ fun buildTaskInputData(
 
     return builder.build()
 }
+
+/** Encodes a [ForegroundServiceConfig] as a JSON string for WorkManager [Data]. */
+fun encodeForegroundServiceConfig(config: ForegroundServiceConfig): String =
+    JSONObject()
+        .apply {
+            config.notificationTitle?.let { put("notificationTitle", it) }
+            config.notificationText?.let { put("notificationText", it) }
+            config.notificationChannelId?.let { put("notificationChannelId", it) }
+            config.notificationChannelName?.let { put("notificationChannelName", it) }
+            config.notificationId?.let { put("notificationId", it) }
+            config.foregroundServiceType?.let { put("foregroundServiceType", it.name) }
+        }.toString()
+
+/** Decodes a [ForegroundServiceConfig] from WorkManager [Data], or `null` when absent. */
+fun decodeForegroundServiceConfig(data: Data?): ForegroundServiceConfig? =
+    data?.getString(FOREGROUND_SERVICE_CONFIG_KEY)?.let(::decodeForegroundServiceConfig)
+
+/** Decodes a [ForegroundServiceConfig] from its JSON representation. */
+fun decodeForegroundServiceConfig(json: String): ForegroundServiceConfig =
+    JSONObject(json).let { obj ->
+        ForegroundServiceConfig(
+            notificationTitle = obj.optStringOrNull("notificationTitle"),
+            notificationText = obj.optStringOrNull("notificationText"),
+            notificationChannelId = obj.optStringOrNull("notificationChannelId"),
+            notificationChannelName = obj.optStringOrNull("notificationChannelName"),
+            notificationId = obj.takeIf { it.has("notificationId") }?.getLong("notificationId"),
+            foregroundServiceType =
+                obj
+                    .optStringOrNull("foregroundServiceType")
+                    ?.let { ForegroundServiceType.valueOf(it) },
+        )
+    }
+
+private fun JSONObject.optStringOrNull(key: String): String? = if (isNull(key)) null else optString(key)
 
 /**
  * Converts a WorkManager [Data] key-value map back into the payload map that

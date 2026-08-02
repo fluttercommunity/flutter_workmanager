@@ -37,6 +37,7 @@ val defaultOutOfQuotaPolicy: OutOfQuotaPolicy? = null
 internal fun createPeriodicWorkRequest(
     taskName: String,
     inputData: Map<String, Any?>?,
+    foregroundServiceConfig: dev.fluttercommunity.workmanager.pigeon.ForegroundServiceConfig? = null,
     frequencySeconds: Long,
     flexIntervalSeconds: Long?,
     initialDelaySeconds: Long?,
@@ -63,7 +64,7 @@ internal fun createPeriodicWorkRequest(
                 )
         }
     return builder
-        .setInputData(buildTaskInputData(taskName, inputData))
+        .setInputData(buildTaskInputData(taskName, inputData, foregroundServiceConfig))
         .setInitialDelay(
             initialDelaySeconds ?: DEFAULT_INITIAL_DELAY_SECONDS,
             TimeUnit.SECONDS,
@@ -166,6 +167,7 @@ class WorkManagerWrapper(
                         buildTaskInputData(
                             request.taskName,
                             request.inputData?.filterNotNullKeys(),
+                            request.foregroundServiceConfig,
                         ),
                     ).setInitialDelay(
                         request.initialDelaySeconds ?: DEFAULT_INITIAL_DELAY_SECONDS,
@@ -211,6 +213,7 @@ class WorkManagerWrapper(
             createPeriodicWorkRequest(
                 taskName = request.taskName,
                 inputData = request.inputData?.filterNotNullKeys(),
+                foregroundServiceConfig = request.foregroundServiceConfig,
                 frequencySeconds = request.frequencySeconds,
                 flexIntervalSeconds = request.flexIntervalSeconds,
                 initialDelaySeconds = request.initialDelaySeconds,
