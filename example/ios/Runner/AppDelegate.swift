@@ -4,13 +4,19 @@ import workmanager_apple
 
 @UIApplicationMain
 
-@objc class AppDelegate: FlutterAppDelegate {
+@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
 
     override func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 
-        GeneratedPluginRegistrant.register(with: self)
+        // Under the UIScene lifecycle, Flutter registers plugins after
+        // `didFinishLaunching` returns (during scene connection). BGTaskScheduler
+        // still requires launch handlers to be registered before app launch
+        // finishes, so re-register the handlers persisted from previous sessions
+        // here. The plugin's own `application` callback runs too late for that.
+        WorkmanagerPlugin.registerLaunchHandlers()
+
         UNUserNotificationCenter.current().delegate = self
 
         // Request notification permission for debug handler
@@ -53,6 +59,10 @@ import workmanager_apple
 
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
 
+    }
+
+    func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
+        GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     }
 
     override func userNotificationCenter(
