@@ -83,6 +83,30 @@ constraints: Constraints(
 )
 ```
 
+### Content URI Triggers (Android only)
+
+Run a task when a content URI changes (for example when the user takes a new photo):
+
+```dart
+Workmanager().registerOneOffTask(
+  "process-new-photos",
+  "photo_processor",
+  constraints: Constraints(
+    contentUriTriggers: [
+      ContentUriTrigger(
+        uri: 'content://media/external/images/media',
+        triggerForDescendants: true,
+      ),
+    ],
+  ),
+);
+```
+
+- Mirrors WorkManager's `Constraints.Builder.addContentUriTrigger`.
+- **Android only** and requires Android 7.0 (API 24)+; on older versions the triggers are ignored.
+- The observing app needs permission to read the content URI it observes.
+- WorkManager limits how many content-URI-triggered workers can be enqueued at once (default 8).
+
 <Warning>
 **Platform Differences:** Some constraints are Android-only. iOS background tasks have different system-level constraints that cannot be configured directly, and macOS (`NSBackgroundActivityScheduler`) ignores all constraints.
 </Warning>

@@ -488,7 +488,22 @@ data class Constraints (
   val requiresBatteryNotLow: Boolean? = null,
   val requiresCharging: Boolean? = null,
   val requiresDeviceIdle: Boolean? = null,
-  val requiresStorageNotLow: Boolean? = null
+  val requiresStorageNotLow: Boolean? = null,
+  /**
+   * Content URI triggers that run the work when the observed content URIs
+   * change (Android only).
+   *
+   * Mirrors WorkManager's `Constraints.Builder.addContentUriTrigger`:
+   * https://developer.android.com/reference/androidx/work/Constraints.Builder#addContentUriTrigger(android.net.Uri,%20boolean)
+   *
+   * Requires Android 7.0 (API 24)+; on older Android versions the triggers
+   * are ignored. WorkManager also limits how many content-URI-triggered
+   * workers can be enqueued at once (default 8, configurable via
+   * `Configuration.Builder.setContentUriTriggerWorkersLimit`).
+   *
+   * Other platforms ignore this field.
+   */
+  val contentUriTriggers: List<ContentUriTrigger?>? = null
 )
  {
   companion object {
@@ -498,7 +513,8 @@ data class Constraints (
       val requiresCharging = pigeonVar_list[2] as Boolean?
       val requiresDeviceIdle = pigeonVar_list[3] as Boolean?
       val requiresStorageNotLow = pigeonVar_list[4] as Boolean?
-      return Constraints(networkType, requiresBatteryNotLow, requiresCharging, requiresDeviceIdle, requiresStorageNotLow)
+      val contentUriTriggers = pigeonVar_list[5] as List<ContentUriTrigger?>?
+      return Constraints(networkType, requiresBatteryNotLow, requiresCharging, requiresDeviceIdle, requiresStorageNotLow, contentUriTriggers)
     }
   }
   fun toList(): List<Any?> {
@@ -508,6 +524,7 @@ data class Constraints (
       requiresCharging,
       requiresDeviceIdle,
       requiresStorageNotLow,
+      contentUriTriggers,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -518,7 +535,7 @@ data class Constraints (
       return true
     }
     val other = other as Constraints
-    return WorkmanagerApiPigeonUtils.deepEquals(this.networkType, other.networkType) && WorkmanagerApiPigeonUtils.deepEquals(this.requiresBatteryNotLow, other.requiresBatteryNotLow) && WorkmanagerApiPigeonUtils.deepEquals(this.requiresCharging, other.requiresCharging) && WorkmanagerApiPigeonUtils.deepEquals(this.requiresDeviceIdle, other.requiresDeviceIdle) && WorkmanagerApiPigeonUtils.deepEquals(this.requiresStorageNotLow, other.requiresStorageNotLow)
+    return WorkmanagerApiPigeonUtils.deepEquals(this.networkType, other.networkType) && WorkmanagerApiPigeonUtils.deepEquals(this.requiresBatteryNotLow, other.requiresBatteryNotLow) && WorkmanagerApiPigeonUtils.deepEquals(this.requiresCharging, other.requiresCharging) && WorkmanagerApiPigeonUtils.deepEquals(this.requiresDeviceIdle, other.requiresDeviceIdle) && WorkmanagerApiPigeonUtils.deepEquals(this.requiresStorageNotLow, other.requiresStorageNotLow) && WorkmanagerApiPigeonUtils.deepEquals(this.contentUriTriggers, other.contentUriTriggers)
   }
 
   override fun hashCode(): Int {
@@ -528,6 +545,60 @@ data class Constraints (
     result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.requiresCharging)
     result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.requiresDeviceIdle)
     result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.requiresStorageNotLow)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.contentUriTriggers)
+    return result
+  }
+}
+
+/**
+ * A single content URI trigger for Android WorkManager constraints.
+ *
+ * When [uri] is updated, inserted or deleted by the system or another app,
+ * the work associated with the constraint is run.
+ *
+ * Mirrors WorkManager's `ContentUriTrigger`:
+ * https://developer.android.com/reference/androidx/work/ContentUriTrigger
+ *
+ * Generated class from Pigeon that represents data sent in messages.
+ */
+data class ContentUriTrigger (
+  /**
+   * The local `content:` Uri to observe for changes, e.g.
+   * `content://media/external/images/media`.
+   */
+  val uri: String,
+  /** Whether changes to any descendant of [uri] also run the work. */
+  val triggerForDescendants: Boolean
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): ContentUriTrigger {
+      val uri = pigeonVar_list[0] as String
+      val triggerForDescendants = pigeonVar_list[1] as Boolean
+      return ContentUriTrigger(uri, triggerForDescendants)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      uri,
+      triggerForDescendants,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as ContentUriTrigger
+    return WorkmanagerApiPigeonUtils.deepEquals(this.uri, other.uri) && WorkmanagerApiPigeonUtils.deepEquals(this.triggerForDescendants, other.triggerForDescendants)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.uri)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.triggerForDescendants)
     return result
   }
 }
@@ -957,35 +1028,40 @@ private open class WorkmanagerApiPigeonCodec : StandardMessageCodec() {
       }
       138.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          BackoffPolicyConfig.fromList(it)
+          ContentUriTrigger.fromList(it)
         }
       }
       139.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          InitializeRequest.fromList(it)
+          BackoffPolicyConfig.fromList(it)
         }
       }
       140.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          OneOffTaskRequest.fromList(it)
+          InitializeRequest.fromList(it)
         }
       }
       141.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PeriodicTaskRequest.fromList(it)
+          OneOffTaskRequest.fromList(it)
         }
       }
       142.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          ProcessingTaskRequest.fromList(it)
+          PeriodicTaskRequest.fromList(it)
         }
       }
       143.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          HealthResearchTaskRequest.fromList(it)
+          ProcessingTaskRequest.fromList(it)
         }
       }
       144.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          HealthResearchTaskRequest.fromList(it)
+        }
+      }
+      145.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           ContinuedProcessingTaskRequest.fromList(it)
         }
@@ -1031,32 +1107,36 @@ private open class WorkmanagerApiPigeonCodec : StandardMessageCodec() {
         stream.write(137)
         writeValue(stream, value.toList())
       }
-      is BackoffPolicyConfig -> {
+      is ContentUriTrigger -> {
         stream.write(138)
         writeValue(stream, value.toList())
       }
-      is InitializeRequest -> {
+      is BackoffPolicyConfig -> {
         stream.write(139)
         writeValue(stream, value.toList())
       }
-      is OneOffTaskRequest -> {
+      is InitializeRequest -> {
         stream.write(140)
         writeValue(stream, value.toList())
       }
-      is PeriodicTaskRequest -> {
+      is OneOffTaskRequest -> {
         stream.write(141)
         writeValue(stream, value.toList())
       }
-      is ProcessingTaskRequest -> {
+      is PeriodicTaskRequest -> {
         stream.write(142)
         writeValue(stream, value.toList())
       }
-      is HealthResearchTaskRequest -> {
+      is ProcessingTaskRequest -> {
         stream.write(143)
         writeValue(stream, value.toList())
       }
-      is ContinuedProcessingTaskRequest -> {
+      is HealthResearchTaskRequest -> {
         stream.write(144)
+        writeValue(stream, value.toList())
+      }
+      is ContinuedProcessingTaskRequest -> {
+        stream.write(145)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)

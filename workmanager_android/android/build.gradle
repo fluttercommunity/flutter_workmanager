@@ -58,4 +58,6 @@ dependencies {
     testImplementation "org.mockito.kotlin:mockito-kotlin:4.1.0"
     // Real org.json implementation for JVM unit tests (android.jar only stubs it).
     testImplementation 'org.json:json:20240303'
+    // Real Android framework implementations (Build, Uri, ...) for JVM unit tests.
+    testImplementation 'org.robolectric:robolectric:4.16.1'
 }

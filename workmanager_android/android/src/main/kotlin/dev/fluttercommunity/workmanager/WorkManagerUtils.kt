@@ -1,6 +1,7 @@
 package dev.fluttercommunity.workmanager
 
 import android.content.Context
+import android.net.Uri
 import android.os.Build
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
@@ -108,7 +109,7 @@ private fun dev.fluttercommunity.workmanager.pigeon.OutOfQuotaPolicy.toAndroidOu
         dev.fluttercommunity.workmanager.pigeon.OutOfQuotaPolicy.DROP_WORK_REQUEST -> OutOfQuotaPolicy.DROP_WORK_REQUEST
     }
 
-private fun dev.fluttercommunity.workmanager.pigeon.Constraints.toAndroidConstraints(): Constraints {
+internal fun dev.fluttercommunity.workmanager.pigeon.Constraints.toAndroidConstraints(): Constraints {
     val builder = Constraints.Builder()
 
     networkType?.let { builder.setRequiredNetworkType(it.toAndroidNetworkType()) }
@@ -120,9 +121,22 @@ private fun dev.fluttercommunity.workmanager.pigeon.Constraints.toAndroidConstra
         }
     }
     requiresStorageNotLow?.let { builder.setRequiresStorageNotLow(it) }
+    contentUriTriggers?.forEach { trigger ->
+        trigger?.let {
+            if (isContentUriTriggerSupported()) {
+                builder.addContentUriTrigger(Uri.parse(it.uri), it.triggerForDescendants)
+            }
+        }
+    }
 
     return builder.build()
 }
+
+/**
+ * Content URI trigger constraints are only supported on Android 7.0 (API 24)+;
+ * on older versions JobScheduler silently drops them.
+ */
+internal fun isContentUriTriggerSupported(sdkInt: Int = Build.VERSION.SDK_INT): Boolean = sdkInt >= Build.VERSION_CODES.N
 
 private fun dev.fluttercommunity.workmanager.pigeon.NetworkType.toAndroidNetworkType(): NetworkType =
     when (this) {
