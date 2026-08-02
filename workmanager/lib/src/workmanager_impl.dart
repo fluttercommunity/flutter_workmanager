@@ -298,6 +298,58 @@ class Workmanager {
     );
   }
 
+  /// Register a health research task (iOS 17+ only, health research apps).
+  ///
+  /// Health research tasks are scheduled with
+  /// [BGHealthResearchTaskRequest](https://developer.apple.com/documentation/backgroundtasks/bghealthresearchtaskrequest),
+  /// which iOS delivers with additional priority and reliability for
+  /// processing that is essential to a health research study.
+  ///
+  /// Availability:
+  /// - iOS 17+ only. On older iOS versions the call fails with an
+  ///   [UnsupportedError] (platform) or a Pigeon error (iOS < 17).
+  /// - Android and macOS do not support this task type.
+  ///
+  /// App requirements (checked by Apple at submission time, not by this
+  /// plugin):
+  /// - The app must be a [Health Research Study container](https://developer.apple.com/documentation/healthkit)
+  ///   with the `com.apple.developer.backgroundtasks.healthresearch`
+  ///   entitlement.
+  /// - The user must have opted in to the relevant study.
+  /// - The task identifier must be listed in `BGTaskSchedulerPermittedIdentifiers`
+  ///   in Info.plist, and `BGTaskSchedulerPermittedIdentifiers` registration
+  ///   happens automatically by the plugin (see the docs for
+  ///   `WorkmanagerPlugin.registerBGHealthResearchTask(withIdentifier:)`).
+  ///
+  /// Like processing tasks, health research tasks run while the device is
+  /// idle, can run for minutes, and may be interrupted by the system. The
+  /// [taskName] is the value returned in the [BackgroundTaskHandler]; on iOS
+  /// the handler receives the BGTaskScheduler identifier (the [uniqueName]).
+  ///
+  /// [uniqueName] is a required unique identifier for the task.
+  /// [taskName] is the value returned in the [BackgroundTaskHandler].
+  /// [initialDelay] is the earliest-begin hint passed to the system.
+  /// [inputData] is the input data for the task (int, bool, double, String
+  /// and their lists).
+  /// [constraints] maps to the BGProcessingTaskRequest network/charging
+  /// requirements (only `networkType` and `requiresCharging` are honored on
+  /// iOS).
+  Future<void> registerHealthResearchTask(
+    String uniqueName,
+    String taskName, {
+    Duration? initialDelay,
+    Map<String, dynamic>? inputData,
+    Constraints? constraints,
+  }) async {
+    return _platform.registerHealthResearchTask(
+      uniqueName,
+      taskName,
+      initialDelay: initialDelay,
+      inputData: inputData,
+      constraints: constraints,
+    );
+  }
+
   /// Cancels task by [uniqueName]
   Future<void> cancelByUniqueName(String uniqueName) async =>
       _platform.cancelByUniqueName(uniqueName);

@@ -1,6 +1,7 @@
 package dev.fluttercommunity.workmanager
 
 import dev.fluttercommunity.workmanager.pigeon.InitializeRequest
+import dev.fluttercommunity.workmanager.pigeon.HealthResearchTaskRequest
 import dev.fluttercommunity.workmanager.pigeon.OneOffTaskRequest
 import dev.fluttercommunity.workmanager.pigeon.PeriodicTaskRequest
 import dev.fluttercommunity.workmanager.pigeon.ProcessingTaskRequest
@@ -101,6 +102,20 @@ class WorkmanagerPlugin :
     ) {
         // Processing tasks are iOS-specific
         callback(Result.failure(UnsupportedOperationException("Processing tasks are not supported on Android")))
+    }
+
+    override fun registerHealthResearchTask(
+        request: HealthResearchTaskRequest,
+        callback: (Result<Unit>) -> Unit,
+    ) {
+        // Health research tasks are iOS 17+-specific
+        callback(
+            Result.failure(
+                UnsupportedOperationException(
+                    "Health research tasks are not supported on Android",
+                ),
+            ),
+        )
     }
 
     override fun cancelByUniqueName(

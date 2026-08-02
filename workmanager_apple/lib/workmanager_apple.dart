@@ -110,6 +110,24 @@ class WorkmanagerApple extends WorkmanagerPlatform {
   }
 
   @override
+  Future<void> registerHealthResearchTask(
+    String uniqueName,
+    String taskName, {
+    Duration? initialDelay,
+    Map<String, dynamic>? inputData,
+    Constraints? constraints,
+  }) async {
+    await _api.registerHealthResearchTask(HealthResearchTaskRequest(
+      uniqueName: uniqueName,
+      taskName: taskName,
+      inputData: inputData?.cast<String?, Object?>(),
+      initialDelaySeconds: initialDelay?.inSeconds,
+      networkType: constraints?.networkType,
+      requiresCharging: constraints?.requiresCharging,
+    ));
+  }
+
+  @override
   Future<void> cancelByUniqueName(String uniqueName) async {
     await _api.cancelByUniqueName(uniqueName);
   }

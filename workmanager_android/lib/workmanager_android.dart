@@ -104,6 +104,19 @@ class WorkmanagerAndroid extends WorkmanagerPlatform {
   }
 
   @override
+  Future<void> registerHealthResearchTask(
+    String uniqueName,
+    String taskName, {
+    Duration? initialDelay,
+    Map<String, dynamic>? inputData,
+    Constraints? constraints,
+  }) async {
+    // Health research tasks are iOS 17+-specific, so this is a no-op on Android
+    throw UnsupportedError(
+        'Health research tasks are not supported on Android');
+  }
+
+  @override
   Future<void> cancelByUniqueName(String uniqueName) async {
     await _api.cancelByUniqueName(uniqueName);
   }

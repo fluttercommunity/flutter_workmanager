@@ -158,11 +158,69 @@ control the scheduling hint from native code.
 **iOS Task Identifier Matching:** The task name in your Dart code must **exactly match** the identifier in Info.plist and AppDelegate. Using short names like `"cleanup"` in Dart while having `com.yourapp.periodic_task` in native code will cause `BGTaskSchedulerErrorDomain Code 3` errors.
 </Warning>
 
+#### Option D: Health Research Tasks (iOS 17+)
+For apps participating in a Health Research Study — `BGHealthResearchTaskRequest`
+gets additional priority/reliability for study-essential processing:
+
+1. **App requirements (Apple-enforced, outside the plugin):**
+   - The app must be part of a HealthKit **Health Research Study container**
+     (typically provisioned with ResearchKit / `HKResearchStudy`).
+   - The `com.apple.developer.backgroundtasks.healthresearch` entitlement must
+     be present in your `.entitlements` file.
+   - The user must have **opted in** to the study.
+
+2. **Enable Background Modes** and add the identifier to Info.plist:
+```xml
+<key>UIBackgroundModes</key>
+<array>
+    <string>processing</string>
+</array>
+
+<key>BGTaskSchedulerPermittedIdentifiers</key>
+<array>
+    <string>com.yourapp.health_research_task</string>
+</array>
+```
+
+3. **(Optional) Pre-register the launch handler** in `AppDelegate.swift`:
+```swift
+import workmanager_apple
+
+// In application didFinishLaunching
+WorkmanagerPlugin.registerBGHealthResearchTask(
+  withIdentifier: "com.yourapp.health_research_task"
+)
+```
+The plugin also registers the handler automatically at schedule time and on
+the next app launch.
+
+4. **Schedule from Dart** (iOS 17+; older iOS versions receive an error):
+```dart
+await Workmanager().registerHealthResearchTask(
+  'com.yourapp.health_research_task',
+  'healthResearchTask',
+  initialDelay: const Duration(hours: 1),
+  constraints: Constraints(
+    networkType: NetworkType.connected,
+    requiresCharging: true,
+  ),
+);
+```
+
+<Warning>
+**Health research tasks require the entitlement.** Without the Health Research
+Study container and `com.apple.developer.backgroundtasks.healthresearch`
+entitlement, `BGTaskScheduler.submit` fails and the task is never delivered —
+the plugin cannot validate this for you. See the capability matrix in the docs
+index for the full iOS strategy comparison.
+</Warning>
+
 <Success>
 **Which option to choose?** 
 - **Option A (Background Fetch)** for non-critical updates that can happen once daily (data sync, content refresh)
 - **Option B (BGTaskScheduler)** for one-time tasks, file uploads, or immediate task scheduling  
 - **Option C (Periodic Tasks)** for regular tasks with custom frequency control (15+ minutes)
+- **Option D (Health Research Tasks)** for iOS 17+ health research study apps that need reliable background processing
 </Success>
 
 ### macOS

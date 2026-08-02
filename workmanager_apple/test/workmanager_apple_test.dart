@@ -131,6 +131,40 @@ void main() {
       });
     });
 
+    group('iOS-specific health research task request validation', () {
+      test('should handle HealthResearchTaskRequest creation', () {
+        final healthRequest = HealthResearchTaskRequest(
+          uniqueName: 'com.example.health-research-task',
+          taskName: 'Health Research Task',
+          inputData: {'study': 'example-study', 'participantId': '42'},
+          initialDelaySeconds: 600, // 10 minutes
+          networkType: NetworkType.unmetered,
+          requiresCharging: true,
+        );
+
+        expect(healthRequest.uniqueName, 'com.example.health-research-task');
+        expect(healthRequest.taskName, 'Health Research Task');
+        expect(healthRequest.networkType, NetworkType.unmetered);
+        expect(healthRequest.requiresCharging, true);
+        expect(healthRequest.initialDelaySeconds, 600);
+        expect(healthRequest.inputData?['study'], 'example-study');
+      });
+
+      test('should handle minimal health research task configuration', () {
+        final minimalRequest = HealthResearchTaskRequest(
+          uniqueName: 'minimal-health-task',
+          taskName: 'Minimal Health Task',
+        );
+
+        expect(minimalRequest.uniqueName, 'minimal-health-task');
+        expect(minimalRequest.taskName, 'Minimal Health Task');
+        expect(minimalRequest.inputData, null);
+        expect(minimalRequest.initialDelaySeconds, null);
+        expect(minimalRequest.networkType, null);
+        expect(minimalRequest.requiresCharging, null);
+      });
+    });
+
     group('iOS constraint handling differences', () {
       test('should handle battery constraints appropriately for iOS', () {
         // iOS handles battery constraints differently than Android
