@@ -51,6 +51,34 @@ await Workmanager().registerOneOffTask(
 See the [Quick Start guide](https://docs.page/fluttercommunity/flutter_workmanager/quickstart)
 for details and platform caveats.
 
+## 🛑 Cancelling Running Work (Android)
+
+`cancelByUniqueName`, `cancelByTag` and `cancelAll` stop the WorkManager worker
+immediately, but the Dart callback that is currently running keeps executing
+unless it reacts to the stop. Pass an `onTaskStopped` handler to `executeTask`
+inside your `callbackDispatcher` to be notified when a running task is stopped
+before it finishes:
+
+```dart
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask(
+    (taskName, inputData) async {
+      return true;
+    },
+    onTaskStopped: (taskName, stopReason) async {
+      // Mark the task as cancelled / persist state, then return promptly.
+    },
+  );
+}
+```
+
+The handler receives the task name and the WorkManager stop reason
+(`cancelledByApp`, `timeout`, `preempt`, ...); on Android < 12 the reason is
+`StopReason.unknown`. Android-only — iOS has no way to stop a running task.
+See the [Customization guide](https://docs.page/fluttercommunity/flutter_workmanager/customization)
+for details.
+
 
 ## 🐛 Issues & Support
 

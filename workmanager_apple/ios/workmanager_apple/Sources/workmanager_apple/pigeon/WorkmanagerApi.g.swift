@@ -1175,6 +1175,14 @@ class WorkmanagerHostApiSetup {
 protocol WorkmanagerFlutterApiProtocol {
   func backgroundChannelInitialized(completion: @escaping (Result<Void, PigeonError>) -> Void)
   func executeTask(taskName taskNameArg: String, inputData inputDataArg: [String?: Any?]?, completion: @escaping (Result<Bool, PigeonError>) -> Void)
+  /// Notifies the Dart callback that a running task was stopped by the
+  /// platform before it finished (cancelled, timed out, preempted, ...).
+  ///
+  /// [stopReason] carries the Android WorkManager stop reason (see
+  /// [StopReason](https://developer.android.com/reference/androidx/work/StopReason)).
+  /// It is `0` (unknown) on Android versions before 12 (API 31) and on
+  /// platforms without an equivalent concept.
+  func onTaskStopped(taskName taskNameArg: String, stopReason stopReasonArg: Int64, completion: @escaping (Result<Void, PigeonError>) -> Void)
 }
 class WorkmanagerFlutterApi: WorkmanagerFlutterApiProtocol {
   private let binaryMessenger: FlutterBinaryMessenger
@@ -1222,6 +1230,31 @@ class WorkmanagerFlutterApi: WorkmanagerFlutterApiProtocol {
       } else {
         let result = listResponse[0] as! Bool
         completion(.success(result))
+      }
+    }
+  }
+  /// Notifies the Dart callback that a running task was stopped by the
+  /// platform before it finished (cancelled, timed out, preempted, ...).
+  ///
+  /// [stopReason] carries the Android WorkManager stop reason (see
+  /// [StopReason](https://developer.android.com/reference/androidx/work/StopReason)).
+  /// It is `0` (unknown) on Android versions before 12 (API 31) and on
+  /// platforms without an equivalent concept.
+  func onTaskStopped(taskName taskNameArg: String, stopReason stopReasonArg: Int64, completion: @escaping (Result<Void, PigeonError>) -> Void) {
+    let channelName: String = "dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerFlutterApi.onTaskStopped\(messageChannelSuffix)"
+    let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
+    channel.sendMessage([taskNameArg, stopReasonArg] as [Any?]) { response in
+      guard let listResponse = response as? [Any?] else {
+        completion(.failure(createConnectionError(withChannelName: channelName)))
+        return
+      }
+      if listResponse.count > 1 {
+        let code: String = listResponse[0] as! String
+        let message: String? = nilOrValue(listResponse[1])
+        let details: String? = nilOrValue(listResponse[2])
+        completion(.failure(PigeonError(code: code, message: message, details: details)))
+      } else {
+        completion(.success(()))
       }
     }
   }

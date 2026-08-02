@@ -1,6 +1,7 @@
 package dev.fluttercommunity.workmanager
 
 import android.content.Context
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import androidx.concurrent.futures.CallbackToFutureAdapter
@@ -173,12 +174,37 @@ class BackgroundWorker(
     }
 
     override fun onStopped() {
-        stopEngine(null)
+        val localDartTask = dartTask
+        val stopReason = workerStopReason()
+
+        // Notify the running Dart callback that WorkManager stopped the worker
+        // (cancelled, timed out, preempted, ...) so it can persist state or
+        // release resources before the engine is torn down.
+        if (localDartTask != null && ::flutterApi.isInitialized && engine != null) {
+            try {
+                flutterApi.onTaskStopped(localDartTask, stopReason.toLong()) {
+                    stopEngine(null, stopReason = stopReason)
+                }
+                return
+            } catch (e: Exception) {
+                WorkmanagerDebug.onExceptionEncountered(
+                    applicationContext,
+                    TaskDebugInfo(
+                        taskName = localDartTask,
+                        inputData = payload,
+                        startTime = startTime,
+                    ),
+                    e,
+                )
+            }
+        }
+        stopEngine(null, stopReason = stopReason)
     }
 
     private fun stopEngine(
         result: Result?,
         errorMessage: String? = null,
+        stopReason: Int = StopReasonUtils.STOP_REASON_UNKNOWN,
     ) {
         val fetchDuration = System.currentTimeMillis() - startTime
 
@@ -213,7 +239,7 @@ class BackgroundWorker(
             when (result) {
                 is Result.Success -> TaskStatus.COMPLETED
                 is Result.Retry -> TaskStatus.RESCHEDULED
-                else -> TaskStatus.FAILED
+                else -> StopReasonUtils.toTaskStatus(stopReason)
             }
         WorkmanagerDebug.onTaskStatusUpdate(applicationContext, taskInfo, status, taskResult)
 
@@ -229,6 +255,19 @@ class BackgroundWorker(
             engine = null
         }
     }
+
+    /**
+     * Returns the WorkManager stop reason for the current stop.
+     *
+     * The value is only populated on Android 12 (API 31) and newer; on older
+     * versions [StopReasonUtils.STOP_REASON_UNKNOWN] is reported.
+     */
+    private fun workerStopReason(): Int =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            stopReason
+        } else {
+            StopReasonUtils.STOP_REASON_UNKNOWN
+        }
 
     private fun executeBackgroundTask() {
         // Convert payload to the format expected by Pigeon (Map<String?, Object?>)

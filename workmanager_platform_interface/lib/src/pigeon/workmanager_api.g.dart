@@ -1164,6 +1164,15 @@ abstract class WorkmanagerFlutterApi {
 
   Future<bool> executeTask(String taskName, Map<String?, Object?>? inputData);
 
+  /// Notifies the Dart callback that a running task was stopped by the
+  /// platform before it finished (cancelled, timed out, preempted, ...).
+  ///
+  /// [stopReason] carries the Android WorkManager stop reason (see
+  /// [StopReason](https://developer.android.com/reference/androidx/work/StopReason)).
+  /// It is `0` (unknown) on Android versions before 12 (API 31) and on
+  /// platforms without an equivalent concept.
+  Future<void> onTaskStopped(String taskName, int stopReason);
+
   static void setUp(WorkmanagerFlutterApi? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
     messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
     {
@@ -1199,6 +1208,28 @@ abstract class WorkmanagerFlutterApi {
           try {
             final bool output = await api.executeTask(arg_taskName, arg_inputData);
             return wrapResponse(result: output);
+          } on PlatformException catch (e) {
+            return wrapResponse(error: e);
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          }
+        });
+      }
+    }
+    {
+      final pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerFlutterApi.onTaskStopped$messageChannelSuffix', pigeonChannelCodec,
+          binaryMessenger: binaryMessenger);
+      if (api == null) {
+        pigeonVar_channel.setMessageHandler(null);
+      } else {
+        pigeonVar_channel.setMessageHandler((Object? message) async {
+          final List<Object?> args = message! as List<Object?>;
+          final String arg_taskName = args[0]! as String;
+          final int arg_stopReason = args[1]! as int;
+          try {
+            await api.onTaskStopped(arg_taskName, arg_stopReason);
+            return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
           }          catch (e) {

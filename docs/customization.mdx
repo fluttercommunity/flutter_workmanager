@@ -124,6 +124,45 @@ Workmanager().cancelByTag("sync-tasks");
 Workmanager().cancelAll();
 ```
 
+### Cancelling Running Work (Android)
+
+On Android, `cancelByUniqueName` (and `cancelByTag` / `cancelAll`) stops the
+WorkManager worker immediately. The Dart callback that is *currently running*
+keeps executing unless it reacts to the stop — register an `onTaskStopped`
+handler on `executeTask` inside your `callbackDispatcher` to be notified:
+
+```dart
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask(
+    (taskName, inputData) async {
+      // The task itself...
+      return true;
+    },
+    onTaskStopped: (taskName, stopReason) async {
+      // Persist progress or mark the task as cancelled before the engine
+      // shuts down. Return promptly — the platform tears down the task's
+      // engine as soon as this handler completes.
+      await myDatabase.markCancelled(taskName, stopReason);
+    },
+  );
+}
+```
+
+The handler fires whenever WorkManager stops a running worker — not only for
+app-initiated cancellation, but also for timeouts, preemption, Doze / App
+Standby, and background restrictions. The `stopReason` tells you which case it
+was: it mirrors Android's
+[`StopReason`](https://developer.android.com/reference/androidx/work/StopReason)
+(`cancelledByApp`, `timeout`, `preempt`, ...). On Android versions before 12
+(API 31) the reason is always `StopReason.unknown`.
+
+<Info>
+**iOS has no equivalent.** `cancelByUniqueName` on iOS only removes *pending*
+BGTaskScheduler requests; there is no way to stop a task that is already
+running, so `onTaskStopped` is Android-only and never fires on iOS.
+</Info>
+
 ### Task Scheduling Options
 
 ```dart

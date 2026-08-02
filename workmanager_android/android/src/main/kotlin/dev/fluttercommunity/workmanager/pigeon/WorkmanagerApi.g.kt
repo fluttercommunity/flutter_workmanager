@@ -1343,4 +1343,30 @@ class WorkmanagerFlutterApi(private val binaryMessenger: BinaryMessenger, privat
       } 
     }
   }
+  /**
+   * Notifies the Dart callback that a running task was stopped by the
+   * platform before it finished (cancelled, timed out, preempted, ...).
+   *
+   * [stopReason] carries the Android WorkManager stop reason (see
+   * [StopReason](https://developer.android.com/reference/androidx/work/StopReason)).
+   * It is `0` (unknown) on Android versions before 12 (API 31) and on
+   * platforms without an equivalent concept.
+   */
+  fun onTaskStopped(taskNameArg: String, stopReasonArg: Long, callback: (Result<Unit>) -> Unit)
+{
+    val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+    val channelName = "dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerFlutterApi.onTaskStopped$separatedMessageChannelSuffix"
+    val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
+    channel.send(listOf(taskNameArg, stopReasonArg)) {
+      if (it is List<*>) {
+        if (it.size > 1) {
+          callback(Result.failure(FlutterError(it[0] as String, it[1] as String, it[2] as String?)))
+        } else {
+          callback(Result.success(Unit))
+        }
+      } else {
+        callback(Result.failure(WorkmanagerApiPigeonUtils.createConnectionError(channelName)))
+      } 
+    }
+  }
 }
