@@ -77,17 +77,11 @@ iOS offers several scheduling strategies. Workmanager wraps the three
 | `BGAppRefreshTaskRequest` | `registerPeriodicTask` | 13+ | ~30 seconds | Periodically, based on app usage; at least 15 minutes between launches | Best-effort; no guaranteed interval; does not run on a schedule |
 | `BGProcessingTaskRequest` | `registerProcessingTask` | 13+ | Minutes (typically 1–10, dynamically adjusted) | When the device is idle (often overnight, possibly while charging) | Best-effort but more generous than refresh; may be deferred or interrupted |
 | `BGHealthResearchTaskRequest` | `registerHealthResearchTask` | 17+ | Minutes, like processing tasks | When the device is idle, with additional priority for study-essential processing | Higher priority/reliability than plain processing, but only for health-research apps (entitlement + study container + user opt-in) |
-| `BGContinuedProcessingTaskRequest` | Not yet supported (planned) | 26+ | Starts in the foreground, continues in background | Immediately after submission, which must be a user action (e.g. button tap) | Continues as long as progress is reported (Live Activity + progress protocol); the system can terminate it abruptly under resource pressure |
+| `BGContinuedProcessingTaskRequest` | `registerContinuedProcessingTask` | 26+ | Starts in the foreground, continues in background | Immediately after submission, which must be a user action (e.g. button tap) | Continues as long as progress is reported (Live Activity + progress protocol); the system can terminate it abruptly under resource pressure |
 | Background fetch (`performFetchWithCompletionHandler`) | iOS < 13 fallback (`Workmanager.iOSBackgroundTask`) | 7–12 | ~30 seconds | System-managed; typically ~once per day based on usage | Best-effort |
 
 **Gaps in workmanager today:**
 
-- `BGContinuedProcessingTaskRequest` (iOS 26+) is not supported. It is a
-  *foreground-initiated* task (submitted as a result of a user action, showing
-  progress in a Live Activity), which does not fit the register-then-run-later
-  model of workmanager. A future API would need to run the Flutter engine in
-  the foreground and keep it alive across backgrounding — a distinct feature,
-  tracked in issue #638.
 - `registerProcessingTask` on iOS currently delivers the task without the
   `inputData` captured at registration time (only one-off and periodic tasks
   persist input data). Health research tasks persist input data like periodic
