@@ -256,11 +256,11 @@ public class WorkmanagerPlugin: WorkmanagerPluginBase, FlutterPlugin, Workmanage
 
     // MARK: - Helper methods
 
-    private func validateCallbackHandle() -> Bool {
+    func validateCallbackHandle() -> Bool {
         return UserDefaultsHelper.getStoredCallbackHandle() != nil
     }
 
-    private func createInitializationError() -> PigeonError {
+    func createInitializationError() -> PigeonError {
         return PigeonError(
             code: "1",
             message: "You have not properly initialized the Flutter WorkManager Package. " +
@@ -816,7 +816,7 @@ extension WorkmanagerPlugin {
     /// (BGHealthResearchTask) identifiers can be re-registered from persisted
     /// state at app launch.
     @available(iOS 13.0, *)
-    private static func registerLaunchHandlerOnce(
+    static func registerLaunchHandlerOnce(
         forTaskWithIdentifier identifier: String,
         earliestBeginInSeconds: NSNumber?
     ) {
@@ -837,6 +837,8 @@ extension WorkmanagerPlugin {
                     earliestBeginInSeconds: earliestBeginInSeconds,
                     inputData: storedInputData
                 )
+            } else if #available(iOS 26.0, *), let task = task as? BGContinuedProcessingTask {
+                handleBGContinuedProcessingTask(identifier: identifier, task: task)
             } else if #available(iOS 17.0, *), let task = task as? BGHealthResearchTask {
                 // BGHealthResearchTask is a subclass of BGProcessingTask, so it
                 // must be checked before the generic BGProcessingTask branch.
@@ -911,7 +913,7 @@ extension WorkmanagerPlugin {
     }
 
     @available(iOS 13.0, *)
-    private static func createBackgroundOperation(
+    static func createBackgroundOperation(
         identifier: String,
         inputData: [String: Any]?,
         backgroundMode: BackgroundMode

@@ -389,6 +389,56 @@ class Workmanager {
     );
   }
 
+  /// Register a continued processing task (iOS 26+ only).
+  ///
+  /// Continued processing tasks are scheduled with
+  /// [BGContinuedProcessingTaskRequest](https://developer.apple.com/documentation/backgroundtasks/bgcontinuedprocessingtaskrequest),
+  /// which begins immediately or shortly after submission and is allowed to
+  /// continue running even if the app is backgrounded. The system presents a
+  /// Live Activity to the user while the task is in progress.
+  ///
+  /// Availability:
+  /// - iOS 26+ only. On older iOS versions the call fails with a Pigeon error.
+  /// - Android and macOS do not support this task type.
+  ///
+  /// App requirements (checked by Apple at submission time, not by this
+  /// plugin):
+  /// - The [uniqueName] must use wildcard notation ending in `.*`, with a
+  ///   prefix that contains the app's bundle identifier (e.g.
+  ///   `com.example.app.continuedProcessing.*`).
+  /// - The identifier must be listed in `BGTaskSchedulerPermittedIdentifiers`
+  ///   in Info.plist, and `UIBackgroundModes` must include `processing`.
+  ///
+  /// Unlike processing tasks, continued processing tasks are not limited to
+  /// idle devices, but the system still enforces expiration based on changing
+  /// system conditions and user input. Tasks are expected to report progress
+  /// (NSProgress); the plugin does not currently plumb progress from Dart, so
+  /// very long-running callbacks that appear stalled may be expired by the
+  /// scheduler.
+  ///
+  /// [uniqueName] is a required unique identifier for the task.
+  /// [taskName] is the value returned in the [BackgroundTaskHandler]; on iOS
+  /// the handler receives the BGTaskScheduler identifier (the [uniqueName]).
+  /// [title] and [subtitle] are the localized strings shown to the user in
+  /// the Live Activity while the task runs.
+  /// [inputData] is the input data for the task (int, bool, double, String
+  /// and their lists).
+  Future<void> registerContinuedProcessingTask(
+    String uniqueName,
+    String taskName, {
+    String? title,
+    String? subtitle,
+    Map<String, dynamic>? inputData,
+  }) async {
+    return _platform.registerContinuedProcessingTask(
+      uniqueName,
+      taskName,
+      title: title,
+      subtitle: subtitle,
+      inputData: inputData,
+    );
+  }
+
   /// Cancels task by [uniqueName]
   Future<void> cancelByUniqueName(String uniqueName) async =>
       _platform.cancelByUniqueName(uniqueName);

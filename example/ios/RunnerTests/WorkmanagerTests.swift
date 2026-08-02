@@ -139,6 +139,19 @@ class WorkmanagerTests: XCTestCase {
         XCTAssertNil(stored?.earliestBeginInSeconds)
     }
 
+    func testScheduledTaskRoundTripPreservesContinuedProcessingKind() {
+        let identifier = "dev.fluttercommunity.test.continuedProcessing"
+        UserDefaultsHelper.storeScheduledTask(
+            ScheduledTaskInfo(kind: .continuedProcessing, earliestBeginInSeconds: nil),
+            forTaskIdentifier: identifier
+        )
+
+        let stored = UserDefaultsHelper.getScheduledTasks()[identifier]
+        XCTAssertNotNil(stored, "stored task should be retrievable")
+        XCTAssertEqual(stored?.kind, .continuedProcessing)
+        XCTAssertNil(stored?.earliestBeginInSeconds)
+    }
+
     func testRemoveScheduledTaskOnlyRemovesMatchingIdentifier() {
         let keepIdentifier = "dev.fluttercommunity.test.keep"
         let removeIdentifier = "dev.fluttercommunity.test.remove"

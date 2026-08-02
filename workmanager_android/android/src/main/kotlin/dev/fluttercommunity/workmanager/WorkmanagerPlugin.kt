@@ -1,7 +1,8 @@
 package dev.fluttercommunity.workmanager
 
-import dev.fluttercommunity.workmanager.pigeon.InitializeRequest
+import dev.fluttercommunity.workmanager.pigeon.ContinuedProcessingTaskRequest
 import dev.fluttercommunity.workmanager.pigeon.HealthResearchTaskRequest
+import dev.fluttercommunity.workmanager.pigeon.InitializeRequest
 import dev.fluttercommunity.workmanager.pigeon.OneOffTaskRequest
 import dev.fluttercommunity.workmanager.pigeon.PeriodicTaskRequest
 import dev.fluttercommunity.workmanager.pigeon.ProcessingTaskRequest
@@ -113,6 +114,20 @@ class WorkmanagerPlugin :
             Result.failure(
                 UnsupportedOperationException(
                     "Health research tasks are not supported on Android",
+                ),
+            ),
+        )
+    }
+
+    override fun registerContinuedProcessingTask(
+        request: ContinuedProcessingTaskRequest,
+        callback: (Result<Unit>) -> Unit,
+    ) {
+        // Continued processing tasks are iOS 26+-specific
+        callback(
+            Result.failure(
+                UnsupportedOperationException(
+                    "Continued processing tasks are not supported on Android",
                 ),
             ),
         )

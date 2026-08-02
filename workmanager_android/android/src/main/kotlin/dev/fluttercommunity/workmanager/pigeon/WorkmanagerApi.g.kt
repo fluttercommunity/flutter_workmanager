@@ -857,6 +857,56 @@ data class HealthResearchTaskRequest (
     return result
   }
 }
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class ContinuedProcessingTaskRequest (
+  val uniqueName: String,
+  val taskName: String,
+  val title: String? = null,
+  val subtitle: String? = null,
+  val inputData: Map<String?, Any?>? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): ContinuedProcessingTaskRequest {
+      val uniqueName = pigeonVar_list[0] as String
+      val taskName = pigeonVar_list[1] as String
+      val title = pigeonVar_list[2] as String?
+      val subtitle = pigeonVar_list[3] as String?
+      val inputData = pigeonVar_list[4] as Map<String?, Any?>?
+      return ContinuedProcessingTaskRequest(uniqueName, taskName, title, subtitle, inputData)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      uniqueName,
+      taskName,
+      title,
+      subtitle,
+      inputData,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as ContinuedProcessingTaskRequest
+    return WorkmanagerApiPigeonUtils.deepEquals(this.uniqueName, other.uniqueName) && WorkmanagerApiPigeonUtils.deepEquals(this.taskName, other.taskName) && WorkmanagerApiPigeonUtils.deepEquals(this.title, other.title) && WorkmanagerApiPigeonUtils.deepEquals(this.subtitle, other.subtitle) && WorkmanagerApiPigeonUtils.deepEquals(this.inputData, other.inputData)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.uniqueName)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.taskName)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.title)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.subtitle)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.inputData)
+    return result
+  }
+}
 private open class WorkmanagerApiPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -935,6 +985,11 @@ private open class WorkmanagerApiPigeonCodec : StandardMessageCodec() {
           HealthResearchTaskRequest.fromList(it)
         }
       }
+      144.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          ContinuedProcessingTaskRequest.fromList(it)
+        }
+      }
       else -> super.readValueOfType(type, buffer)
     }
   }
@@ -1000,6 +1055,10 @@ private open class WorkmanagerApiPigeonCodec : StandardMessageCodec() {
         stream.write(143)
         writeValue(stream, value.toList())
       }
+      is ContinuedProcessingTaskRequest -> {
+        stream.write(144)
+        writeValue(stream, value.toList())
+      }
       else -> super.writeValue(stream, value)
     }
   }
@@ -1013,6 +1072,7 @@ interface WorkmanagerHostApi {
   fun registerPeriodicTask(request: PeriodicTaskRequest, callback: (Result<Unit>) -> Unit)
   fun registerProcessingTask(request: ProcessingTaskRequest, callback: (Result<Unit>) -> Unit)
   fun registerHealthResearchTask(request: HealthResearchTaskRequest, callback: (Result<Unit>) -> Unit)
+  fun registerContinuedProcessingTask(request: ContinuedProcessingTaskRequest, callback: (Result<Unit>) -> Unit)
   fun cancelByUniqueName(uniqueName: String, callback: (Result<Unit>) -> Unit)
   fun cancelByTag(tag: String, callback: (Result<Unit>) -> Unit)
   fun cancelAll(callback: (Result<Unit>) -> Unit)
@@ -1111,6 +1171,25 @@ interface WorkmanagerHostApi {
             val args = message as List<Any?>
             val requestArg = args[0] as HealthResearchTaskRequest
             api.registerHealthResearchTask(requestArg) { result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(WorkmanagerApiPigeonUtils.wrapError(error))
+              } else {
+                reply.reply(WorkmanagerApiPigeonUtils.wrapResult(null))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.registerContinuedProcessingTask$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val requestArg = args[0] as ContinuedProcessingTaskRequest
+            api.registerContinuedProcessingTask(requestArg) { result: Result<Unit> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(WorkmanagerApiPigeonUtils.wrapError(error))

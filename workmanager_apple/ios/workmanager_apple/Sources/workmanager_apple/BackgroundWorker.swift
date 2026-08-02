@@ -30,6 +30,7 @@ enum BackgroundMode {
     case backgroundPeriodicTask(identifier: String)
     case backgroundOneOffTask(identifier: String)
     case backgroundHealthResearchTask(identifier: String)
+    case backgroundContinuedProcessingTask(identifier: String)
 
     var flutterThreadlabelPrefix: String {
         switch self {
@@ -43,6 +44,8 @@ enum BackgroundMode {
             return "\(WorkmanagerPlugin.identifier).OneOffTask"
         case .backgroundHealthResearchTask:
             return "\(WorkmanagerPlugin.identifier).HealthResearchTask"
+        case .backgroundContinuedProcessingTask:
+            return "\(WorkmanagerPlugin.identifier).ContinuedProcessingTask"
         }
     }
 
@@ -57,6 +60,8 @@ enum BackgroundMode {
         case let .backgroundOneOffTask(identifier):
             return ["\(WorkmanagerPlugin.identifier).DART_TASK": identifier]
         case let .backgroundHealthResearchTask(identifier):
+            return ["\(WorkmanagerPlugin.identifier).DART_TASK": identifier]
+        case let .backgroundContinuedProcessingTask(identifier):
             return ["\(WorkmanagerPlugin.identifier).DART_TASK": identifier]
         }
     }

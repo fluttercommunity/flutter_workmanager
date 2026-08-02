@@ -252,12 +252,66 @@ the plugin cannot validate this for you. See the capability matrix in the docs
 index for the full iOS strategy comparison.
 </Warning>
 
+#### Option E: Continued Processing Tasks (iOS 26+)
+For workloads that must **begin immediately or shortly after submission** and
+are allowed to **continue running while the app is backgrounded** (e.g. ML
+inference on a captured camera session) — `BGContinuedProcessingTaskRequest`.
+The system shows a Live Activity to the user while the task runs.
+
+1. **Enable Background Modes** and add the identifier to Info.plist:
+   Continued-processing identifiers must use **wildcard notation** ending in
+   `.*`, with a prefix containing your app's bundle identifier:
+```xml
+<key>UIBackgroundModes</key>
+<array>
+    <string>processing</string>
+</array>
+
+<key>BGTaskSchedulerPermittedIdentifiers</key>
+<array>
+    <string>com.yourapp.continuedProcessing.*</string>
+</array>
+```
+
+2. **(Optional) Pre-register the launch handler** in `AppDelegate.swift`:
+```swift
+import workmanager_apple
+
+// In application didFinishLaunching
+WorkmanagerPlugin.registerBGContinuedProcessingTask(
+  withIdentifier: "com.yourapp.continuedProcessing.*"
+)
+```
+The plugin also registers the handler automatically at schedule time and on
+the next app launch.
+
+3. **Schedule from Dart** (iOS 26+; older iOS versions receive an error):
+```dart
+await Workmanager().registerContinuedProcessingTask(
+  'com.yourapp.continuedProcessing.*',
+  'continuedProcessingTask',
+  title: 'Example continued processing',
+  subtitle: 'Processing in progress',
+  inputData: {'frames': 120},
+);
+```
+
+<Warning>
+**Differences vs processing tasks:** continued processing tasks start near
+submission time (the scheduler ignores `initialDelay`) and are not limited to
+idle devices, but the system still enforces expiration based on system
+conditions and user input. Apple expects tasks to report progress
+(`NSProgress`); the plugin does not currently plumb progress from Dart, so
+callbacks that appear stalled may be expired by the scheduler.
+</Warning>
+
 <Success>
 **Which option to choose?** 
 - **Option A (Background Fetch)** for non-critical updates that can happen once daily (data sync, content refresh)
 - **Option B (BGTaskScheduler)** for one-time tasks, file uploads, or immediate task scheduling  
 - **Option C (Periodic Tasks)** for regular tasks with custom frequency control (15+ minutes)
 - **Option D (Health Research Tasks)** for iOS 17+ health research study apps that need reliable background processing
+- **Option E (Continued Processing Tasks)** for iOS 26+ workloads that must start now and continue while backgrounded
 </Success>
 
 ### macOS

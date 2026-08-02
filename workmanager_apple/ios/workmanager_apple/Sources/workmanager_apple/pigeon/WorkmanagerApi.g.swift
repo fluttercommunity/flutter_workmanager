@@ -774,6 +774,57 @@ struct HealthResearchTaskRequest: Hashable {
   }
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct ContinuedProcessingTaskRequest: Hashable {
+  var uniqueName: String
+  var taskName: String
+  var title: String? = nil
+  var subtitle: String? = nil
+  var inputData: [String?: Any?]? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> ContinuedProcessingTaskRequest? {
+    let uniqueName = pigeonVar_list[0] as! String
+    let taskName = pigeonVar_list[1] as! String
+    let title: String? = nilOrValue(pigeonVar_list[2])
+    let subtitle: String? = nilOrValue(pigeonVar_list[3])
+    let inputData: [String?: Any?]? = nilOrValue(pigeonVar_list[4])
+
+    return ContinuedProcessingTaskRequest(
+      uniqueName: uniqueName,
+      taskName: taskName,
+      title: title,
+      subtitle: subtitle,
+      inputData: inputData
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      uniqueName,
+      taskName,
+      title,
+      subtitle,
+      inputData,
+    ]
+  }
+  static func == (lhs: ContinuedProcessingTaskRequest, rhs: ContinuedProcessingTaskRequest) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsWorkmanagerApi(lhs.uniqueName, rhs.uniqueName) && deepEqualsWorkmanagerApi(lhs.taskName, rhs.taskName) && deepEqualsWorkmanagerApi(lhs.title, rhs.title) && deepEqualsWorkmanagerApi(lhs.subtitle, rhs.subtitle) && deepEqualsWorkmanagerApi(lhs.inputData, rhs.inputData)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("ContinuedProcessingTaskRequest")
+    deepHashWorkmanagerApi(value: uniqueName, hasher: &hasher)
+    deepHashWorkmanagerApi(value: taskName, hasher: &hasher)
+    deepHashWorkmanagerApi(value: title, hasher: &hasher)
+    deepHashWorkmanagerApi(value: subtitle, hasher: &hasher)
+    deepHashWorkmanagerApi(value: inputData, hasher: &hasher)
+  }
+}
+
 private class WorkmanagerApiPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -835,6 +886,8 @@ private class WorkmanagerApiPigeonCodecReader: FlutterStandardReader {
       return ProcessingTaskRequest.fromList(self.readValue() as! [Any?])
     case 143:
       return HealthResearchTaskRequest.fromList(self.readValue() as! [Any?])
+    case 144:
+      return ContinuedProcessingTaskRequest.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -888,6 +941,9 @@ private class WorkmanagerApiPigeonCodecWriter: FlutterStandardWriter {
     } else if let value = value as? HealthResearchTaskRequest {
       super.writeByte(143)
       super.writeValue(value.toList())
+    } else if let value = value as? ContinuedProcessingTaskRequest {
+      super.writeByte(144)
+      super.writeValue(value.toList())
     } else {
       super.writeValue(value)
     }
@@ -916,6 +972,7 @@ protocol WorkmanagerHostApi {
   func registerPeriodicTask(request: PeriodicTaskRequest, completion: @escaping (Result<Void, Error>) -> Void)
   func registerProcessingTask(request: ProcessingTaskRequest, completion: @escaping (Result<Void, Error>) -> Void)
   func registerHealthResearchTask(request: HealthResearchTaskRequest, completion: @escaping (Result<Void, Error>) -> Void)
+  func registerContinuedProcessingTask(request: ContinuedProcessingTaskRequest, completion: @escaping (Result<Void, Error>) -> Void)
   func cancelByUniqueName(uniqueName: String, completion: @escaping (Result<Void, Error>) -> Void)
   func cancelByTag(tag: String, completion: @escaping (Result<Void, Error>) -> Void)
   func cancelAll(completion: @escaping (Result<Void, Error>) -> Void)
@@ -1013,6 +1070,23 @@ class WorkmanagerHostApiSetup {
       }
     } else {
       registerHealthResearchTaskChannel.setMessageHandler(nil)
+    }
+    let registerContinuedProcessingTaskChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.registerContinuedProcessingTask\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      registerContinuedProcessingTaskChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let requestArg = args[0] as! ContinuedProcessingTaskRequest
+        api.registerContinuedProcessingTask(request: requestArg) { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      registerContinuedProcessingTaskChannel.setMessageHandler(nil)
     }
     let cancelByUniqueNameChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.cancelByUniqueName\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {

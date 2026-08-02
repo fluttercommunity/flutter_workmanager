@@ -339,6 +339,31 @@ class HealthResearchTaskRequest {
   bool? requiresCharging;
 }
 
+// iOS specific request
+// BGContinuedProcessingTaskRequest (iOS 26+) for workloads that must begin
+// immediately or shortly after submission and are allowed to continue running
+// while the app is backgrounded (e.g. ML inference on captured camera data).
+// The system presents a Live Activity to the user while the task is running.
+//
+// Unlike processing tasks, the identifier must use wildcard notation ending
+// in `.*` (e.g. `<bundleID>.<context>.*`), and the scheduler ignores
+// `earliestBeginDate` (so initialDelay does not apply).
+class ContinuedProcessingTaskRequest {
+  ContinuedProcessingTaskRequest({
+    required this.uniqueName,
+    required this.taskName,
+    this.title,
+    this.subtitle,
+    this.inputData,
+  });
+
+  String uniqueName;
+  String taskName;
+  String? title;
+  String? subtitle;
+  Map<String?, Object?>? inputData;
+}
+
 // Host API (Flutter calls native)
 @HostApi()
 abstract class WorkmanagerHostApi {
@@ -356,6 +381,9 @@ abstract class WorkmanagerHostApi {
 
   @async
   void registerHealthResearchTask(HealthResearchTaskRequest request);
+
+  @async
+  void registerContinuedProcessingTask(ContinuedProcessingTaskRequest request);
 
   @async
   void cancelByUniqueName(String uniqueName);

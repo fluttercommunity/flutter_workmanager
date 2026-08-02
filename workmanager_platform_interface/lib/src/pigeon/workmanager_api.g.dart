@@ -774,6 +774,66 @@ class HealthResearchTaskRequest {
   int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
 }
 
+class ContinuedProcessingTaskRequest {
+  ContinuedProcessingTaskRequest({
+    required this.uniqueName,
+    required this.taskName,
+    this.title,
+    this.subtitle,
+    this.inputData,
+  });
+
+  String uniqueName;
+
+  String taskName;
+
+  String? title;
+
+  String? subtitle;
+
+  Map<String?, Object?>? inputData;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      uniqueName,
+      taskName,
+      title,
+      subtitle,
+      inputData,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static ContinuedProcessingTaskRequest decode(Object result) {
+    result as List<Object?>;
+    return ContinuedProcessingTaskRequest(
+      uniqueName: result[0]! as String,
+      taskName: result[1]! as String,
+      title: result[2] as String?,
+      subtitle: result[3] as String?,
+      inputData: (result[4] as Map<Object?, Object?>?)?.cast<String?, Object?>(),
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! ContinuedProcessingTaskRequest || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(uniqueName, other.uniqueName) && _deepEquals(taskName, other.taskName) && _deepEquals(title, other.title) && _deepEquals(subtitle, other.subtitle) && _deepEquals(inputData, other.inputData);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+}
+
 
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
@@ -827,6 +887,9 @@ class _PigeonCodec extends StandardMessageCodec {
     }    else if (value is HealthResearchTaskRequest) {
       buffer.putUint8(143);
       writeValue(buffer, value.encode());
+    }    else if (value is ContinuedProcessingTaskRequest) {
+      buffer.putUint8(144);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -872,6 +935,8 @@ class _PigeonCodec extends StandardMessageCodec {
         return ProcessingTaskRequest.decode(readValue(buffer)!);
       case 143:
         return HealthResearchTaskRequest.decode(readValue(buffer)!);
+      case 144:
+        return ContinuedProcessingTaskRequest.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -965,6 +1030,24 @@ class WorkmanagerHostApi {
 
   Future<void> registerHealthResearchTask(HealthResearchTaskRequest request) async {
     final pigeonVar_channelName = 'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.registerHealthResearchTask$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[request]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: true,
+    )
+    ;
+  }
+
+  Future<void> registerContinuedProcessingTask(ContinuedProcessingTaskRequest request) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.registerContinuedProcessingTask$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,

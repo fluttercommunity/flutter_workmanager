@@ -377,6 +377,48 @@ void main() {
       }
     });
 
+    testWidgets('registerContinuedProcessingTask should work on iOS 26+',
+        (WidgetTester tester) async {
+      await workmanager.initialize(callbackDispatcher);
+
+      // BGContinuedProcessingTask requires wildcard identifiers ending in '.*'
+      // whose prefix contains the app bundle identifier.
+      const continuedProcessingIdentifier =
+          'dev.fluttercommunity.workmanagerExample.continuedProcessing.*';
+
+      if (Platform.isIOS) {
+        try {
+          await workmanager.registerContinuedProcessingTask(
+            continuedProcessingIdentifier,
+            'continuedProcessingTask',
+            title: 'Example continued processing',
+            subtitle: 'Processing in progress',
+            inputData: {'continued': 'processing'},
+          );
+          // Clean up
+          await workmanager.cancelByUniqueName(continuedProcessingIdentifier);
+        } on PlatformException catch (e) {
+          // iOS < 26 or the simulator test environment may reject the
+          // submission; both are expected.
+          if (e.code.contains('bgTaskSchedulingFailed') ||
+              e.message?.contains('ContinuedProcessingTask') == true) {
+            // Expected in test environment
+          } else {
+            rethrow;
+          }
+        }
+      } else {
+        // Should throw UnsupportedError on Android/macOS
+        expect(
+          () => workmanager.registerContinuedProcessingTask(
+            continuedProcessingIdentifier,
+            'continuedProcessingTask',
+          ),
+          throwsA(isA<UnsupportedError>()),
+        );
+      }
+    });
+
     testWidgets('cancelByUniqueName should succeed',
         (WidgetTester tester) async {
       await workmanager.initialize(callbackDispatcher);

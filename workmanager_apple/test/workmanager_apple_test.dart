@@ -165,6 +165,38 @@ void main() {
       });
     });
 
+    group('iOS-specific continued processing task request validation', () {
+      test('should handle ContinuedProcessingTaskRequest creation', () {
+        final continuedRequest = ContinuedProcessingTaskRequest(
+          uniqueName: 'com.example.app.continuedProcessing.*',
+          taskName: 'Continued Processing Task',
+          title: 'Example continued processing',
+          subtitle: 'Processing in progress',
+          inputData: {'model': 'inference', 'frames': 120},
+        );
+
+        expect(continuedRequest.uniqueName,
+            'com.example.app.continuedProcessing.*');
+        expect(continuedRequest.taskName, 'Continued Processing Task');
+        expect(continuedRequest.title, 'Example continued processing');
+        expect(continuedRequest.subtitle, 'Processing in progress');
+        expect(continuedRequest.inputData?['model'], 'inference');
+      });
+
+      test('should handle minimal continued processing task configuration', () {
+        final minimalRequest = ContinuedProcessingTaskRequest(
+          uniqueName: 'com.example.app.minimal.*',
+          taskName: 'Minimal Continued Task',
+        );
+
+        expect(minimalRequest.uniqueName, 'com.example.app.minimal.*');
+        expect(minimalRequest.taskName, 'Minimal Continued Task');
+        expect(minimalRequest.title, null);
+        expect(minimalRequest.subtitle, null);
+        expect(minimalRequest.inputData, null);
+      });
+    });
+
     group('iOS constraint handling differences', () {
       test('should handle battery constraints appropriately for iOS', () {
         // iOS handles battery constraints differently than Android
