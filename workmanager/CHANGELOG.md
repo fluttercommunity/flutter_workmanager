@@ -1,3 +1,7 @@
+## 0.9.1+2
+
+ - Update a dependency to the latest release.
+
 ## 0.9.1+1
 
  - **FIX**(ios): auto-register BGTask launch handlers for scheduled tasks (#692).

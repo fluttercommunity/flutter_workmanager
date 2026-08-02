@@ -1,3 +1,7 @@
+## 0.9.3+2
+
+ - **FIX**(ios): restore initialDelay for one-off tasks (#695).
+
 ## 0.9.3+1
 
  - **FIX**(ios): auto-register BGTask launch handlers for scheduled tasks (#692).
