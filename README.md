@@ -19,6 +19,8 @@ Get started with background tasks in Flutter:
 
 **[→ Debugging Guide](https://docs.page/fluttercommunity/flutter_workmanager/debugging)** - Troubleshooting help
 
+**[→ Troubleshooting Guide](https://docs.page/fluttercommunity/flutter_workmanager/troubleshooting)** - Why tasks stop after app close (OEM battery optimization, constraints, verification)
+
 ## 🎯 Use Cases
 
 Background tasks are perfect for:

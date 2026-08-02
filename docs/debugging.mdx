@@ -208,6 +208,11 @@ adb logcat | grep "yourapp"
 - Ensure device isn't in Doze mode
 - Check if constraints are too restrictive
 
+Tasks stopping after the app is closed is almost always OEM battery
+optimization or OS scheduling policy - see the
+[Troubleshooting guide](troubleshooting) for per-vendor instructions and
+verification steps.
+
 **Tasks running too often:**
 - Android enforces minimum 15-minute intervals for periodic tasks
 - Use appropriate constraints to limit execution
