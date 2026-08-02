@@ -1,5 +1,14 @@
 # Flutter Workmanager
 
+> ⚠️ **Experimental web support** is available through the new
+> `workmanager_web` package (Service Worker + Web Worker based background
+> execution). It maps periodic tasks to Periodic Background Sync and executes
+> the compiled Dart callback inside the Service Worker when the page is
+> closed — with honest limitations (no exact scheduling, Chromium + installed
+> PWA required, Flutter-free dispatcher). See
+> [workmanager_web/README.md](../workmanager_web/README.md).
+
+
 [![pub package](https://img.shields.io/pub/v/workmanager.svg)](https://pub.dartlang.org/packages/workmanager)
 [![pub points](https://img.shields.io/pub/points/workmanager)](https://pub.dev/packages/workmanager/score)
 [![likes](https://img.shields.io/pub/likes/workmanager)](https://pub.dev/packages/workmanager/score)

@@ -9,6 +9,12 @@
 
 Execute Dart code in the background, even when your app is closed (Android and iOS). On macOS, background tasks run while the app is running or backgrounded and the Mac is awake. Perfect for data sync, file uploads, and periodic maintenance tasks.
 
+> ⚠️ **Experimental web support** now exists via `workmanager_web` (Service
+> Worker + Web Worker based background execution). See the
+> [Web (experimental)](docs/web.mdx) page and the
+> [package README](workmanager_web/README.md) for honest limitations and how to
+> test it in Chrome.
+
 ## 📖 Documentation
 
 Get started with background tasks in Flutter:

@@ -1,0 +1,40 @@
+---
+title: "Web (experimental)"
+description: Service Worker based background execution on the web
+---
+
+Experimental web support is provided by a new `workmanager_web` package. The
+web cannot run a Dart isolate or the Flutter engine inside a Service Worker,
+and there is **no web API for exact-time background scheduling** — so the
+plugin contract ("execute Dart code in the background, even when the app is
+closed") is approximated as honestly as browsers allow.
+
+## How it works
+
+- **Page open**: tasks run in a dedicated Web Worker executing the compiled,
+  Flutter-free callback dispatcher (dart2js) — real parallel execution.
+- **Page closed — Periodic Background Sync** (Chromium): once the PWA is
+  installed and the user has engagement, Chrome wakes the Service Worker
+  roughly every `max(frequency, 12h)` and the Service Worker runs the compiled
+  Dart dispatcher itself (`importScripts`), recording the result in IndexedDB.
+- **Page closed — Web Push**: a push message wakes the Service Worker and
+  triggers the same execution path (server-initiated).
+- **Page closed — fetch interception**: opportunistic best-effort wake.
+
+Results are replayed into the app's log on the next page load.
+
+## Honest limitations
+
+- **No exact scheduling** — there is no "run at 15:00" on the web.
+- **Chromium only** for periodic sync; PWA install + engagement required;
+  ~12-hour minimum interval.
+- **Secure context** (HTTPS or `localhost`) required for Service Workers.
+- The callback dispatcher must be **Flutter-free** to compile into the bundle.
+- One-off tasks are best-effort when the page is closed.
+- Experimental: API and layout may change.
+
+## Quick start
+
+Follow the [`workmanager_web` README](../../workmanager_web/README.md) — it
+includes a runnable example, exact testing steps for Chrome (including how to
+trigger periodic sync and push from DevTools) and the full API reference.

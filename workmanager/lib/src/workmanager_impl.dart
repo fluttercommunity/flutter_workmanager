@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/widgets.dart';
 import 'package:workmanager_platform_interface/workmanager_platform_interface.dart';
 import 'package:workmanager_android/workmanager_android.dart';
 import 'package:workmanager_apple/workmanager_apple.dart';
+import 'package:workmanager_web/workmanager_web.dart';
 
 /// Function that executes your background work.
 /// You should return whether the task ran successfully or not.
@@ -99,6 +101,12 @@ class Workmanager {
   static final Workmanager _instance = Workmanager._internal();
 
   static void _ensurePlatformImplementation() {
+    if (kIsWeb) {
+      if (WorkmanagerPlatform.instance is! WorkmanagerWeb) {
+        WorkmanagerPlatform.instance = WorkmanagerWeb();
+      }
+      return;
+    }
     if (WorkmanagerPlatform.instance is! WorkmanagerAndroid &&
         WorkmanagerPlatform.instance is! WorkmanagerApple) {
       if (Platform.isAndroid) {

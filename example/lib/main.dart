@@ -3,13 +3,22 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math' show Random;
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 
-void main() => runApp(MaterialApp(home: MyApp()));
+import 'web/web_demo_page.dart';
+
+void main() {
+  if (kIsWeb) {
+    runApp(const WebDemoApp());
+  } else {
+    runApp(MaterialApp(home: MyApp()));
+  }
+}
 
 const simpleTaskKey = "dev.fluttercommunity.workmanagerExample.simpleTask";
 const rescheduledTaskKey =

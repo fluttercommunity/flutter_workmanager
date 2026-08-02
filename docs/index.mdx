@@ -19,7 +19,7 @@ Execute Dart code in the background, even when your app is closed. Perfect for d
 | Android | ✅ Full | All WorkManager features supported |
 | iOS | ✅ Full | Background Fetch + BGTaskScheduler APIs |
 | macOS | ⚠️ Partial | One-off + periodic tasks via NSBackgroundActivityScheduler while the app is running (not after quit) |
-| Web | ❌ Not supported | Background execution not available |
+| Web | ⚠️ Experimental | Service Worker + Web Worker based background execution (`workmanager_web`) — see [Web (experimental)](web) |
 | Windows/Linux | ❌ Not supported | No background task APIs |
 
 ## Platform Capability Matrix
@@ -28,21 +28,21 @@ Not every feature behaves the same across platforms. The table below summarizes
 what works where, so you can design your tasks around the capabilities of each
 platform.
 
-| Feature | Android | iOS | macOS |
-|---|---|---|---|
-| One-off tasks (`registerOneOffTask`) | ✅ Scheduled by the OS; survives app restarts | ⚠️ Runs via `beginBackgroundTask` while the app is alive (foreground or shortly after backgrounding). Not guaranteed after the app is terminated | ⚠️ Runs via `NSBackgroundActivityScheduler` while the app is running/backgrounded and the Mac is awake. Tasks with no `initialDelay` run immediately; delayed tasks are best-effort |
-| Periodic tasks (`registerPeriodicTask`) | ✅ Reliable, 15-minute minimum frequency | ⚠️ Best-effort. iOS decides when (and whether) background fetch runs, based on app usage; 15-minute minimum hint | ⚠️ Best-effort. `NSBackgroundActivityScheduler` decides timing; the Dart `frequency` is the interval hint |
-| Processing tasks (`registerProcessingTask`) | ❌ Not supported | ✅ BGProcessingTask (longer work, requires registration in AppDelegate) | ⚠️ Mapped to a one-off `NSBackgroundActivityScheduler` activity; network/charging constraints are ignored |
-| Health research tasks (`registerHealthResearchTask`) | ❌ Not supported | ⚠️ iOS 17+ only, via `BGHealthResearchTaskRequest`. Requires a Health Research Study container + `com.apple.developer.backgroundtasks.healthresearch` entitlement and user opt-in (see below) | ❌ Not supported |
-| `initialDelay` | ✅ Honored for one-off tasks. For periodic tasks it is best-effort (see below) | ⚠️ One-off: honored while the app stays alive. Periodic: used as the earliest-begin hint for BGTaskScheduler | ⚠️ Best-effort via the activity interval (0 = run as soon as possible); the system may defer the run |
-| `inputData` | ✅ All supported types | ✅ Supported for one-off and periodic tasks | ✅ Supported for one-off and periodic tasks (captured at schedule time) |
-| `taskName` in callback | ✅ The value you passed as `taskName` | ✅ One-off tasks receive the `taskName` you passed. Periodic/processing tasks receive the BGTaskScheduler identifier (the `uniqueName` you registered) | ✅ Tasks receive the activity identifier (the `uniqueName` you registered) |
-| `frequency` | ✅ Configured from Dart | ❌ Configured in `AppDelegate.swift` via `registerPeriodicTask(withIdentifier:frequency:)` | ✅ Configured from Dart (interval hint) |
-| Constraints (network, charging, battery) | ✅ Supported | ❌ iOS applies its own system-level constraints | ❌ Not supported (ignored) |
-| `cancelByUniqueName` / `cancelAll` | ✅ | ✅ Only cancels BGTaskScheduler requests (periodic/processing) | ✅ Invalidates scheduled activities |
-| `cancelByTag` | ✅ | ❌ Not supported (no-op) | ❌ Not supported (no-op) |
-| Task execution after app is killed | ✅ Yes (one-off/periodic) | ❌ No — iOS does not run tasks after the app is terminated | ❌ No — the app process must be alive |
-| Minimum run time budget | No hard limit, but WorkManager may defer work | ~30 seconds per task execution | No hard budget; the system may defer activities while the Mac is busy |
+| Feature | Android | iOS | macOS | Web |
+|---|---|---|---|---|
+| One-off tasks (`registerOneOffTask`) | ✅ Scheduled by the OS; survives app restarts | ⚠️ Runs via `beginBackgroundTask` while the app is alive (foreground or shortly after backgrounding). Not guaranteed after the app is terminated | ⚠️ Runs via `NSBackgroundActivityScheduler` while the app is running/backgrounded and the Mac is awake. Tasks with no `initialDelay` run immediately; delayed tasks are best-effort | ⚠️ While the page is open: runs via Web Worker after `initialDelay`. While closed: best-effort on the next Service Worker wake after the deadline (periodic sync, push or fetch) |
+| Periodic tasks (`registerPeriodicTask`) | ✅ Reliable, 15-minute minimum frequency | ⚠️ Best-effort. iOS decides when (and whether) background fetch runs, based on app usage; 15-minute minimum hint | ⚠️ Best-effort. `NSBackgroundActivityScheduler` decides timing; the Dart `frequency` is the interval hint | ⚠️ Experimental. Maps to Periodic Background Sync (Chromium, PWA installed + engaged, ~12h minimum); the Service Worker runs the compiled Dart dispatcher when the page is closed |
+| Processing tasks (`registerProcessingTask`) | ❌ Not supported | ✅ BGProcessingTask (longer work, requires registration in AppDelegate) | ⚠️ Mapped to a one-off `NSBackgroundActivityScheduler` activity; network/charging constraints are ignored | ❌ Not supported |
+| Health research tasks (`registerHealthResearchTask`) | ❌ Not supported | ⚠️ iOS 17+ only, via `BGHealthResearchTaskRequest`. Requires a Health Research Study container + `com.apple.developer.backgroundtasks.healthresearch` entitlement and user opt-in (see below) | ❌ Not supported | ❌ Not supported |
+| `initialDelay` | ✅ Honored for one-off tasks. For periodic tasks it is best-effort (see below) | ⚠️ One-off: honored while the app stays alive. Periodic: used as the earliest-begin hint for BGTaskScheduler | ⚠️ Best-effort via the activity interval (0 = run as soon as possible); the system may defer the run | ⚠️ One-off: honored while the page is open (page timer); best-effort on the next Service Worker wake when closed |
+| `inputData` | ✅ All supported types | ✅ Supported for one-off and periodic tasks | ✅ Supported for one-off and periodic tasks (captured at schedule time) | ✅ Supported (JSON-compatible values) |
+| `taskName` in callback | ✅ The value you passed as `taskName` | ✅ One-off tasks receive the `taskName` you passed. Periodic/processing tasks receive the BGTaskScheduler identifier (the `uniqueName` you registered) | ✅ Tasks receive the activity identifier (the `uniqueName` you registered) | ✅ The value you passed as `taskName` |
+| `frequency` | ✅ Configured from Dart | ❌ Configured in `AppDelegate.swift` via `registerPeriodicTask(withIdentifier:frequency:)` | ✅ Configured from Dart (interval hint) | ✅ Configured from Dart (browser clamps to the ~12h minimum) |
+| Constraints (network, charging, battery) | ✅ Supported | ❌ iOS applies its own system-level constraints | ❌ Not supported (ignored) | ❌ Not supported |
+| `cancelByUniqueName` / `cancelAll` | ✅ | ✅ Only cancels BGTaskScheduler requests (periodic/processing) | ✅ Invalidates scheduled activities | ✅ Removes tasks and unregisters periodic sync tags |
+| `cancelByTag` | ✅ | ❌ Not supported (no-op) | ❌ Not supported (no-op) | ✅ Supported |
+| Task execution after app is killed | ✅ Yes (one-off/periodic) | ❌ No — iOS does not run tasks after the app is terminated | ❌ No — the app process must be alive | ⚠️ Only when the browser wakes the Service Worker (periodic sync for installed/engaged PWAs, push, or an intercepted fetch) |
+| Minimum run time budget | No hard limit, but WorkManager may defer work | ~30 seconds per task execution | No hard budget; the system may defer activities while the Mac is busy | Seconds — Service Worker wake-ups are short and browsers can terminate the worker at any time |
 
 <Warning>
 **Periodic `initialDelay` on Android:** WorkManager treats the initial delay of a

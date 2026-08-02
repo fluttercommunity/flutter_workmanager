@@ -13,6 +13,8 @@ dependencies:
   flutter:
     sdk: flutter
   workmanager:
+  workmanager_web:
+    path: ../workmanager_web
   uuid: ^4.4.2
 
 dev_dependencies:
