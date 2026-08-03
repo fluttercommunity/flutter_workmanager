@@ -117,6 +117,7 @@ internal fun androidx.work.WorkInfo.toWorkInfoData(uniqueName: String): dev.flut
     )
 }
 
+/**
  * Builds a [OneTimeWorkRequest] for the given task configuration.
  *
  * Shared by one-off registrations ([WorkManagerWrapper.enqueueOneOffTask]) and
