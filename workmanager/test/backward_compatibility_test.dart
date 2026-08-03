@@ -8,6 +8,8 @@ void callbackDispatcher() {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('Backward compatibility', () {
     test('initialize() still accepts isInDebugMode parameter', () async {
       // This test verifies that existing code using isInDebugMode will still compile
