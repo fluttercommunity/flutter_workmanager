@@ -1,3 +1,7 @@
+## 0.10.1
+
+ - **FEAT**(android): add ContentUriTrigger constraints (fixes #413) (#709).
+
 ## 0.10.0+2
 
  - **FIX**(android): AGP 9 built-in Kotlin compilerOptions (#711).

@@ -15,6 +15,46 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`workmanager_android` - `v0.10.1`](#workmanager_android---v0101)
+ - [`workmanager_apple` - `v0.9.7`](#workmanager_apple---v097)
+ - [`workmanager_platform_interface` - `v0.10.1`](#workmanager_platform_interface---v0101)
+ - [`workmanager` - `v0.10.1+2`](#workmanager---v01012)
+ - [`workmanager_web` - `v0.1.1+1`](#workmanager_web---v0111)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `workmanager` - `v0.10.1+2`
+ - `workmanager_web` - `v0.1.1+1`
+
+---
+
+#### `workmanager_android` - `v0.10.1`
+
+ - **FEAT**(android): add ContentUriTrigger constraints (fixes #413) (#709).
+
+#### `workmanager_apple` - `v0.9.7`
+
+ - **FEAT**(android): add ContentUriTrigger constraints (fixes #413) (#709).
+
+#### `workmanager_platform_interface` - `v0.10.1`
+
+ - **FEAT**(android): add ContentUriTrigger constraints (fixes #413) (#709).
+
+
+## 2026-08-03
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`workmanager_android` - `v0.10.0+2`](#workmanager_android---v01002)
  - [`workmanager` - `v0.10.1+1`](#workmanager---v01011)
 

@@ -1,3 +1,7 @@
+## 0.9.7
+
+ - **FEAT**(android): add ContentUriTrigger constraints (fixes #413) (#709).
+
 ## 0.9.6+2
 
  - **FIX**(android): notify running callbacks when work is cancelled (fixes #432) (#705).
