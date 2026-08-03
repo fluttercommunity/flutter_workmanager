@@ -90,7 +90,8 @@ class _WebDemoPageState extends State<WebDemoPage> {
       return;
     }
     setState(() {
-      _chat.add(_ChatLine(text: _formatWorkerMessage(payload), fromWorker: true));
+      _chat.add(
+          _ChatLine(text: _formatWorkerMessage(payload), fromWorker: true));
     });
   }
 
@@ -98,7 +99,8 @@ class _WebDemoPageState extends State<WebDemoPage> {
   /// `handleWorkerMessage` in `background_tasks.dart`).
   void _sendToWorker(Map<String, Object?> message) {
     setState(() {
-      _chat.add(_ChatLine(text: _formatSentMessage(message), fromWorker: false));
+      _chat
+          .add(_ChatLine(text: _formatSentMessage(message), fromWorker: false));
     });
     WorkmanagerWeb().sendMessageToWorker(message);
   }
