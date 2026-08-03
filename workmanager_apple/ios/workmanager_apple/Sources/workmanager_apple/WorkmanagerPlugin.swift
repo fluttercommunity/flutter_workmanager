@@ -288,6 +288,7 @@ public class WorkmanagerPlugin: WorkmanagerPluginBase, FlutterPlugin, Workmanage
             )))
         }
     }
+
     #endif
 
     // MARK: - Helper methods

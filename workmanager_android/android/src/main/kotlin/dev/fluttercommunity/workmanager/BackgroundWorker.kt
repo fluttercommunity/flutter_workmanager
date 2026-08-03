@@ -42,9 +42,24 @@ class BackgroundWorker(
     private val dartTask
         get() = workerParams.inputData.getString(DART_TASK_KEY)
 
+    /**
+     * The unique name the task was registered with, persisted in the worker's
+     * [androidx.work.Data] at enqueue time. `null` only for tasks that were
+     * enqueued before the unique name was persisted (older plugin versions).
+     */
+    val uniqueName: String?
+        get() = workerParams.inputData.getString(UNIQUE_NAME_KEY)
+
     private val runAttemptCount = workerParams.runAttemptCount
     private val randomThreadIdentifier = SecureRandom().nextInt()
     private var engine: FlutterEngine? = null
+
+    /**
+     * The plugin instance attached to this worker's engine. The Dart task
+     * runs on that engine, so its `reportProgress` calls arrive at this
+     * plugin; binding the worker lets the plugin route them to us.
+     */
+    private var boundPlugin: WorkmanagerPlugin? = null
 
     private var startTime: Long = 0
 
@@ -84,6 +99,15 @@ class BackgroundWorker(
             Handler(Looper.getMainLooper()),
         ) {
             engine = FlutterEngine(applicationContext)
+            engine?.let { engine ->
+                // Bind this worker to the plugin instance attached to this
+                // worker's engine, so progress reported from the Dart task
+                // can be routed back to this worker.
+                (engine.plugins.get(WorkmanagerPlugin::class.java) as? WorkmanagerPlugin)?.let { plugin ->
+                    boundPlugin = plugin
+                    plugin.bindWorker(this)
+                }
+            }
             val callbackHandle = SharedPreferenceHelper.getCallbackHandle(applicationContext)
             val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle)
 
@@ -201,6 +225,32 @@ class BackgroundWorker(
         stopEngine(null, stopReason = stopReason)
     }
 
+    /**
+     * Persists [progress] for this task and makes it available to the app.
+     *
+     * Called by the plugin when the Dart task handler reports progress on
+     * this worker's engine. The progress is stored through WorkManager's
+     * `setProgressAsync` (so it is queryable via [androidx.work.WorkInfo])
+     * and picked up by [ProgressUpdateCoordinator], which forwards it to the
+     * app.
+     */
+    fun reportProgress(progress: Map<String?, Any?>?) {
+        val localUniqueName = uniqueName
+        if (localUniqueName == null) {
+            // Task was enqueued before the unique name was persisted in the
+            // worker data; there is no way to key the progress update.
+            WorkmanagerDebug.onExceptionEncountered(
+                applicationContext,
+                TaskDebugInfo(taskName = "unknown", startTime = startTime),
+                IllegalStateException("Cannot report progress for a task without a unique name"),
+            )
+            return
+        }
+
+        setProgressAsync(encodeProgressData(progress))
+        ProgressUpdateCoordinator.onProgressReported(applicationContext, localUniqueName)
+    }
+
     private fun stopEngine(
         result: Result?,
         errorMessage: String? = null,
@@ -248,6 +298,11 @@ class BackgroundWorker(
         if (result != null) {
             this.completer?.set(result)
         }
+
+        // Unbind from the plugin before the engine is torn down, so progress
+        // reported after the task finished is not routed to a dead worker.
+        boundPlugin?.unbindWorker(this)
+        boundPlugin = null
 
         // If stopEngine is called from `onStopped`, it may not be from the main thread.
         Handler(Looper.getMainLooper()).post {

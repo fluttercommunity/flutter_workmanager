@@ -1371,6 +1371,55 @@ class WorkmanagerHostApi {
     ;
     return pigeonVar_replyValue as WorkInfoData?;
   }
+
+  /// Reports progress for the task that is currently running (Android only).
+  ///
+  /// Must be called from inside the background task handler; the native side
+  /// resolves the running task's unique name from the calling context, so the
+  /// [progress] map is the only argument. On platforms without progress
+  /// support (iOS/macOS/web/desktop) the call is a no-op.
+  Future<void> reportProgress(Map<String?, Object?>? progress) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.reportProgress$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[progress]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: true,
+    )
+    ;
+  }
+
+  /// Enables or disables forwarding of progress updates to the app (Android
+  /// only).
+  ///
+  /// When [enabled] is true the native side starts forwarding progress events
+  /// (delivered through [WorkmanagerFlutterApi.onProgressUpdate]) to the
+  /// messenger of the engine that made this call. On platforms without
+  /// progress support the call is a no-op.
+  Future<void> setProgressListener(bool enabled) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.setProgressListener$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[enabled]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: true,
+    )
+    ;
+  }
 }
 
 abstract class WorkmanagerFlutterApi {
@@ -1388,6 +1437,15 @@ abstract class WorkmanagerFlutterApi {
   /// It is `0` (unknown) on Android versions before 12 (API 31) and on
   /// platforms without an equivalent concept.
   Future<void> onTaskStopped(String taskName, int stopReason);
+
+  /// Delivers a progress update for a running task to the app (Android only).
+  ///
+  /// [uniqueName] is the unique name the task was registered with. [progress]
+  /// is the progress map the task handler reported via
+  /// [WorkmanagerHostApi.reportProgress]. This is only invoked when the app
+  /// registered a progress listener (see `Workmanager().setProgressListener`);
+  /// on platforms without progress support it is never invoked.
+  Future<void> onProgressUpdate(String uniqueName, Map<String?, Object?>? progress);
 
   static void setUp(WorkmanagerFlutterApi? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
     messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
@@ -1445,6 +1503,28 @@ abstract class WorkmanagerFlutterApi {
           final int arg_stopReason = args[1]! as int;
           try {
             await api.onTaskStopped(arg_taskName, arg_stopReason);
+            return wrapResponse(empty: true);
+          } on PlatformException catch (e) {
+            return wrapResponse(error: e);
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          }
+        });
+      }
+    }
+    {
+      final pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerFlutterApi.onProgressUpdate$messageChannelSuffix', pigeonChannelCodec,
+          binaryMessenger: binaryMessenger);
+      if (api == null) {
+        pigeonVar_channel.setMessageHandler(null);
+      } else {
+        pigeonVar_channel.setMessageHandler((Object? message) async {
+          final List<Object?> args = message! as List<Object?>;
+          final String arg_uniqueName = args[0]! as String;
+          final Map<String?, Object?>? arg_progress = (args[1] as Map<Object?, Object?>?)?.cast<String?, Object?>();
+          try {
+            await api.onProgressUpdate(arg_uniqueName, arg_progress);
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);

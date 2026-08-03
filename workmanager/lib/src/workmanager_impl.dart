@@ -140,6 +140,7 @@ class Workmanager {
 
   static BackgroundTaskHandler? _backgroundTaskHandler;
   static BackgroundTaskStoppedHandler? _onTaskStoppedHandler;
+  static ProgressListener? _progressListener;
   static late final WorkmanagerFlutterApi _flutterApi;
 
   /// The callback dispatcher registered via [initialize], kept so in-process
@@ -518,6 +519,38 @@ class Workmanager {
   /// Currently only supported on iOS and only on iOS 13+.
   /// Returns a string containing the scheduled tasks information.
   Future<String> printScheduledTasks() async => _platform.printScheduledTasks();
+
+  /// Reports progress for the task that is currently running.
+  ///
+  /// Must be called from inside the [BackgroundTaskHandler]; the platform
+  /// resolves the running task's unique name from the calling context, so the
+  /// app-side listener receives it keyed by the task's [uniqueName]. The
+  /// progress map accepts the same value types as [inputData] (int, bool,
+  /// double, String and their lists).
+  ///
+  /// Only meaningful for long-running tasks — in practice tasks that run as an
+  /// Android foreground service (see [ForegroundServiceConfig]). Regular
+  /// background workers finish too quickly for progress to be useful.
+  ///
+  /// Android only: on other platforms this is a documented no-op, so portable
+  /// handlers can call it unconditionally.
+  Future<void> reportProgress(Map<String, dynamic> progress) async {
+    return _platform.reportProgress(progress);
+  }
+
+  /// Registers a listener that receives progress updates from running
+  /// background tasks.
+  ///
+  /// The listener is invoked with the task's [uniqueName] and the progress map
+  /// the task handler reported via [reportProgress]. Register it once at
+  /// startup (e.g. in `main()` right after [initialize]); pass `null` to stop
+  /// receiving updates.
+  ///
+  /// Android only: on other platforms the listener is never invoked.
+  Future<void> setProgressListener(ProgressListener? listener) async {
+    _progressListener = listener;
+    await _platform.setProgressListener(listener);
+  }
 }
 
 /// Converts inputData from Pigeon format, filtering out null keys and
@@ -610,6 +643,16 @@ class _WorkmanagerFlutterApiImpl extends WorkmanagerFlutterApi {
     final handler = Workmanager._onTaskStoppedHandler;
     if (handler != null) {
       await handler(taskName, StopReason.fromRawValue(stopReason));
+    }
+  }
+
+  @override
+  Future<void> onProgressUpdate(
+      String uniqueName, Map<String?, Object?>? progress) async {
+    final listener = Workmanager._progressListener;
+    if (listener != null) {
+      listener(uniqueName,
+          convertPigeonInputData(progress) ?? const <String, dynamic>{});
     }
   }
 }

@@ -40,6 +40,7 @@ internal fun createPeriodicWorkRequest(
     taskName: String,
     inputData: Map<String, Any?>?,
     foregroundServiceConfig: dev.fluttercommunity.workmanager.pigeon.ForegroundServiceConfig? = null,
+    uniqueName: String? = null,
     frequencySeconds: Long,
     flexIntervalSeconds: Long?,
     initialDelaySeconds: Long?,
@@ -66,7 +67,7 @@ internal fun createPeriodicWorkRequest(
                 )
         }
     return builder
-        .setInputData(buildTaskInputData(taskName, inputData, foregroundServiceConfig))
+        .setInputData(buildTaskInputData(taskName, inputData, foregroundServiceConfig, uniqueName))
         .setInitialDelay(
             initialDelaySeconds ?: DEFAULT_INITIAL_DELAY_SECONDS,
             TimeUnit.SECONDS,
@@ -205,6 +206,7 @@ internal fun createOneOffWorkRequest(request: dev.fluttercommunity.workmanager.p
                     request.taskName,
                     request.inputData?.filterNotNullKeys(),
                     request.foregroundServiceConfig,
+                    request.uniqueName,
                 ),
             ).setInitialDelay(
                 request.initialDelaySeconds ?: DEFAULT_INITIAL_DELAY_SECONDS,
@@ -267,6 +269,7 @@ class WorkManagerWrapper(
                 taskName = request.taskName,
                 inputData = request.inputData?.filterNotNullKeys(),
                 foregroundServiceConfig = request.foregroundServiceConfig,
+                uniqueName = request.uniqueName,
                 frequencySeconds = request.frequencySeconds,
                 flexIntervalSeconds = request.flexIntervalSeconds,
                 initialDelaySeconds = request.initialDelaySeconds,

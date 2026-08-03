@@ -29,7 +29,19 @@ const val FOREGROUND_SERVICE_CONFIG_KEY =
     "dev.fluttercommunity.workmanager.FOREGROUND_SERVICE_CONFIG"
 
 /**
- * Serializes [dartTask] and [payload] into WorkManager [Data].
+ * Key under which the task's unique name is stored in WorkManager [Data].
+ *
+ * The unique name is only known at enqueue time, so it is persisted next to
+ * the Dart task name. The worker reads it back when it runs; it is used to
+ * key progress updates (WorkManager stores progress per unique work name)
+ * and to route progress events back to the app. It is never delivered to the
+ * Dart callback.
+ */
+const val UNIQUE_NAME_KEY = "dev.fluttercommunity.workmanager.UNIQUE_NAME"
+
+/**
+ * Serializes [dartTask], the task's [uniqueName] and [payload] into
+ * WorkManager [Data].
  *
  * - Scalars are stored natively under `payload_<key>` (same keys as before).
  * - Homogeneous lists are stored as typed primitive arrays under
@@ -39,39 +51,69 @@ const val FOREGROUND_SERVICE_CONFIG_KEY =
  *   `json_payload_<key>` and decoded again when the task runs.
  * - An optional [foregroundServiceConfig] is JSON-encoded under
  *   [FOREGROUND_SERVICE_CONFIG_KEY].
+ * - An optional [uniqueName] is stored under [UNIQUE_NAME_KEY].
  */
 fun buildTaskInputData(
     dartTask: String,
     payload: Map<String, Any?>?,
     foregroundServiceConfig: ForegroundServiceConfig? = null,
+    uniqueName: String? = null,
 ): Data {
     val builder = Data.Builder().putString(BackgroundWorker.DART_TASK_KEY, dartTask)
+
+    uniqueName?.let { builder.putString(UNIQUE_NAME_KEY, it) }
 
     foregroundServiceConfig?.let {
         builder.putString(FOREGROUND_SERVICE_CONFIG_KEY, encodeForegroundServiceConfig(it))
     }
 
     payload?.forEach { (key, value) ->
-        when (value) {
-            null -> builder.putJsonPayload(key, null)
-            is String -> builder.putString("$PAYLOAD_PREFIX$key", value)
-            is Boolean -> builder.putBoolean("$PAYLOAD_PREFIX$key", value)
-            is Int -> builder.putInt("$PAYLOAD_PREFIX$key", value)
-            is Long -> builder.putLong("$PAYLOAD_PREFIX$key", value)
-            is Float -> builder.putFloat("$PAYLOAD_PREFIX$key", value)
-            is Double -> builder.putDouble("$PAYLOAD_PREFIX$key", value)
-            is ByteArray -> builder.putByteArray("$PAYLOAD_PREFIX$key", value)
-            is List<*> -> builder.putListPayload(key, value)
-            is Map<*, *> -> builder.putJsonPayload(key, value)
-            else ->
-                throw IllegalArgumentException(
-                    "Unsupported payload type for key '$key': ${value::class.java.simpleName}. " +
-                        "Consider converting it to a supported type.",
-                )
-        }
+        builder.putPayloadValue(key, value)
     }
 
     return builder.build()
+}
+
+/**
+ * Encodes a progress map into WorkManager [Data] using the same encoding as
+ * the task payload (see [buildTaskInputData]), so the progress reported by a
+ * task round-trips through [decodePayload] unchanged.
+ *
+ * Keys that are null are skipped, mirroring how input data is normalized
+ * before it is stored.
+ */
+fun encodeProgressData(progress: Map<String?, Any?>?): Data {
+    val builder = Data.Builder()
+    progress?.forEach { (key, value) ->
+        if (key != null) {
+            builder.putPayloadValue(key, value)
+        }
+    }
+    return builder.build()
+}
+
+private fun Data.Builder.putPayloadValue(
+    key: String,
+    value: Any?,
+): Data.Builder {
+    when (value) {
+        null -> putJsonPayload(key, null)
+        is String -> putString("$PAYLOAD_PREFIX$key", value)
+        is Boolean -> putBoolean("$PAYLOAD_PREFIX$key", value)
+        is Int -> putInt("$PAYLOAD_PREFIX$key", value)
+        is Long -> putLong("$PAYLOAD_PREFIX$key", value)
+        is Float -> putFloat("$PAYLOAD_PREFIX$key", value)
+        is Double -> putDouble("$PAYLOAD_PREFIX$key", value)
+        is ByteArray -> putByteArray("$PAYLOAD_PREFIX$key", value)
+        is List<*> -> putListPayload(key, value)
+        is Map<*, *> -> putJsonPayload(key, value)
+        else ->
+            throw IllegalArgumentException(
+                "Unsupported payload type for key '$key': ${value::class.java.simpleName}. " +
+                    "Consider converting it to a supported type.",
+            )
+    }
+    return this
 }
 
 /** Encodes a [ForegroundServiceConfig] as a JSON string for WorkManager [Data]. */

@@ -281,4 +281,26 @@ class MockWorkmanager extends _i1.Mock implements _i2.Workmanager {
           ),
         )),
       ) as _i3.Future<String>);
+
+  @override
+  _i3.Future<void> reportProgress(Map<String, dynamic>? progress) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #reportProgress,
+          [progress],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> setProgressListener(_i4.ProgressListener? listener) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setProgressListener,
+          [listener],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
 }

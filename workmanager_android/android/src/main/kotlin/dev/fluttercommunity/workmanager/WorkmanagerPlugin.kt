@@ -26,7 +26,40 @@ class WorkmanagerPlugin :
 
     private var currentDispatcherHandle: Long = -1L
 
+    /**
+     * The binding of the engine this plugin is attached to. Used to resolve
+     * the app-facing messenger for progress updates.
+     */
+    private var pluginBinding: FlutterPlugin.FlutterPluginBinding? = null
+
+    /**
+     * The worker currently running on this plugin's engine, if any. Background
+     * workers bind themselves to the plugin instance attached to their own
+     * engine; the app-facing plugin instance stays unbound.
+     */
+    private var boundWorker: BackgroundWorker? = null
+
+    /**
+     * Binds a background worker to this plugin instance (see [boundWorker]).
+     */
+    internal fun bindWorker(worker: BackgroundWorker) {
+        boundWorker = worker
+    }
+
+    /**
+     * Unbinds a background worker from this plugin instance. Unbinding is
+     * idempotent and only clears the binding when [worker] is the bound one,
+     * so a worker that finishes after its replacement already bound itself
+     * never unbinds the replacement.
+     */
+    internal fun unbindWorker(worker: BackgroundWorker) {
+        if (boundWorker === worker) {
+            boundWorker = null
+        }
+    }
+
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        pluginBinding = binding
         preferenceManager =
             SharedPreferenceHelper(
                 binding.applicationContext,
@@ -43,6 +76,7 @@ class WorkmanagerPlugin :
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         WorkmanagerHostApi.setUp(binding.binaryMessenger, null)
         workManagerWrapper = null
+        pluginBinding = null
     }
 
     override fun initialize(
@@ -57,6 +91,12 @@ class WorkmanagerPlugin :
 
             // Update the local variable to match
             currentDispatcherHandle = handle
+
+            // The engine that initializes the plugin is the one the app talks
+            // to; progress updates are forwarded on this messenger.
+            pluginBinding?.let {
+                ProgressUpdateCoordinator.setAppMessenger(enabled = true, messenger = it.binaryMessenger)
+            }
 
             callback(Result.success(Unit))
         } catch (e: Exception) {
@@ -201,5 +241,34 @@ class WorkmanagerPlugin :
         } catch (e: Exception) {
             callback(Result.failure(e))
         }
+    }
+
+    override fun reportProgress(
+        progress: Map<String?, Any?>?,
+        callback: (Result<Unit>) -> Unit,
+    ) {
+        val worker = boundWorker
+        if (worker == null) {
+            // reportProgress outside of a running task (e.g. called from the
+            // app isolate) has nothing to attach to. Keep it a no-op so
+            // portable handlers that report progress unconditionally do not
+            // crash on Android either.
+            callback(Result.success(Unit))
+            return
+        }
+        worker.reportProgress(progress)
+        callback(Result.success(Unit))
+    }
+
+    override fun setProgressListener(
+        enabled: Boolean,
+        callback: (Result<Unit>) -> Unit,
+    ) {
+        // (Re)bind the app-facing messenger for progress updates. This call
+        // always originates from the engine the app talks to.
+        pluginBinding?.let {
+            ProgressUpdateCoordinator.setAppMessenger(enabled = enabled, messenger = it.binaryMessenger)
+        }
+        callback(Result.success(Unit))
     }
 }
