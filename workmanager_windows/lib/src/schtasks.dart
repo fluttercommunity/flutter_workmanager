@@ -114,8 +114,7 @@ class Schtasks {
   /// Maps a [frequency] to the `schtasks /RI` repetition interval in minutes:
   /// sub-minute frequencies are clamped to 1 minute, frequencies above
   /// [maxRepetitionMinutes] (416 days) are clamped to it.
-  static int repeatMinutesFor(Duration frequency) =>
-      frequency.inMinutes.clamp(1, maxRepetitionMinutes);
+  static int repeatMinutesFor(Duration frequency) => frequency.inMinutes.clamp(1, maxRepetitionMinutes);
 
   /// Formats [time] as `MM/DD/YYYY`.
   ///

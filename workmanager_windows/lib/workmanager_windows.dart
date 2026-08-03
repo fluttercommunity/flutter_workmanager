@@ -146,6 +146,8 @@ class WorkmanagerWindows extends WorkmanagerPlatform {
     Map<String, dynamic>? inputData,
     Duration? initialDelay,
     Constraints? constraints,
+    // Accepted for API parity; Task Scheduler has no expedited concept.
+    bool expedited = false,
     ExistingWorkPolicy? existingWorkPolicy,
     BackoffPolicy? backoffPolicy,
     Duration? backoffPolicyDelay,
@@ -243,8 +245,7 @@ class WorkmanagerWindows extends WorkmanagerPlatform {
       Schtasks.executable,
       Schtasks.delete(taskId),
     );
-    if (deleteResult.exitCode != 0 &&
-        !_isMissingTask(deleteResult.stderr.toString())) {
+    if (deleteResult.exitCode != 0 && !_isMissingTask(deleteResult.stderr.toString())) {
       throw StateError(
         'Failed to cancel "$uniqueName": schtasks exited with '
         '${deleteResult.exitCode}.\n${deleteResult.stderr}',
@@ -270,8 +271,7 @@ class WorkmanagerWindows extends WorkmanagerPlatform {
         Schtasks.executable,
         Schtasks.delete(taskId),
       );
-      if (deleteResult.exitCode != 0 &&
-          !_isMissingTask(deleteResult.stderr.toString())) {
+      if (deleteResult.exitCode != 0 && !_isMissingTask(deleteResult.stderr.toString())) {
         throw StateError(
           'Failed to delete task "$taskId": schtasks exited with '
           '${deleteResult.exitCode}.\n${deleteResult.stderr}',
@@ -312,8 +312,7 @@ class WorkmanagerWindows extends WorkmanagerPlatform {
     return jsonEncode(owned);
   }
 
-  String _buildAction(String taskName, String? payloadFilePath) =>
-      Schtasks.buildAction(
+  String _buildAction(String taskName, String? payloadFilePath) => Schtasks.buildAction(
         executablePath: Platform.resolvedExecutable,
         taskName: taskName,
         payloadFilePath: payloadFilePath,
@@ -355,7 +354,6 @@ class WorkmanagerWindows extends WorkmanagerPlatform {
 
   bool _isMissingTask(String stderr) {
     final normalized = stderr.toLowerCase();
-    return normalized.contains('cannot find the file specified') ||
-        normalized.contains('does not exist');
+    return normalized.contains('cannot find the file specified') || normalized.contains('does not exist');
   }
 }
