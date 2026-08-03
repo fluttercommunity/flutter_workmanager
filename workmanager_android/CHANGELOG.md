@@ -1,4 +1,6 @@
-## 0.10.0+1
+## 0.10.1+1
+
+ - **FIX**(android): configure the Kotlin compiler for AGP 9+ via `kotlin.compilerOptions` (the `android.kotlinOptions` block was removed in AGP 9), aligning with Flutter's built-in Kotlin migration guide. Note: apps on AGP 9 must use built-in Kotlin (`android.builtInKotlin` unset/true) — with `android.builtInKotlin=false` no Kotlin plugin compiles at all (see #710).
 
  - **FIX**(android): notify running callbacks when work is cancelled (fixes #432) (#705).
 
