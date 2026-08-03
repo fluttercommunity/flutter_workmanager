@@ -199,6 +199,25 @@ enum TaskStatus: Int {
   case rescheduled = 6
 }
 
+/// Result of a background task execution.
+///
+/// Replaces the previous `bool` return value of the task handler. Maps to
+/// platform-specific semantics:
+/// - [success]: Android `Result.success()`, iOS `UIBackgroundFetchResult.newData`.
+/// - [retry]: Android `Result.retry()` (transient failure, backoff applies).
+///   iOS has no automatic retry — the task finishes as `.failed` and you can
+///   re-schedule it yourself.
+/// - [failure]: Android `Result.failure()` (permanent failure, dependent work
+///   stops and the task is not retried). iOS `UIBackgroundFetchResult.failed`.
+enum BackgroundTaskResult: Int {
+  /// The task completed successfully.
+  case success = 0
+  /// The task failed transiently and should be retried (Android only).
+  case retry = 1
+  /// The task failed permanently and must not be retried.
+  case failure = 2
+}
+
 /// An enumeration of various network types that can be used as Constraints for work.
 ///
 /// Fully supported on Android.
@@ -901,58 +920,64 @@ private class WorkmanagerApiPigeonCodecReader: FlutterStandardReader {
     case 130:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return NetworkType(rawValue: enumResultAsInt)
+        return BackgroundTaskResult(rawValue: enumResultAsInt)
       }
       return nil
     case 131:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return BackoffPolicy(rawValue: enumResultAsInt)
+        return NetworkType(rawValue: enumResultAsInt)
       }
       return nil
     case 132:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return ExistingWorkPolicy(rawValue: enumResultAsInt)
+        return BackoffPolicy(rawValue: enumResultAsInt)
       }
       return nil
     case 133:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return ExistingPeriodicWorkPolicy(rawValue: enumResultAsInt)
+        return ExistingWorkPolicy(rawValue: enumResultAsInt)
       }
       return nil
     case 134:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return OutOfQuotaPolicy(rawValue: enumResultAsInt)
+        return ExistingPeriodicWorkPolicy(rawValue: enumResultAsInt)
       }
       return nil
     case 135:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return ForegroundServiceType(rawValue: enumResultAsInt)
+        return OutOfQuotaPolicy(rawValue: enumResultAsInt)
       }
       return nil
     case 136:
-      return ForegroundServiceConfig.fromList(self.readValue() as! [Any?])
+      let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
+      if let enumResultAsInt = enumResultAsInt {
+        return ForegroundServiceType(rawValue: enumResultAsInt)
+      }
+      return nil
     case 137:
-      return Constraints.fromList(self.readValue() as! [Any?])
+      return ForegroundServiceConfig.fromList(self.readValue() as! [Any?])
     case 138:
-      return ContentUriTrigger.fromList(self.readValue() as! [Any?])
+      return Constraints.fromList(self.readValue() as! [Any?])
     case 139:
-      return BackoffPolicyConfig.fromList(self.readValue() as! [Any?])
+      return ContentUriTrigger.fromList(self.readValue() as! [Any?])
     case 140:
-      return InitializeRequest.fromList(self.readValue() as! [Any?])
+      return BackoffPolicyConfig.fromList(self.readValue() as! [Any?])
     case 141:
-      return OneOffTaskRequest.fromList(self.readValue() as! [Any?])
+      return InitializeRequest.fromList(self.readValue() as! [Any?])
     case 142:
-      return PeriodicTaskRequest.fromList(self.readValue() as! [Any?])
+      return OneOffTaskRequest.fromList(self.readValue() as! [Any?])
     case 143:
-      return ProcessingTaskRequest.fromList(self.readValue() as! [Any?])
+      return PeriodicTaskRequest.fromList(self.readValue() as! [Any?])
     case 144:
-      return HealthResearchTaskRequest.fromList(self.readValue() as! [Any?])
+      return ProcessingTaskRequest.fromList(self.readValue() as! [Any?])
     case 145:
+      return HealthResearchTaskRequest.fromList(self.readValue() as! [Any?])
+    case 146:
       return ContinuedProcessingTaskRequest.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
@@ -965,53 +990,56 @@ private class WorkmanagerApiPigeonCodecWriter: FlutterStandardWriter {
     if let value = value as? TaskStatus {
       super.writeByte(129)
       super.writeValue(value.rawValue)
-    } else if let value = value as? NetworkType {
+    } else if let value = value as? BackgroundTaskResult {
       super.writeByte(130)
       super.writeValue(value.rawValue)
-    } else if let value = value as? BackoffPolicy {
+    } else if let value = value as? NetworkType {
       super.writeByte(131)
       super.writeValue(value.rawValue)
-    } else if let value = value as? ExistingWorkPolicy {
+    } else if let value = value as? BackoffPolicy {
       super.writeByte(132)
       super.writeValue(value.rawValue)
-    } else if let value = value as? ExistingPeriodicWorkPolicy {
+    } else if let value = value as? ExistingWorkPolicy {
       super.writeByte(133)
       super.writeValue(value.rawValue)
-    } else if let value = value as? OutOfQuotaPolicy {
+    } else if let value = value as? ExistingPeriodicWorkPolicy {
       super.writeByte(134)
       super.writeValue(value.rawValue)
-    } else if let value = value as? ForegroundServiceType {
+    } else if let value = value as? OutOfQuotaPolicy {
       super.writeByte(135)
       super.writeValue(value.rawValue)
-    } else if let value = value as? ForegroundServiceConfig {
+    } else if let value = value as? ForegroundServiceType {
       super.writeByte(136)
-      super.writeValue(value.toList())
-    } else if let value = value as? Constraints {
+      super.writeValue(value.rawValue)
+    } else if let value = value as? ForegroundServiceConfig {
       super.writeByte(137)
       super.writeValue(value.toList())
-    } else if let value = value as? ContentUriTrigger {
+    } else if let value = value as? Constraints {
       super.writeByte(138)
       super.writeValue(value.toList())
-    } else if let value = value as? BackoffPolicyConfig {
+    } else if let value = value as? ContentUriTrigger {
       super.writeByte(139)
       super.writeValue(value.toList())
-    } else if let value = value as? InitializeRequest {
+    } else if let value = value as? BackoffPolicyConfig {
       super.writeByte(140)
       super.writeValue(value.toList())
-    } else if let value = value as? OneOffTaskRequest {
+    } else if let value = value as? InitializeRequest {
       super.writeByte(141)
       super.writeValue(value.toList())
-    } else if let value = value as? PeriodicTaskRequest {
+    } else if let value = value as? OneOffTaskRequest {
       super.writeByte(142)
       super.writeValue(value.toList())
-    } else if let value = value as? ProcessingTaskRequest {
+    } else if let value = value as? PeriodicTaskRequest {
       super.writeByte(143)
       super.writeValue(value.toList())
-    } else if let value = value as? HealthResearchTaskRequest {
+    } else if let value = value as? ProcessingTaskRequest {
       super.writeByte(144)
       super.writeValue(value.toList())
-    } else if let value = value as? ContinuedProcessingTaskRequest {
+    } else if let value = value as? HealthResearchTaskRequest {
       super.writeByte(145)
+      super.writeValue(value.toList())
+    } else if let value = value as? ContinuedProcessingTaskRequest {
+      super.writeByte(146)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -1243,7 +1271,7 @@ class WorkmanagerHostApiSetup {
 /// Generated protocol from Pigeon that represents Flutter messages that can be called from Swift.
 protocol WorkmanagerFlutterApiProtocol {
   func backgroundChannelInitialized(completion: @escaping (Result<Void, PigeonError>) -> Void)
-  func executeTask(taskName taskNameArg: String, inputData inputDataArg: [String?: Any?]?, completion: @escaping (Result<Bool, PigeonError>) -> Void)
+  func executeTask(taskName taskNameArg: String, inputData inputDataArg: [String?: Any?]?, completion: @escaping (Result<BackgroundTaskResult, PigeonError>) -> Void)
   /// Notifies the Dart callback that a running task was stopped by the
   /// platform before it finished (cancelled, timed out, preempted, ...).
   ///
@@ -1281,7 +1309,7 @@ class WorkmanagerFlutterApi: WorkmanagerFlutterApiProtocol {
       }
     }
   }
-  func executeTask(taskName taskNameArg: String, inputData inputDataArg: [String?: Any?]?, completion: @escaping (Result<Bool, PigeonError>) -> Void) {
+  func executeTask(taskName taskNameArg: String, inputData inputDataArg: [String?: Any?]?, completion: @escaping (Result<BackgroundTaskResult, PigeonError>) -> Void) {
     let channelName: String = "dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerFlutterApi.executeTask\(messageChannelSuffix)"
     let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
     channel.sendMessage([taskNameArg, inputDataArg] as [Any?]) { response in
@@ -1297,7 +1325,7 @@ class WorkmanagerFlutterApi: WorkmanagerFlutterApiProtocol {
       } else if listResponse[0] == nil {
         completion(.failure(PigeonError(code: "null-error", message: "Flutter api returned null value for non-null return value.", details: "")))
       } else {
-        let result = listResponse[0] as! Bool
+        let result = listResponse[0] as! BackgroundTaskResult
         completion(.success(result))
       }
     }

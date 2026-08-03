@@ -223,6 +223,33 @@ enum class TaskStatus(val raw: Int) {
 }
 
 /**
+ * Result of a background task execution.
+ *
+ * Replaces the previous `bool` return value of the task handler. Maps to
+ * platform-specific semantics:
+ * - [success]: Android `Result.success()`, iOS `UIBackgroundFetchResult.newData`.
+ * - [retry]: Android `Result.retry()` (transient failure, backoff applies).
+ *   iOS has no automatic retry — the task finishes as `.failed` and you can
+ *   re-schedule it yourself.
+ * - [failure]: Android `Result.failure()` (permanent failure, dependent work
+ *   stops and the task is not retried). iOS `UIBackgroundFetchResult.failed`.
+ */
+enum class BackgroundTaskResult(val raw: Int) {
+  /** The task completed successfully. */
+  SUCCESS(0),
+  /** The task failed transiently and should be retried (Android only). */
+  RETRY(1),
+  /** The task failed permanently and must not be retried. */
+  FAILURE(2);
+
+  companion object {
+    fun ofRaw(raw: Int): BackgroundTaskResult? {
+      return values().firstOrNull { it.raw == raw }
+    }
+  }
+}
+
+/**
  * An enumeration of various network types that can be used as Constraints for work.
  *
  * Fully supported on Android.
@@ -988,80 +1015,85 @@ private open class WorkmanagerApiPigeonCodec : StandardMessageCodec() {
       }
       130.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          NetworkType.ofRaw(it.toInt())
+          BackgroundTaskResult.ofRaw(it.toInt())
         }
       }
       131.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          BackoffPolicy.ofRaw(it.toInt())
+          NetworkType.ofRaw(it.toInt())
         }
       }
       132.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          ExistingWorkPolicy.ofRaw(it.toInt())
+          BackoffPolicy.ofRaw(it.toInt())
         }
       }
       133.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          ExistingPeriodicWorkPolicy.ofRaw(it.toInt())
+          ExistingWorkPolicy.ofRaw(it.toInt())
         }
       }
       134.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          OutOfQuotaPolicy.ofRaw(it.toInt())
+          ExistingPeriodicWorkPolicy.ofRaw(it.toInt())
         }
       }
       135.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          ForegroundServiceType.ofRaw(it.toInt())
+          OutOfQuotaPolicy.ofRaw(it.toInt())
         }
       }
       136.toByte() -> {
-        return (readValue(buffer) as? List<Any?>)?.let {
-          ForegroundServiceConfig.fromList(it)
+        return (readValue(buffer) as Long?)?.let {
+          ForegroundServiceType.ofRaw(it.toInt())
         }
       }
       137.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          Constraints.fromList(it)
+          ForegroundServiceConfig.fromList(it)
         }
       }
       138.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          ContentUriTrigger.fromList(it)
+          Constraints.fromList(it)
         }
       }
       139.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          BackoffPolicyConfig.fromList(it)
+          ContentUriTrigger.fromList(it)
         }
       }
       140.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          InitializeRequest.fromList(it)
+          BackoffPolicyConfig.fromList(it)
         }
       }
       141.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          OneOffTaskRequest.fromList(it)
+          InitializeRequest.fromList(it)
         }
       }
       142.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PeriodicTaskRequest.fromList(it)
+          OneOffTaskRequest.fromList(it)
         }
       }
       143.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          ProcessingTaskRequest.fromList(it)
+          PeriodicTaskRequest.fromList(it)
         }
       }
       144.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          HealthResearchTaskRequest.fromList(it)
+          ProcessingTaskRequest.fromList(it)
         }
       }
       145.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          HealthResearchTaskRequest.fromList(it)
+        }
+      }
+      146.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           ContinuedProcessingTaskRequest.fromList(it)
         }
@@ -1075,68 +1107,72 @@ private open class WorkmanagerApiPigeonCodec : StandardMessageCodec() {
         stream.write(129)
         writeValue(stream, value.raw.toLong())
       }
-      is NetworkType -> {
+      is BackgroundTaskResult -> {
         stream.write(130)
         writeValue(stream, value.raw.toLong())
       }
-      is BackoffPolicy -> {
+      is NetworkType -> {
         stream.write(131)
         writeValue(stream, value.raw.toLong())
       }
-      is ExistingWorkPolicy -> {
+      is BackoffPolicy -> {
         stream.write(132)
         writeValue(stream, value.raw.toLong())
       }
-      is ExistingPeriodicWorkPolicy -> {
+      is ExistingWorkPolicy -> {
         stream.write(133)
         writeValue(stream, value.raw.toLong())
       }
-      is OutOfQuotaPolicy -> {
+      is ExistingPeriodicWorkPolicy -> {
         stream.write(134)
         writeValue(stream, value.raw.toLong())
       }
-      is ForegroundServiceType -> {
+      is OutOfQuotaPolicy -> {
         stream.write(135)
         writeValue(stream, value.raw.toLong())
       }
-      is ForegroundServiceConfig -> {
+      is ForegroundServiceType -> {
         stream.write(136)
-        writeValue(stream, value.toList())
+        writeValue(stream, value.raw.toLong())
       }
-      is Constraints -> {
+      is ForegroundServiceConfig -> {
         stream.write(137)
         writeValue(stream, value.toList())
       }
-      is ContentUriTrigger -> {
+      is Constraints -> {
         stream.write(138)
         writeValue(stream, value.toList())
       }
-      is BackoffPolicyConfig -> {
+      is ContentUriTrigger -> {
         stream.write(139)
         writeValue(stream, value.toList())
       }
-      is InitializeRequest -> {
+      is BackoffPolicyConfig -> {
         stream.write(140)
         writeValue(stream, value.toList())
       }
-      is OneOffTaskRequest -> {
+      is InitializeRequest -> {
         stream.write(141)
         writeValue(stream, value.toList())
       }
-      is PeriodicTaskRequest -> {
+      is OneOffTaskRequest -> {
         stream.write(142)
         writeValue(stream, value.toList())
       }
-      is ProcessingTaskRequest -> {
+      is PeriodicTaskRequest -> {
         stream.write(143)
         writeValue(stream, value.toList())
       }
-      is HealthResearchTaskRequest -> {
+      is ProcessingTaskRequest -> {
         stream.write(144)
         writeValue(stream, value.toList())
       }
-      is ContinuedProcessingTaskRequest -> {
+      is HealthResearchTaskRequest -> {
         stream.write(145)
+        writeValue(stream, value.toList())
+      }
+      is ContinuedProcessingTaskRequest -> {
+        stream.write(146)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -1403,7 +1439,7 @@ class WorkmanagerFlutterApi(private val binaryMessenger: BinaryMessenger, privat
       } 
     }
   }
-  fun executeTask(taskNameArg: String, inputDataArg: Map<String?, Any?>?, callback: (Result<Boolean>) -> Unit)
+  fun executeTask(taskNameArg: String, inputDataArg: Map<String?, Any?>?, callback: (Result<BackgroundTaskResult>) -> Unit)
 {
     val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
     val channelName = "dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerFlutterApi.executeTask$separatedMessageChannelSuffix"
@@ -1415,7 +1451,7 @@ class WorkmanagerFlutterApi(private val binaryMessenger: BinaryMessenger, privat
         } else if (it[0] == null) {
           callback(Result.failure(FlutterError("null-error", "Flutter api returned null value for non-null return value.", "")))
         } else {
-          val output = it[0] as Boolean
+          val output = it[0] as BackgroundTaskResult
           callback(Result.success(output))
         }
       } else {
