@@ -287,6 +287,7 @@ class OneOffTaskRequest {
     this.existingWorkPolicy,
     this.outOfQuotaPolicy,
     this.foregroundServiceConfig,
+    this.expedited,
   });
 
   String uniqueName;
@@ -301,6 +302,15 @@ class OneOffTaskRequest {
 
   /// When set, the worker runs as an Android foreground service.
   ForegroundServiceConfig? foregroundServiceConfig;
+
+  /// When true (Android only), the task is scheduled as expedited work.
+  ///
+  /// WorkManager runs expedited work with high priority; on Android 12
+  /// (API 31)+ the system runs it as a WorkManager-managed foreground
+  /// service and shows a notification to the user. Only meaningful for
+  /// one-off tasks — periodic tasks cannot be expedited. Other platforms
+  /// ignore this field.
+  bool? expedited;
 }
 
 class PeriodicTaskRequest {

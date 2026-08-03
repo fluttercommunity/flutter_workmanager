@@ -430,5 +430,43 @@ void main() {
         expect(captured.foregroundServiceConfig, isNull);
       });
     });
+
+    group('Expedited work', () {
+      const oneOffChannel =
+          'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.registerOneOffTask';
+
+      Future<OneOffTaskRequest> captureRequest({
+        bool expedited = false,
+      }) async {
+        late OneOffTaskRequest captured;
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMessageHandler(oneOffChannel, (ByteData? message) async {
+          final decoded = WorkmanagerHostApi.pigeonChannelCodec
+              .decodeMessage(message) as List<Object?>;
+          captured = decoded[0]! as OneOffTaskRequest;
+          return WorkmanagerHostApi.pigeonChannelCodec
+              .encodeMessage(<Object?>[]);
+        });
+
+        await workmanager.registerOneOffTask(
+          'unique',
+          'task',
+          expedited: expedited,
+        );
+        return captured;
+      }
+
+      test('expedited: true is forwarded through pigeon', () async {
+        final captured = await captureRequest(expedited: true);
+
+        expect(captured.expedited, isTrue);
+      });
+
+      test('expedited: false is forwarded through pigeon', () async {
+        final captured = await captureRequest(expedited: false);
+
+        expect(captured.expedited, isFalse);
+      });
+    });
   });
 }

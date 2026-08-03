@@ -243,6 +243,12 @@ class Workmanager {
   /// - [tag]: is an optional tag that can be used to identify or cancel the task.
   /// - [existingWorkPolicy]: is the policy to use when work with the same [uniqueName] already exists.
   /// - [outOfQuotaPolicy]: is the policy to use when the device is out of quota. (Android only)
+  /// - [expedited]: when true (Android only), the task is scheduled as
+  ///   expedited work. WorkManager runs expedited work with high priority; on
+  ///   Android 12 (API 31)+ the system runs it as a WorkManager-managed
+  ///   foreground service and shows a notification to the user. Only supported
+  ///   for one-off tasks — periodic tasks cannot be expedited. Other
+  ///   platforms ignore this field.
   /// - [foregroundServiceConfig]: when provided (Android only), the worker
   ///   runs as an Android foreground service for the whole duration of the
   ///   task. This allows work to keep running beyond the usual background
@@ -260,6 +266,7 @@ class Workmanager {
     String? tag,
     OutOfQuotaPolicy? outOfQuotaPolicy,
     ForegroundServiceConfig? foregroundServiceConfig,
+    bool expedited = false,
   }) async {
     return _platform.registerOneOffTask(
       uniqueName,
@@ -273,6 +280,7 @@ class Workmanager {
       tag: tag,
       outOfQuotaPolicy: outOfQuotaPolicy,
       foregroundServiceConfig: foregroundServiceConfig,
+      expedited: expedited,
     );
   }
 

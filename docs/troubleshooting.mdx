@@ -62,24 +62,26 @@ deferred work run, note it in the issue with `adb logcat` + device details.
 ## Android: expedited work (available now)
 
 For **one-off tasks that must start promptly** (e.g. a user-initiated upload),
-register the task as *expedited* by passing
-[`OutOfQuotaPolicy`](https://pub.dev/documentation/workmanager/latest/workmanager/OutOfQuotaPolicy.html):
+register the task as *expedited* with the `expedited` flag:
 
 ```dart
 await Workmanager().registerOneOffTask(
   'sync.user_data',
   'syncTask',
   inputData: {'source': 'user'},
+  expedited: true,
   outOfQuotaPolicy: OutOfQuotaPolicy.runAsNonExpeditedWorkRequest,
 );
 ```
 
 Expedited work uses a high-priority job (and on API 31+ a foreground service
-managed by WorkManager) that is far less affected by battery restrictions. Two
-important rules:
+managed by WorkManager, with a system notification) that is far less affected
+by battery restrictions. Two important rules:
 
 - Expedited jobs **cannot** use battery, charging, or device-idle constraints.
 - They are intended for short, user-visible work, not long-running processing.
+- `outOfQuotaPolicy` only takes effect when `expedited: true`; on its own it is
+  ignored (see [Customization → Expedited work](customization#expedited-work-android-only)).
 
 For genuinely **long-running** work (minutes of active processing), the
 recommended solution is the plugin's foreground-service support (shipped in

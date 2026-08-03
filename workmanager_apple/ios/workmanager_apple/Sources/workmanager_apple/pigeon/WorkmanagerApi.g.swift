@@ -580,6 +580,14 @@ struct OneOffTaskRequest: Hashable {
   var outOfQuotaPolicy: OutOfQuotaPolicy? = nil
   /// When set, the worker runs as an Android foreground service.
   var foregroundServiceConfig: ForegroundServiceConfig? = nil
+  /// When true (Android only), the task is scheduled as expedited work.
+  ///
+  /// WorkManager runs expedited work with high priority; on Android 12
+  /// (API 31)+ the system runs it as a WorkManager-managed foreground
+  /// service and shows a notification to the user. Only meaningful for
+  /// one-off tasks — periodic tasks cannot be expedited. Other platforms
+  /// ignore this field.
+  var expedited: Bool? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -594,6 +602,7 @@ struct OneOffTaskRequest: Hashable {
     let existingWorkPolicy: ExistingWorkPolicy? = nilOrValue(pigeonVar_list[7])
     let outOfQuotaPolicy: OutOfQuotaPolicy? = nilOrValue(pigeonVar_list[8])
     let foregroundServiceConfig: ForegroundServiceConfig? = nilOrValue(pigeonVar_list[9])
+    let expedited: Bool? = nilOrValue(pigeonVar_list[10])
 
     return OneOffTaskRequest(
       uniqueName: uniqueName,
@@ -605,7 +614,8 @@ struct OneOffTaskRequest: Hashable {
       tag: tag,
       existingWorkPolicy: existingWorkPolicy,
       outOfQuotaPolicy: outOfQuotaPolicy,
-      foregroundServiceConfig: foregroundServiceConfig
+      foregroundServiceConfig: foregroundServiceConfig,
+      expedited: expedited
     )
   }
   func toList() -> [Any?] {
@@ -620,13 +630,14 @@ struct OneOffTaskRequest: Hashable {
       existingWorkPolicy,
       outOfQuotaPolicy,
       foregroundServiceConfig,
+      expedited,
     ]
   }
   static func == (lhs: OneOffTaskRequest, rhs: OneOffTaskRequest) -> Bool {
     if Swift.type(of: lhs) != Swift.type(of: rhs) {
       return false
     }
-    return deepEqualsWorkmanagerApi(lhs.uniqueName, rhs.uniqueName) && deepEqualsWorkmanagerApi(lhs.taskName, rhs.taskName) && deepEqualsWorkmanagerApi(lhs.inputData, rhs.inputData) && deepEqualsWorkmanagerApi(lhs.initialDelaySeconds, rhs.initialDelaySeconds) && deepEqualsWorkmanagerApi(lhs.constraints, rhs.constraints) && deepEqualsWorkmanagerApi(lhs.backoffPolicy, rhs.backoffPolicy) && deepEqualsWorkmanagerApi(lhs.tag, rhs.tag) && deepEqualsWorkmanagerApi(lhs.existingWorkPolicy, rhs.existingWorkPolicy) && deepEqualsWorkmanagerApi(lhs.outOfQuotaPolicy, rhs.outOfQuotaPolicy) && deepEqualsWorkmanagerApi(lhs.foregroundServiceConfig, rhs.foregroundServiceConfig)
+    return deepEqualsWorkmanagerApi(lhs.uniqueName, rhs.uniqueName) && deepEqualsWorkmanagerApi(lhs.taskName, rhs.taskName) && deepEqualsWorkmanagerApi(lhs.inputData, rhs.inputData) && deepEqualsWorkmanagerApi(lhs.initialDelaySeconds, rhs.initialDelaySeconds) && deepEqualsWorkmanagerApi(lhs.constraints, rhs.constraints) && deepEqualsWorkmanagerApi(lhs.backoffPolicy, rhs.backoffPolicy) && deepEqualsWorkmanagerApi(lhs.tag, rhs.tag) && deepEqualsWorkmanagerApi(lhs.existingWorkPolicy, rhs.existingWorkPolicy) && deepEqualsWorkmanagerApi(lhs.outOfQuotaPolicy, rhs.outOfQuotaPolicy) && deepEqualsWorkmanagerApi(lhs.foregroundServiceConfig, rhs.foregroundServiceConfig) && deepEqualsWorkmanagerApi(lhs.expedited, rhs.expedited)
   }
 
   func hash(into hasher: inout Hasher) {
@@ -641,6 +652,7 @@ struct OneOffTaskRequest: Hashable {
     deepHashWorkmanagerApi(value: existingWorkPolicy, hasher: &hasher)
     deepHashWorkmanagerApi(value: outOfQuotaPolicy, hasher: &hasher)
     deepHashWorkmanagerApi(value: foregroundServiceConfig, hasher: &hasher)
+    deepHashWorkmanagerApi(value: expedited, hasher: &hasher)
   }
 }
 

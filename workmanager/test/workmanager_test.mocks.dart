@@ -76,6 +76,7 @@ class MockWorkmanager extends _i1.Mock implements _i2.Workmanager {
     String? tag,
     _i4.OutOfQuotaPolicy? outOfQuotaPolicy,
     _i4.ForegroundServiceConfig? foregroundServiceConfig,
+    bool? expedited = false,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -94,6 +95,7 @@ class MockWorkmanager extends _i1.Mock implements _i2.Workmanager {
             #tag: tag,
             #outOfQuotaPolicy: outOfQuotaPolicy,
             #foregroundServiceConfig: foregroundServiceConfig,
+            #expedited: expedited,
           },
         ),
         returnValue: _i3.Future<void>.value(),

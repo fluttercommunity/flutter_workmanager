@@ -40,8 +40,10 @@ class WorkmanagerApple extends WorkmanagerPlatform {
     String? tag,
     OutOfQuotaPolicy? outOfQuotaPolicy,
     ForegroundServiceConfig? foregroundServiceConfig,
+    bool expedited = false,
   }) async {
-    // Foreground service config is Android-only; it is intentionally ignored.
+    // Foreground service config and expedited are Android-only; they are
+    // intentionally ignored.
     await _api.registerOneOffTask(OneOffTaskRequest(
       uniqueName: uniqueName,
       taskName: taskName,

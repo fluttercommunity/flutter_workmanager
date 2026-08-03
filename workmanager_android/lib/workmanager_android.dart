@@ -41,6 +41,7 @@ class WorkmanagerAndroid extends WorkmanagerPlatform {
     String? tag,
     OutOfQuotaPolicy? outOfQuotaPolicy,
     ForegroundServiceConfig? foregroundServiceConfig,
+    bool expedited = false,
   }) async {
     await _api.registerOneOffTask(OneOffTaskRequest(
       uniqueName: uniqueName,
@@ -59,6 +60,7 @@ class WorkmanagerAndroid extends WorkmanagerPlatform {
       outOfQuotaPolicy: outOfQuotaPolicy,
       foregroundServiceConfig:
           resolveForegroundServiceConfig(foregroundServiceConfig),
+      expedited: expedited,
     ));
   }
 
