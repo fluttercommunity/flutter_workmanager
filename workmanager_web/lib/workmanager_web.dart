@@ -382,6 +382,14 @@ class WorkmanagerWeb extends WorkmanagerPlatform {
     return jsonEncode(_tasks.values.map((task) => task.toJson()).toList());
   }
 
+  @override
+  Future<WorkInfo?> getWorkInfo(String uniqueName) async {
+    // Browsers have no queryable task state: the Service Worker runs the
+    // compiled dispatcher without the plugin's Dart code, so nothing is
+    // recorded. Returning null is the documented no-op.
+    return null;
+  }
+
   /// Runs [taskName] immediately through the normal execution path (Web
   /// Worker when available, otherwise in-page).
   ///

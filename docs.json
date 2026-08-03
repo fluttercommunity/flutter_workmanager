@@ -34,6 +34,10 @@
           "href": "/task-status"
         },
         {
+          "title": "Work Status Observation",
+          "href": "/work-info"
+        },
+        {
           "title": "Debugging",
           "href": "/debugging"
         },

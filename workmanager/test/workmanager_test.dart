@@ -48,4 +48,36 @@ void main() {
       verify(GetIt.I<Workmanager>().cancelByUniqueName(testTaskName));
     });
   });
+
+  group("getWorkInfo", () {
+    test("delegates to the registered platform implementation", () async {
+      final expected =
+          WorkInfo(uniqueName: 'u', state: WorkState.running, isPeriodic: false);
+      var queried = <String>[];
+      WorkmanagerPlatform.instance = _RecordingPlatform(
+        onGetWorkInfo: (uniqueName) {
+          queried.add(uniqueName);
+          return expected;
+        },
+      );
+
+      final result = await Workmanager().getWorkInfo('u');
+
+      expect(queried, ['u']);
+      expect(result, expected);
+    });
+  });
+}
+
+/// A platform implementation that records `getWorkInfo` queries and returns
+/// the value produced by [onGetWorkInfo].
+class _RecordingPlatform extends WorkmanagerPlatform {
+  _RecordingPlatform({required this.onGetWorkInfo});
+
+  final WorkInfo? Function(String uniqueName) onGetWorkInfo;
+
+  @override
+  Future<WorkInfo?> getWorkInfo(String uniqueName) async {
+    return onGetWorkInfo(uniqueName);
+  }
 }

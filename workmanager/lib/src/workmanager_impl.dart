@@ -344,6 +344,23 @@ class Workmanager {
     return _platform.isScheduledByUniqueName(uniqueName);
   }
 
+  /// Queries the current state of the task registered under [uniqueName].
+  ///
+  /// Returns `null` when the platform has no record of the task.
+  ///
+  /// **Per-platform truthfulness**:
+  /// * Android — served by WorkManager itself; [WorkInfo.state] is
+  ///   authoritative. [WorkInfo.lastFinishedAt] is always `null` (WorkManager
+  ///   exposes no finish timestamp).
+  /// * iOS/macOS — served from the plugin's own persisted task-state store,
+  ///   because BGTaskScheduler has no query API. Best effort: it reflects what
+  ///   the plugin has observed since the task was registered (see the docs).
+  /// * Web — always `null`.
+  /// * Other platforms — throws [UnsupportedError].
+  Future<WorkInfo?> getWorkInfo(String uniqueName) {
+    return _platform.getWorkInfo(uniqueName);
+  }
+
   /// Schedule a background long running task, currently only available on iOS.
   ///
   /// Processing tasks are for long processes like data processing and app maintenance.

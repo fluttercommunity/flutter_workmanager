@@ -38,6 +38,7 @@ const iOSBackgroundProcessingTask =
     "dev.fluttercommunity.workmanagerExample.iOSBackgroundProcessingTask";
 const periodicUpdatePolicyTask =
     "dev.fluttercommunity.workmanagerExample.periodicUpdatePolicyTask";
+const workInfoTaskKey = "dev.fluttercommunity.workmanagerExample.workInfoTask";
 
 final List<String> allTasks = [
   simpleTaskKey,
@@ -116,6 +117,9 @@ void callbackDispatcher() {
         debugPrint(
             "$periodicUpdatePolicyTask executed with frequency: $frequency minutes at ${DateTime.now()}");
         break;
+      case workInfoTaskKey:
+        debugPrint("$workInfoTaskKey executed");
+        break;
       default:
         return Future.value(false);
     }
@@ -136,6 +140,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   bool workmanagerInitialized = false;
   String _prefsString = "empty";
+  String _workInfoString = "no query yet";
   int _selectedFrequency = 15; // Default to 15 minutes
 
   @override
@@ -391,6 +396,42 @@ class _MyAppState extends State<MyApp> {
                       : null,
                   child: Text('Register BackgroundProcessingTask (iOS)'),
                 ),
+                SizedBox(height: 16),
+                Text(
+                  "Work status observation",
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                Text(
+                  "Registers a one-off task, waits for it to run, then queries "
+                  "its state via getWorkInfo (Android: WorkManager; "
+                  "iOS/macOS: plugin-persisted state)",
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                ElevatedButton(
+                  child: Text("Register, run & query WorkInfo"),
+                  onPressed: () async {
+                    if (!workmanagerInitialized) {
+                      _showNotInitialized();
+                      return;
+                    }
+                    await Workmanager().registerOneOffTask(
+                      workInfoTaskKey,
+                      workInfoTaskKey,
+                      inputData: <String, dynamic>{'int': 1},
+                    );
+                    await Future<void>.delayed(const Duration(seconds: 2));
+                    final info =
+                        await Workmanager().getWorkInfo(workInfoTaskKey);
+                    setState(() {
+                      _workInfoString =
+                          info == null ? 'null (no record)' : info.toString();
+                    });
+                    debugPrint(
+                        'WorkInfo for $workInfoTaskKey: $_workInfoString');
+                  },
+                ),
+                SizedBox(height: 8),
+                Text('WorkInfo: $_workInfoString'),
                 SizedBox(height: 16),
                 ElevatedButton(
                     onPressed: Platform.isAndroid

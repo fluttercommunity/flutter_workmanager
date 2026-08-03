@@ -160,6 +160,12 @@ class WorkmanagerAndroid extends WorkmanagerPlatform {
   Future<String> printScheduledTasks() async {
     throw UnsupportedError('printScheduledTasks is not supported on Android');
   }
+
+  @override
+  Future<WorkInfo?> getWorkInfo(String uniqueName) async {
+    final data = await _api.getWorkInfoByUniqueName(uniqueName);
+    return data == null ? null : WorkInfo.fromData(data);
+  }
 }
 
 /// Defaults for the Android foreground service notification.

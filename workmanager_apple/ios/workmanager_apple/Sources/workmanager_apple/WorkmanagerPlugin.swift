@@ -77,6 +77,14 @@ public class WorkmanagerPlugin: WorkmanagerPluginBase, FlutterPlugin, Workmanage
         completion(.success(()))
     }
 
+    func getWorkInfoByUniqueName(uniqueName: String, completion: @escaping (Result<WorkInfoData?, Error>) -> Void) {
+        // BGTaskScheduler / NSBackgroundActivityScheduler have no query API, so
+        // this is served from the plugin's own persisted task-state store
+        // (UserDefaults-backed, updated by the task-status pipeline). Best
+        // effort: reflects what the plugin has seen, not the system scheduler.
+        completion(.success(WorkInfoStore.workInfoData(forUniqueName: uniqueName)))
+    }
+
     // MARK: - WorkmanagerHostApi implementation (iOS)
 
     #if os(iOS)
@@ -108,9 +116,10 @@ public class WorkmanagerPlugin: WorkmanagerPluginBase, FlutterPlugin, Workmanage
                 taskName: request.taskName,
                 uniqueName: request.uniqueName,
                 inputData: request.inputData as? [String: Any],
-                startTime: Date().timeIntervalSince1970
+                startTime: Date().timeIntervalSince1970,
+                isPeriodic: false
             )
-            WorkmanagerDebug.getCurrent().onTaskStatusUpdate(taskInfo: taskInfo, status: .scheduled, result: nil)
+            WorkmanagerDebug.onTaskStatusUpdate(taskInfo: taskInfo, status: .scheduled, result: nil)
         }
     }
 
@@ -138,9 +147,10 @@ public class WorkmanagerPlugin: WorkmanagerPluginBase, FlutterPlugin, Workmanage
                 taskName: request.taskName,
                 uniqueName: request.uniqueName,
                 inputData: request.inputData as? [String: Any],
-                startTime: Date().timeIntervalSince1970
+                startTime: Date().timeIntervalSince1970,
+                isPeriodic: true
             )
-            WorkmanagerDebug.getCurrent().onTaskStatusUpdate(taskInfo: taskInfo, status: .scheduled, result: nil)
+            WorkmanagerDebug.onTaskStatusUpdate(taskInfo: taskInfo, status: .scheduled, result: nil)
         }
     }
 
@@ -161,6 +171,18 @@ public class WorkmanagerPlugin: WorkmanagerPluginBase, FlutterPlugin, Workmanage
                 requiresNetworkConnectivity: requiresNetwork,
                 requiresExternalPower: requiresCharging
             )
+
+            // Processing tasks did not previously emit a scheduled status;
+            // record the registration directly in the persisted work-info
+            // store so the query API knows about the task.
+            let taskInfo = TaskDebugInfo(
+                taskName: request.taskName,
+                uniqueName: request.uniqueName,
+                inputData: request.inputData as? [String: Any],
+                startTime: Date().timeIntervalSince1970,
+                isPeriodic: false
+            )
+            WorkInfoStore.record(taskInfo: taskInfo, status: .scheduled, result: nil, isPeriodic: false)
         }
     }
 
@@ -199,6 +221,18 @@ public class WorkmanagerPlugin: WorkmanagerPluginBase, FlutterPlugin, Workmanage
             requiresNetworkConnectivity: requiresNetwork,
             requiresExternalPower: requiresCharging
         )
+
+        // Health research tasks did not previously emit a scheduled status;
+        // record the registration directly in the persisted work-info store
+        // so the query API knows about the task.
+        let taskInfo = TaskDebugInfo(
+            taskName: request.taskName,
+            uniqueName: request.uniqueName,
+            inputData: request.inputData as? [String: Any],
+            startTime: Date().timeIntervalSince1970,
+            isPeriodic: false
+        )
+        WorkInfoStore.record(taskInfo: taskInfo, status: .scheduled, result: nil, isPeriodic: false)
         completion(.success(()))
     }
 
@@ -206,6 +240,7 @@ public class WorkmanagerPlugin: WorkmanagerPluginBase, FlutterPlugin, Workmanage
         executeIfSupportedVoid(completion: completion, feature: "cancelByUniqueName") {
             BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: uniqueName)
             UserDefaultsHelper.removeScheduledTask(uniqueName)
+            WorkInfoStore.markCancelled(uniqueName: uniqueName)
         }
     }
 
@@ -213,6 +248,7 @@ public class WorkmanagerPlugin: WorkmanagerPluginBase, FlutterPlugin, Workmanage
         executeIfSupportedVoid(completion: completion, feature: "cancelAll") {
             BGTaskScheduler.shared.cancelAllTaskRequests()
             UserDefaultsHelper.removeAllScheduledTasks()
+            WorkInfoStore.markAllCancelled()
         }
     }
 
@@ -310,9 +346,10 @@ extension WorkmanagerPlugin {
             taskName: request.taskName,
             uniqueName: request.uniqueName,
             inputData: request.inputData as? [String: Any],
-            startTime: Date().timeIntervalSince1970
+            startTime: Date().timeIntervalSince1970,
+            isPeriodic: false
         )
-        WorkmanagerDebug.getCurrent().onTaskStatusUpdate(taskInfo: taskInfo, status: .scheduled, result: nil)
+        WorkmanagerDebug.onTaskStatusUpdate(taskInfo: taskInfo, status: .scheduled, result: nil)
         completion(.success(()))
     }
 
@@ -335,9 +372,10 @@ extension WorkmanagerPlugin {
             taskName: request.taskName,
             uniqueName: request.uniqueName,
             inputData: request.inputData as? [String: Any],
-            startTime: Date().timeIntervalSince1970
+            startTime: Date().timeIntervalSince1970,
+            isPeriodic: true
         )
-        WorkmanagerDebug.getCurrent().onTaskStatusUpdate(taskInfo: taskInfo, status: .scheduled, result: nil)
+        WorkmanagerDebug.onTaskStatusUpdate(taskInfo: taskInfo, status: .scheduled, result: nil)
         completion(.success(()))
     }
 
@@ -371,9 +409,10 @@ extension WorkmanagerPlugin {
             taskName: request.taskName,
             uniqueName: request.uniqueName,
             inputData: request.inputData as? [String: Any],
-            startTime: Date().timeIntervalSince1970
+            startTime: Date().timeIntervalSince1970,
+            isPeriodic: false
         )
-        WorkmanagerDebug.getCurrent().onTaskStatusUpdate(taskInfo: taskInfo, status: .scheduled, result: nil)
+        WorkmanagerDebug.onTaskStatusUpdate(taskInfo: taskInfo, status: .scheduled, result: nil)
         completion(.success(()))
     }
 
@@ -392,11 +431,13 @@ extension WorkmanagerPlugin {
 
     func cancelByUniqueName(uniqueName: String, completion: @escaping (Result<Void, Error>) -> Void) {
         MacOSActivityScheduler.shared.cancel(uniqueName: uniqueName)
+        WorkInfoStore.markCancelled(uniqueName: uniqueName)
         completion(.success(()))
     }
 
     func cancelAll(completion: @escaping (Result<Void, Error>) -> Void) {
         MacOSActivityScheduler.shared.cancelAll()
+        WorkInfoStore.markAllCancelled()
         completion(.success(()))
     }
 
@@ -532,7 +573,8 @@ extension WorkmanagerPlugin {
             inputData: inputData,
             startTime: taskSessionStart.timeIntervalSince1970,
             callbackHandle: UserDefaultsHelper.getStoredCallbackHandle(),
-            callbackInfo: identifier
+            callbackInfo: identifier,
+            isPeriodic: false
         )
         WorkmanagerDebug.onTaskStatusUpdate(taskInfo: taskInfo, status: .started)
 

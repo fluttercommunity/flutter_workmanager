@@ -295,6 +295,25 @@ enum OutOfQuotaPolicy: Int {
   case dropWorkRequest = 1
 }
 
+/// The lifecycle state of a background task as observed by the plugin.
+///
+/// This is the cross-platform subset of Android WorkManager's
+/// `WorkInfo.State` (ENQUEUED/RUNNING/SUCCEEDED/FAILED/CANCELLED/BLOCKED).
+/// On Apple platforms it reflects what the plugin itself has persisted from
+/// its task-status pipeline, because BGTaskScheduler has no query API.
+enum WorkState: Int {
+  /// The task is registered and waiting to run (Android ENQUEUED/BLOCKED).
+  case scheduled = 0
+  /// The task is currently executing.
+  case running = 1
+  /// The task finished successfully.
+  case succeeded = 2
+  /// The task failed permanently.
+  case failed = 3
+  /// The task was cancelled before finishing.
+  case cancelled = 4
+}
+
 /// Foreground service types supported for Android long-running workers.
 ///
 /// These map to the foreground service types introduced by Android 14
@@ -889,6 +908,74 @@ struct ContinuedProcessingTaskRequest: Hashable {
   }
 }
 
+/// Snapshot of the current state of a background task, as served by the
+/// native platform. This is the transport type for [WorkmanagerHostApi.getWorkInfoByUniqueName];
+/// the public, platform-agnostic model is `WorkInfo`.
+///
+/// Generated class from Pigeon that represents data sent in messages.
+struct WorkInfoData: Hashable {
+  /// The unique name the task was registered with.
+  var uniqueName: String
+  /// The task's current state.
+  var state: WorkState
+  /// True when the task was registered as a periodic task.
+  var isPeriodic: Bool
+  /// The task name the work was registered with, when the platform exposes it.
+  var taskName: String? = nil
+  /// Tags the work was registered with (Android only; empty elsewhere).
+  var tags: [String?]? = nil
+  /// When the plugin last observed the task finish (succeeded, failed or was
+  /// cancelled), as epoch milliseconds, when the platform exposes it.
+  /// Android WorkManager has no finish timestamp, so this is null there.
+  var lastFinishedAtMillis: Int64? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> WorkInfoData? {
+    let uniqueName = pigeonVar_list[0] as! String
+    let state = pigeonVar_list[1] as! WorkState
+    let isPeriodic = pigeonVar_list[2] as! Bool
+    let taskName: String? = nilOrValue(pigeonVar_list[3])
+    let tags: [String?]? = nilOrValue(pigeonVar_list[4])
+    let lastFinishedAtMillis: Int64? = nilOrValue(pigeonVar_list[5])
+
+    return WorkInfoData(
+      uniqueName: uniqueName,
+      state: state,
+      isPeriodic: isPeriodic,
+      taskName: taskName,
+      tags: tags,
+      lastFinishedAtMillis: lastFinishedAtMillis
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      uniqueName,
+      state,
+      isPeriodic,
+      taskName,
+      tags,
+      lastFinishedAtMillis,
+    ]
+  }
+  static func == (lhs: WorkInfoData, rhs: WorkInfoData) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsWorkmanagerApi(lhs.uniqueName, rhs.uniqueName) && deepEqualsWorkmanagerApi(lhs.state, rhs.state) && deepEqualsWorkmanagerApi(lhs.isPeriodic, rhs.isPeriodic) && deepEqualsWorkmanagerApi(lhs.taskName, rhs.taskName) && deepEqualsWorkmanagerApi(lhs.tags, rhs.tags) && deepEqualsWorkmanagerApi(lhs.lastFinishedAtMillis, rhs.lastFinishedAtMillis)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("WorkInfoData")
+    deepHashWorkmanagerApi(value: uniqueName, hasher: &hasher)
+    deepHashWorkmanagerApi(value: state, hasher: &hasher)
+    deepHashWorkmanagerApi(value: isPeriodic, hasher: &hasher)
+    deepHashWorkmanagerApi(value: taskName, hasher: &hasher)
+    deepHashWorkmanagerApi(value: tags, hasher: &hasher)
+    deepHashWorkmanagerApi(value: lastFinishedAtMillis, hasher: &hasher)
+  }
+}
+
 private class WorkmanagerApiPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -931,29 +1018,37 @@ private class WorkmanagerApiPigeonCodecReader: FlutterStandardReader {
     case 135:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return ForegroundServiceType(rawValue: enumResultAsInt)
+        return WorkState(rawValue: enumResultAsInt)
       }
       return nil
     case 136:
-      return ForegroundServiceConfig.fromList(self.readValue() as! [Any?])
+      let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
+      if let enumResultAsInt = enumResultAsInt {
+        return ForegroundServiceType(rawValue: enumResultAsInt)
+      }
+      return nil
     case 137:
-      return Constraints.fromList(self.readValue() as! [Any?])
+      return ForegroundServiceConfig.fromList(self.readValue() as! [Any?])
     case 138:
-      return ContentUriTrigger.fromList(self.readValue() as! [Any?])
+      return Constraints.fromList(self.readValue() as! [Any?])
     case 139:
-      return BackoffPolicyConfig.fromList(self.readValue() as! [Any?])
+      return ContentUriTrigger.fromList(self.readValue() as! [Any?])
     case 140:
-      return InitializeRequest.fromList(self.readValue() as! [Any?])
+      return BackoffPolicyConfig.fromList(self.readValue() as! [Any?])
     case 141:
-      return OneOffTaskRequest.fromList(self.readValue() as! [Any?])
+      return InitializeRequest.fromList(self.readValue() as! [Any?])
     case 142:
-      return PeriodicTaskRequest.fromList(self.readValue() as! [Any?])
+      return OneOffTaskRequest.fromList(self.readValue() as! [Any?])
     case 143:
-      return ProcessingTaskRequest.fromList(self.readValue() as! [Any?])
+      return PeriodicTaskRequest.fromList(self.readValue() as! [Any?])
     case 144:
-      return HealthResearchTaskRequest.fromList(self.readValue() as! [Any?])
+      return ProcessingTaskRequest.fromList(self.readValue() as! [Any?])
     case 145:
+      return HealthResearchTaskRequest.fromList(self.readValue() as! [Any?])
+    case 146:
       return ContinuedProcessingTaskRequest.fromList(self.readValue() as! [Any?])
+    case 147:
+      return WorkInfoData.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -980,38 +1075,44 @@ private class WorkmanagerApiPigeonCodecWriter: FlutterStandardWriter {
     } else if let value = value as? OutOfQuotaPolicy {
       super.writeByte(134)
       super.writeValue(value.rawValue)
-    } else if let value = value as? ForegroundServiceType {
+    } else if let value = value as? WorkState {
       super.writeByte(135)
       super.writeValue(value.rawValue)
-    } else if let value = value as? ForegroundServiceConfig {
+    } else if let value = value as? ForegroundServiceType {
       super.writeByte(136)
-      super.writeValue(value.toList())
-    } else if let value = value as? Constraints {
+      super.writeValue(value.rawValue)
+    } else if let value = value as? ForegroundServiceConfig {
       super.writeByte(137)
       super.writeValue(value.toList())
-    } else if let value = value as? ContentUriTrigger {
+    } else if let value = value as? Constraints {
       super.writeByte(138)
       super.writeValue(value.toList())
-    } else if let value = value as? BackoffPolicyConfig {
+    } else if let value = value as? ContentUriTrigger {
       super.writeByte(139)
       super.writeValue(value.toList())
-    } else if let value = value as? InitializeRequest {
+    } else if let value = value as? BackoffPolicyConfig {
       super.writeByte(140)
       super.writeValue(value.toList())
-    } else if let value = value as? OneOffTaskRequest {
+    } else if let value = value as? InitializeRequest {
       super.writeByte(141)
       super.writeValue(value.toList())
-    } else if let value = value as? PeriodicTaskRequest {
+    } else if let value = value as? OneOffTaskRequest {
       super.writeByte(142)
       super.writeValue(value.toList())
-    } else if let value = value as? ProcessingTaskRequest {
+    } else if let value = value as? PeriodicTaskRequest {
       super.writeByte(143)
       super.writeValue(value.toList())
-    } else if let value = value as? HealthResearchTaskRequest {
+    } else if let value = value as? ProcessingTaskRequest {
       super.writeByte(144)
       super.writeValue(value.toList())
-    } else if let value = value as? ContinuedProcessingTaskRequest {
+    } else if let value = value as? HealthResearchTaskRequest {
       super.writeByte(145)
+      super.writeValue(value.toList())
+    } else if let value = value as? ContinuedProcessingTaskRequest {
+      super.writeByte(146)
+      super.writeValue(value.toList())
+    } else if let value = value as? WorkInfoData {
+      super.writeByte(147)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -1047,6 +1148,9 @@ protocol WorkmanagerHostApi {
   func cancelAll(completion: @escaping (Result<Void, Error>) -> Void)
   func isScheduledByUniqueName(uniqueName: String, completion: @escaping (Result<Bool, Error>) -> Void)
   func printScheduledTasks(completion: @escaping (Result<String, Error>) -> Void)
+  /// Returns the current state of the task registered under [uniqueName], or
+  /// null when the platform has no record of it.
+  func getWorkInfoByUniqueName(uniqueName: String, completion: @escaping (Result<WorkInfoData?, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -1237,6 +1341,25 @@ class WorkmanagerHostApiSetup {
       }
     } else {
       printScheduledTasksChannel.setMessageHandler(nil)
+    }
+    /// Returns the current state of the task registered under [uniqueName], or
+    /// null when the platform has no record of it.
+    let getWorkInfoByUniqueNameChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.getWorkInfoByUniqueName\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getWorkInfoByUniqueNameChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let uniqueNameArg = args[0] as! String
+        api.getWorkInfoByUniqueName(uniqueName: uniqueNameArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getWorkInfoByUniqueNameChannel.setMessageHandler(nil)
     }
   }
 }

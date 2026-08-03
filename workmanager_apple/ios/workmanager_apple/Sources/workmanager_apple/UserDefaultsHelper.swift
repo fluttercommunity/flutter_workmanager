@@ -23,6 +23,25 @@ struct ScheduledTaskInfo: Codable {
     let earliestBeginInSeconds: Double?
 }
 
+/// The plugin's own view of a task's state, persisted so `getWorkInfo` can be
+/// answered on Apple platforms.
+///
+/// BGTaskScheduler / NSBackgroundActivityScheduler have no query API, so the
+/// plugin records what its task-status pipeline observes (registration, start,
+/// completion, failure, cancellation) and serves queries from that store. The
+/// result is best-effort: it reflects what the plugin has seen, not the
+/// system scheduler's view.
+struct PersistedWorkInfo: Codable {
+    /// One of `scheduled`, `running`, `succeeded`, `failed`, `cancelled`.
+    var state: String
+    var isPeriodic: Bool
+    var taskName: String?
+    /// Epoch seconds when the plugin last observed the task finish
+    /// (succeeded, failed or was cancelled).
+    var lastFinishedAt: TimeInterval?
+    var updatedAt: TimeInterval
+}
+
 struct UserDefaultsHelper {
 
     // MARK: Properties
@@ -33,6 +52,7 @@ struct UserDefaultsHelper {
         case callbackHandle
         case periodicTaskInputData(taskIdentifier: String)
         case scheduledTasks
+        case workInfos
 
         var stringValue: String {
             switch self {
@@ -42,6 +62,8 @@ struct UserDefaultsHelper {
                 return "\(WorkmanagerPlugin.identifier).periodicTaskInputData.\(taskIdentifier)"
             case .scheduledTasks:
                 return "\(WorkmanagerPlugin.identifier).scheduledTasks"
+            case .workInfos:
+                return "\(WorkmanagerPlugin.identifier).workInfos"
             }
         }
     }
@@ -103,6 +125,29 @@ struct UserDefaultsHelper {
 
     static func removeAllScheduledTasks() {
         userDefaults.removeObject(forKey: Key.scheduledTasks.stringValue)
+    }
+
+    // MARK: WorkInfo (persisted task state for the query API)
+
+    static func storeWorkInfo(_ info: PersistedWorkInfo, forUniqueName uniqueName: String) {
+        var infos = getAllWorkInfos()
+        infos[uniqueName] = info
+        if let data = try? JSONEncoder().encode(infos) {
+            userDefaults.set(data, forKey: Key.workInfos.stringValue)
+        }
+    }
+
+    static func getWorkInfo(forUniqueName uniqueName: String) -> PersistedWorkInfo? {
+        return getAllWorkInfos()[uniqueName]
+    }
+
+    static func getAllWorkInfos() -> [String: PersistedWorkInfo] {
+        guard let data = userDefaults.data(forKey: Key.workInfos.stringValue),
+              let infos = try? JSONDecoder().decode([String: PersistedWorkInfo].self, from: data)
+        else {
+            return [:]
+        }
+        return infos
     }
 
     // MARK: Private helper functions

@@ -224,6 +224,25 @@ enum OutOfQuotaPolicy {
   dropWorkRequest,
 }
 
+/// The lifecycle state of a background task as observed by the plugin.
+///
+/// This is the cross-platform subset of Android WorkManager's
+/// `WorkInfo.State` (ENQUEUED/RUNNING/SUCCEEDED/FAILED/CANCELLED/BLOCKED).
+/// On Apple platforms it reflects what the plugin itself has persisted from
+/// its task-status pipeline, because BGTaskScheduler has no query API.
+enum WorkState {
+  /// The task is registered and waiting to run (Android ENQUEUED/BLOCKED).
+  scheduled,
+  /// The task is currently executing.
+  running,
+  /// The task finished successfully.
+  succeeded,
+  /// The task failed permanently.
+  failed,
+  /// The task was cancelled before finishing.
+  cancelled,
+}
+
 /// Foreground service types supported for Android long-running workers.
 ///
 /// These map to the foreground service types introduced by Android 14
@@ -906,6 +925,82 @@ class ContinuedProcessingTaskRequest {
   int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
 }
 
+/// Snapshot of the current state of a background task, as served by the
+/// native platform. This is the transport type for [WorkmanagerHostApi.getWorkInfoByUniqueName];
+/// the public, platform-agnostic model is `WorkInfo`.
+class WorkInfoData {
+  WorkInfoData({
+    required this.uniqueName,
+    required this.state,
+    required this.isPeriodic,
+    this.taskName,
+    this.tags,
+    this.lastFinishedAtMillis,
+  });
+
+  /// The unique name the task was registered with.
+  String uniqueName;
+
+  /// The task's current state.
+  WorkState state;
+
+  /// True when the task was registered as a periodic task.
+  bool isPeriodic;
+
+  /// The task name the work was registered with, when the platform exposes it.
+  String? taskName;
+
+  /// Tags the work was registered with (Android only; empty elsewhere).
+  List<String?>? tags;
+
+  /// When the plugin last observed the task finish (succeeded, failed or was
+  /// cancelled), as epoch milliseconds, when the platform exposes it.
+  /// Android WorkManager has no finish timestamp, so this is null there.
+  int? lastFinishedAtMillis;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      uniqueName,
+      state,
+      isPeriodic,
+      taskName,
+      tags,
+      lastFinishedAtMillis,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static WorkInfoData decode(Object result) {
+    result as List<Object?>;
+    return WorkInfoData(
+      uniqueName: result[0]! as String,
+      state: result[1]! as WorkState,
+      isPeriodic: result[2]! as bool,
+      taskName: result[3] as String?,
+      tags: (result[4] as List<Object?>?)?.cast<String?>(),
+      lastFinishedAtMillis: result[5] as int?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! WorkInfoData || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(uniqueName, other.uniqueName) && _deepEquals(state, other.state) && _deepEquals(isPeriodic, other.isPeriodic) && _deepEquals(taskName, other.taskName) && _deepEquals(tags, other.tags) && _deepEquals(lastFinishedAtMillis, other.lastFinishedAtMillis);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+}
+
 
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
@@ -932,38 +1027,44 @@ class _PigeonCodec extends StandardMessageCodec {
     }    else if (value is OutOfQuotaPolicy) {
       buffer.putUint8(134);
       writeValue(buffer, value.index);
-    }    else if (value is ForegroundServiceType) {
+    }    else if (value is WorkState) {
       buffer.putUint8(135);
       writeValue(buffer, value.index);
-    }    else if (value is ForegroundServiceConfig) {
+    }    else if (value is ForegroundServiceType) {
       buffer.putUint8(136);
-      writeValue(buffer, value.encode());
-    }    else if (value is Constraints) {
+      writeValue(buffer, value.index);
+    }    else if (value is ForegroundServiceConfig) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
-    }    else if (value is ContentUriTrigger) {
+    }    else if (value is Constraints) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
-    }    else if (value is BackoffPolicyConfig) {
+    }    else if (value is ContentUriTrigger) {
       buffer.putUint8(139);
       writeValue(buffer, value.encode());
-    }    else if (value is InitializeRequest) {
+    }    else if (value is BackoffPolicyConfig) {
       buffer.putUint8(140);
       writeValue(buffer, value.encode());
-    }    else if (value is OneOffTaskRequest) {
+    }    else if (value is InitializeRequest) {
       buffer.putUint8(141);
       writeValue(buffer, value.encode());
-    }    else if (value is PeriodicTaskRequest) {
+    }    else if (value is OneOffTaskRequest) {
       buffer.putUint8(142);
       writeValue(buffer, value.encode());
-    }    else if (value is ProcessingTaskRequest) {
+    }    else if (value is PeriodicTaskRequest) {
       buffer.putUint8(143);
       writeValue(buffer, value.encode());
-    }    else if (value is HealthResearchTaskRequest) {
+    }    else if (value is ProcessingTaskRequest) {
       buffer.putUint8(144);
       writeValue(buffer, value.encode());
-    }    else if (value is ContinuedProcessingTaskRequest) {
+    }    else if (value is HealthResearchTaskRequest) {
       buffer.putUint8(145);
+      writeValue(buffer, value.encode());
+    }    else if (value is ContinuedProcessingTaskRequest) {
+      buffer.putUint8(146);
+      writeValue(buffer, value.encode());
+    }    else if (value is WorkInfoData) {
+      buffer.putUint8(147);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -993,27 +1094,32 @@ class _PigeonCodec extends StandardMessageCodec {
         return value == null ? null : OutOfQuotaPolicy.values[value];
       case 135:
         final value = readValue(buffer) as int?;
-        return value == null ? null : ForegroundServiceType.values[value];
+        return value == null ? null : WorkState.values[value];
       case 136:
-        return ForegroundServiceConfig.decode(readValue(buffer)!);
+        final value = readValue(buffer) as int?;
+        return value == null ? null : ForegroundServiceType.values[value];
       case 137:
-        return Constraints.decode(readValue(buffer)!);
+        return ForegroundServiceConfig.decode(readValue(buffer)!);
       case 138:
-        return ContentUriTrigger.decode(readValue(buffer)!);
+        return Constraints.decode(readValue(buffer)!);
       case 139:
-        return BackoffPolicyConfig.decode(readValue(buffer)!);
+        return ContentUriTrigger.decode(readValue(buffer)!);
       case 140:
-        return InitializeRequest.decode(readValue(buffer)!);
+        return BackoffPolicyConfig.decode(readValue(buffer)!);
       case 141:
-        return OneOffTaskRequest.decode(readValue(buffer)!);
+        return InitializeRequest.decode(readValue(buffer)!);
       case 142:
-        return PeriodicTaskRequest.decode(readValue(buffer)!);
+        return OneOffTaskRequest.decode(readValue(buffer)!);
       case 143:
-        return ProcessingTaskRequest.decode(readValue(buffer)!);
+        return PeriodicTaskRequest.decode(readValue(buffer)!);
       case 144:
-        return HealthResearchTaskRequest.decode(readValue(buffer)!);
+        return ProcessingTaskRequest.decode(readValue(buffer)!);
       case 145:
+        return HealthResearchTaskRequest.decode(readValue(buffer)!);
+      case 146:
         return ContinuedProcessingTaskRequest.decode(readValue(buffer)!);
+      case 147:
+        return WorkInfoData.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -1231,6 +1337,27 @@ class WorkmanagerHostApi {
     )
     ;
     return pigeonVar_replyValue! as String;
+  }
+
+  /// Returns the current state of the task registered under [uniqueName], or
+  /// null when the platform has no record of it.
+  Future<WorkInfoData?> getWorkInfoByUniqueName(String uniqueName) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.getWorkInfoByUniqueName$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[uniqueName]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: true,
+    )
+    ;
+    return pigeonVar_replyValue as WorkInfoData?;
   }
 }
 

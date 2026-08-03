@@ -6,6 +6,7 @@ import dev.fluttercommunity.workmanager.pigeon.InitializeRequest
 import dev.fluttercommunity.workmanager.pigeon.OneOffTaskRequest
 import dev.fluttercommunity.workmanager.pigeon.PeriodicTaskRequest
 import dev.fluttercommunity.workmanager.pigeon.ProcessingTaskRequest
+import dev.fluttercommunity.workmanager.pigeon.WorkInfoData
 import dev.fluttercommunity.workmanager.pigeon.WorkmanagerHostApi
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 
@@ -184,5 +185,21 @@ class WorkmanagerPlugin :
     override fun printScheduledTasks(callback: (Result<String>) -> Unit) {
         // Not supported on Android
         callback(Result.failure(UnsupportedOperationException("printScheduledTasks is not supported on Android")))
+    }
+
+    override fun getWorkInfoByUniqueName(
+        uniqueName: String,
+        callback: (Result<WorkInfoData?>) -> Unit,
+    ) {
+        try {
+            val workInfos = workManagerWrapper!!.getWorkInfoByUniqueName(uniqueName).get()
+            // A unique work name maps to the chain of WorkRequests enqueued
+            // under it (usually one). The head of the chain is the work the
+            // app cares about; a cancelled or pruned chain yields an empty
+            // list, which is reported as "no record" (null).
+            callback(Result.success(workInfos.firstOrNull()?.toWorkInfoData(uniqueName)))
+        } catch (e: Exception) {
+            callback(Result.failure(e))
+        }
     }
 }

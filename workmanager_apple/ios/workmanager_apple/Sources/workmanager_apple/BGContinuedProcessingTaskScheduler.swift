@@ -52,9 +52,10 @@ extension WorkmanagerPlugin {
             taskName: request.taskName,
             uniqueName: request.uniqueName,
             inputData: request.inputData as? [String: Any],
-            startTime: Date().timeIntervalSince1970
+            startTime: Date().timeIntervalSince1970,
+            isPeriodic: false
         )
-        WorkmanagerDebug.getCurrent().onTaskStatusUpdate(taskInfo: taskInfo, status: .scheduled, result: nil)
+        WorkmanagerDebug.onTaskStatusUpdate(taskInfo: taskInfo, status: .scheduled, result: nil)
         completion(.success(()))
     }
     #elseif os(macOS)

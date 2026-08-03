@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/services.dart';
 import 'package:workmanager_apple/workmanager_apple.dart';
 import 'package:workmanager_platform_interface/workmanager_platform_interface.dart';
 
@@ -36,6 +37,37 @@ void main() {
             'message',
             contains('isScheduledByUniqueName is not supported on iOS'),
           )),
+        );
+      });
+
+      test('getWorkInfo returns null when the store has no record', () async {
+        _mockGetWorkInfoReply(<Object?>[null]);
+
+        expect(await workmanager.getWorkInfo('unknown-task'), isNull);
+      });
+
+      test('getWorkInfo maps the pigeon reply into a WorkInfo', () async {
+        _mockGetWorkInfoReply(<Object?>[
+          WorkInfoData(
+            uniqueName: 'com.example.task',
+            state: WorkState.failed,
+            isPeriodic: false,
+            taskName: 'dart-task',
+            lastFinishedAtMillis: 1700000000000,
+          ),
+        ]);
+
+        final info = await workmanager.getWorkInfo('com.example.task');
+
+        expect(info, isNotNull);
+        expect(info!.uniqueName, 'com.example.task');
+        expect(info.state, WorkState.failed);
+        expect(info.isPeriodic, isFalse);
+        expect(info.taskName, 'dart-task');
+        expect(info.tags, isEmpty);
+        expect(
+          info.lastFinishedAt,
+          DateTime.fromMillisecondsSinceEpoch(1700000000000),
         );
       });
     });
@@ -404,4 +436,17 @@ void main() {
       });
     });
   });
+}
+
+/// Stubs the pigeon `getWorkInfoByUniqueName` channel with [reply] so the
+/// platform implementation's query plumbing can be exercised in tests.
+void _mockGetWorkInfoReply(List<Object?> reply) {
+  const channelName =
+      'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.getWorkInfoByUniqueName';
+  final channel = BasicMessageChannel<Object?>(
+    channelName,
+    WorkmanagerHostApi.pigeonChannelCodec,
+  );
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockDecodedMessageHandler<Object?>(channel, (message) async => reply);
 }
