@@ -73,11 +73,11 @@ void callbackDispatcher() {
         final key = inputData!['key']!;
         if (prefs.containsKey('unique-$key')) {
           debugPrint('has been running before, task is successful');
-          return true;
+          return BackgroundTaskResult.success;
         } else {
           await prefs.setBool('unique-$key', true);
           debugPrint('reschedule task');
-          return false;
+          return BackgroundTaskResult.retry;
         }
       case failedTaskKey:
         debugPrint('failed task');
@@ -117,12 +117,12 @@ void callbackDispatcher() {
             "$periodicUpdatePolicyTask executed with frequency: $frequency minutes at ${DateTime.now()}");
         break;
       default:
-        return Future.value(false);
+        return Future.value(BackgroundTaskResult.retry);
     }
 
-    // Return true to indicate that the task was successful
+    // Return success to indicate that the task was successful
     debugPrint("$task finished successfully");
-    return Future.value(true);
+    return Future.value(BackgroundTaskResult.success);
   });
 }
 

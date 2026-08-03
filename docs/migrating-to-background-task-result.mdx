@@ -1,0 +1,42 @@
+# Migrating to BackgroundTaskResult
+
+Since **0.11** the background-task handler must return `BackgroundTaskResult`
+instead of `bool`. This makes the outcome explicit and fixes a long-standing
+Android footgun ([#23](https://github.com/fluttercommunity/flutter_workmanager/issues/23)):
+previously every `false` result was mapped to WorkManager's `Result.retry()`,
+so tasks that failed permanently were retried forever. With the enum you choose:
+`success`, `retry` (backoff on Android) or `failure` (permanent).
+
+## What changed
+
+| Before | After |
+|---|---|
+| `Future<bool> Function(...)` | `Future<BackgroundTaskResult> Function(...)` |
+| `return true;` | `return BackgroundTaskResult.success;` |
+| `return false;` | `return BackgroundTaskResult.retry;` (see [behavior notes](#behavior-notes)) |
+| `return Future.value(true);` | `return Future.value(BackgroundTaskResult.success);` |
+
+## Migrating
+
+There is nothing to install and nothing to run — the change is mechanical and
+**the type system does the finding**: the handler return type is now
+`Future<BackgroundTaskResult>`, so every `return true` / `return false` in your
+`callbackDispatcher` shows up as a compile error in the IDE. Work through the
+errors and apply the mapping above. `Future.value(...)` / `Future<bool>.value(...)`
+forms migrate the same way.
+
+That's the whole migration.
+
+## Behavior notes
+
+- **`false` maps to `retry`**, preserving the pre-0.11 behavior. If you
+  returned `false` to mean "this failed, stop trying", switch those sites to
+  `BackgroundTaskResult.failure` — that's the new way to fail permanently.
+- **Android:** `retry` reschedules with the configured backoff policy;
+  `failure` stops the work and its chain.
+- **iOS:** `retry` and `failure` both report a failed fetch — there is no
+  automatic retry, so schedule another attempt if needed. See
+  [Task status](task-status).
+- **Exceptions:** if the handler throws (or its `Future` errors), the plugin
+  catches it, logs it, and reports `BackgroundTaskResult.failure` — it is never
+  retried. See [Task status](task-status).

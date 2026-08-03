@@ -70,7 +70,7 @@ before it finishes:
 void callbackDispatcher() {
   Workmanager().executeTask(
     (taskName, inputData) async {
-      return true;
+      return BackgroundTaskResult.success;
     },
     onTaskStopped: (taskName, stopReason) async {
       // Mark the task as cancelled / persist state, then return promptly.

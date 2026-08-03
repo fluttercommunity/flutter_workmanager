@@ -239,6 +239,25 @@ enum ForegroundServiceType {
   shortService,
 }
 
+/// Result of a background task execution.
+///
+/// Replaces the previous `bool` return value of the task handler. Maps to
+/// platform-specific semantics:
+/// - [success]: Android `Result.success()`, iOS `UIBackgroundFetchResult.newData`.
+/// - [retry]: Android `Result.retry()` (transient failure, backoff applies).
+///   iOS has no automatic retry — the task finishes as `.failed` and you can
+///   re-schedule it yourself.
+/// - [failure]: Android `Result.failure()` (permanent failure, dependent work
+///   stops and the task is not retried). iOS `UIBackgroundFetchResult.failed`.
+enum BackgroundTaskResult {
+  /// The task completed successfully.
+  success,
+  /// The task failed transiently and should be retried (Android only).
+  retry,
+  /// The task failed permanently and must not be retried.
+  failure,
+}
+
 /// Android-only configuration that promotes a worker to a foreground service
 /// while it runs, keeping the process alive for long-running work.
 ///
@@ -935,35 +954,38 @@ class _PigeonCodec extends StandardMessageCodec {
     }    else if (value is ForegroundServiceType) {
       buffer.putUint8(135);
       writeValue(buffer, value.index);
-    }    else if (value is ForegroundServiceConfig) {
+    }    else if (value is BackgroundTaskResult) {
       buffer.putUint8(136);
-      writeValue(buffer, value.encode());
-    }    else if (value is Constraints) {
+      writeValue(buffer, value.index);
+    }    else if (value is ForegroundServiceConfig) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
-    }    else if (value is ContentUriTrigger) {
+    }    else if (value is Constraints) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
-    }    else if (value is BackoffPolicyConfig) {
+    }    else if (value is ContentUriTrigger) {
       buffer.putUint8(139);
       writeValue(buffer, value.encode());
-    }    else if (value is InitializeRequest) {
+    }    else if (value is BackoffPolicyConfig) {
       buffer.putUint8(140);
       writeValue(buffer, value.encode());
-    }    else if (value is OneOffTaskRequest) {
+    }    else if (value is InitializeRequest) {
       buffer.putUint8(141);
       writeValue(buffer, value.encode());
-    }    else if (value is PeriodicTaskRequest) {
+    }    else if (value is OneOffTaskRequest) {
       buffer.putUint8(142);
       writeValue(buffer, value.encode());
-    }    else if (value is ProcessingTaskRequest) {
+    }    else if (value is PeriodicTaskRequest) {
       buffer.putUint8(143);
       writeValue(buffer, value.encode());
-    }    else if (value is HealthResearchTaskRequest) {
+    }    else if (value is ProcessingTaskRequest) {
       buffer.putUint8(144);
       writeValue(buffer, value.encode());
-    }    else if (value is ContinuedProcessingTaskRequest) {
+    }    else if (value is HealthResearchTaskRequest) {
       buffer.putUint8(145);
+      writeValue(buffer, value.encode());
+    }    else if (value is ContinuedProcessingTaskRequest) {
+      buffer.putUint8(146);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -995,24 +1017,27 @@ class _PigeonCodec extends StandardMessageCodec {
         final value = readValue(buffer) as int?;
         return value == null ? null : ForegroundServiceType.values[value];
       case 136:
-        return ForegroundServiceConfig.decode(readValue(buffer)!);
+        final value = readValue(buffer) as int?;
+        return value == null ? null : BackgroundTaskResult.values[value];
       case 137:
-        return Constraints.decode(readValue(buffer)!);
+        return ForegroundServiceConfig.decode(readValue(buffer)!);
       case 138:
-        return ContentUriTrigger.decode(readValue(buffer)!);
+        return Constraints.decode(readValue(buffer)!);
       case 139:
-        return BackoffPolicyConfig.decode(readValue(buffer)!);
+        return ContentUriTrigger.decode(readValue(buffer)!);
       case 140:
-        return InitializeRequest.decode(readValue(buffer)!);
+        return BackoffPolicyConfig.decode(readValue(buffer)!);
       case 141:
-        return OneOffTaskRequest.decode(readValue(buffer)!);
+        return InitializeRequest.decode(readValue(buffer)!);
       case 142:
-        return PeriodicTaskRequest.decode(readValue(buffer)!);
+        return OneOffTaskRequest.decode(readValue(buffer)!);
       case 143:
-        return ProcessingTaskRequest.decode(readValue(buffer)!);
+        return PeriodicTaskRequest.decode(readValue(buffer)!);
       case 144:
-        return HealthResearchTaskRequest.decode(readValue(buffer)!);
+        return ProcessingTaskRequest.decode(readValue(buffer)!);
       case 145:
+        return HealthResearchTaskRequest.decode(readValue(buffer)!);
+      case 146:
         return ContinuedProcessingTaskRequest.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -1239,7 +1264,7 @@ abstract class WorkmanagerFlutterApi {
 
   Future<void> backgroundChannelInitialized();
 
-  Future<bool> executeTask(String taskName, Map<String?, Object?>? inputData);
+  Future<BackgroundTaskResult> executeTask(String taskName, Map<String?, Object?>? inputData);
 
   /// Notifies the Dart callback that a running task was stopped by the
   /// platform before it finished (cancelled, timed out, preempted, ...).
@@ -1283,7 +1308,7 @@ abstract class WorkmanagerFlutterApi {
           final String arg_taskName = args[0]! as String;
           final Map<String?, Object?>? arg_inputData = (args[1] as Map<Object?, Object?>?)?.cast<String?, Object?>();
           try {
-            final bool output = await api.executeTask(arg_taskName, arg_inputData);
+            final BackgroundTaskResult output = await api.executeTask(arg_taskName, arg_inputData);
             return wrapResponse(result: output);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);

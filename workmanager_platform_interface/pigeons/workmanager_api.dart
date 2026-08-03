@@ -444,7 +444,8 @@ abstract class WorkmanagerFlutterApi {
   void backgroundChannelInitialized();
 
   @async
-  bool executeTask(String taskName, Map<String?, Object?>? inputData);
+  BackgroundTaskResult executeTask(
+      String taskName, Map<String?, Object?>? inputData);
 
   /// Notifies the Dart callback that a running task was stopped by the
   /// platform before it finished (cancelled, timed out, preempted, ...).
@@ -455,4 +456,25 @@ abstract class WorkmanagerFlutterApi {
   /// platforms without an equivalent concept.
   @async
   void onTaskStopped(String taskName, int stopReason);
+}
+
+/// Result of a background task execution.
+///
+/// Replaces the previous `bool` return value of the task handler. Maps to
+/// platform-specific semantics:
+/// - [success]: Android `Result.success()`, iOS `UIBackgroundFetchResult.newData`.
+/// - [retry]: Android `Result.retry()` (transient failure, backoff applies).
+///   iOS has no automatic retry — the task finishes as `.failed` and you can
+///   re-schedule it yourself.
+/// - [failure]: Android `Result.failure()` (permanent failure, dependent work
+///   stops and the task is not retried). iOS `UIBackgroundFetchResult.failed`.
+enum BackgroundTaskResult {
+  /// The task completed successfully.
+  success,
+
+  /// The task failed transiently and should be retried (Android only).
+  retry,
+
+  /// The task failed permanently and must not be retried.
+  failure,
 }

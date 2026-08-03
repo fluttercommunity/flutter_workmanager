@@ -8,6 +8,7 @@ import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
 import com.google.common.util.concurrent.ListenableFuture
+import dev.fluttercommunity.workmanager.pigeon.BackgroundTaskResult
 import dev.fluttercommunity.workmanager.pigeon.ForegroundServiceConfig
 import dev.fluttercommunity.workmanager.pigeon.TaskStatus
 import dev.fluttercommunity.workmanager.pigeon.WorkmanagerFlutterApi
@@ -286,8 +287,17 @@ class BackgroundWorker(
         flutterApi.executeTask(localDartTask, pigeonPayload) { result ->
             when {
                 result.isSuccess -> {
-                    val wasSuccessful = result.getOrNull() ?: false
-                    stopEngine(if (wasSuccessful) Result.success() else Result.retry())
+                    val taskResult = result.getOrNull()
+                    val wmResult =
+                        when (taskResult) {
+                            BackgroundTaskResult.SUCCESS -> Result.success()
+                            BackgroundTaskResult.RETRY -> Result.retry()
+                            BackgroundTaskResult.FAILURE -> Result.failure()
+                            // No handler registered / null result: retry, matching
+                            // the historical `false` behaviour.
+                            null -> Result.retry()
+                        }
+                    stopEngine(wmResult)
                 }
                 result.isFailure -> {
                     val exception = result.exceptionOrNull()

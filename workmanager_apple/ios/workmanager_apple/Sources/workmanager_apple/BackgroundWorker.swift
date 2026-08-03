@@ -180,14 +180,21 @@ class BackgroundWorker {
                     let errorMessage: String?
 
                     switch taskResult {
-                    case .success(let wasSuccessful):
-                        if wasSuccessful {
+                    case .success(let backgroundTaskResult):
+                        switch backgroundTaskResult {
+                        case .success:
                             fetchResult = .newData
                             status = .completed
                             errorMessage = nil
-                        } else {
+                        case .retry:
+                            // iOS has no automatic retry: report the fetch as
+                            // failed; callers can re-schedule the task.
                             fetchResult = .failed
                             status = .retrying
+                            errorMessage = nil
+                        case .failure:
+                            fetchResult = .failed
+                            status = .failed
                             errorMessage = nil
                         }
                     case .failure(let error):

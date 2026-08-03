@@ -32,20 +32,20 @@ The behavior of task status depends on what your Dart background function return
 
 | Dart Return | Task Status | System Behavior | Debug Notification |
 |-------------|-------------|-----------------|-------------------|
-| `true` | **Completed** | Task succeeds, won't retry | ✅ Success |
-| `false` | **Rescheduled** | WorkManager schedules retry with backoff | 🔄 Rescheduled |
-| `Future.error()` | **Failed** | Task fails permanently, no retry | ❌ Failed + error |
-| Exception thrown | **Failed** | Task fails permanently, no retry | ❌ Failed + error |
+| `BackgroundTaskResult.success` | **Completed** | Task succeeds, won't retry | ✅ Success |
+| `BackgroundTaskResult.retry` | **Rescheduled** | WorkManager schedules retry with backoff | 🔄 Rescheduled |
+| `BackgroundTaskResult.failure` | **Failed** | Task fails permanently, no retry | ❌ Failed |
+| Exception thrown | **Failed** | Caught, logged, reported as failure — no retry | ❌ Failed (see log) |
 
   </TabItem>
   <TabItem label="iOS" value="ios">
 
 | Dart Return | Task Status | System Behavior | Debug Notification |
 |-------------|-------------|-----------------|-------------------|
-| `true` | **Completed** | Task succeeds, won't retry | ✅ Success |
-| `false` | **Retrying** | App must manually reschedule | 🔄 Retrying |
-| `Future.error()` | **Failed** | Task fails, no automatic retry | ❌ Failed + error |
-| Exception thrown | **Failed** | Task fails, no automatic retry | ❌ Failed + error |
+| `BackgroundTaskResult.success` | **Completed** | Task succeeds, won't retry | ✅ Success |
+| `BackgroundTaskResult.retry` | **Retrying** | No automatic retry — app must reschedule | 🔄 Retrying |
+| `BackgroundTaskResult.failure` | **Failed** | Task fails, no retry | ❌ Failed |
+| Exception thrown | **Failed** | Caught, logged, reported as failure | ❌ Failed (see log) |
 
   </TabItem>
 </Tabs>
@@ -215,15 +215,17 @@ void callbackDispatcher() {
     try {
       // Your task logic here
       final result = await performWork(task, inputData);
-      
+
       if (result.isSuccess) {
-        return true;  // ✅ Task succeeded
+        return BackgroundTaskResult.success;
       } else {
-        return false; // 🔄 Retry with backoff (Android) or manual reschedule (iOS)
+        // Transient failure: retry with backoff (Android) or manual
+        // reschedule (iOS).
+        return BackgroundTaskResult.retry;
       }
     } catch (e) {
-      // 🔥 Permanent failure - will not retry
-      throw Exception('Task failed: $e');
+      // Permanent failure - will not retry (Android `Result.failure()`).
+      return BackgroundTaskResult.failure;
     }
   });
 }
@@ -233,10 +235,20 @@ void callbackDispatcher() {
 
 | Error Type | Recommended Return | Result |
 |------------|-------------------|--------|
-| Network timeout | `return false` | Task will retry later |
-| Invalid data | `throw Exception()` | Task fails permanently |
-| Temporary server error | `return false` | Task will retry with backoff |
-| Authentication failure | `throw Exception()` | Task fails, needs user intervention |
+| Network timeout | `BackgroundTaskResult.retry` | Task will retry later |
+| Invalid data | `BackgroundTaskResult.failure` | Task fails permanently |
+| Temporary server error | `BackgroundTaskResult.retry` | Task will retry with backoff |
+| Authentication failure | `BackgroundTaskResult.failure` | Task fails, needs user intervention |
+| Unhandled exception in the handler | `throw` (or let it bubble) | Caught, logged, reported as permanent failure — no retry |
+
+> **Throwing vs returning:** if your handler throws (or its `Future` completes
+> with an error), the plugin **catches it, logs it, and reports
+> `BackgroundTaskResult.failure`** — a permanent failure that is **not**
+> retried. Background isolates have no console or debugger, so the exception
+> never surfaces as a channel error; the failure flows through the normal
+> status pipeline (`WorkmanagerDebug` handlers see a failed task) and the
+> exception is written via `debugPrint` for local debugging. Only returning
+> `BackgroundTaskResult.retry` triggers an Android backoff retry.
 
 ### Monitoring Task Health
 
