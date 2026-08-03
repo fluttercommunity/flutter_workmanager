@@ -1,3 +1,7 @@
+## 0.10.2
+
+ - **FEAT**(android): expedited work support (#715).
+
 ## 0.10.1+2
 
  - Update a dependency to the latest release.

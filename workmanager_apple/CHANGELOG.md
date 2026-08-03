@@ -1,3 +1,7 @@
+## 0.9.8
+
+ - **FEAT**(android): expedited work support (#715).
+
 ## 0.9.7
 
  - **FEAT**(android): add ContentUriTrigger constraints (fixes #413) (#709).

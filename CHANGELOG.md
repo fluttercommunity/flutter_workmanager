@@ -15,6 +15,47 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`workmanager` - `v0.10.2`](#workmanager---v0102)
+ - [`workmanager_android` - `v0.10.2`](#workmanager_android---v0102)
+ - [`workmanager_apple` - `v0.9.8`](#workmanager_apple---v098)
+ - [`workmanager_platform_interface` - `v0.10.2`](#workmanager_platform_interface---v0102)
+ - [`workmanager_web` - `v0.1.2`](#workmanager_web---v012)
+
+---
+
+#### `workmanager` - `v0.10.2`
+
+ - **FEAT**(android): expedited work support (#715).
+
+#### `workmanager_android` - `v0.10.2`
+
+ - **FEAT**(android): expedited work support (#715).
+
+#### `workmanager_apple` - `v0.9.8`
+
+ - **FEAT**(android): expedited work support (#715).
+
+#### `workmanager_platform_interface` - `v0.10.2`
+
+ - **FEAT**(android): expedited work support (#715).
+
+#### `workmanager_web` - `v0.1.2`
+
+ - **FEAT**(android): expedited work support (#715).
+
+
+## 2026-08-03
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`workmanager_android` - `v0.10.1`](#workmanager_android---v0101)
  - [`workmanager_apple` - `v0.9.7`](#workmanager_apple---v097)
  - [`workmanager_platform_interface` - `v0.10.1`](#workmanager_platform_interface---v0101)
