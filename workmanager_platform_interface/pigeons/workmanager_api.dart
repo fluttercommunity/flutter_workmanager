@@ -503,10 +503,31 @@ abstract class WorkmanagerHostApi {
   @async
   String printScheduledTasks();
 
+<<<<<<< HEAD
   /// Returns the current state of the task registered under [uniqueName], or
   /// null when the platform has no record of it.
   @async
   WorkInfoData? getWorkInfoByUniqueName(String uniqueName);
+=======
+  /// Reports progress for the task that is currently running (Android only).
+  ///
+  /// Must be called from inside the background task handler; the native side
+  /// resolves the running task's unique name from the calling context, so the
+  /// [progress] map is the only argument. On platforms without progress
+  /// support (iOS/macOS/web/desktop) the call is a no-op.
+  @async
+  void reportProgress(Map<String?, Object?>? progress);
+
+  /// Enables or disables forwarding of progress updates to the app (Android
+  /// only).
+  ///
+  /// When [enabled] is true the native side starts forwarding progress events
+  /// (delivered through [WorkmanagerFlutterApi.onProgressUpdate]) to the
+  /// messenger of the engine that made this call. On platforms without
+  /// progress support the call is a no-op.
+  @async
+  void setProgressListener(bool enabled);
+>>>>>>> ab45b65 (feat(android): progress updates for long-running tasks)
 }
 
 // Flutter API (Native calls Flutter)
@@ -527,4 +548,14 @@ abstract class WorkmanagerFlutterApi {
   /// platforms without an equivalent concept.
   @async
   void onTaskStopped(String taskName, int stopReason);
+
+  /// Delivers a progress update for a running task to the app (Android only).
+  ///
+  /// [uniqueName] is the unique name the task was registered with. [progress]
+  /// is the progress map the task handler reported via
+  /// [WorkmanagerHostApi.reportProgress]. This is only invoked when the app
+  /// registered a progress listener (see `Workmanager().setProgressListener`);
+  /// on platforms without progress support it is never invoked.
+  @async
+  void onProgressUpdate(String uniqueName, Map<String?, Object?>? progress);
 }

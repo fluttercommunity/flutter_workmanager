@@ -477,7 +477,21 @@ void main() {
           final decoded = WorkmanagerHostApi.pigeonChannelCodec
               .decodeMessage(message) as List<Object?>;
           captured = decoded[0]! as OneOffTaskRequest;
-          return WorkmanagerHostApi.pigeonChannelCodec
+    group('Progress updates', () {
+      const reportProgressChannel =
+          'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.reportProgress';
+      const setProgressListenerChannel =
+          'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.setProgressListener';
+
+      test('reportProgress forwards the progress map through pigeon', () async {
+        late Map<String?, Object?> captured;
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMessageHandler(reportProgressChannel,
+                (ByteData? message) async {
+          final decoded = WorkmanagerHostApi.pigeonChannelCodec
+              .decodeMessage(message) as List<Object?>;
+          captured =
+              (decoded[0]! as Map<Object?, Object?>).cast<String?, Object?>();          return WorkmanagerHostApi.pigeonChannelCodec
               .encodeMessage(<Object?>[]);
         });
 
@@ -499,7 +513,51 @@ void main() {
         final captured = await captureRequest(expedited: false);
 
         expect(captured.expedited, isFalse);
+        await workmanager.reportProgress(<String, dynamic>{
+          'progress': 0.5,
+          'stage': 'uploading',
+        });
+
+        expect(captured, <String?, Object?>{
+          'progress': 0.5,
+          'stage': 'uploading',
+        });
       });
+
+      test('setProgressListener enables native forwarding with a listener',
+          () async {
+        late bool captured;
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMessageHandler(setProgressListenerChannel,
+                (ByteData? message) async {
+          final decoded = WorkmanagerHostApi.pigeonChannelCodec
+              .decodeMessage(message) as List<Object?>;
+          captured = decoded[0]! as bool;
+          return WorkmanagerHostApi.pigeonChannelCodec
+              .encodeMessage(<Object?>[]);
+        });
+
+        await workmanager.setProgressListener((uniqueName, progress) {});
+
+        expect(captured, isTrue);
+      });
+
+      test('setProgressListener disables native forwarding when unregistered',
+          () async {
+        late bool captured;
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMessageHandler(setProgressListenerChannel,
+                (ByteData? message) async {
+          final decoded = WorkmanagerHostApi.pigeonChannelCodec
+              .decodeMessage(message) as List<Object?>;
+          captured = decoded[0]! as bool;
+          return WorkmanagerHostApi.pigeonChannelCodec
+              .encodeMessage(<Object?>[]);
+        });
+
+        await workmanager.setProgressListener(null);
+
+        expect(captured, isFalse);      });
     });
   });
 }

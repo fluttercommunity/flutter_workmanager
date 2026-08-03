@@ -372,6 +372,85 @@ void callbackDispatcher() {
 }
 ```
 
+### Reporting Progress (Android only)
+
+Long-running tasks — in practice tasks that run as an Android foreground
+service via `foregroundServiceConfig` — can report progress back to the app.
+This is the missing half of the foreground-service story: the notification
+keeps the task alive, and progress reporting keeps the user (and the UI)
+informed about what it is actually doing.
+
+**Value case:** a foreground-service task that uploads a large file, downloads
+media, or syncs a database runs for minutes. Without progress reporting the
+UI only knows the task started (via `TaskStatus.started` debug events) and
+finished. With it, the app can show a real progress indicator, "3 of 12 files
+uploaded", or a live sync counter.
+
+**Where it does not help:**
+
+- **Short-lived workers.** A regular background worker that finishes in
+  seconds has nothing meaningful to report — the app will likely miss the
+  updates entirely.
+- **iOS, macOS, web and desktop.** There is no equivalent to WorkManager's
+  progress API on these platforms. `reportProgress` and
+  `setProgressListener` are documented no-ops there, so you can call them
+  from shared code without platform guards.
+
+Report progress from inside the task handler:
+
+```dart
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    switch (task) {
+      case 'big_upload':
+        final total = inputData!['totalBytes'] as int;
+        var uploaded = 0;
+        while (uploaded < total) {
+          // ... upload a chunk ...
+          uploaded += CHUNK_SIZE;
+          await Workmanager().reportProgress({
+            'progress': uploaded / total,
+            'uploadedBytes': uploaded,
+            'totalBytes': total,
+          });
+        }
+        return true;
+    }
+    return true;
+  });
+}
+```
+
+Observe progress from the app side. Register the listener once, right after
+`initialize`:
+
+```dart
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Workmanager().initialize(callbackDispatcher);
+  Workmanager().setProgressListener((uniqueName, progress) {
+    print('$uniqueName is at ${progress['progress']} '
+        '(${progress['uploadedBytes']} of ${progress['totalBytes']} bytes)');
+  });
+  runApp(const MyApp());
+}
+```
+
+The listener receives the task's `uniqueName` (so you can correlate it with
+`isScheduledByUniqueName` / `cancelByUniqueName`) and the exact progress map
+the handler reported. Progress is stored through WorkManager's `setProgress`,
+so it is also visible to anything else that observes the task's `WorkInfo`.
+Pass `null` to `setProgressListener` to stop receiving updates.
+
+<Info>
+**Timing.** Progress updates are forwarded while the task is running. If the
+app starts while a task is already running (for example after a relaunch),
+the listener receives the latest progress with the task's next update. The
+value type is the same as for `inputData`: `int`, `bool`, `double`, `String`
+and their lists (nested maps are also accepted).
+</Info>
+
 ## Error Handling and Retries
 
 ```dart

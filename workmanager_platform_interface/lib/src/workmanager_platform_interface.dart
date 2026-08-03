@@ -3,6 +3,15 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'pigeon/workmanager_api.g.dart';
 import 'work_info.dart';
 
+/// Signature for a listener that receives progress updates from running
+/// background tasks.
+///
+/// [uniqueName] is the unique name the task was registered with and
+/// [progress] the progress map the task handler reported. Android only: on
+/// platforms without an equivalent the listener is never invoked.
+typedef ProgressListener = void Function(
+    String uniqueName, Map<String, dynamic> progress);
+
 /// The interface that implementations of workmanager must implement.
 ///
 /// Platform implementations should extend this class rather than implement it as `workmanager`
@@ -190,12 +199,34 @@ abstract class WorkmanagerPlatform extends PlatformInterface {
     throw UnimplementedError('printScheduledTasks() has not been implemented.');
   }
 
+<<<<<<< HEAD
   /// Queries the current state of the task registered under [uniqueName].
   ///
   /// Returns `null` when the platform has no record of the task. See [WorkInfo]
   /// for the per-platform truthfulness of the result.
   Future<WorkInfo?> getWorkInfo(String uniqueName) {
     throw UnimplementedError('getWorkInfo() has not been implemented.');
+=======
+  /// Reports progress for the currently running task (Android only).
+  ///
+  /// Must be called from inside the background task handler; the platform
+  /// resolves the running task's unique name from the calling context.
+  ///
+  /// On platforms without progress support (iOS/macOS/web/desktop) this is a
+  /// documented no-op: background task handlers are shared across platforms,
+  /// and throwing would fail tasks on platforms where the call is meaningless.
+  Future<void> reportProgress(Map<String, dynamic> progress) async {
+    // No-op: progress reporting is Android-only.
+  }
+
+  /// Registers a listener that receives progress updates from running
+  /// background tasks (Android only).
+  ///
+  /// Pass `null` to stop receiving updates. On platforms without progress
+  /// support the listener is never invoked and this call is a no-op.
+  Future<void> setProgressListener(ProgressListener? listener) async {
+    // No-op: progress observation is Android-only.
+>>>>>>> ab45b65 (feat(android): progress updates for long-running tasks)
   }
 }
 

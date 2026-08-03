@@ -167,7 +167,13 @@ class WorkmanagerAndroid extends WorkmanagerPlatform {
   Future<WorkInfo?> getWorkInfo(String uniqueName) async {
     final data = await _api.getWorkInfoByUniqueName(uniqueName);
     return data == null ? null : WorkInfo.fromData(data);
+  Future<void> reportProgress(Map<String, dynamic> progress) async {
+    await _api.reportProgress(progress.cast<String?, Object?>());
   }
+
+  @override
+  Future<void> setProgressListener(ProgressListener? listener) async {
+    await _api.setProgressListener(listener != null);  }
 }
 
 /// Defaults for the Android foreground service notification.

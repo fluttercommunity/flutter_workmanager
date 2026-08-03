@@ -41,7 +41,7 @@ const iOSBackgroundProcessingTask =
 const periodicUpdatePolicyTask =
     "dev.fluttercommunity.workmanagerExample.periodicUpdatePolicyTask";
 const workInfoTaskKey = "dev.fluttercommunity.workmanagerExample.workInfoTask";
-
+const progressTaskKey = "dev.fluttercommunity.workmanagerExample.progressTask";
 final List<String> allTasks = [
   simpleTaskKey,
   rescheduledTaskKey,
@@ -54,6 +54,7 @@ final List<String> allTasks = [
   iOSBackgroundAppRefresh,
   iOSBackgroundProcessingTask,
   periodicUpdatePolicyTask,
+  progressTaskKey,
 ];
 
 // Pragma is mandatory if the App is obfuscated or using Flutter 3.1+
@@ -125,7 +126,20 @@ void callbackDispatcher() {
         break;
       case workInfoTaskKey:
         debugPrint("$workInfoTaskKey executed");
-        break;
+      case progressTaskKey:
+        // Long-running foreground service task that reports progress. The app
+        // observes the updates through Workmanager().setProgressListener.
+        // Without the foreground service config WorkManager would stop this
+        // worker after ~10 minutes of execution.
+        for (var step = 0; step <= 10; step++) {
+          await Workmanager().reportProgress(<String, dynamic>{
+            'progress': step / 10,
+            'step': step,
+            'stage': step == 10 ? 'done' : 'working',
+          });
+          debugPrint("$progressTaskKey reported progress ${step / 10}");
+          await Future<void>.delayed(const Duration(seconds: 1));
+        }        break;
       default:
         return Future.value(false);
     }
@@ -180,6 +194,13 @@ class _MyAppState extends State<MyApp> {
                     if (!workmanagerInitialized) {
                       try {
                         await Workmanager().initialize(callbackDispatcher);
+                        // Observe progress updates from long-running tasks
+                        // (Android only; a no-op on other platforms).
+                        Workmanager()
+                            .setProgressListener((uniqueName, progress) {
+                          debugPrint(
+                              'Progress update for $uniqueName: $progress');
+                        });
                       } catch (e) {
                         debugPrint('Error initializing Workmanager: $e');
                         return;
@@ -280,6 +301,24 @@ class _MyAppState extends State<MyApp> {
                         }
                       : null,
                   child: Text("Register expedited task (Android)"),
+                ),
+                // Long-running task promoted to a foreground service. Reports
+                // progress every second; the app prints the updates via the
+                // progress listener (see the initialize button above).
+                ElevatedButton(
+                  onPressed: Platform.isAndroid
+                      ? () {
+                          Workmanager().registerOneOffTask(
+                            progressTaskKey,
+                            progressTaskKey,
+                            foregroundServiceConfig: ForegroundServiceConfig(
+                              notificationTitle: 'Progress demo',
+                              notificationText: 'Running with progress updates',
+                            ),
+                          );
+                        }
+                      : null,
+                  child: Text("Register Foreground Progress Task (Android)"),
                 ),
                 SizedBox(height: 8),
                 Text(
