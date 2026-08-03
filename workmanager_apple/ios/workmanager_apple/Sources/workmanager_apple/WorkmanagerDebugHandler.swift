@@ -16,7 +16,15 @@ public struct TaskDebugInfo {
     /// work-info store.
     public let isPeriodic: Bool?
 
-    public init(taskName: String, uniqueName: String? = nil, inputData: [String: Any]? = nil, startTime: TimeInterval, callbackHandle: Int64? = nil, callbackInfo: String? = nil, isPeriodic: Bool? = nil) {
+    public init(
+        taskName: String,
+        uniqueName: String? = nil,
+        inputData: [String: Any]? = nil,
+        startTime: TimeInterval,
+        callbackHandle: Int64? = nil,
+        callbackInfo: String? = nil,
+        isPeriodic: Bool? = nil
+    ) {
         self.taskName = taskName
         self.uniqueName = uniqueName
         self.inputData = inputData

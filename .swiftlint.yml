@@ -2,3 +2,20 @@ excluded:
   - "**/*.g.swift"
   - "**/pigeon/*.swift"
   - "**/GeneratedPluginRegistrant.swift"
+  - "**/ephemeral/**"
+  - "**/build/**"
+  - "**/DerivedData/**"
+
+# The codebase predates these defaults; keep thresholds aligned with the
+# existing style instead of churning unrelated files when a PR touches Swift.
+line_length:
+  warning: 200
+  error: 220
+file_length:
+  warning: 1200
+  error: 1500
+function_body_length:
+  warning: 150
+  error: 200
+cyclomatic_complexity: 15
+large_tuple: 5
