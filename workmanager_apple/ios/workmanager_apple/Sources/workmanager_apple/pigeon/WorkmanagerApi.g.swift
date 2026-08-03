@@ -199,25 +199,6 @@ enum TaskStatus: Int {
   case rescheduled = 6
 }
 
-/// Result of a background task execution.
-///
-/// Replaces the previous `bool` return value of the task handler. Maps to
-/// platform-specific semantics:
-/// - [success]: Android `Result.success()`, iOS `UIBackgroundFetchResult.newData`.
-/// - [retry]: Android `Result.retry()` (transient failure, backoff applies).
-///   iOS has no automatic retry — the task finishes as `.failed` and you can
-///   re-schedule it yourself.
-/// - [failure]: Android `Result.failure()` (permanent failure, dependent work
-///   stops and the task is not retried). iOS `UIBackgroundFetchResult.failed`.
-enum BackgroundTaskResult: Int {
-  /// The task completed successfully.
-  case success = 0
-  /// The task failed transiently and should be retried (Android only).
-  case retry = 1
-  /// The task failed permanently and must not be retried.
-  case failure = 2
-}
-
 /// An enumeration of various network types that can be used as Constraints for work.
 ///
 /// Fully supported on Android.
@@ -327,6 +308,25 @@ enum ForegroundServiceType: Int {
   /// Used for short, critical work that the user is aware of and that must
   /// complete quickly (a few minutes at most).
   case shortService = 1
+}
+
+/// Result of a background task execution.
+///
+/// Replaces the previous `bool` return value of the task handler. Maps to
+/// platform-specific semantics:
+/// - [success]: Android `Result.success()`, iOS `UIBackgroundFetchResult.newData`.
+/// - [retry]: Android `Result.retry()` (transient failure, backoff applies).
+///   iOS has no automatic retry — the task finishes as `.failed` and you can
+///   re-schedule it yourself.
+/// - [failure]: Android `Result.failure()` (permanent failure, dependent work
+///   stops and the task is not retried). iOS `UIBackgroundFetchResult.failed`.
+enum BackgroundTaskResult: Int {
+  /// The task completed successfully.
+  case success = 0
+  /// The task failed transiently and should be retried (Android only).
+  case retry = 1
+  /// The task failed permanently and must not be retried.
+  case failure = 2
 }
 
 /// Android-only configuration that promotes a worker to a foreground service
@@ -920,43 +920,43 @@ private class WorkmanagerApiPigeonCodecReader: FlutterStandardReader {
     case 130:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return BackgroundTaskResult(rawValue: enumResultAsInt)
+        return NetworkType(rawValue: enumResultAsInt)
       }
       return nil
     case 131:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return NetworkType(rawValue: enumResultAsInt)
+        return BackoffPolicy(rawValue: enumResultAsInt)
       }
       return nil
     case 132:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return BackoffPolicy(rawValue: enumResultAsInt)
+        return ExistingWorkPolicy(rawValue: enumResultAsInt)
       }
       return nil
     case 133:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return ExistingWorkPolicy(rawValue: enumResultAsInt)
+        return ExistingPeriodicWorkPolicy(rawValue: enumResultAsInt)
       }
       return nil
     case 134:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return ExistingPeriodicWorkPolicy(rawValue: enumResultAsInt)
+        return OutOfQuotaPolicy(rawValue: enumResultAsInt)
       }
       return nil
     case 135:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return OutOfQuotaPolicy(rawValue: enumResultAsInt)
+        return ForegroundServiceType(rawValue: enumResultAsInt)
       }
       return nil
     case 136:
       let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
       if let enumResultAsInt = enumResultAsInt {
-        return ForegroundServiceType(rawValue: enumResultAsInt)
+        return BackgroundTaskResult(rawValue: enumResultAsInt)
       }
       return nil
     case 137:
@@ -990,25 +990,25 @@ private class WorkmanagerApiPigeonCodecWriter: FlutterStandardWriter {
     if let value = value as? TaskStatus {
       super.writeByte(129)
       super.writeValue(value.rawValue)
-    } else if let value = value as? BackgroundTaskResult {
+    } else if let value = value as? NetworkType {
       super.writeByte(130)
       super.writeValue(value.rawValue)
-    } else if let value = value as? NetworkType {
+    } else if let value = value as? BackoffPolicy {
       super.writeByte(131)
       super.writeValue(value.rawValue)
-    } else if let value = value as? BackoffPolicy {
+    } else if let value = value as? ExistingWorkPolicy {
       super.writeByte(132)
       super.writeValue(value.rawValue)
-    } else if let value = value as? ExistingWorkPolicy {
+    } else if let value = value as? ExistingPeriodicWorkPolicy {
       super.writeByte(133)
       super.writeValue(value.rawValue)
-    } else if let value = value as? ExistingPeriodicWorkPolicy {
+    } else if let value = value as? OutOfQuotaPolicy {
       super.writeByte(134)
       super.writeValue(value.rawValue)
-    } else if let value = value as? OutOfQuotaPolicy {
+    } else if let value = value as? ForegroundServiceType {
       super.writeByte(135)
       super.writeValue(value.rawValue)
-    } else if let value = value as? ForegroundServiceType {
+    } else if let value = value as? BackgroundTaskResult {
       super.writeByte(136)
       super.writeValue(value.rawValue)
     } else if let value = value as? ForegroundServiceConfig {

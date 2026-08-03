@@ -38,7 +38,7 @@ void callbackDispatcher() {
     // Use the data in your task logic
     await uploadFile(fileName, uploadUrl, userId);
     
-    return Future.value(true);
+    return BackgroundTaskResult.success;
   });
 }
 ```
@@ -332,7 +332,7 @@ void callbackDispatcher() {
         return await handleNotificationCheck(inputData);
       default:
         print('Unknown task: $task');
-        return Future.value(false);
+        return BackgroundTaskResult.retry;
     }
   });
 }
@@ -349,7 +349,7 @@ void callbackDispatcher() {
     try {
       // Your task logic
       await performTask(inputData);
-      return Future.value(true);
+      return BackgroundTaskResult.success;
       
     } catch (e) {
       print('Task failed: $e');
@@ -357,10 +357,10 @@ void callbackDispatcher() {
       // Decide whether to retry
       if (retryCount < 3 && isRetryableError(e)) {
         print('Retrying task (attempt ${retryCount + 1})');
-        return Future.value(false); // Tell system to retry
+        return BackgroundTaskResult.retry; // Tell system to retry
       } else {
         print('Task failed permanently');
-        return Future.value(true); // Don't retry
+        return BackgroundTaskResult.failure; // Permanent failure
       }
     }
   });
@@ -384,7 +384,7 @@ void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     // Fast operation
     await syncCriticalData();
-    return Future.value(true);
+    return BackgroundTaskResult.success;
   });
 }
 
@@ -394,7 +394,7 @@ void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     // This might timeout on iOS (30-second limit)
     await processLargeDataset(); // ❌ Too slow
-    return Future.value(true);
+    return BackgroundTaskResult.success;
   });
 }
 ```
@@ -414,7 +414,7 @@ void callbackDispatcher() {
       // Perform task
       await performNetworkOperation(client);
       
-      return Future.value(true);
+      return BackgroundTaskResult.success;
       
     } finally {
       // Clean up resources

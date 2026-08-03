@@ -34,7 +34,7 @@ void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     print("Background task: $task");
     // Your background work here
-    return Future.value(true);
+    return BackgroundTaskResult.success;
   });
 }
 

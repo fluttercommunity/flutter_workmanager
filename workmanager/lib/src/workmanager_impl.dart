@@ -71,7 +71,7 @@ typedef BackgroundTaskStoppedHandler = Future<void> Function(
 ///         print("Replace this print statement with your code that should be executed in the background here");
 ///         break;
 ///     }
-///     return Future.value(true);
+///     return BackgroundTaskResult.success;
 ///   });
 /// }
 ///
@@ -136,7 +136,7 @@ class Workmanager {
   ///          break;
   ///      }
   ///
-  ///     return Future.value(true);
+  ///     return BackgroundTaskResult.success;
   ///   });
   /// }
   /// ```

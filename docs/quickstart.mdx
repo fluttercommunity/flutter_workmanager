@@ -374,7 +374,7 @@ void callbackDispatcher() {
         break;
     }
     
-    return Future.value(true);
+    return BackgroundTaskResult.success;
   });
 }
 ```
@@ -400,7 +400,7 @@ void callbackDispatcher() {
         await syncData(inputData);
         break;
     }
-    return Future.value(true);
+    return BackgroundTaskResult.success;
   });
 }
 ```
@@ -555,11 +555,15 @@ falls back to running as a regular background worker within the usual limits.
 
 ## Task Results
 
-Your background tasks can return:
+Your background tasks return a `BackgroundTaskResult`:
 
-- `Future.value(true)` - ✅ Task successful
-- `Future.value(false)` - 🔄 Task should be retried
-- `Future.error(...)` - ❌ Task failed
+- `BackgroundTaskResult.success` - ✅ Task successful
+- `BackgroundTaskResult.retry` - 🔄 Task should be retried (Android applies backoff)
+- `BackgroundTaskResult.failure` - ❌ Task failed permanently, no retry
+
+If the handler throws (or its `Future` errors), the plugin catches it, logs it,
+and reports `BackgroundTaskResult.failure` — it is never retried. See
+[Task Status](task-status) and the [migration guide](migrating-to-background-task-result).
 
 
 ## Key Points

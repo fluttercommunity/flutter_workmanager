@@ -128,25 +128,6 @@ enum TaskStatus {
   rescheduled,
 }
 
-/// Result of a background task execution.
-///
-/// Replaces the previous `bool` return value of the task handler. Maps to
-/// platform-specific semantics:
-/// - [success]: Android `Result.success()`, iOS `UIBackgroundFetchResult.newData`.
-/// - [retry]: Android `Result.retry()` (transient failure, backoff applies).
-///   iOS has no automatic retry — the task finishes as `.failed` and you can
-///   re-schedule it yourself.
-/// - [failure]: Android `Result.failure()` (permanent failure, dependent work
-///   stops and the task is not retried). iOS `UIBackgroundFetchResult.failed`.
-enum BackgroundTaskResult {
-  /// The task completed successfully.
-  success,
-  /// The task failed transiently and should be retried (Android only).
-  retry,
-  /// The task failed permanently and must not be retried.
-  failure,
-}
-
 /// An enumeration of various network types that can be used as Constraints for work.
 ///
 /// Fully supported on Android.
@@ -256,6 +237,25 @@ enum ForegroundServiceType {
   /// Used for short, critical work that the user is aware of and that must
   /// complete quickly (a few minutes at most).
   shortService,
+}
+
+/// Result of a background task execution.
+///
+/// Replaces the previous `bool` return value of the task handler. Maps to
+/// platform-specific semantics:
+/// - [success]: Android `Result.success()`, iOS `UIBackgroundFetchResult.newData`.
+/// - [retry]: Android `Result.retry()` (transient failure, backoff applies).
+///   iOS has no automatic retry — the task finishes as `.failed` and you can
+///   re-schedule it yourself.
+/// - [failure]: Android `Result.failure()` (permanent failure, dependent work
+///   stops and the task is not retried). iOS `UIBackgroundFetchResult.failed`.
+enum BackgroundTaskResult {
+  /// The task completed successfully.
+  success,
+  /// The task failed transiently and should be retried (Android only).
+  retry,
+  /// The task failed permanently and must not be retried.
+  failure,
 }
 
 /// Android-only configuration that promotes a worker to a foreground service
@@ -936,25 +936,25 @@ class _PigeonCodec extends StandardMessageCodec {
     }    else if (value is TaskStatus) {
       buffer.putUint8(129);
       writeValue(buffer, value.index);
-    }    else if (value is BackgroundTaskResult) {
+    }    else if (value is NetworkType) {
       buffer.putUint8(130);
       writeValue(buffer, value.index);
-    }    else if (value is NetworkType) {
+    }    else if (value is BackoffPolicy) {
       buffer.putUint8(131);
       writeValue(buffer, value.index);
-    }    else if (value is BackoffPolicy) {
+    }    else if (value is ExistingWorkPolicy) {
       buffer.putUint8(132);
       writeValue(buffer, value.index);
-    }    else if (value is ExistingWorkPolicy) {
+    }    else if (value is ExistingPeriodicWorkPolicy) {
       buffer.putUint8(133);
       writeValue(buffer, value.index);
-    }    else if (value is ExistingPeriodicWorkPolicy) {
+    }    else if (value is OutOfQuotaPolicy) {
       buffer.putUint8(134);
       writeValue(buffer, value.index);
-    }    else if (value is OutOfQuotaPolicy) {
+    }    else if (value is ForegroundServiceType) {
       buffer.putUint8(135);
       writeValue(buffer, value.index);
-    }    else if (value is ForegroundServiceType) {
+    }    else if (value is BackgroundTaskResult) {
       buffer.putUint8(136);
       writeValue(buffer, value.index);
     }    else if (value is ForegroundServiceConfig) {
@@ -1000,25 +1000,25 @@ class _PigeonCodec extends StandardMessageCodec {
         return value == null ? null : TaskStatus.values[value];
       case 130:
         final value = readValue(buffer) as int?;
-        return value == null ? null : BackgroundTaskResult.values[value];
+        return value == null ? null : NetworkType.values[value];
       case 131:
         final value = readValue(buffer) as int?;
-        return value == null ? null : NetworkType.values[value];
+        return value == null ? null : BackoffPolicy.values[value];
       case 132:
         final value = readValue(buffer) as int?;
-        return value == null ? null : BackoffPolicy.values[value];
+        return value == null ? null : ExistingWorkPolicy.values[value];
       case 133:
         final value = readValue(buffer) as int?;
-        return value == null ? null : ExistingWorkPolicy.values[value];
+        return value == null ? null : ExistingPeriodicWorkPolicy.values[value];
       case 134:
         final value = readValue(buffer) as int?;
-        return value == null ? null : ExistingPeriodicWorkPolicy.values[value];
+        return value == null ? null : OutOfQuotaPolicy.values[value];
       case 135:
         final value = readValue(buffer) as int?;
-        return value == null ? null : OutOfQuotaPolicy.values[value];
+        return value == null ? null : ForegroundServiceType.values[value];
       case 136:
         final value = readValue(buffer) as int?;
-        return value == null ? null : ForegroundServiceType.values[value];
+        return value == null ? null : BackgroundTaskResult.values[value];
       case 137:
         return ForegroundServiceConfig.decode(readValue(buffer)!);
       case 138:

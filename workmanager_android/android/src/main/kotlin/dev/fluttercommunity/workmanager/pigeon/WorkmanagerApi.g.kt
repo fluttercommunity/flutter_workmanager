@@ -223,33 +223,6 @@ enum class TaskStatus(val raw: Int) {
 }
 
 /**
- * Result of a background task execution.
- *
- * Replaces the previous `bool` return value of the task handler. Maps to
- * platform-specific semantics:
- * - [success]: Android `Result.success()`, iOS `UIBackgroundFetchResult.newData`.
- * - [retry]: Android `Result.retry()` (transient failure, backoff applies).
- *   iOS has no automatic retry — the task finishes as `.failed` and you can
- *   re-schedule it yourself.
- * - [failure]: Android `Result.failure()` (permanent failure, dependent work
- *   stops and the task is not retried). iOS `UIBackgroundFetchResult.failed`.
- */
-enum class BackgroundTaskResult(val raw: Int) {
-  /** The task completed successfully. */
-  SUCCESS(0),
-  /** The task failed transiently and should be retried (Android only). */
-  RETRY(1),
-  /** The task failed permanently and must not be retried. */
-  FAILURE(2);
-
-  companion object {
-    fun ofRaw(raw: Int): BackgroundTaskResult? {
-      return values().firstOrNull { it.raw == raw }
-    }
-  }
-}
-
-/**
  * An enumeration of various network types that can be used as Constraints for work.
  *
  * Fully supported on Android.
@@ -425,6 +398,33 @@ enum class ForegroundServiceType(val raw: Int) {
 
   companion object {
     fun ofRaw(raw: Int): ForegroundServiceType? {
+      return values().firstOrNull { it.raw == raw }
+    }
+  }
+}
+
+/**
+ * Result of a background task execution.
+ *
+ * Replaces the previous `bool` return value of the task handler. Maps to
+ * platform-specific semantics:
+ * - [success]: Android `Result.success()`, iOS `UIBackgroundFetchResult.newData`.
+ * - [retry]: Android `Result.retry()` (transient failure, backoff applies).
+ *   iOS has no automatic retry — the task finishes as `.failed` and you can
+ *   re-schedule it yourself.
+ * - [failure]: Android `Result.failure()` (permanent failure, dependent work
+ *   stops and the task is not retried). iOS `UIBackgroundFetchResult.failed`.
+ */
+enum class BackgroundTaskResult(val raw: Int) {
+  /** The task completed successfully. */
+  SUCCESS(0),
+  /** The task failed transiently and should be retried (Android only). */
+  RETRY(1),
+  /** The task failed permanently and must not be retried. */
+  FAILURE(2);
+
+  companion object {
+    fun ofRaw(raw: Int): BackgroundTaskResult? {
       return values().firstOrNull { it.raw == raw }
     }
   }
@@ -1015,37 +1015,37 @@ private open class WorkmanagerApiPigeonCodec : StandardMessageCodec() {
       }
       130.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          BackgroundTaskResult.ofRaw(it.toInt())
+          NetworkType.ofRaw(it.toInt())
         }
       }
       131.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          NetworkType.ofRaw(it.toInt())
+          BackoffPolicy.ofRaw(it.toInt())
         }
       }
       132.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          BackoffPolicy.ofRaw(it.toInt())
+          ExistingWorkPolicy.ofRaw(it.toInt())
         }
       }
       133.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          ExistingWorkPolicy.ofRaw(it.toInt())
+          ExistingPeriodicWorkPolicy.ofRaw(it.toInt())
         }
       }
       134.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          ExistingPeriodicWorkPolicy.ofRaw(it.toInt())
+          OutOfQuotaPolicy.ofRaw(it.toInt())
         }
       }
       135.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          OutOfQuotaPolicy.ofRaw(it.toInt())
+          ForegroundServiceType.ofRaw(it.toInt())
         }
       }
       136.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          ForegroundServiceType.ofRaw(it.toInt())
+          BackgroundTaskResult.ofRaw(it.toInt())
         }
       }
       137.toByte() -> {
@@ -1107,31 +1107,31 @@ private open class WorkmanagerApiPigeonCodec : StandardMessageCodec() {
         stream.write(129)
         writeValue(stream, value.raw.toLong())
       }
-      is BackgroundTaskResult -> {
+      is NetworkType -> {
         stream.write(130)
         writeValue(stream, value.raw.toLong())
       }
-      is NetworkType -> {
+      is BackoffPolicy -> {
         stream.write(131)
         writeValue(stream, value.raw.toLong())
       }
-      is BackoffPolicy -> {
+      is ExistingWorkPolicy -> {
         stream.write(132)
         writeValue(stream, value.raw.toLong())
       }
-      is ExistingWorkPolicy -> {
+      is ExistingPeriodicWorkPolicy -> {
         stream.write(133)
         writeValue(stream, value.raw.toLong())
       }
-      is ExistingPeriodicWorkPolicy -> {
+      is OutOfQuotaPolicy -> {
         stream.write(134)
         writeValue(stream, value.raw.toLong())
       }
-      is OutOfQuotaPolicy -> {
+      is ForegroundServiceType -> {
         stream.write(135)
         writeValue(stream, value.raw.toLong())
       }
-      is ForegroundServiceType -> {
+      is BackgroundTaskResult -> {
         stream.write(136)
         writeValue(stream, value.raw.toLong())
       }
