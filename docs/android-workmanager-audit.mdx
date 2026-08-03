@@ -1,0 +1,58 @@
+# Android: WorkManager dependency & API surface audit
+
+_Last audited: 2026-08-03_
+
+## Dependency version
+
+| | Version |
+|---|---|
+| Pinned in `workmanager_android` | `androidx.work:work-runtime:2.11.2` |
+| Latest **stable** | `2.11.2` ✅ |
+| Latest overall | `2.12.0-beta01` (adds `WorkMetricsQuery`, worker duration metrics) |
+
+**Verdict:** already on the latest stable. Nothing to bump. The 2.12 stable
+(WorkMetricsQuery — querying worker execution metrics) is worth revisiting once
+it stabilises.
+
+## What the plugin already exposes
+
+- `registerOneOffTask` / `registerPeriodicTask` with:
+  - `inputData`, `initialDelay`, `tag`
+  - `Constraints`: networkType, requiresBatteryNotLow, requiresCharging,
+    requiresDeviceIdle, requiresStorageNotLow — the full `Constraints.Builder`
+    surface
+  - `ExistingWorkPolicy` (REPLACE / KEEP / APPEND / UPDATE), `BackoffPolicy` +
+    custom delay
+  - `OutOfQuotaPolicy`
+  - `ForegroundServiceConfig` (long-running tasks as foreground service)
+  - periodic `flexIntervalSeconds`
+- `cancelByUniqueName`, `cancelByTag`, `cancelAll`, `isScheduledByUniqueName`
+- `onTaskStopped` handler (cancelled / timeout / preempt)
+- Internal status tracking (`TaskStatus`, `runAttemptCount`) routed to
+  `WorkmanagerDebug` handlers
+
+## Gaps vs the WorkManager API
+
+1. **Expedited work** — `setExpedited()` is never called; the `OutOfQuotaPolicy`
+   option is inert without it. One-line Kotlin change, high value for
+   notification-worthy work on Android 12+.
+2. **Progress updates** — `setProgress()` / `ProgressUpdateSpec` (since 2.9)
+   are not exposed. Would let long-running tasks report progress to the UI;
+   pairs naturally with the foreground service support.
+3. **Status observation** — no public way to query `WorkInfo`
+   (`getWorkInfosForUniqueWorkLiveData`, `getWorkInfosByTag`). This is issue
+   #194/#475; the persisted query API design from the issue close comment
+   applies.
+4. **Work chaining** — `beginUniqueWork(...).then(...)` / `WorkContinuation`
+   (sequential chains) are not exposed. Medium value, larger API design.
+5. **`runAttemptCount`** is used internally (RETRYING status) but not surfaced
+   to the Dart handler — nice-to-have for idempotency logic.
+
+## Recommendations
+
+- Keep 2.11.2; re-check 2.12 stable for `WorkMetricsQuery`.
+- Highest-value next additions: **expedited flag** (small) and **progress
+  updates** (medium) — both are `WorkRequest`-level features that fit the
+  existing pigeon types without redesign.
+- Status observation should stay the separate #194/#475 effort (persisted
+  query API + optional live stream).

@@ -1,0 +1,78 @@
+# Windows & Linux desktop ports — design thinking
+
+_Status: design phase (tracked in #324). No code yet._
+
+Both desktop targets have real OS scheduling (unlike web), so a port is
+feasible with the same Dart API. The core pattern mirrors Android's headless
+engine: the OS launches the app in a **background mode**, the app runs the
+`callbackDispatcher`, reports the result, exits.
+
+## Linux (systemd) — most promising, do first
+
+- **Mechanism:** systemd *user* units.
+  - Periodic: a `.timer` unit (OnCalendar / OnUnitActiveSec) activating a
+    `.service` that runs the app with `--background-task <taskName>`.
+  - One-off: `systemd-run --user --on-active=<delay>` transient units, or
+    transient timers for the periodic case.
+  - `Persistent=true` on timers = missed runs execute on next wake (matches
+    WorkManager's catch-up semantics).
+- **App side:** detect the `--background-task` arg at startup → no window, run
+  the dispatcher isolate, exit. Same pattern as the web worker bundle, but a
+  full Flutter engine is fine here (no Flutter-free constraint).
+- **Constraints:** partial — `OnBattery`/`OnAC` via a small helper, idle via
+  `IdleHint`; network check via NetworkManager DBus. Doable but each needs a
+  thin native shim.
+- **Caveats:** user timers only run while the user session is active unless
+  `loginctl enable-linger` is set (document it). Flatpak/Snap sandboxing
+  complicates unit creation — punt for v1.
+- **Deps:** `systemd-run` (present on systemd systems); no native plugin
+  needed beyond calling `systemd-run`/writing unit files — could even be pure
+  Dart via `Process.run`.
+
+## Windows (Task Scheduler) — after Linux
+
+- **Mechanism:** Task Scheduler (COM via the `win32` package, or `schtasks`
+  CLI).
+  - Register a task: trigger = time/interval (one-off) or daily/weekly
+    (periodic), action = launch the app exe with `--background-task`.
+  - Task conditions map to constraints: `WakeToRun`, `IdleSettings`,
+    `PowerSettings` (battery/AC), network via task conditions (partial).
+- **App side:** same `--background-task` headless mode. Note: a GUI exe can
+  run headless fine; no console window if built with `win32` subsystem.
+- **Honest limits:** Task Scheduler is per-user; "run whether user is logged on
+  or not" needs credentials/admin — document as opt-in. No equivalent of
+  WorkManager's guaranteed-while-app-killed semantics beyond the registered
+  task itself.
+- **Deps:** `win32` (dev dependency) for the COM API; no C++ code needed.
+
+## Shared design
+
+- New packages `workmanager_windows` / `workmanager_linux` implementing
+  `WorkmanagerPlatform` — same pigeon contract, no changes to the core package.
+- **Input data / results:** reuse the existing `inputData` (JSON file on disk,
+  like Android's payload) and `BackgroundTaskResult` enum.
+- **Cancellation:** cancel = delete task/timer by uniqueName; on Windows also
+  `schtasks /End`.
+- **Debug/status:** reuse the `TaskStatus` pipeline where the OS reports
+  (systemd timer state, Task Scheduler last run result).
+- Testing: Linux is CI-friendly (systemd available on ubuntu runners with
+  `XDG_RUNTIME_DIR`); Windows needs a windows runner — doable via
+  `windows-latest`.
+
+## Open questions
+
+1. Linux: systemd user units vs a self-daemonizing Dart isolate (long-running
+   process with its own scheduler)? systemd is more "OS-native" and survives
+   crashes; a daemon keeps the callbackDispatcher warm. systemd wins for v1.
+2. Windows: how much of Task Scheduler's XML surface (conditions, repetition)
+   to expose through `Constraints` vs a `desktopOptions` bag?
+3. Should both share a `workmanager_desktop` core with platform shims? (melos
+   monorepo makes this easy.)
+4. Do we need UI-side notification (tray) for cancelled/running state? v1: no.
+
+## Suggested order
+
+1. `workmanager_linux` with one-off + periodic via systemd (proves the
+   headless-mode pattern end to end).
+2. `workmanager_windows` via Task Scheduler COM.
+3. Cross-platform constraints subset + docs (caveats per platform).
