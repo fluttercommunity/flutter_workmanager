@@ -171,6 +171,34 @@ void main() {
         expect(androidConstraints.requiresDeviceIdle, false);
         expect(androidConstraints.requiresStorageNotLow, true);
       });
+
+      test('should support Android content URI trigger constraints', () {
+        final constraints = Constraints(
+          contentUriTriggers: [
+            ContentUriTrigger(
+              uri: 'content://media/external/images/media',
+              triggerForDescendants: true,
+            ),
+            ContentUriTrigger(
+              uri: 'content://com.example.provider/items',
+              triggerForDescendants: false,
+            ),
+          ],
+        );
+
+        final triggers = constraints.contentUriTriggers!;
+        expect(triggers, hasLength(2));
+        expect(triggers[0]!.uri, 'content://media/external/images/media');
+        expect(triggers[0]!.triggerForDescendants, true);
+        expect(triggers[1]!.uri, 'content://com.example.provider/items');
+        expect(triggers[1]!.triggerForDescendants, false);
+      });
+
+      test('should default content uri triggers to null', () {
+        final constraints = Constraints(requiresCharging: true);
+
+        expect(constraints.contentUriTriggers, isNull);
+      });
     });
 
     group('Error handling and edge cases', () {

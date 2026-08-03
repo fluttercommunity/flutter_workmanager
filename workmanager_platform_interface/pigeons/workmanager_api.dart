@@ -214,6 +214,7 @@ class Constraints {
     this.requiresCharging,
     this.requiresDeviceIdle,
     this.requiresStorageNotLow,
+    this.contentUriTriggers,
   });
 
   NetworkType? networkType;
@@ -221,6 +222,41 @@ class Constraints {
   bool? requiresCharging;
   bool? requiresDeviceIdle;
   bool? requiresStorageNotLow;
+
+  /// Content URI triggers that run the work when the observed content URIs
+  /// change (Android only).
+  ///
+  /// Mirrors WorkManager's `Constraints.Builder.addContentUriTrigger`:
+  /// https://developer.android.com/reference/androidx/work/Constraints.Builder#addContentUriTrigger(android.net.Uri,%20boolean)
+  ///
+  /// Requires Android 7.0 (API 24)+; on older Android versions the triggers
+  /// are ignored. WorkManager also limits how many content-URI-triggered
+  /// workers can be enqueued at once (default 8, configurable via
+  /// `Configuration.Builder.setContentUriTriggerWorkersLimit`).
+  ///
+  /// Other platforms ignore this field.
+  List<ContentUriTrigger?>? contentUriTriggers;
+}
+
+/// A single content URI trigger for Android WorkManager constraints.
+///
+/// When [uri] is updated, inserted or deleted by the system or another app,
+/// the work associated with the constraint is run.
+///
+/// Mirrors WorkManager's `ContentUriTrigger`:
+/// https://developer.android.com/reference/androidx/work/ContentUriTrigger
+class ContentUriTrigger {
+  ContentUriTrigger({
+    required this.uri,
+    required this.triggerForDescendants,
+  });
+
+  /// The local `content:` Uri to observe for changes, e.g.
+  /// `content://media/external/images/media`.
+  String uri;
+
+  /// Whether changes to any descendant of [uri] also run the work.
+  bool triggerForDescendants;
 }
 
 class BackoffPolicyConfig {

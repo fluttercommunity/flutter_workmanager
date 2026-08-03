@@ -329,6 +329,7 @@ class Constraints {
     this.requiresCharging,
     this.requiresDeviceIdle,
     this.requiresStorageNotLow,
+    this.contentUriTriggers,
   });
 
   NetworkType? networkType;
@@ -341,6 +342,20 @@ class Constraints {
 
   bool? requiresStorageNotLow;
 
+  /// Content URI triggers that run the work when the observed content URIs
+  /// change (Android only).
+  ///
+  /// Mirrors WorkManager's `Constraints.Builder.addContentUriTrigger`:
+  /// https://developer.android.com/reference/androidx/work/Constraints.Builder#addContentUriTrigger(android.net.Uri,%20boolean)
+  ///
+  /// Requires Android 7.0 (API 24)+; on older Android versions the triggers
+  /// are ignored. WorkManager also limits how many content-URI-triggered
+  /// workers can be enqueued at once (default 8, configurable via
+  /// `Configuration.Builder.setContentUriTriggerWorkersLimit`).
+  ///
+  /// Other platforms ignore this field.
+  List<ContentUriTrigger?>? contentUriTriggers;
+
   List<Object?> _toList() {
     return <Object?>[
       networkType,
@@ -348,6 +363,7 @@ class Constraints {
       requiresCharging,
       requiresDeviceIdle,
       requiresStorageNotLow,
+      contentUriTriggers,
     ];
   }
 
@@ -362,6 +378,7 @@ class Constraints {
       requiresCharging: result[2] as bool?,
       requiresDeviceIdle: result[3] as bool?,
       requiresStorageNotLow: result[4] as bool?,
+      contentUriTriggers: (result[5] as List<Object?>?)?.cast<ContentUriTrigger?>(),
     );
   }
 
@@ -374,7 +391,62 @@ class Constraints {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(networkType, other.networkType) && _deepEquals(requiresBatteryNotLow, other.requiresBatteryNotLow) && _deepEquals(requiresCharging, other.requiresCharging) && _deepEquals(requiresDeviceIdle, other.requiresDeviceIdle) && _deepEquals(requiresStorageNotLow, other.requiresStorageNotLow);
+    return _deepEquals(networkType, other.networkType) && _deepEquals(requiresBatteryNotLow, other.requiresBatteryNotLow) && _deepEquals(requiresCharging, other.requiresCharging) && _deepEquals(requiresDeviceIdle, other.requiresDeviceIdle) && _deepEquals(requiresStorageNotLow, other.requiresStorageNotLow) && _deepEquals(contentUriTriggers, other.contentUriTriggers);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+}
+
+/// A single content URI trigger for Android WorkManager constraints.
+///
+/// When [uri] is updated, inserted or deleted by the system or another app,
+/// the work associated with the constraint is run.
+///
+/// Mirrors WorkManager's `ContentUriTrigger`:
+/// https://developer.android.com/reference/androidx/work/ContentUriTrigger
+class ContentUriTrigger {
+  ContentUriTrigger({
+    required this.uri,
+    required this.triggerForDescendants,
+  });
+
+  /// The local `content:` Uri to observe for changes, e.g.
+  /// `content://media/external/images/media`.
+  String uri;
+
+  /// Whether changes to any descendant of [uri] also run the work.
+  bool triggerForDescendants;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      uri,
+      triggerForDescendants,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static ContentUriTrigger decode(Object result) {
+    result as List<Object?>;
+    return ContentUriTrigger(
+      uri: result[0]! as String,
+      triggerForDescendants: result[1]! as bool,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! ContentUriTrigger || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(uri, other.uri) && _deepEquals(triggerForDescendants, other.triggerForDescendants);
   }
 
   @override
@@ -869,26 +941,29 @@ class _PigeonCodec extends StandardMessageCodec {
     }    else if (value is Constraints) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
-    }    else if (value is BackoffPolicyConfig) {
+    }    else if (value is ContentUriTrigger) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
-    }    else if (value is InitializeRequest) {
+    }    else if (value is BackoffPolicyConfig) {
       buffer.putUint8(139);
       writeValue(buffer, value.encode());
-    }    else if (value is OneOffTaskRequest) {
+    }    else if (value is InitializeRequest) {
       buffer.putUint8(140);
       writeValue(buffer, value.encode());
-    }    else if (value is PeriodicTaskRequest) {
+    }    else if (value is OneOffTaskRequest) {
       buffer.putUint8(141);
       writeValue(buffer, value.encode());
-    }    else if (value is ProcessingTaskRequest) {
+    }    else if (value is PeriodicTaskRequest) {
       buffer.putUint8(142);
       writeValue(buffer, value.encode());
-    }    else if (value is HealthResearchTaskRequest) {
+    }    else if (value is ProcessingTaskRequest) {
       buffer.putUint8(143);
       writeValue(buffer, value.encode());
-    }    else if (value is ContinuedProcessingTaskRequest) {
+    }    else if (value is HealthResearchTaskRequest) {
       buffer.putUint8(144);
+      writeValue(buffer, value.encode());
+    }    else if (value is ContinuedProcessingTaskRequest) {
+      buffer.putUint8(145);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -924,18 +999,20 @@ class _PigeonCodec extends StandardMessageCodec {
       case 137:
         return Constraints.decode(readValue(buffer)!);
       case 138:
-        return BackoffPolicyConfig.decode(readValue(buffer)!);
+        return ContentUriTrigger.decode(readValue(buffer)!);
       case 139:
-        return InitializeRequest.decode(readValue(buffer)!);
+        return BackoffPolicyConfig.decode(readValue(buffer)!);
       case 140:
-        return OneOffTaskRequest.decode(readValue(buffer)!);
+        return InitializeRequest.decode(readValue(buffer)!);
       case 141:
-        return PeriodicTaskRequest.decode(readValue(buffer)!);
+        return OneOffTaskRequest.decode(readValue(buffer)!);
       case 142:
-        return ProcessingTaskRequest.decode(readValue(buffer)!);
+        return PeriodicTaskRequest.decode(readValue(buffer)!);
       case 143:
-        return HealthResearchTaskRequest.decode(readValue(buffer)!);
+        return ProcessingTaskRequest.decode(readValue(buffer)!);
       case 144:
+        return HealthResearchTaskRequest.decode(readValue(buffer)!);
+      case 145:
         return ContinuedProcessingTaskRequest.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);

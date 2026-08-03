@@ -26,6 +26,8 @@ const rescheduledTaskKey =
 const failedTaskKey = "dev.fluttercommunity.workmanagerExample.failedTask";
 const simpleDelayedTask =
     "dev.fluttercommunity.workmanagerExample.simpleDelayedTask";
+const contentUriTaskKey =
+    "dev.fluttercommunity.workmanagerExample.contentUriTask";
 const simplePeriodicTask =
     "dev.fluttercommunity.workmanagerExample.simplePeriodicTask";
 const simplePeriodic1HourTask =
@@ -42,6 +44,7 @@ final List<String> allTasks = [
   rescheduledTaskKey,
   failedTaskKey,
   simpleDelayedTask,
+  contentUriTaskKey,
   simplePeriodicTask,
   simplePeriodic1HourTask,
   iOSBackgroundAppRefresh,
@@ -81,6 +84,10 @@ void callbackDispatcher() {
         return Future.error('failed');
       case simpleDelayedTask:
         debugPrint("$simpleDelayedTask was executed");
+        break;
+      case contentUriTaskKey:
+        debugPrint(
+            "$contentUriTaskKey was executed after a content URI change");
         break;
       case simplePeriodicTask:
         debugPrint("$simplePeriodicTask was executed");
@@ -227,6 +234,27 @@ class _MyAppState extends State<MyApp> {
                         initialDelay: Duration(seconds: 10),
                       );
                     }),
+                // This task runs when a content URI changes (Android only).
+                // A change to any image in the media store triggers it.
+                ElevatedButton(
+                  onPressed: Platform.isAndroid
+                      ? () {
+                          Workmanager().registerOneOffTask(
+                            contentUriTaskKey,
+                            contentUriTaskKey,
+                            constraints: Constraints(
+                              contentUriTriggers: [
+                                ContentUriTrigger(
+                                  uri: 'content://media/external/images/media',
+                                  triggerForDescendants: true,
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                      : null,
+                  child: Text("Register Content URI Task (Android)"),
+                ),
                 SizedBox(height: 8),
                 Text(
                   "Register periodic task (android only)",

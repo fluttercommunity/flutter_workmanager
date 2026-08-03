@@ -392,6 +392,19 @@ struct Constraints: Hashable {
   var requiresCharging: Bool? = nil
   var requiresDeviceIdle: Bool? = nil
   var requiresStorageNotLow: Bool? = nil
+  /// Content URI triggers that run the work when the observed content URIs
+  /// change (Android only).
+  ///
+  /// Mirrors WorkManager's `Constraints.Builder.addContentUriTrigger`:
+  /// https://developer.android.com/reference/androidx/work/Constraints.Builder#addContentUriTrigger(android.net.Uri,%20boolean)
+  ///
+  /// Requires Android 7.0 (API 24)+; on older Android versions the triggers
+  /// are ignored. WorkManager also limits how many content-URI-triggered
+  /// workers can be enqueued at once (default 8, configurable via
+  /// `Configuration.Builder.setContentUriTriggerWorkersLimit`).
+  ///
+  /// Other platforms ignore this field.
+  var contentUriTriggers: [ContentUriTrigger?]? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -401,13 +414,15 @@ struct Constraints: Hashable {
     let requiresCharging: Bool? = nilOrValue(pigeonVar_list[2])
     let requiresDeviceIdle: Bool? = nilOrValue(pigeonVar_list[3])
     let requiresStorageNotLow: Bool? = nilOrValue(pigeonVar_list[4])
+    let contentUriTriggers: [ContentUriTrigger?]? = nilOrValue(pigeonVar_list[5])
 
     return Constraints(
       networkType: networkType,
       requiresBatteryNotLow: requiresBatteryNotLow,
       requiresCharging: requiresCharging,
       requiresDeviceIdle: requiresDeviceIdle,
-      requiresStorageNotLow: requiresStorageNotLow
+      requiresStorageNotLow: requiresStorageNotLow,
+      contentUriTriggers: contentUriTriggers
     )
   }
   func toList() -> [Any?] {
@@ -417,13 +432,14 @@ struct Constraints: Hashable {
       requiresCharging,
       requiresDeviceIdle,
       requiresStorageNotLow,
+      contentUriTriggers,
     ]
   }
   static func == (lhs: Constraints, rhs: Constraints) -> Bool {
     if Swift.type(of: lhs) != Swift.type(of: rhs) {
       return false
     }
-    return deepEqualsWorkmanagerApi(lhs.networkType, rhs.networkType) && deepEqualsWorkmanagerApi(lhs.requiresBatteryNotLow, rhs.requiresBatteryNotLow) && deepEqualsWorkmanagerApi(lhs.requiresCharging, rhs.requiresCharging) && deepEqualsWorkmanagerApi(lhs.requiresDeviceIdle, rhs.requiresDeviceIdle) && deepEqualsWorkmanagerApi(lhs.requiresStorageNotLow, rhs.requiresStorageNotLow)
+    return deepEqualsWorkmanagerApi(lhs.networkType, rhs.networkType) && deepEqualsWorkmanagerApi(lhs.requiresBatteryNotLow, rhs.requiresBatteryNotLow) && deepEqualsWorkmanagerApi(lhs.requiresCharging, rhs.requiresCharging) && deepEqualsWorkmanagerApi(lhs.requiresDeviceIdle, rhs.requiresDeviceIdle) && deepEqualsWorkmanagerApi(lhs.requiresStorageNotLow, rhs.requiresStorageNotLow) && deepEqualsWorkmanagerApi(lhs.contentUriTriggers, rhs.contentUriTriggers)
   }
 
   func hash(into hasher: inout Hasher) {
@@ -433,6 +449,54 @@ struct Constraints: Hashable {
     deepHashWorkmanagerApi(value: requiresCharging, hasher: &hasher)
     deepHashWorkmanagerApi(value: requiresDeviceIdle, hasher: &hasher)
     deepHashWorkmanagerApi(value: requiresStorageNotLow, hasher: &hasher)
+    deepHashWorkmanagerApi(value: contentUriTriggers, hasher: &hasher)
+  }
+}
+
+/// A single content URI trigger for Android WorkManager constraints.
+///
+/// When [uri] is updated, inserted or deleted by the system or another app,
+/// the work associated with the constraint is run.
+///
+/// Mirrors WorkManager's `ContentUriTrigger`:
+/// https://developer.android.com/reference/androidx/work/ContentUriTrigger
+///
+/// Generated class from Pigeon that represents data sent in messages.
+struct ContentUriTrigger: Hashable {
+  /// The local `content:` Uri to observe for changes, e.g.
+  /// `content://media/external/images/media`.
+  var uri: String
+  /// Whether changes to any descendant of [uri] also run the work.
+  var triggerForDescendants: Bool
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> ContentUriTrigger? {
+    let uri = pigeonVar_list[0] as! String
+    let triggerForDescendants = pigeonVar_list[1] as! Bool
+
+    return ContentUriTrigger(
+      uri: uri,
+      triggerForDescendants: triggerForDescendants
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      uri,
+      triggerForDescendants,
+    ]
+  }
+  static func == (lhs: ContentUriTrigger, rhs: ContentUriTrigger) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsWorkmanagerApi(lhs.uri, rhs.uri) && deepEqualsWorkmanagerApi(lhs.triggerForDescendants, rhs.triggerForDescendants)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("ContentUriTrigger")
+    deepHashWorkmanagerApi(value: uri, hasher: &hasher)
+    deepHashWorkmanagerApi(value: triggerForDescendants, hasher: &hasher)
   }
 }
 
@@ -875,18 +939,20 @@ private class WorkmanagerApiPigeonCodecReader: FlutterStandardReader {
     case 137:
       return Constraints.fromList(self.readValue() as! [Any?])
     case 138:
-      return BackoffPolicyConfig.fromList(self.readValue() as! [Any?])
+      return ContentUriTrigger.fromList(self.readValue() as! [Any?])
     case 139:
-      return InitializeRequest.fromList(self.readValue() as! [Any?])
+      return BackoffPolicyConfig.fromList(self.readValue() as! [Any?])
     case 140:
-      return OneOffTaskRequest.fromList(self.readValue() as! [Any?])
+      return InitializeRequest.fromList(self.readValue() as! [Any?])
     case 141:
-      return PeriodicTaskRequest.fromList(self.readValue() as! [Any?])
+      return OneOffTaskRequest.fromList(self.readValue() as! [Any?])
     case 142:
-      return ProcessingTaskRequest.fromList(self.readValue() as! [Any?])
+      return PeriodicTaskRequest.fromList(self.readValue() as! [Any?])
     case 143:
-      return HealthResearchTaskRequest.fromList(self.readValue() as! [Any?])
+      return ProcessingTaskRequest.fromList(self.readValue() as! [Any?])
     case 144:
+      return HealthResearchTaskRequest.fromList(self.readValue() as! [Any?])
+    case 145:
       return ContinuedProcessingTaskRequest.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
@@ -923,26 +989,29 @@ private class WorkmanagerApiPigeonCodecWriter: FlutterStandardWriter {
     } else if let value = value as? Constraints {
       super.writeByte(137)
       super.writeValue(value.toList())
-    } else if let value = value as? BackoffPolicyConfig {
+    } else if let value = value as? ContentUriTrigger {
       super.writeByte(138)
       super.writeValue(value.toList())
-    } else if let value = value as? InitializeRequest {
+    } else if let value = value as? BackoffPolicyConfig {
       super.writeByte(139)
       super.writeValue(value.toList())
-    } else if let value = value as? OneOffTaskRequest {
+    } else if let value = value as? InitializeRequest {
       super.writeByte(140)
       super.writeValue(value.toList())
-    } else if let value = value as? PeriodicTaskRequest {
+    } else if let value = value as? OneOffTaskRequest {
       super.writeByte(141)
       super.writeValue(value.toList())
-    } else if let value = value as? ProcessingTaskRequest {
+    } else if let value = value as? PeriodicTaskRequest {
       super.writeByte(142)
       super.writeValue(value.toList())
-    } else if let value = value as? HealthResearchTaskRequest {
+    } else if let value = value as? ProcessingTaskRequest {
       super.writeByte(143)
       super.writeValue(value.toList())
-    } else if let value = value as? ContinuedProcessingTaskRequest {
+    } else if let value = value as? HealthResearchTaskRequest {
       super.writeByte(144)
+      super.writeValue(value.toList())
+    } else if let value = value as? ContinuedProcessingTaskRequest {
+      super.writeByte(145)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
