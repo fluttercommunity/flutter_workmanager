@@ -8,6 +8,14 @@
 > PWA required, Flutter-free dispatcher). See
 > [workmanager_web/README.md](../workmanager_web/README.md).
 
+> ⚠️ **Experimental Linux support** is available through the new
+> `workmanager_linux` package (systemd user units: `systemd-run` transient
+> units for one-off tasks, `.timer`/`.service` unit pairs for periodic
+> tasks, with `Persistent=true` catch-up). Tasks launch the app in headless
+> `--background-task` mode. Requires a systemd user session; constraints,
+> backoff and tags are not supported yet. See
+> [workmanager_linux/README.md](../workmanager_linux/README.md).
+
 
 [![pub package](https://img.shields.io/pub/v/workmanager.svg)](https://pub.dartlang.org/packages/workmanager)
 [![pub points](https://img.shields.io/pub/points/workmanager)](https://pub.dev/packages/workmanager/score)
@@ -61,6 +69,8 @@ This plugin uses a federated architecture with platform-specific implementations
 - **workmanager**: Main package providing the unified API
 - **workmanager_android**: Android implementation using WorkManager
 - **workmanager_apple**: iOS implementation using BGTaskScheduler + macOS implementation using NSBackgroundActivityScheduler
+- **workmanager_web**: Web implementation using Service Worker + Web Worker (experimental)
+- **workmanager_linux**: Linux implementation using systemd user units (experimental)
 
 ## 🐛 Support & Issues
 

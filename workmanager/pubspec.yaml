@@ -17,6 +17,8 @@ dependencies:
   workmanager_android: ^0.10.3
   workmanager_apple: ^0.9.9
   workmanager_web: ^0.1.3
+  workmanager_linux:
+    path: ../workmanager_linux
 
 dev_dependencies:
   test: ^1.25.15

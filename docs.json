@@ -46,6 +46,10 @@
           "href": "/web"
         },
         {
+          "title": "Linux (experimental)",
+          "href": "/linux"
+        },
+        {
           "title": "Troubleshooting",
           "href": "/troubleshooting"
         }
