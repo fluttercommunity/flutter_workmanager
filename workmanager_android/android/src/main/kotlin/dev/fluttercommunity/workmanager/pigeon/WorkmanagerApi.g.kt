@@ -687,7 +687,17 @@ data class OneOffTaskRequest (
   val existingWorkPolicy: ExistingWorkPolicy? = null,
   val outOfQuotaPolicy: OutOfQuotaPolicy? = null,
   /** When set, the worker runs as an Android foreground service. */
-  val foregroundServiceConfig: ForegroundServiceConfig? = null
+  val foregroundServiceConfig: ForegroundServiceConfig? = null,
+  /**
+   * When true (Android only), the task is scheduled as expedited work.
+   *
+   * WorkManager runs expedited work with high priority; on Android 12
+   * (API 31)+ the system runs it as a WorkManager-managed foreground
+   * service and shows a notification to the user. Only meaningful for
+   * one-off tasks — periodic tasks cannot be expedited. Other platforms
+   * ignore this field.
+   */
+  val expedited: Boolean? = null
 )
  {
   companion object {
@@ -702,7 +712,8 @@ data class OneOffTaskRequest (
       val existingWorkPolicy = pigeonVar_list[7] as ExistingWorkPolicy?
       val outOfQuotaPolicy = pigeonVar_list[8] as OutOfQuotaPolicy?
       val foregroundServiceConfig = pigeonVar_list[9] as ForegroundServiceConfig?
-      return OneOffTaskRequest(uniqueName, taskName, inputData, initialDelaySeconds, constraints, backoffPolicy, tag, existingWorkPolicy, outOfQuotaPolicy, foregroundServiceConfig)
+      val expedited = pigeonVar_list[10] as Boolean?
+      return OneOffTaskRequest(uniqueName, taskName, inputData, initialDelaySeconds, constraints, backoffPolicy, tag, existingWorkPolicy, outOfQuotaPolicy, foregroundServiceConfig, expedited)
     }
   }
   fun toList(): List<Any?> {
@@ -717,6 +728,7 @@ data class OneOffTaskRequest (
       existingWorkPolicy,
       outOfQuotaPolicy,
       foregroundServiceConfig,
+      expedited,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -727,7 +739,7 @@ data class OneOffTaskRequest (
       return true
     }
     val other = other as OneOffTaskRequest
-    return WorkmanagerApiPigeonUtils.deepEquals(this.uniqueName, other.uniqueName) && WorkmanagerApiPigeonUtils.deepEquals(this.taskName, other.taskName) && WorkmanagerApiPigeonUtils.deepEquals(this.inputData, other.inputData) && WorkmanagerApiPigeonUtils.deepEquals(this.initialDelaySeconds, other.initialDelaySeconds) && WorkmanagerApiPigeonUtils.deepEquals(this.constraints, other.constraints) && WorkmanagerApiPigeonUtils.deepEquals(this.backoffPolicy, other.backoffPolicy) && WorkmanagerApiPigeonUtils.deepEquals(this.tag, other.tag) && WorkmanagerApiPigeonUtils.deepEquals(this.existingWorkPolicy, other.existingWorkPolicy) && WorkmanagerApiPigeonUtils.deepEquals(this.outOfQuotaPolicy, other.outOfQuotaPolicy) && WorkmanagerApiPigeonUtils.deepEquals(this.foregroundServiceConfig, other.foregroundServiceConfig)
+    return WorkmanagerApiPigeonUtils.deepEquals(this.uniqueName, other.uniqueName) && WorkmanagerApiPigeonUtils.deepEquals(this.taskName, other.taskName) && WorkmanagerApiPigeonUtils.deepEquals(this.inputData, other.inputData) && WorkmanagerApiPigeonUtils.deepEquals(this.initialDelaySeconds, other.initialDelaySeconds) && WorkmanagerApiPigeonUtils.deepEquals(this.constraints, other.constraints) && WorkmanagerApiPigeonUtils.deepEquals(this.backoffPolicy, other.backoffPolicy) && WorkmanagerApiPigeonUtils.deepEquals(this.tag, other.tag) && WorkmanagerApiPigeonUtils.deepEquals(this.existingWorkPolicy, other.existingWorkPolicy) && WorkmanagerApiPigeonUtils.deepEquals(this.outOfQuotaPolicy, other.outOfQuotaPolicy) && WorkmanagerApiPigeonUtils.deepEquals(this.foregroundServiceConfig, other.foregroundServiceConfig) && WorkmanagerApiPigeonUtils.deepEquals(this.expedited, other.expedited)
   }
 
   override fun hashCode(): Int {
@@ -742,6 +754,7 @@ data class OneOffTaskRequest (
     result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.existingWorkPolicy)
     result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.outOfQuotaPolicy)
     result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.foregroundServiceConfig)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.expedited)
     return result
   }
 }

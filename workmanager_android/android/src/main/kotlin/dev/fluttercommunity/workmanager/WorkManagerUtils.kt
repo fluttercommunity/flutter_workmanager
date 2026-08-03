@@ -167,6 +167,43 @@ private fun Map<String?, Any?>.filterNotNullKeys(): Map<String, Any> =
             if (key != null && value != null) key to value else null
         }.toMap()
 
+internal fun createOneOffWorkRequest(request: dev.fluttercommunity.workmanager.pigeon.OneOffTaskRequest): OneTimeWorkRequest {
+    val builder =
+        OneTimeWorkRequest
+            .Builder(BackgroundWorker::class.java)
+            .setInputData(
+                buildTaskInputData(
+                    request.taskName,
+                    request.inputData?.filterNotNullKeys(),
+                    request.foregroundServiceConfig,
+                ),
+            ).setInitialDelay(
+                request.initialDelaySeconds ?: DEFAULT_INITIAL_DELAY_SECONDS,
+                TimeUnit.SECONDS,
+            ).setConstraints(
+                request.constraints?.toAndroidConstraints() ?: defaultConstraints,
+            ).apply {
+                request.backoffPolicy?.let { backoffConfig ->
+                    if (backoffConfig.backoffPolicy != null && backoffConfig.backoffDelayMillis != null) {
+                        setBackoffCriteria(
+                            backoffConfig.backoffPolicy.toAndroidBackoffPolicy(),
+                            backoffConfig.backoffDelayMillis.toLong(),
+                            TimeUnit.MILLISECONDS,
+                        )
+                    }
+                }
+            }.apply {
+                request.tag?.let(::addTag)
+                if (request.expedited == true) {
+                    setExpedited(
+                        request.outOfQuotaPolicy?.toAndroidOutOfQuotaPolicy()
+                            ?: OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST,
+                    )
+                }
+            }
+    return builder.build()
+}
+
 class WorkManagerWrapper(
     val context: Context,
 ) {
@@ -174,34 +211,7 @@ class WorkManagerWrapper(
 
     fun enqueueOneOffTask(request: dev.fluttercommunity.workmanager.pigeon.OneOffTaskRequest) {
         try {
-            val oneOffTaskRequest =
-                OneTimeWorkRequest
-                    .Builder(BackgroundWorker::class.java)
-                    .setInputData(
-                        buildTaskInputData(
-                            request.taskName,
-                            request.inputData?.filterNotNullKeys(),
-                            request.foregroundServiceConfig,
-                        ),
-                    ).setInitialDelay(
-                        request.initialDelaySeconds ?: DEFAULT_INITIAL_DELAY_SECONDS,
-                        TimeUnit.SECONDS,
-                    ).setConstraints(
-                        request.constraints?.toAndroidConstraints() ?: defaultConstraints,
-                    ).apply {
-                        request.backoffPolicy?.let { backoffConfig ->
-                            if (backoffConfig.backoffPolicy != null && backoffConfig.backoffDelayMillis != null) {
-                                setBackoffCriteria(
-                                    backoffConfig.backoffPolicy.toAndroidBackoffPolicy(),
-                                    backoffConfig.backoffDelayMillis.toLong(),
-                                    TimeUnit.MILLISECONDS,
-                                )
-                            }
-                        }
-                    }.apply {
-                        request.tag?.let(::addTag)
-                        request.outOfQuotaPolicy?.toAndroidOutOfQuotaPolicy()?.let(::setExpedited)
-                    }.build()
+            val oneOffTaskRequest = createOneOffWorkRequest(request)
             workManager.enqueueUniqueWork(
                 request.uniqueName,
                 request.existingWorkPolicy?.toAndroidWorkPolicy()

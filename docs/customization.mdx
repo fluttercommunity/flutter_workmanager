@@ -217,6 +217,40 @@ to happen at a specific time, schedule a one-off task with `initialDelay` that
 registers the periodic task when it runs.
 </Warning>
 
+### Expedited work (Android only)
+
+Expedited work is WorkManager's high-priority execution mode for short,
+user-visible work (for example an upload the user just triggered).
+
+```dart
+Workmanager().registerOneOffTask(
+  "sync-user-data",
+  "syncTask",
+  expedited: true,
+  outOfQuotaPolicy: OutOfQuotaPolicy.runAsNonExpeditedWorkRequest,
+);
+```
+
+What you need to know:
+
+- **Android only.** iOS, web and desktop ignore the `expedited` flag.
+- **One-off tasks only.** Expedited work is a one-time execution concept;
+  WorkManager does not support expedited periodic tasks, so the flag is not
+  available on `registerPeriodicTask`.
+- **Android 12+ (API 31+) runs expedited work as a foreground service.** The
+  system starts a WorkManager-managed foreground service and shows a
+  notification while the task runs, so the user will see it. Use expedited work
+  for work the user is waiting on, not for routine background maintenance.
+- **`outOfQuotaPolicy` only applies to expedited work.** It decides what
+  happens when the app has exhausted its expedited-job quota:
+  `runAsNonExpeditedWorkRequest` falls back to a normal (non-expedited) request,
+  `dropWorkRequest` drops the request entirely. Passing an `outOfQuotaPolicy`
+  without `expedited: true` has no effect.
+- **Constraints are limited.** Expedited work cannot use battery, charging or
+  device-idle constraints, and is intended for short work (a few minutes at
+  most), not long-running processing. For genuinely long-running work use
+  `foregroundServiceConfig` instead (see below).
+
 ## iOS: Periodic Timing & Chaining One-off Tasks
 
 On iOS there is no fixed-interval scheduler. `registerPeriodicTask` submits a

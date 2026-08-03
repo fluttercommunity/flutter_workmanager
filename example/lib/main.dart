@@ -28,6 +28,8 @@ const simpleDelayedTask =
     "dev.fluttercommunity.workmanagerExample.simpleDelayedTask";
 const contentUriTaskKey =
     "dev.fluttercommunity.workmanagerExample.contentUriTask";
+const expeditedTaskKey =
+    "dev.fluttercommunity.workmanagerExample.expeditedTask";
 const simplePeriodicTask =
     "dev.fluttercommunity.workmanagerExample.simplePeriodicTask";
 const simplePeriodic1HourTask =
@@ -45,6 +47,7 @@ final List<String> allTasks = [
   failedTaskKey,
   simpleDelayedTask,
   contentUriTaskKey,
+  expeditedTaskKey,
   simplePeriodicTask,
   simplePeriodic1HourTask,
   iOSBackgroundAppRefresh,
@@ -88,6 +91,9 @@ void callbackDispatcher() {
       case contentUriTaskKey:
         debugPrint(
             "$contentUriTaskKey was executed after a content URI change");
+        break;
+      case expeditedTaskKey:
+        debugPrint("$expeditedTaskKey was executed (expedited)");
         break;
       case simplePeriodicTask:
         debugPrint("$simplePeriodicTask was executed");
@@ -254,6 +260,21 @@ class _MyAppState extends State<MyApp> {
                         }
                       : null,
                   child: Text("Register Content URI Task (Android)"),
+                ),
+                // This task runs once with high priority (Android only).
+                // On Android 12+ the system runs it as a foreground service
+                // managed by WorkManager and shows a notification.
+                ElevatedButton(
+                  onPressed: Platform.isAndroid
+                      ? () {
+                          Workmanager().registerOneOffTask(
+                            expeditedTaskKey,
+                            expeditedTaskKey,
+                            expedited: true,
+                          );
+                        }
+                      : null,
+                  child: Text("Register expedited task (Android)"),
                 ),
                 SizedBox(height: 8),
                 Text(

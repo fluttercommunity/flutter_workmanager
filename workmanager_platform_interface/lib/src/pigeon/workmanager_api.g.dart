@@ -551,6 +551,7 @@ class OneOffTaskRequest {
     this.existingWorkPolicy,
     this.outOfQuotaPolicy,
     this.foregroundServiceConfig,
+    this.expedited,
   });
 
   String uniqueName;
@@ -574,6 +575,15 @@ class OneOffTaskRequest {
   /// When set, the worker runs as an Android foreground service.
   ForegroundServiceConfig? foregroundServiceConfig;
 
+  /// When true (Android only), the task is scheduled as expedited work.
+  ///
+  /// WorkManager runs expedited work with high priority; on Android 12
+  /// (API 31)+ the system runs it as a WorkManager-managed foreground
+  /// service and shows a notification to the user. Only meaningful for
+  /// one-off tasks — periodic tasks cannot be expedited. Other platforms
+  /// ignore this field.
+  bool? expedited;
+
   List<Object?> _toList() {
     return <Object?>[
       uniqueName,
@@ -586,6 +596,7 @@ class OneOffTaskRequest {
       existingWorkPolicy,
       outOfQuotaPolicy,
       foregroundServiceConfig,
+      expedited,
     ];
   }
 
@@ -605,6 +616,7 @@ class OneOffTaskRequest {
       existingWorkPolicy: result[7] as ExistingWorkPolicy?,
       outOfQuotaPolicy: result[8] as OutOfQuotaPolicy?,
       foregroundServiceConfig: result[9] as ForegroundServiceConfig?,
+      expedited: result[10] as bool?,
     );
   }
 
@@ -617,7 +629,7 @@ class OneOffTaskRequest {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(uniqueName, other.uniqueName) && _deepEquals(taskName, other.taskName) && _deepEquals(inputData, other.inputData) && _deepEquals(initialDelaySeconds, other.initialDelaySeconds) && _deepEquals(constraints, other.constraints) && _deepEquals(backoffPolicy, other.backoffPolicy) && _deepEquals(tag, other.tag) && _deepEquals(existingWorkPolicy, other.existingWorkPolicy) && _deepEquals(outOfQuotaPolicy, other.outOfQuotaPolicy) && _deepEquals(foregroundServiceConfig, other.foregroundServiceConfig);
+    return _deepEquals(uniqueName, other.uniqueName) && _deepEquals(taskName, other.taskName) && _deepEquals(inputData, other.inputData) && _deepEquals(initialDelaySeconds, other.initialDelaySeconds) && _deepEquals(constraints, other.constraints) && _deepEquals(backoffPolicy, other.backoffPolicy) && _deepEquals(tag, other.tag) && _deepEquals(existingWorkPolicy, other.existingWorkPolicy) && _deepEquals(outOfQuotaPolicy, other.outOfQuotaPolicy) && _deepEquals(foregroundServiceConfig, other.foregroundServiceConfig) && _deepEquals(expedited, other.expedited);
   }
 
   @override

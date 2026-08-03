@@ -53,6 +53,8 @@ abstract class WorkmanagerPlatform extends PlatformInterface {
   /// [backoffPolicyDelay] is the delay for the backoff policy.
   /// [tag] is an optional tag for the task.
   /// [outOfQuotaPolicy] determines behavior when quota is exceeded (Android only).
+  /// [expedited] schedules the task as expedited work (Android only, one-off
+  /// tasks only; other platforms ignore it).
   /// [foregroundServiceConfig] promotes the worker to an Android foreground
   /// service while it runs (Android only).
   Future<void> registerOneOffTask(
@@ -67,6 +69,7 @@ abstract class WorkmanagerPlatform extends PlatformInterface {
     String? tag,
     OutOfQuotaPolicy? outOfQuotaPolicy,
     ForegroundServiceConfig? foregroundServiceConfig,
+    bool expedited = false,
   }) {
     throw UnimplementedError('registerOneOffTask() has not been implemented.');
   }
@@ -215,6 +218,7 @@ class _PlaceholderImplementation extends WorkmanagerPlatform {
     String? tag,
     OutOfQuotaPolicy? outOfQuotaPolicy,
     ForegroundServiceConfig? foregroundServiceConfig,
+    bool expedited = false,
   }) async {
     throw UnimplementedError(
       'No implementation found for workmanager on this platform.',

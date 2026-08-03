@@ -476,6 +476,27 @@ you'll get `BGTaskSchedulerErrorDomain Code 3` ("not advertised in the
 application's Info.plist"). On Android no native setup is needed.
 </Warning>
 
+## Expedited tasks (Android only)
+
+For one-off work that must start promptly (a user-initiated upload, a
+notification the user is waiting on), pass `expedited: true`:
+
+```dart
+await Workmanager().registerOneOffTask(
+  "sync-user-data",
+  "syncTask",
+  expedited: true,
+);
+```
+
+On Android 12+ (API 31+) the system runs expedited work as a WorkManager-
+managed foreground service and shows a notification while it runs. Expedited
+work is **one-off only** (periodic tasks cannot be expedited) and is meant for
+short, user-visible work — not long-running processing. Other platforms ignore
+the flag. See
+[Customization → Expedited work](customization#expedited-work-android-only) for
+details and the `outOfQuotaPolicy` interplay.
+
 ## Long-running tasks (foreground service)
 
 Android's WorkManager runs background workers for a limited time (typically a

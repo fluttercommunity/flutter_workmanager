@@ -239,6 +239,7 @@ class WorkmanagerWeb extends WorkmanagerPlatform {
     String? tag,
     OutOfQuotaPolicy? outOfQuotaPolicy,
     ForegroundServiceConfig? foregroundServiceConfig,
+    bool expedited = false,
   }) async {
     _checkInitialized();
     final runAt = DateTime.now().add(initialDelay ?? Duration.zero);
