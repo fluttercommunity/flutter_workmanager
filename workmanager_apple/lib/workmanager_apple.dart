@@ -116,6 +116,19 @@ class WorkmanagerApple extends WorkmanagerPlatform {
   }
 
   @override
+  Future<void> beginUniqueWork(
+    String uniqueName, {
+    required List<WorkChainTask> tasks,
+    ExistingWorkPolicy? existingWorkPolicy,
+  }) async {
+    // Work chaining maps to WorkManager's beginUniqueWork/then/enqueue,
+    // which does not exist on iOS/macOS. Re-submitting the next link from
+    // inside the callback (see docs/customization.mdx) is the Apple
+    // equivalent.
+    throw UnsupportedError('Work chaining is not supported on iOS/macOS');
+  }
+
+  @override
   Future<void> registerHealthResearchTask(
     String uniqueName,
     String taskName, {

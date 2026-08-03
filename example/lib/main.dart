@@ -41,7 +41,9 @@ const iOSBackgroundProcessingTask =
 const periodicUpdatePolicyTask =
     "dev.fluttercommunity.workmanagerExample.periodicUpdatePolicyTask";
 const workInfoTaskKey = "dev.fluttercommunity.workmanagerExample.workInfoTask";
-
+const chainStep1TaskKey = "dev.fluttercommunity.workmanagerExample.chainStep1";
+const chainStep2TaskKey = "dev.fluttercommunity.workmanagerExample.chainStep2";
+const chainFailTaskKey = "dev.fluttercommunity.workmanagerExample.chainFail";
 final List<String> allTasks = [
   simpleTaskKey,
   rescheduledTaskKey,
@@ -54,6 +56,9 @@ final List<String> allTasks = [
   iOSBackgroundAppRefresh,
   iOSBackgroundProcessingTask,
   periodicUpdatePolicyTask,
+  chainStep1TaskKey,
+  chainStep2TaskKey,
+  chainFailTaskKey,
 ];
 
 // Pragma is mandatory if the App is obfuscated or using Flutter 3.1+
@@ -126,6 +131,26 @@ void callbackDispatcher() {
       case workInfoTaskKey:
         debugPrint("$workInfoTaskKey executed");
         break;
+      case chainStep1TaskKey:
+        debugPrint("$chainStep1TaskKey started at ${DateTime.now()}");
+        await prefs.setString(
+            chainStep1TaskKey, 'Step 1 ran at ${DateTime.now()}');
+        break;
+      case chainStep2TaskKey:
+        // Step 2 only runs after step 1 succeeded — the previous timestamp
+        // proves the ordering.
+        final step1Time = prefs.getString(chainStep1TaskKey);
+        debugPrint(
+            "$chainStep2TaskKey started at ${DateTime.now()} (step 1 ran: $step1Time)");
+        await prefs.setString(
+            chainStep2TaskKey, 'Step 2 ran at ${DateTime.now()}');
+        break;
+      case chainFailTaskKey:
+        debugPrint("$chainFailTaskKey starting at ${DateTime.now()}");
+        await prefs.setString(chainFailTaskKey, 'Started at ${DateTime.now()}');
+        // Throwing fails this step permanently, which stops the whole chain:
+        // any following steps are cancelled by WorkManager.
+        return Future.error('chain step failed permanently');
       default:
         return Future.value(false);
     }
@@ -280,6 +305,71 @@ class _MyAppState extends State<MyApp> {
                         }
                       : null,
                   child: Text("Register expedited task (Android)"),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  "Work chains (android only)",
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                Text(
+                  "Sequential one-off tasks: step 2 runs only after step 1 "
+                  "finished successfully. Check the 'Refresh stats' view: "
+                  "step2's timestamp is always later than step1's.",
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                // This chain runs step1 then step2, in that order. The
+                // dispatcher records each step's timestamp to shared
+                // preferences so the ordering is visible in the stats view.
+                ElevatedButton(
+                  onPressed: Platform.isAndroid
+                      ? () {
+                          Workmanager().beginUniqueWork(
+                            'chain-demo',
+                            existingWorkPolicy: ExistingWorkPolicy.replace,
+                            tasks: [
+                              WorkChainTask(
+                                taskName: chainStep1TaskKey,
+                                inputData: {'step': 1},
+                              ),
+                              WorkChainTask(
+                                taskName: chainStep2TaskKey,
+                                inputData: {'step': 2},
+                              ),
+                            ],
+                          );
+                          debugPrint('Registered chain: step1 -> step2');
+                        }
+                      : null,
+                  child: Text("Register Chain (step1 -> step2) (Android)"),
+                ),
+                // This chain fails permanently at step 2: the final step
+                // never runs because WorkManager stops the chain.
+                ElevatedButton(
+                  onPressed: Platform.isAndroid
+                      ? () {
+                          Workmanager().beginUniqueWork(
+                            'chain-fail-demo',
+                            existingWorkPolicy: ExistingWorkPolicy.replace,
+                            tasks: [
+                              WorkChainTask(
+                                taskName: chainStep1TaskKey,
+                                inputData: {'step': 1},
+                              ),
+                              WorkChainTask(
+                                taskName: chainFailTaskKey,
+                                inputData: {'step': 2},
+                              ),
+                              WorkChainTask(
+                                taskName: chainStep2TaskKey,
+                                inputData: {'step': 3},
+                              ),
+                            ],
+                          );
+                          debugPrint(
+                              'Registered chain: step1 -> failing step -> step2');
+                        }
+                      : null,
+                  child: Text("Register Chain with failing step (Android)"),
                 ),
                 SizedBox(height: 8),
                 Text(

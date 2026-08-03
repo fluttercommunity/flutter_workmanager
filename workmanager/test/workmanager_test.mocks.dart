@@ -142,6 +142,25 @@ class MockWorkmanager extends _i1.Mock implements _i2.Workmanager {
       ) as _i3.Future<void>);
 
   @override
+  _i3.Future<void> beginUniqueWork(
+    String? uniqueName, {
+    required List<_i4.WorkChainTask>? tasks,
+    _i4.ExistingWorkPolicy? existingWorkPolicy,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #beginUniqueWork,
+          [uniqueName],
+          {
+            #tasks: tasks,
+            #existingWorkPolicy: existingWorkPolicy,
+          },
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
   _i3.Future<bool> isScheduledByUniqueName(String? uniqueName) =>
       (super.noSuchMethod(
         Invocation.method(

@@ -675,6 +675,129 @@ struct OneOffTaskRequest: Hashable {
   }
 }
 
+/// A single step of a [UniqueWorkChainRequest] (Android only).
+///
+/// Mirrors the per-task configuration of [OneOffTaskRequest] without the
+/// unique name: chain steps are identified by their position in the chain,
+/// not by a unique name.
+///
+/// Generated class from Pigeon that represents data sent in messages.
+struct ChainTaskRequest: Hashable {
+  /// The value returned in the [BackgroundTaskHandler] while this step runs.
+  var taskName: String
+  var inputData: [String?: Any?]? = nil
+  var initialDelaySeconds: Int64? = nil
+  var constraints: Constraints? = nil
+  var backoffPolicy: BackoffPolicyConfig? = nil
+  var tag: String? = nil
+  var outOfQuotaPolicy: OutOfQuotaPolicy? = nil
+  /// When set, this step runs as an Android foreground service.
+  var foregroundServiceConfig: ForegroundServiceConfig? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> ChainTaskRequest? {
+    let taskName = pigeonVar_list[0] as! String
+    let inputData: [String?: Any?]? = nilOrValue(pigeonVar_list[1])
+    let initialDelaySeconds: Int64? = nilOrValue(pigeonVar_list[2])
+    let constraints: Constraints? = nilOrValue(pigeonVar_list[3])
+    let backoffPolicy: BackoffPolicyConfig? = nilOrValue(pigeonVar_list[4])
+    let tag: String? = nilOrValue(pigeonVar_list[5])
+    let outOfQuotaPolicy: OutOfQuotaPolicy? = nilOrValue(pigeonVar_list[6])
+    let foregroundServiceConfig: ForegroundServiceConfig? = nilOrValue(pigeonVar_list[7])
+
+    return ChainTaskRequest(
+      taskName: taskName,
+      inputData: inputData,
+      initialDelaySeconds: initialDelaySeconds,
+      constraints: constraints,
+      backoffPolicy: backoffPolicy,
+      tag: tag,
+      outOfQuotaPolicy: outOfQuotaPolicy,
+      foregroundServiceConfig: foregroundServiceConfig
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      taskName,
+      inputData,
+      initialDelaySeconds,
+      constraints,
+      backoffPolicy,
+      tag,
+      outOfQuotaPolicy,
+      foregroundServiceConfig,
+    ]
+  }
+  static func == (lhs: ChainTaskRequest, rhs: ChainTaskRequest) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsWorkmanagerApi(lhs.taskName, rhs.taskName) && deepEqualsWorkmanagerApi(lhs.inputData, rhs.inputData) && deepEqualsWorkmanagerApi(lhs.initialDelaySeconds, rhs.initialDelaySeconds) && deepEqualsWorkmanagerApi(lhs.constraints, rhs.constraints) && deepEqualsWorkmanagerApi(lhs.backoffPolicy, rhs.backoffPolicy) && deepEqualsWorkmanagerApi(lhs.tag, rhs.tag) && deepEqualsWorkmanagerApi(lhs.outOfQuotaPolicy, rhs.outOfQuotaPolicy) && deepEqualsWorkmanagerApi(lhs.foregroundServiceConfig, rhs.foregroundServiceConfig)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("ChainTaskRequest")
+    deepHashWorkmanagerApi(value: taskName, hasher: &hasher)
+    deepHashWorkmanagerApi(value: inputData, hasher: &hasher)
+    deepHashWorkmanagerApi(value: initialDelaySeconds, hasher: &hasher)
+    deepHashWorkmanagerApi(value: constraints, hasher: &hasher)
+    deepHashWorkmanagerApi(value: backoffPolicy, hasher: &hasher)
+    deepHashWorkmanagerApi(value: tag, hasher: &hasher)
+    deepHashWorkmanagerApi(value: outOfQuotaPolicy, hasher: &hasher)
+    deepHashWorkmanagerApi(value: foregroundServiceConfig, hasher: &hasher)
+  }
+}
+
+/// A sequential chain of one-off tasks enqueued as a single unique work chain
+/// (Android only).
+///
+/// Mirrors WorkManager's `beginUniqueWork(...).then(...).enqueue()`: the
+/// first task starts the chain, every following task runs only after the
+/// previous one finished successfully, and a permanently failed step stops
+/// the chain (following steps are cancelled by WorkManager).
+///
+/// Generated class from Pigeon that represents data sent in messages.
+struct UniqueWorkChainRequest: Hashable {
+  var uniqueName: String
+  var tasks: [ChainTaskRequest?]
+  var existingWorkPolicy: ExistingWorkPolicy? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> UniqueWorkChainRequest? {
+    let uniqueName = pigeonVar_list[0] as! String
+    let tasks = pigeonVar_list[1] as! [ChainTaskRequest?]
+    let existingWorkPolicy: ExistingWorkPolicy? = nilOrValue(pigeonVar_list[2])
+
+    return UniqueWorkChainRequest(
+      uniqueName: uniqueName,
+      tasks: tasks,
+      existingWorkPolicy: existingWorkPolicy
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      uniqueName,
+      tasks,
+      existingWorkPolicy,
+    ]
+  }
+  static func == (lhs: UniqueWorkChainRequest, rhs: UniqueWorkChainRequest) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsWorkmanagerApi(lhs.uniqueName, rhs.uniqueName) && deepEqualsWorkmanagerApi(lhs.tasks, rhs.tasks) && deepEqualsWorkmanagerApi(lhs.existingWorkPolicy, rhs.existingWorkPolicy)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("UniqueWorkChainRequest")
+    deepHashWorkmanagerApi(value: uniqueName, hasher: &hasher)
+    deepHashWorkmanagerApi(value: tasks, hasher: &hasher)
+    deepHashWorkmanagerApi(value: existingWorkPolicy, hasher: &hasher)
+  }
+}
+
 /// Generated class from Pigeon that represents data sent in messages.
 struct PeriodicTaskRequest: Hashable {
   var uniqueName: String
@@ -1052,14 +1175,18 @@ private class WorkmanagerApiPigeonCodecReader: FlutterStandardReader {
     case 142:
       return OneOffTaskRequest.fromList(self.readValue() as! [Any?])
     case 143:
-      return PeriodicTaskRequest.fromList(self.readValue() as! [Any?])
+      return ChainTaskRequest.fromList(self.readValue() as! [Any?])
     case 144:
-      return ProcessingTaskRequest.fromList(self.readValue() as! [Any?])
+      return UniqueWorkChainRequest.fromList(self.readValue() as! [Any?])
     case 145:
-      return HealthResearchTaskRequest.fromList(self.readValue() as! [Any?])
+      return PeriodicTaskRequest.fromList(self.readValue() as! [Any?])
     case 146:
-      return ContinuedProcessingTaskRequest.fromList(self.readValue() as! [Any?])
+      return ProcessingTaskRequest.fromList(self.readValue() as! [Any?])
     case 147:
+      return HealthResearchTaskRequest.fromList(self.readValue() as! [Any?])
+    case 148:
+      return ContinuedProcessingTaskRequest.fromList(self.readValue() as! [Any?])
+    case 149:
       return WorkInfoData.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
@@ -1111,20 +1238,26 @@ private class WorkmanagerApiPigeonCodecWriter: FlutterStandardWriter {
     } else if let value = value as? OneOffTaskRequest {
       super.writeByte(142)
       super.writeValue(value.toList())
-    } else if let value = value as? PeriodicTaskRequest {
+    } else if let value = value as? ChainTaskRequest {
       super.writeByte(143)
       super.writeValue(value.toList())
-    } else if let value = value as? ProcessingTaskRequest {
+    } else if let value = value as? UniqueWorkChainRequest {
       super.writeByte(144)
       super.writeValue(value.toList())
-    } else if let value = value as? HealthResearchTaskRequest {
+    } else if let value = value as? PeriodicTaskRequest {
       super.writeByte(145)
       super.writeValue(value.toList())
-    } else if let value = value as? ContinuedProcessingTaskRequest {
+    } else if let value = value as? ProcessingTaskRequest {
       super.writeByte(146)
       super.writeValue(value.toList())
-    } else if let value = value as? WorkInfoData {
+    } else if let value = value as? HealthResearchTaskRequest {
       super.writeByte(147)
+      super.writeValue(value.toList())
+    } else if let value = value as? ContinuedProcessingTaskRequest {
+      super.writeByte(148)
+      super.writeValue(value.toList())
+    } else if let value = value as? WorkInfoData {
+      super.writeByte(149)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -1151,6 +1284,8 @@ class WorkmanagerApiPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendabl
 protocol WorkmanagerHostApi {
   func initialize(request: InitializeRequest, completion: @escaping (Result<Void, Error>) -> Void)
   func registerOneOffTask(request: OneOffTaskRequest, completion: @escaping (Result<Void, Error>) -> Void)
+  /// Enqueues a sequential chain of one-off tasks (Android only).
+  func beginUniqueWork(request: UniqueWorkChainRequest, completion: @escaping (Result<Void, Error>) -> Void)
   func registerPeriodicTask(request: PeriodicTaskRequest, completion: @escaping (Result<Void, Error>) -> Void)
   func registerProcessingTask(request: ProcessingTaskRequest, completion: @escaping (Result<Void, Error>) -> Void)
   func registerHealthResearchTask(request: HealthResearchTaskRequest, completion: @escaping (Result<Void, Error>) -> Void)
@@ -1204,6 +1339,24 @@ class WorkmanagerHostApiSetup {
       }
     } else {
       registerOneOffTaskChannel.setMessageHandler(nil)
+    }
+    /// Enqueues a sequential chain of one-off tasks (Android only).
+    let beginUniqueWorkChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.beginUniqueWork\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      beginUniqueWorkChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let requestArg = args[0] as! UniqueWorkChainRequest
+        api.beginUniqueWork(request: requestArg) { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      beginUniqueWorkChannel.setMessageHandler(nil)
     }
     let registerPeriodicTaskChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.registerPeriodicTask\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {

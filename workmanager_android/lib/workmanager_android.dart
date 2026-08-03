@@ -101,6 +101,47 @@ class WorkmanagerAndroid extends WorkmanagerPlatform {
   }
 
   @override
+  Future<void> beginUniqueWork(
+    String uniqueName, {
+    required List<WorkChainTask> tasks,
+    ExistingWorkPolicy? existingWorkPolicy,
+  }) async {
+    if (tasks.isEmpty) {
+      throw ArgumentError.value(
+        tasks,
+        'tasks',
+        'A work chain must contain at least one task.',
+      );
+    }
+    await _api.beginUniqueWork(UniqueWorkChainRequest(
+      uniqueName: uniqueName,
+      existingWorkPolicy: existingWorkPolicy,
+      tasks: tasks
+          .map(
+            (task) => ChainTaskRequest(
+              taskName: task.taskName,
+              inputData: task.inputData?.cast<String?, Object?>(),
+              initialDelaySeconds: task.initialDelay?.inSeconds,
+              constraints: task.constraints,
+              backoffPolicy:
+                  task.backoffPolicyDelay != null && task.backoffPolicy != null
+                      ? BackoffPolicyConfig(
+                          backoffPolicy: task.backoffPolicy!,
+                          backoffDelayMillis:
+                              task.backoffPolicyDelay!.inMilliseconds,
+                        )
+                      : null,
+              tag: task.tag,
+              outOfQuotaPolicy: task.outOfQuotaPolicy,
+              foregroundServiceConfig:
+                  resolveForegroundServiceConfig(task.foregroundServiceConfig),
+            ),
+          )
+          .toList(),
+    ));
+  }
+
+  @override
   Future<void> registerProcessingTask(
     String uniqueName,
     String taskName, {

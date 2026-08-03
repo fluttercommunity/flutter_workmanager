@@ -656,6 +656,145 @@ class OneOffTaskRequest {
   int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
 }
 
+/// A single step of a [UniqueWorkChainRequest] (Android only).
+///
+/// Mirrors the per-task configuration of [OneOffTaskRequest] without the
+/// unique name: chain steps are identified by their position in the chain,
+/// not by a unique name.
+class ChainTaskRequest {
+  ChainTaskRequest({
+    required this.taskName,
+    this.inputData,
+    this.initialDelaySeconds,
+    this.constraints,
+    this.backoffPolicy,
+    this.tag,
+    this.outOfQuotaPolicy,
+    this.foregroundServiceConfig,
+  });
+
+  /// The value returned in the [BackgroundTaskHandler] while this step runs.
+  String taskName;
+
+  Map<String?, Object?>? inputData;
+
+  int? initialDelaySeconds;
+
+  Constraints? constraints;
+
+  BackoffPolicyConfig? backoffPolicy;
+
+  String? tag;
+
+  OutOfQuotaPolicy? outOfQuotaPolicy;
+
+  /// When set, this step runs as an Android foreground service.
+  ForegroundServiceConfig? foregroundServiceConfig;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      taskName,
+      inputData,
+      initialDelaySeconds,
+      constraints,
+      backoffPolicy,
+      tag,
+      outOfQuotaPolicy,
+      foregroundServiceConfig,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static ChainTaskRequest decode(Object result) {
+    result as List<Object?>;
+    return ChainTaskRequest(
+      taskName: result[0]! as String,
+      inputData: (result[1] as Map<Object?, Object?>?)?.cast<String?, Object?>(),
+      initialDelaySeconds: result[2] as int?,
+      constraints: result[3] as Constraints?,
+      backoffPolicy: result[4] as BackoffPolicyConfig?,
+      tag: result[5] as String?,
+      outOfQuotaPolicy: result[6] as OutOfQuotaPolicy?,
+      foregroundServiceConfig: result[7] as ForegroundServiceConfig?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! ChainTaskRequest || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(taskName, other.taskName) && _deepEquals(inputData, other.inputData) && _deepEquals(initialDelaySeconds, other.initialDelaySeconds) && _deepEquals(constraints, other.constraints) && _deepEquals(backoffPolicy, other.backoffPolicy) && _deepEquals(tag, other.tag) && _deepEquals(outOfQuotaPolicy, other.outOfQuotaPolicy) && _deepEquals(foregroundServiceConfig, other.foregroundServiceConfig);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+}
+
+/// A sequential chain of one-off tasks enqueued as a single unique work chain
+/// (Android only).
+///
+/// Mirrors WorkManager's `beginUniqueWork(...).then(...).enqueue()`: the
+/// first task starts the chain, every following task runs only after the
+/// previous one finished successfully, and a permanently failed step stops
+/// the chain (following steps are cancelled by WorkManager).
+class UniqueWorkChainRequest {
+  UniqueWorkChainRequest({
+    required this.uniqueName,
+    required this.tasks,
+    this.existingWorkPolicy,
+  });
+
+  String uniqueName;
+
+  List<ChainTaskRequest?> tasks;
+
+  ExistingWorkPolicy? existingWorkPolicy;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      uniqueName,
+      tasks,
+      existingWorkPolicy,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static UniqueWorkChainRequest decode(Object result) {
+    result as List<Object?>;
+    return UniqueWorkChainRequest(
+      uniqueName: result[0]! as String,
+      tasks: (result[1]! as List<Object?>).cast<ChainTaskRequest?>(),
+      existingWorkPolicy: result[2] as ExistingWorkPolicy?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! UniqueWorkChainRequest || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(uniqueName, other.uniqueName) && _deepEquals(tasks, other.tasks) && _deepEquals(existingWorkPolicy, other.existingWorkPolicy);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+}
+
 class PeriodicTaskRequest {
   PeriodicTaskRequest({
     required this.uniqueName,
@@ -1063,20 +1202,26 @@ class _PigeonCodec extends StandardMessageCodec {
     }    else if (value is OneOffTaskRequest) {
       buffer.putUint8(142);
       writeValue(buffer, value.encode());
-    }    else if (value is PeriodicTaskRequest) {
+    }    else if (value is ChainTaskRequest) {
       buffer.putUint8(143);
       writeValue(buffer, value.encode());
-    }    else if (value is ProcessingTaskRequest) {
+    }    else if (value is UniqueWorkChainRequest) {
       buffer.putUint8(144);
       writeValue(buffer, value.encode());
-    }    else if (value is HealthResearchTaskRequest) {
+    }    else if (value is PeriodicTaskRequest) {
       buffer.putUint8(145);
       writeValue(buffer, value.encode());
-    }    else if (value is ContinuedProcessingTaskRequest) {
+    }    else if (value is ProcessingTaskRequest) {
       buffer.putUint8(146);
       writeValue(buffer, value.encode());
-    }    else if (value is WorkInfoData) {
+    }    else if (value is HealthResearchTaskRequest) {
       buffer.putUint8(147);
+      writeValue(buffer, value.encode());
+    }    else if (value is ContinuedProcessingTaskRequest) {
+      buffer.putUint8(148);
+      writeValue(buffer, value.encode());
+    }    else if (value is WorkInfoData) {
+      buffer.putUint8(149);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -1123,14 +1268,18 @@ class _PigeonCodec extends StandardMessageCodec {
       case 142:
         return OneOffTaskRequest.decode(readValue(buffer)!);
       case 143:
-        return PeriodicTaskRequest.decode(readValue(buffer)!);
+        return ChainTaskRequest.decode(readValue(buffer)!);
       case 144:
-        return ProcessingTaskRequest.decode(readValue(buffer)!);
+        return UniqueWorkChainRequest.decode(readValue(buffer)!);
       case 145:
-        return HealthResearchTaskRequest.decode(readValue(buffer)!);
+        return PeriodicTaskRequest.decode(readValue(buffer)!);
       case 146:
-        return ContinuedProcessingTaskRequest.decode(readValue(buffer)!);
+        return ProcessingTaskRequest.decode(readValue(buffer)!);
       case 147:
+        return HealthResearchTaskRequest.decode(readValue(buffer)!);
+      case 148:
+        return ContinuedProcessingTaskRequest.decode(readValue(buffer)!);
+      case 149:
         return WorkInfoData.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -1171,6 +1320,25 @@ class WorkmanagerHostApi {
 
   Future<void> registerOneOffTask(OneOffTaskRequest request) async {
     final pigeonVar_channelName = 'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.registerOneOffTask$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[request]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: true,
+    )
+    ;
+  }
+
+  /// Enqueues a sequential chain of one-off tasks (Android only).
+  Future<void> beginUniqueWork(UniqueWorkChainRequest request) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.beginUniqueWork$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,

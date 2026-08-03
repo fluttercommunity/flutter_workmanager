@@ -250,7 +250,78 @@ What you need to know:
   device-idle constraints, and is intended for short work (a few minutes at
   most), not long-running processing. For genuinely long-running work use
   `foregroundServiceConfig` instead (see below).
+## Work Chaining (Android only)
 
+Use `beginUniqueWork` when several one-off tasks must run **in sequence and each
+one depends on the previous one finishing** — for example: download a file, then
+process it, then upload the result. The whole sequence is registered as one
+unique work chain:
+
+```dart
+Workmanager().beginUniqueWork(
+  'download-process-upload',
+  existingWorkPolicy: ExistingWorkPolicy.keep,
+  tasks: [
+    WorkChainTask(
+      taskName: 'download',
+      inputData: {'url': 'https://example.com/file.zip'},
+      constraints: Constraints(networkType: NetworkType.connected),
+    ),
+    WorkChainTask(
+      taskName: 'process',
+      inputData: {'file': 'file.zip'},
+    ),
+    WorkChainTask(
+      taskName: 'upload',
+      inputData: {'file': 'processed.zip'},
+    ),
+  ],
+);
+```
+
+This maps to WorkManager's `beginUniqueWork(name, policy, first)`
+`.then(step).then(step).enqueue()`. Each `WorkChainTask` supports the same
+per-task configuration as `registerOneOffTask`: `inputData`, `initialDelay`
+(added to waiting for the previous step), `constraints`, `backoffPolicy` /
+`backoffPolicyDelay`, `tag`, `outOfQuotaPolicy` and `foregroundServiceConfig`.
+
+### Ordering guarantee
+
+Steps run strictly in order: step *N+1* starts only after step *N* finished
+successfully, even if the steps were not originally enqueued in order. The
+`taskName` delivered to your callback is the per-step `taskName`, and each step
+receives its own `inputData`.
+
+### Failure semantics
+
+- **Permanent failure stops the chain.** If a step's handler throws (or returns
+  a failed future), the plugin reports it to WorkManager as `Result.failure()`
+  and WorkManager stops the chain: the remaining steps never run.
+- **`false` means retry, not failure.** Returning `false` from a step maps to
+  `Result.retry()` (the same as one-off tasks): the chain holds and retries that
+  step with its `backoffPolicy` before moving on.
+
+<Info>
+**Conditional chains.** A linear chain always runs every step. If you need to
+skip a step based on the previous step's result (e.g. "don't upload when the
+download found nothing"), split it into separate chains registered from inside
+the step's callback, like the [iOS chaining pattern](#ios-periodic-timing--chaining-one-off-tasks).
+</Info>
+
+<Warning>
+**Android only.** `beginUniqueWork` throws `UnsupportedError` on iOS, macOS and
+web — WorkManager chaining does not exist there. The API exists on every
+platform so your code compiles everywhere, but only Android executes it. On iOS,
+chain the *next* task from inside the callback instead (see below).
+</Warning>
+
+### Existing work policy
+
+`existingWorkPolicy` behaves exactly like it does for `registerOneOffTask`: a
+chain registered again under the same `uniqueName` is resolved with the policy
+(`keep` by default; `replace` cancels and deletes the previous chain). Note that
+`append` is mapped to WorkManager's `APPEND_OR_REPLACE`, consistent with one-off
+tasks.
 ## iOS: Periodic Timing & Chaining One-off Tasks
 
 On iOS there is no fixed-interval scheduler. `registerPeriodicTask` submits a

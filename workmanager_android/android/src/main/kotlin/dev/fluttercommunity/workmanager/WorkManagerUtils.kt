@@ -7,8 +7,10 @@ import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
+import androidx.work.ListenableWorker
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequest
+import androidx.work.Operation
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
@@ -114,6 +116,47 @@ internal fun androidx.work.WorkInfo.toWorkInfoData(uniqueName: String): dev.flut
         lastFinishedAtMillis = null,
     )
 }
+
+ * Builds a [OneTimeWorkRequest] for the given task configuration.
+ *
+ * Shared by one-off registrations ([WorkManagerWrapper.enqueueOneOffTask]) and
+ * work chains ([WorkManagerWrapper.beginUniqueWork]) so both reuse the same
+ * payload, delay, constraints, backoff, tag and expedited handling.
+ */
+internal fun createOneTimeWorkRequest(
+    workerClass: Class<out ListenableWorker>,
+    taskName: String,
+    inputData: Map<String, Any?>?,
+    foregroundServiceConfig: dev.fluttercommunity.workmanager.pigeon.ForegroundServiceConfig? = null,
+    initialDelaySeconds: Long?,
+    constraints: Constraints,
+    backoffPolicy: dev.fluttercommunity.workmanager.pigeon.BackoffPolicyConfig?,
+    tag: String?,
+    outOfQuotaPolicy: dev.fluttercommunity.workmanager.pigeon.OutOfQuotaPolicy?,
+): OneTimeWorkRequest =
+    OneTimeWorkRequest
+        .Builder(workerClass)
+        .setInputData(buildTaskInputData(taskName, inputData, foregroundServiceConfig))
+        .setInitialDelay(
+            initialDelaySeconds ?: DEFAULT_INITIAL_DELAY_SECONDS,
+            TimeUnit.SECONDS,
+        ).setConstraints(constraints)
+        .apply {
+            backoffPolicy?.let { backoffConfig ->
+                if (backoffConfig.backoffPolicy != null && backoffConfig.backoffDelayMillis != null) {
+                    setBackoffCriteria(
+                        backoffConfig.backoffPolicy.toAndroidBackoffPolicy(),
+                        backoffConfig.backoffDelayMillis.toLong(),
+                        TimeUnit.MILLISECONDS,
+                    )
+                }
+            }
+        }.apply {
+            tag?.let(::addTag)
+            // No implicit setExpedited: since 0.10.2 expedited work is opt-in
+            // (see createOneOffWorkRequest); chains don't expose it yet.
+        }.build()
+
 
 // Extension functions to convert Pigeon types to Android WorkManager types
 private fun dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.toAndroidWorkPolicy(): ExistingWorkPolicy =
@@ -235,12 +278,14 @@ internal fun createOneOffWorkRequest(request: dev.fluttercommunity.workmanager.p
 
 class WorkManagerWrapper(
     val context: Context,
+    private val workerClass: Class<out ListenableWorker> = BackgroundWorker::class.java,
 ) {
     private val workManager = WorkManager.getInstance(context)
 
     fun enqueueOneOffTask(request: dev.fluttercommunity.workmanager.pigeon.OneOffTaskRequest) {
         try {
             val oneOffTaskRequest = createOneOffWorkRequest(request)
+
             workManager.enqueueUniqueWork(
                 request.uniqueName,
                 request.existingWorkPolicy?.toAndroidWorkPolicy()
@@ -289,6 +334,60 @@ class WorkManagerWrapper(
                 startTime = System.currentTimeMillis(),
             )
         WorkmanagerDebug.onTaskStatusUpdate(context, taskInfo, TaskStatus.SCHEDULED)
+    }
+
+    /**
+     * Enqueues a sequential chain of one-off tasks under a single unique name.
+     *
+     * Mirrors WorkManager's `beginUniqueWork(name, policy, first).then(...).enqueue()`:
+     * - The first task starts the chain.
+     * - Every following task runs only after the previous one finished with
+     *   `Result.success()` (strict ordering).
+     * - A step returning `Result.retry()` holds the chain and is retried with
+     *   its backoff policy.
+     * - A step returning `Result.failure()` stops the chain; WorkManager
+     *   cancels the remaining steps.
+     */
+    fun beginUniqueWork(request: dev.fluttercommunity.workmanager.pigeon.UniqueWorkChainRequest): Operation {
+        require(request.tasks.isNotEmpty()) { "Work chain must contain at least one task" }
+
+        val steps = request.tasks.mapNotNull { it }
+        val workRequests =
+            steps.map { step ->
+                createOneTimeWorkRequest(
+                    workerClass = workerClass,
+                    taskName = step.taskName,
+                    inputData = step.inputData?.filterNotNullKeys(),
+                    foregroundServiceConfig = step.foregroundServiceConfig,
+                    initialDelaySeconds = step.initialDelaySeconds,
+                    constraints = step.constraints?.toAndroidConstraints() ?: defaultConstraints,
+                    backoffPolicy = step.backoffPolicy,
+                    tag = step.tag,
+                    outOfQuotaPolicy = step.outOfQuotaPolicy,
+                )
+            }
+
+        var continuation =
+            workManager.beginUniqueWork(
+                request.uniqueName,
+                request.existingWorkPolicy?.toAndroidWorkPolicy()
+                    ?: defaultOneOffExistingWorkPolicy,
+                workRequests.first(),
+            )
+        workRequests.drop(1).forEach { continuation = continuation.then(it) }
+        val operation = continuation.enqueue()
+
+        steps.forEach { step ->
+            val taskInfo =
+                TaskDebugInfo(
+                    taskName = step.taskName,
+                    uniqueName = request.uniqueName,
+                    inputData = step.inputData?.filterNotNullKeys(),
+                    startTime = System.currentTimeMillis(),
+                )
+            WorkmanagerDebug.onTaskStatusUpdate(context, taskInfo, TaskStatus.SCHEDULED)
+        }
+        return operation
     }
 
     fun getWorkInfoByUniqueName(uniqueWorkName: String) = workManager.getWorkInfosForUniqueWork(uniqueWorkName)

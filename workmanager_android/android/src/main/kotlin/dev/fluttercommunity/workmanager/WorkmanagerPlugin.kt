@@ -6,6 +6,7 @@ import dev.fluttercommunity.workmanager.pigeon.InitializeRequest
 import dev.fluttercommunity.workmanager.pigeon.OneOffTaskRequest
 import dev.fluttercommunity.workmanager.pigeon.PeriodicTaskRequest
 import dev.fluttercommunity.workmanager.pigeon.ProcessingTaskRequest
+import dev.fluttercommunity.workmanager.pigeon.UniqueWorkChainRequest
 import dev.fluttercommunity.workmanager.pigeon.WorkInfoData
 import dev.fluttercommunity.workmanager.pigeon.WorkmanagerHostApi
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -75,6 +76,23 @@ class WorkmanagerPlugin :
 
         try {
             workManagerWrapper!!.enqueueOneOffTask(request = request)
+            callback(Result.success(Unit))
+        } catch (e: Exception) {
+            callback(Result.failure(e))
+        }
+    }
+
+    override fun beginUniqueWork(
+        request: UniqueWorkChainRequest,
+        callback: (Result<Unit>) -> Unit,
+    ) {
+        if (currentDispatcherHandle == -1L) {
+            callback(Result.failure(Exception(INIT_REQUIRED)))
+            return
+        }
+
+        try {
+            workManagerWrapper!!.beginUniqueWork(request = request)
             callback(Result.success(Unit))
         } catch (e: Exception) {
             callback(Result.failure(e))
