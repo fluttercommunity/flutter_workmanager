@@ -465,7 +465,8 @@ abstract class WorkmanagerFlutterApi {
   void backgroundChannelInitialized();
 
   @async
-  BackgroundTaskResult executeTask(String taskName, Map<String?, Object?>? inputData);
+  BackgroundTaskResult executeTask(
+      String taskName, Map<String?, Object?>? inputData);
 
   /// Notifies the Dart callback that a running task was stopped by the
   /// platform before it finished (cancelled, timed out, preempted, ...).
