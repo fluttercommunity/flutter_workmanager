@@ -1,3 +1,7 @@
+## 0.10.0+2
+
+ - **FIX**(android): AGP 9 built-in Kotlin compilerOptions (#711).
+
 ## 0.10.0+1
 
  - **FIX**(android): notify running callbacks when work is cancelled (fixes #432) (#705).

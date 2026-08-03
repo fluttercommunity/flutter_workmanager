@@ -3,6 +3,34 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-08-03
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`workmanager_android` - `v0.10.0+2`](#workmanager_android---v01002)
+ - [`workmanager` - `v0.10.1+1`](#workmanager---v01011)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `workmanager` - `v0.10.1+1`
+
+---
+
+#### `workmanager_android` - `v0.10.0+2`
+
+ - **FIX**(android): AGP 9 built-in Kotlin compilerOptions (#711).
+
+
 ## 2026-08-02
 
 ### Changes
