@@ -239,14 +239,16 @@ void callbackDispatcher() {
 | Invalid data | `BackgroundTaskResult.failure` | Task fails permanently |
 | Temporary server error | `BackgroundTaskResult.retry` | Task will retry with backoff |
 | Authentication failure | `BackgroundTaskResult.failure` | Task fails, needs user intervention |
-| Unhandled exception in the handler | `throw` (or let it bubble) | Treated as permanent failure — no retry |
+| Unhandled exception in the handler | `throw` (or let it bubble) | Caught, logged, reported as permanent failure — no retry |
 
 > **Throwing vs returning:** if your handler throws (or its `Future` completes
-> with an error), the platform treats it as a permanent failure — Android
-> `Result.failure()`, iOS a failed fetch — and does **not** retry. Only
-> returning `BackgroundTaskResult.retry` triggers an Android backoff retry.
-> Catching and returning `BackgroundTaskResult.failure` is equivalent but
-> keeps the error path explicit.
+> with an error), the plugin **catches it, logs it, and reports
+> `BackgroundTaskResult.failure`** — a permanent failure that is **not**
+> retried. Background isolates have no console or debugger, so the exception
+> never surfaces as a channel error; the failure flows through the normal
+> status pipeline (`WorkmanagerDebug` handlers see a failed task) and the
+> exception is written via `debugPrint` for local debugging. Only returning
+> `BackgroundTaskResult.retry` triggers an Android backoff retry.
 
 ### Monitoring Task Health
 

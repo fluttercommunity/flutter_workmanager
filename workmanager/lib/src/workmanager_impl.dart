@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show debugPrint, kIsWeb;
 import 'package:flutter/widgets.dart';
 import 'package:workmanager_platform_interface/workmanager_platform_interface.dart';
 import 'package:workmanager_android/workmanager_android.dart';
@@ -26,8 +26,9 @@ import 'package:workmanager_web/workmanager_web.dart';
 ///   instructions.
 ///
 /// If the handler throws (or the returned Future completes with an error),
-/// the task is treated as a permanent failure on both platforms — Android
-/// `Result.failure()`, iOS a failed fetch — and is not retried.
+/// the plugin catches it, logs it, and reports [BackgroundTaskResult.failure]
+/// — a permanent failure on both platforms (Android `Result.failure()`, iOS a
+/// failed fetch) that is never retried.
 typedef BackgroundTaskHandler = Future<BackgroundTaskResult> Function(
     String taskName, Map<String, dynamic>? inputData);
 
@@ -578,10 +579,25 @@ class _WorkmanagerFlutterApiImpl extends WorkmanagerFlutterApi {
   @override
   Future<BackgroundTaskResult> executeTask(
       String taskName, Map<String?, Object?>? inputData) async {
+    final handler = Workmanager._backgroundTaskHandler;
+    if (handler == null) {
+      // No handler registered: retry, matching the historical `false` result.
+      return BackgroundTaskResult.retry;
+    }
     final convertedInputData = convertPigeonInputData(inputData);
-    final result = await Workmanager._backgroundTaskHandler
-        ?.call(taskName, convertedInputData);
-    return result ?? BackgroundTaskResult.retry;
+    try {
+      return await handler(taskName, convertedInputData);
+    } catch (error, stackTrace) {
+      // Background isolates have no console and no debugger, and a channel
+      // error would be invisible to the app. Catch, log, and report an
+      // ordinary permanent failure so the result flows through the native
+      // TaskStatus/debug pipeline like any other failure — and never retries.
+      debugPrint('[workmanager] Task "$taskName" threw an exception. '
+          'Reporting it as a permanent failure '
+          '(BackgroundTaskResult.failure); it will not be retried.\n'
+          '$error\n$stackTrace');
+      return BackgroundTaskResult.failure;
+    }
   }
 
   @override
