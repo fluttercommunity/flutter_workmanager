@@ -1,3 +1,7 @@
+## 0.1.3+1
+
+ - Update a dependency to the latest release.
+
 ## 0.1.3
 
  - **FEAT**: work status observation — getWorkInfo across platforms (fixes #194) (#719).

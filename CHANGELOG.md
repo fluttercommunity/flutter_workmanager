@@ -15,6 +15,51 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`workmanager` - `v0.10.5`](#workmanager---v0105)
+ - [`workmanager_android` - `v0.10.4`](#workmanager_android---v0104)
+ - [`workmanager_apple` - `v0.9.10`](#workmanager_apple---v0910)
+ - [`workmanager_platform_interface` - `v0.10.4`](#workmanager_platform_interface---v0104)
+ - [`workmanager_linux` - `v0.1.1+1`](#workmanager_linux---v0111)
+ - [`workmanager_web` - `v0.1.3+1`](#workmanager_web---v0131)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `workmanager_linux` - `v0.1.1+1`
+ - `workmanager_web` - `v0.1.3+1`
+
+---
+
+#### `workmanager` - `v0.10.5`
+
+ - **FEAT**(android): progress updates for long-running tasks (#720).
+
+#### `workmanager_android` - `v0.10.4`
+
+ - **FEAT**(android): progress updates for long-running tasks (#720).
+
+#### `workmanager_apple` - `v0.9.10`
+
+ - **FEAT**(android): progress updates for long-running tasks (#720).
+
+#### `workmanager_platform_interface` - `v0.10.4`
+
+ - **FEAT**(android): progress updates for long-running tasks (#720).
+
+
+## 2026-08-03
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`workmanager` - `v0.10.4`](#workmanager---v0104)
  - [`workmanager_linux` - `v0.1.1`](#workmanager_linux---v011)
 

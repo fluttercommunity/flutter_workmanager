@@ -1,3 +1,7 @@
+## 0.1.1+1
+
+ - Update a dependency to the latest release.
+
 ## 0.1.1
 
  - **FEAT**(linux): workmanager_linux — systemd-based background execution (fixes #324) (#716).

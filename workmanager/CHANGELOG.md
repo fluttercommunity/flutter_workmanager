@@ -1,3 +1,7 @@
+## 0.10.5
+
+ - **FEAT**(android): progress updates for long-running tasks (#720).
+
 ## 0.10.4
 
  - **FEAT**(linux): workmanager_linux — systemd-based background execution (fixes #324) (#716).

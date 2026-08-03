@@ -1,3 +1,7 @@
+## 0.10.4
+
+ - **FEAT**(android): progress updates for long-running tasks (#720).
+
 ## 0.10.3
 
  - **FEAT**: work status observation — getWorkInfo across platforms (fixes #194) (#719).

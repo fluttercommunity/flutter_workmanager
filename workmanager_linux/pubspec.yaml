@@ -1,6 +1,6 @@
 name: workmanager_linux
 description: Linux (experimental) implementation of workmanager using systemd user units (timers and transient units) for background task execution.
-version: 0.1.1
+version: 0.1.1+1
 # publish_to: none
 homepage: https://github.com/fluttercommunity/flutter_workmanager
 repository: https://github.com/fluttercommunity/flutter_workmanager
@@ -13,7 +13,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  workmanager_platform_interface: ^0.10.1
+  workmanager_platform_interface: ^0.10.4
 
 dev_dependencies:
   flutter_test:
