@@ -34,6 +34,10 @@
           "href": "/task-status"
         },
         {
+          "title": "Migrating to BackgroundTaskResult",
+          "href": "/migrating-to-background-task-result"
+        },
+        {
           "title": "Debugging",
           "href": "/debugging"
         },
