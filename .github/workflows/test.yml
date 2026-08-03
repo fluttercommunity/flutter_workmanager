@@ -65,6 +65,45 @@ jobs:
     needs: changes
     if: needs.changes.outputs.android == 'true'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Support envelope: the minimum Flutter the plugin claims (>=3.38) and
+        # the currently pinned version (see .fvmrc). Kept in parallel so one
+        # Flutter version failing doesn't mask the other.
+        flutter-version: ['3.38.9', '3.44.8']
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: ${{ matrix.flutter-version }}
+          cache: true
+      - uses: bluefireteam/melos-action@v3
+      - name: Build Android App
+        run: cd example && flutter build apk --debug
+      - name: Run native Android tests
+        run: cd example/android && ./gradlew :workmanager_android:test
+
+  # AGP 9 removed `android.kotlinOptions` and KGP-based Kotlin compilation for
+  # library modules; the plugin must compile via AGP's built-in Kotlin (see
+  # #710). This job builds a scratch app from the Flutter 3.44 template wired
+  # to the local plugin, bumped to the latest stable AGP 9.2.1 (the reporter's
+  # #710 combo) with `android.builtInKotlin=true` (the Flutter-template default
+  # `false` disables the only Kotlin path AGP 9 has for library modules).
+  #
+  # The scratch app is used instead of the example because the example's graph
+  # contains the Flutter SDK's own integration_test, which still applies KGP
+  # (unmigrated in 3.44.8) and hard-errors under AGP 9 + built-in Kotlin — an
+  # SDK migration issue outside this plugin's control.
+  android_agp9_build:
+    needs: changes
+    if: needs.changes.outputs.android == 'true'
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-java@v5
@@ -76,11 +115,56 @@ jobs:
           channel: 'stable'
           flutter-version-file: .fvmrc
           cache: true
-      - uses: bluefireteam/melos-action@v3
-      - name: Build Android App
-        run: cd example && flutter build apk --debug
-      - name: Run native Android tests
-        run: cd example/android && ./gradlew :workmanager_android:test
+      - name: Build scratch app with AGP 9 + built-in Kotlin
+        run: |
+          set -e
+          flutter create --platforms=android --project-name wm_agp9_test /tmp/wm_agp9_test >/dev/null
+          python3 - <<'EOF'
+          import re
+
+          root = '${{ github.workspace }}'
+
+          # Point the scratch app at the local plugin packages.
+          p = '/tmp/wm_agp9_test/pubspec.yaml'
+          s = open(p).read()
+          s = s.replace(
+              '  cupertino_icons: ^1.0.8',
+              '  cupertino_icons: ^1.0.8\n  workmanager:\n    path: %s/workmanager' % root)
+          s += '\n' + '\n'.join([
+              'dependency_overrides:',
+              '  workmanager_android:',
+              '    path: %s/workmanager_android' % root,
+              '  workmanager_apple:',
+              '    path: %s/workmanager_apple' % root,
+              '  workmanager_platform_interface:',
+              '    path: %s/workmanager_platform_interface' % root,
+              '  workmanager_web:',
+              '    path: %s/workmanager_web' % root,
+          ]) + '\n'
+          open(p, 'w').write(s)
+
+          # Flutter 3.44 templates default to android.builtInKotlin=false; the
+          # plugin needs the built-in mode on AGP 9 (see #710).
+          p = '/tmp/wm_agp9_test/android/gradle.properties'
+          s = open(p).read()
+          s = s.replace('android.builtInKotlin=false', 'android.builtInKotlin=true')
+          open(p, 'w').write(s)
+
+          # Bump to the latest stable AGP 9.2.1 (the #710 reporter's version);
+          # the template ships 9.0.1/Gradle 9.1.0. AGP 9 requires Gradle 9.x.
+          p = '/tmp/wm_agp9_test/android/settings.gradle.kts'
+          s = open(p).read()
+          s = s.replace(
+              'id("com.android.application") version "9.0.1" apply false',
+              'id("com.android.application") version "9.2.1" apply false')
+          open(p, 'w').write(s)
+
+          p = '/tmp/wm_agp9_test/android/gradle/wrapper/gradle-wrapper.properties'
+          s = open(p).read()
+          s = s.replace('gradle-9.1.0-all.zip', 'gradle-9.5.1-all.zip')
+          open(p, 'w').write(s)
+          EOF
+          cd /tmp/wm_agp9_test && flutter build apk --debug
 
   drive_ios:
     needs: changes
