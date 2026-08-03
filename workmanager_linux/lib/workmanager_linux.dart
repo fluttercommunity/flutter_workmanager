@@ -174,6 +174,8 @@ class WorkmanagerLinux extends WorkmanagerPlatform {
     Map<String, dynamic>? inputData,
     Duration? initialDelay,
     Constraints? constraints,
+    // Accepted for API parity; systemd has no expedited concept.
+    bool expedited = false,
     ExistingWorkPolicy? existingWorkPolicy,
     BackoffPolicy? backoffPolicy,
     Duration? backoffPolicyDelay,
