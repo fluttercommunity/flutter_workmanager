@@ -73,6 +73,12 @@ dependencies {
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.mockito:mockito-core:4.11.0"
     testImplementation "org.mockito.kotlin:mockito-kotlin:4.1.0"
+    // Synchronous WorkManager driver for Robolectric chain tests.
+    testImplementation "androidx.work:work-testing:$work_version"
+    // WorkDatabase (used to inspect enqueued chains) extends RoomDatabase.
+    testImplementation 'androidx.room:room-runtime:2.7.0'
+    // ApplicationProvider for Robolectric tests.
+    testImplementation 'androidx.test:core:1.5.0'
     // Real org.json implementation for JVM unit tests (android.jar only stubs it).
     testImplementation 'org.json:json:20240303'
     // Real Android framework implementations (Build, Uri, ...) for JVM unit tests.

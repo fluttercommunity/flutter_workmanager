@@ -1,6 +1,7 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'pigeon/workmanager_api.g.dart';
+import 'work_chain_task.dart';
 import 'work_info.dart';
 
 /// The interface that implementations of workmanager must implement.
@@ -73,6 +74,28 @@ abstract class WorkmanagerPlatform extends PlatformInterface {
     bool expedited = false,
   }) {
     throw UnimplementedError('registerOneOffTask() has not been implemented.');
+  }
+
+  /// Begins a sequential chain of one-off tasks (Android only).
+  ///
+  /// Mirrors WorkManager's `beginUniqueWork(...).then(...).enqueue()`: the
+  /// first task in [tasks] starts the chain and every following task runs
+  /// only after the previous one finished successfully. If a step fails
+  /// permanently (the background handler throws), WorkManager stops the chain
+  /// and cancels the remaining steps.
+  ///
+  /// [uniqueName] is the unique name of the whole chain; re-registering a
+  /// chain with the same [uniqueName] is resolved with [existingWorkPolicy]
+  /// (same semantics as [registerOneOffTask]).
+  ///
+  /// **Android-only.** On iOS/macOS/web and other platforms this throws an
+  /// [UnsupportedError] because WorkManager chaining does not exist there.
+  Future<void> beginUniqueWork(
+    String uniqueName, {
+    required List<WorkChainTask> tasks,
+    ExistingWorkPolicy? existingWorkPolicy,
+  }) {
+    throw UnimplementedError('beginUniqueWork() has not been implemented.');
   }
 
   /// Register a periodic task that will be executed repeatedly in the background.
@@ -228,6 +251,17 @@ class _PlaceholderImplementation extends WorkmanagerPlatform {
     OutOfQuotaPolicy? outOfQuotaPolicy,
     ForegroundServiceConfig? foregroundServiceConfig,
     bool expedited = false,
+  }) async {
+    throw UnimplementedError(
+      'No implementation found for workmanager on this platform.',
+    );
+  }
+
+  @override
+  Future<void> beginUniqueWork(
+    String uniqueName, {
+    required List<WorkChainTask> tasks,
+    ExistingWorkPolicy? existingWorkPolicy,
   }) async {
     throw UnimplementedError(
       'No implementation found for workmanager on this platform.',

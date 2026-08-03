@@ -786,6 +786,130 @@ data class OneOffTaskRequest (
   }
 }
 
+/**
+ * A single step of a [UniqueWorkChainRequest] (Android only).
+ *
+ * Mirrors the per-task configuration of [OneOffTaskRequest] without the
+ * unique name: chain steps are identified by their position in the chain,
+ * not by a unique name.
+ *
+ * Generated class from Pigeon that represents data sent in messages.
+ */
+data class ChainTaskRequest (
+  /** The value returned in the [BackgroundTaskHandler] while this step runs. */
+  val taskName: String,
+  val inputData: Map<String?, Any?>? = null,
+  val initialDelaySeconds: Long? = null,
+  val constraints: Constraints? = null,
+  val backoffPolicy: BackoffPolicyConfig? = null,
+  val tag: String? = null,
+  val outOfQuotaPolicy: OutOfQuotaPolicy? = null,
+  /** When set, this step runs as an Android foreground service. */
+  val foregroundServiceConfig: ForegroundServiceConfig? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): ChainTaskRequest {
+      val taskName = pigeonVar_list[0] as String
+      val inputData = pigeonVar_list[1] as Map<String?, Any?>?
+      val initialDelaySeconds = pigeonVar_list[2] as Long?
+      val constraints = pigeonVar_list[3] as Constraints?
+      val backoffPolicy = pigeonVar_list[4] as BackoffPolicyConfig?
+      val tag = pigeonVar_list[5] as String?
+      val outOfQuotaPolicy = pigeonVar_list[6] as OutOfQuotaPolicy?
+      val foregroundServiceConfig = pigeonVar_list[7] as ForegroundServiceConfig?
+      return ChainTaskRequest(taskName, inputData, initialDelaySeconds, constraints, backoffPolicy, tag, outOfQuotaPolicy, foregroundServiceConfig)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      taskName,
+      inputData,
+      initialDelaySeconds,
+      constraints,
+      backoffPolicy,
+      tag,
+      outOfQuotaPolicy,
+      foregroundServiceConfig,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as ChainTaskRequest
+    return WorkmanagerApiPigeonUtils.deepEquals(this.taskName, other.taskName) && WorkmanagerApiPigeonUtils.deepEquals(this.inputData, other.inputData) && WorkmanagerApiPigeonUtils.deepEquals(this.initialDelaySeconds, other.initialDelaySeconds) && WorkmanagerApiPigeonUtils.deepEquals(this.constraints, other.constraints) && WorkmanagerApiPigeonUtils.deepEquals(this.backoffPolicy, other.backoffPolicy) && WorkmanagerApiPigeonUtils.deepEquals(this.tag, other.tag) && WorkmanagerApiPigeonUtils.deepEquals(this.outOfQuotaPolicy, other.outOfQuotaPolicy) && WorkmanagerApiPigeonUtils.deepEquals(this.foregroundServiceConfig, other.foregroundServiceConfig)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.taskName)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.inputData)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.initialDelaySeconds)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.constraints)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.backoffPolicy)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.tag)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.outOfQuotaPolicy)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.foregroundServiceConfig)
+    return result
+  }
+}
+
+/**
+ * A sequential chain of one-off tasks enqueued as a single unique work chain
+ * (Android only).
+ *
+ * Mirrors WorkManager's `beginUniqueWork(...).then(...).enqueue()`: the
+ * first task starts the chain, every following task runs only after the
+ * previous one finished successfully, and a permanently failed step stops
+ * the chain (following steps are cancelled by WorkManager).
+ *
+ * Generated class from Pigeon that represents data sent in messages.
+ */
+data class UniqueWorkChainRequest (
+  val uniqueName: String,
+  val tasks: List<ChainTaskRequest?>,
+  val existingWorkPolicy: ExistingWorkPolicy? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): UniqueWorkChainRequest {
+      val uniqueName = pigeonVar_list[0] as String
+      val tasks = pigeonVar_list[1] as List<ChainTaskRequest?>
+      val existingWorkPolicy = pigeonVar_list[2] as ExistingWorkPolicy?
+      return UniqueWorkChainRequest(uniqueName, tasks, existingWorkPolicy)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      uniqueName,
+      tasks,
+      existingWorkPolicy,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as UniqueWorkChainRequest
+    return WorkmanagerApiPigeonUtils.deepEquals(this.uniqueName, other.uniqueName) && WorkmanagerApiPigeonUtils.deepEquals(this.tasks, other.tasks) && WorkmanagerApiPigeonUtils.deepEquals(this.existingWorkPolicy, other.existingWorkPolicy)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.uniqueName)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.tasks)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.existingWorkPolicy)
+    return result
+  }
+}
+
 /** Generated class from Pigeon that represents data sent in messages. */
 data class PeriodicTaskRequest (
   val uniqueName: String,
@@ -1163,25 +1287,35 @@ private open class WorkmanagerApiPigeonCodec : StandardMessageCodec() {
       }
       143.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PeriodicTaskRequest.fromList(it)
+          ChainTaskRequest.fromList(it)
         }
       }
       144.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          ProcessingTaskRequest.fromList(it)
+          UniqueWorkChainRequest.fromList(it)
         }
       }
       145.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          HealthResearchTaskRequest.fromList(it)
+          PeriodicTaskRequest.fromList(it)
         }
       }
       146.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          ContinuedProcessingTaskRequest.fromList(it)
+          ProcessingTaskRequest.fromList(it)
         }
       }
       147.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          HealthResearchTaskRequest.fromList(it)
+        }
+      }
+      148.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          ContinuedProcessingTaskRequest.fromList(it)
+        }
+      }
+      149.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           WorkInfoData.fromList(it)
         }
@@ -1247,24 +1381,32 @@ private open class WorkmanagerApiPigeonCodec : StandardMessageCodec() {
         stream.write(142)
         writeValue(stream, value.toList())
       }
-      is PeriodicTaskRequest -> {
+      is ChainTaskRequest -> {
         stream.write(143)
         writeValue(stream, value.toList())
       }
-      is ProcessingTaskRequest -> {
+      is UniqueWorkChainRequest -> {
         stream.write(144)
         writeValue(stream, value.toList())
       }
-      is HealthResearchTaskRequest -> {
+      is PeriodicTaskRequest -> {
         stream.write(145)
         writeValue(stream, value.toList())
       }
-      is ContinuedProcessingTaskRequest -> {
+      is ProcessingTaskRequest -> {
         stream.write(146)
         writeValue(stream, value.toList())
       }
-      is WorkInfoData -> {
+      is HealthResearchTaskRequest -> {
         stream.write(147)
+        writeValue(stream, value.toList())
+      }
+      is ContinuedProcessingTaskRequest -> {
+        stream.write(148)
+        writeValue(stream, value.toList())
+      }
+      is WorkInfoData -> {
+        stream.write(149)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -1277,6 +1419,8 @@ private open class WorkmanagerApiPigeonCodec : StandardMessageCodec() {
 interface WorkmanagerHostApi {
   fun initialize(request: InitializeRequest, callback: (Result<Unit>) -> Unit)
   fun registerOneOffTask(request: OneOffTaskRequest, callback: (Result<Unit>) -> Unit)
+  /** Enqueues a sequential chain of one-off tasks (Android only). */
+  fun beginUniqueWork(request: UniqueWorkChainRequest, callback: (Result<Unit>) -> Unit)
   fun registerPeriodicTask(request: PeriodicTaskRequest, callback: (Result<Unit>) -> Unit)
   fun registerProcessingTask(request: ProcessingTaskRequest, callback: (Result<Unit>) -> Unit)
   fun registerHealthResearchTask(request: HealthResearchTaskRequest, callback: (Result<Unit>) -> Unit)
@@ -1327,6 +1471,25 @@ interface WorkmanagerHostApi {
             val args = message as List<Any?>
             val requestArg = args[0] as OneOffTaskRequest
             api.registerOneOffTask(requestArg) { result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(WorkmanagerApiPigeonUtils.wrapError(error))
+              } else {
+                reply.reply(WorkmanagerApiPigeonUtils.wrapResult(null))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.beginUniqueWork$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val requestArg = args[0] as UniqueWorkChainRequest
+            api.beginUniqueWork(requestArg) { result: Result<Unit> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(WorkmanagerApiPigeonUtils.wrapError(error))

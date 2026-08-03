@@ -336,6 +336,55 @@ class OneOffTaskRequest {
   bool? expedited;
 }
 
+/// A single step of a [UniqueWorkChainRequest] (Android only).
+///
+/// Mirrors the per-task configuration of [OneOffTaskRequest] without the
+/// unique name: chain steps are identified by their position in the chain,
+/// not by a unique name.
+class ChainTaskRequest {
+  ChainTaskRequest({
+    required this.taskName,
+    this.inputData,
+    this.initialDelaySeconds,
+    this.constraints,
+    this.backoffPolicy,
+    this.tag,
+    this.outOfQuotaPolicy,
+    this.foregroundServiceConfig,
+  });
+
+  /// The value returned in the [BackgroundTaskHandler] while this step runs.
+  String taskName;
+  Map<String?, Object?>? inputData;
+  int? initialDelaySeconds;
+  Constraints? constraints;
+  BackoffPolicyConfig? backoffPolicy;
+  String? tag;
+  OutOfQuotaPolicy? outOfQuotaPolicy;
+
+  /// When set, this step runs as an Android foreground service.
+  ForegroundServiceConfig? foregroundServiceConfig;
+}
+
+/// A sequential chain of one-off tasks enqueued as a single unique work chain
+/// (Android only).
+///
+/// Mirrors WorkManager's `beginUniqueWork(...).then(...).enqueue()`: the
+/// first task starts the chain, every following task runs only after the
+/// previous one finished successfully, and a permanently failed step stops
+/// the chain (following steps are cancelled by WorkManager).
+class UniqueWorkChainRequest {
+  UniqueWorkChainRequest({
+    required this.uniqueName,
+    required this.tasks,
+    this.existingWorkPolicy,
+  });
+
+  String uniqueName;
+  List<ChainTaskRequest?> tasks;
+  ExistingWorkPolicy? existingWorkPolicy;
+}
+
 class PeriodicTaskRequest {
   PeriodicTaskRequest({
     required this.uniqueName,
@@ -475,6 +524,10 @@ abstract class WorkmanagerHostApi {
 
   @async
   void registerOneOffTask(OneOffTaskRequest request);
+
+  /// Enqueues a sequential chain of one-off tasks (Android only).
+  @async
+  void beginUniqueWork(UniqueWorkChainRequest request);
 
   @async
   void registerPeriodicTask(PeriodicTaskRequest request);

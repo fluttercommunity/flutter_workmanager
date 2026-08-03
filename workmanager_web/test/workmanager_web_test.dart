@@ -52,6 +52,16 @@ void main() {
       );
     });
 
+    test('work chaining throws UnsupportedError (Android-only)', () {
+      expectLater(
+        WorkmanagerWeb().beginUniqueWork(
+          'chain',
+          tasks: [WorkChainTask(taskName: 'step1')],
+        ),
+        throwsUnsupportedError,
+      );
+    });
+
     test('WorkmanagerWebEvent JSON round-trips', () {
       final event = WorkmanagerWebEvent(
         timestamp: DateTime.fromMillisecondsSinceEpoch(123456),

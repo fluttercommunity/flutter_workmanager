@@ -343,6 +343,57 @@ class Workmanager {
     );
   }
 
+  /// Begins a sequential chain of one-off tasks (Android only).
+  ///
+  /// Mirrors WorkManager's `beginUniqueWork(...).then(...).enqueue()`: the
+  /// first task in [tasks] starts the chain and every following task runs
+  /// only after the previous one finished successfully (strict ordering). If
+  /// a step fails permanently — the background handler throws — WorkManager
+  /// stops the chain and cancels the remaining steps. Returning `false` from
+  /// a step is not a permanent failure: it maps to WorkManager's
+  /// `Result.retry()`, so the chain holds and retries that step with the
+  /// configured [WorkChainTask.backoffPolicy] before moving on.
+  ///
+  /// A [uniqueName] is required so only one chain can be registered. Calling
+  /// this method again with the same [uniqueName] is resolved with
+  /// [existingWorkPolicy] (same semantics as [registerOneOffTask]).
+  ///
+  /// Each [WorkChainTask] supports the same per-task configuration as
+  /// [registerOneOffTask] (input data, initial delay, constraints, backoff,
+  /// tag, out-of-quota policy and foreground service config).
+  ///
+  /// **Android-only.** On iOS/macOS/web this throws an [UnsupportedError];
+  /// WorkManager chaining does not exist on those platforms.
+  ///
+  /// ```dart
+  /// Workmanager().beginUniqueWork(
+  ///   'chain-name',
+  ///   existingWorkPolicy: ExistingWorkPolicy.keep,
+  ///   tasks: [
+  ///     WorkChainTask(taskName: 'step1', inputData: {'url': url}),
+  ///     WorkChainTask(taskName: 'step2', inputData: {'url': url}),
+  ///   ],
+  /// );
+  /// ```
+  Future<void> beginUniqueWork(
+    String uniqueName, {
+    required List<WorkChainTask> tasks,
+    ExistingWorkPolicy? existingWorkPolicy,
+  }) async {
+    if (tasks.isEmpty) {
+      throw ArgumentError.value(
+        tasks,
+        'tasks',
+        'A work chain must contain at least one task.',
+      );
+    }
+    return _platform.beginUniqueWork(
+      uniqueName,
+      tasks: tasks,
+      existingWorkPolicy: existingWorkPolicy,
+    );
+  }
+
   /// Checks whether a period task is scheduled by its [uniqueName].
   ///
   /// Scheduled means the work state is either ENQUEUED or RUNNING

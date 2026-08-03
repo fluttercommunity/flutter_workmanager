@@ -463,7 +463,6 @@ void main() {
         expect(captured.foregroundServiceConfig, isNull);
       });
     });
-
     group('Expedited work', () {
       const oneOffChannel =
           'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.registerOneOffTask';
@@ -499,6 +498,116 @@ void main() {
         final captured = await captureRequest(expedited: false);
 
         expect(captured.expedited, isFalse);
+      });
+    });
+
+    group('Work chaining (beginUniqueWork)', () {
+      const chainChannel =
+          'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.beginUniqueWork';
+
+      test('rejects an empty task list', () async {
+        await expectLater(
+          () => workmanager.beginUniqueWork('chain', tasks: []),
+          throwsA(isA<ArgumentError>()),
+        );
+      });
+
+      test('maps WorkChainTask list to a UniqueWorkChainRequest', () async {
+        late UniqueWorkChainRequest captured;
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMessageHandler(chainChannel, (ByteData? message) async {
+          final decoded = WorkmanagerHostApi.pigeonChannelCodec
+              .decodeMessage(message) as List<Object?>;
+          captured = decoded[0]! as UniqueWorkChainRequest;
+          return WorkmanagerHostApi.pigeonChannelCodec
+              .encodeMessage(<Object?>[]);
+        });
+
+        await workmanager.beginUniqueWork(
+          'chain-name',
+          existingWorkPolicy: ExistingWorkPolicy.replace,
+          tasks: [
+            WorkChainTask(
+              taskName: 'step1',
+              inputData: {'a': 1},
+              initialDelay: Duration(seconds: 30),
+              tag: 'chain-tag',
+              backoffPolicy: BackoffPolicy.exponential,
+              backoffPolicyDelay: Duration(seconds: 45),
+            ),
+            WorkChainTask(taskName: 'step2', inputData: {'b': 'x'}),
+          ],
+        );
+
+        expect(captured.uniqueName, 'chain-name');
+        expect(captured.existingWorkPolicy, ExistingWorkPolicy.replace);
+        final tasks = captured.tasks;
+        expect(tasks, hasLength(2));
+
+        final step1 = tasks[0]!;
+        expect(step1.taskName, 'step1');
+        expect(step1.inputData, {'a': 1});
+        expect(step1.initialDelaySeconds, 30);
+        expect(step1.tag, 'chain-tag');
+        expect(step1.backoffPolicy!.backoffPolicy, BackoffPolicy.exponential);
+        expect(step1.backoffPolicy!.backoffDelayMillis, 45000);
+        expect(step1.constraints, isNull);
+        expect(step1.outOfQuotaPolicy, isNull);
+
+        final step2 = tasks[1]!;
+        expect(step2.taskName, 'step2');
+        expect(step2.inputData, {'b': 'x'});
+        expect(step2.initialDelaySeconds, isNull);
+        expect(step2.tag, isNull);
+        expect(step2.backoffPolicy, isNull);
+      });
+
+      test('per-step constraints and foreground service config are forwarded',
+          () async {
+        late UniqueWorkChainRequest captured;
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMessageHandler(chainChannel, (ByteData? message) async {
+          final decoded = WorkmanagerHostApi.pigeonChannelCodec
+              .decodeMessage(message) as List<Object?>;
+          captured = decoded[0]! as UniqueWorkChainRequest;
+          return WorkmanagerHostApi.pigeonChannelCodec
+              .encodeMessage(<Object?>[]);
+        });
+
+        await workmanager.beginUniqueWork(
+          'chain-name',
+          tasks: [
+            WorkChainTask(
+              taskName: 'step1',
+              constraints: Constraints(
+                networkType: NetworkType.connected,
+                requiresCharging: true,
+              ),
+              outOfQuotaPolicy: OutOfQuotaPolicy.runAsNonExpeditedWorkRequest,
+              foregroundServiceConfig:
+                  ForegroundServiceConfig(notificationTitle: 'Syncing'),
+            ),
+          ],
+        );
+
+        final step1 = captured.tasks.single!;
+        expect(step1.constraints!.networkType, NetworkType.connected);
+        expect(step1.constraints!.requiresCharging, true);
+        expect(
+          step1.outOfQuotaPolicy,
+          OutOfQuotaPolicy.runAsNonExpeditedWorkRequest,
+        );
+        // Android-side defaults are resolved for chain steps, exactly like
+        // one-off tasks.
+        expect(step1.foregroundServiceConfig, isNotNull);
+        expect(
+          step1.foregroundServiceConfig!.notificationTitle,
+          'Syncing',
+        );
+        expect(
+          step1.foregroundServiceConfig!.foregroundServiceType,
+          ForegroundServiceType.dataSync,
+        );
       });
     });
   });

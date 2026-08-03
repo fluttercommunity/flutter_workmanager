@@ -28,6 +28,22 @@ void main() {
       });
 
       test(
+          'should throw UnsupportedError for beginUniqueWork (WorkManager chaining is Android-only)',
+          () {
+        expect(
+          () => workmanager.beginUniqueWork(
+            'chain',
+            tasks: [WorkChainTask(taskName: 'step1')],
+          ),
+          throwsA(isA<UnsupportedError>().having(
+            (e) => e.message,
+            'message',
+            contains('Work chaining is not supported on iOS/macOS'),
+          )),
+        );
+      });
+
+      test(
           'should throw UnsupportedError for isScheduledByUniqueName (Android-only functionality)',
           () {
         expect(

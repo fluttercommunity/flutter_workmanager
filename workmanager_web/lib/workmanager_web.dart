@@ -324,6 +324,17 @@ class WorkmanagerWeb extends WorkmanagerPlatform {
   }
 
   @override
+  Future<void> beginUniqueWork(
+    String uniqueName, {
+    required List<WorkChainTask> tasks,
+    ExistingWorkPolicy? existingWorkPolicy,
+  }) async {
+    // Work chaining maps to WorkManager's beginUniqueWork/then/enqueue,
+    // which does not exist on web.
+    throw UnsupportedError('Work chaining is not supported on web.');
+  }
+
+  @override
   Future<void> registerContinuedProcessingTask(
     String uniqueName,
     String taskName, {
