@@ -17,7 +17,9 @@ apply plugin: 'com.android.library'
 // still set `android.builtInKotlin=false` on AGP 9 must migrate to built-in
 // Kotlin — with that flag no Kotlin plugin compiles at all.
 def agpMajor = com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION.tokenize('.')[0] as int
-if (agpMajor < 9) {
+def builtInKotlin = agpMajor >= 9 &&
+    project.findProperty('android.builtInKotlin')?.toString() != 'false'
+if (!builtInKotlin) {
     apply plugin: 'kotlin-android'
 }
 
