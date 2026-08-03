@@ -477,21 +477,7 @@ void main() {
           final decoded = WorkmanagerHostApi.pigeonChannelCodec
               .decodeMessage(message) as List<Object?>;
           captured = decoded[0]! as OneOffTaskRequest;
-    group('Progress updates', () {
-      const reportProgressChannel =
-          'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.reportProgress';
-      const setProgressListenerChannel =
-          'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.setProgressListener';
-
-      test('reportProgress forwards the progress map through pigeon', () async {
-        late Map<String?, Object?> captured;
-        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-            .setMockMessageHandler(reportProgressChannel,
-                (ByteData? message) async {
-          final decoded = WorkmanagerHostApi.pigeonChannelCodec
-              .decodeMessage(message) as List<Object?>;
-          captured =
-              (decoded[0]! as Map<Object?, Object?>).cast<String?, Object?>();          return WorkmanagerHostApi.pigeonChannelCodec
+          return WorkmanagerHostApi.pigeonChannelCodec
               .encodeMessage(<Object?>[]);
         });
 
@@ -513,6 +499,28 @@ void main() {
         final captured = await captureRequest(expedited: false);
 
         expect(captured.expedited, isFalse);
+      });
+    });
+
+    group('Progress updates', () {
+      const reportProgressChannel =
+          'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.reportProgress';
+      const setProgressListenerChannel =
+          'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.setProgressListener';
+
+      test('reportProgress forwards the progress map through pigeon', () async {
+        late Map<String?, Object?> captured;
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMessageHandler(reportProgressChannel,
+                (ByteData? message) async {
+          final decoded = WorkmanagerHostApi.pigeonChannelCodec
+              .decodeMessage(message) as List<Object?>;
+          captured =
+              (decoded[0]! as Map<Object?, Object?>).cast<String?, Object?>();
+          return WorkmanagerHostApi.pigeonChannelCodec
+              .encodeMessage(<Object?>[]);
+        });
+
         await workmanager.reportProgress(<String, dynamic>{
           'progress': 0.5,
           'stage': 'uploading',
@@ -557,7 +565,8 @@ void main() {
 
         await workmanager.setProgressListener(null);
 
-        expect(captured, isFalse);      });
+        expect(captured, isFalse);
+      });
     });
   });
 }
