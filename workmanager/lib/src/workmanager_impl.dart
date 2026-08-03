@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:workmanager_platform_interface/workmanager_platform_interface.dart';
 import 'package:workmanager_android/workmanager_android.dart';
 import 'package:workmanager_apple/workmanager_apple.dart';
+import 'package:workmanager_linux/workmanager_linux.dart';
 import 'package:workmanager_web/workmanager_web.dart';
 
 /// Function that executes your background work.
@@ -113,6 +114,8 @@ class Workmanager {
         WorkmanagerPlatform.instance = WorkmanagerAndroid();
       } else if (Platform.isIOS || Platform.isMacOS) {
         WorkmanagerPlatform.instance = WorkmanagerApple();
+      } else if (Platform.isLinux) {
+        WorkmanagerPlatform.instance = WorkmanagerLinux();
       }
     }
   }

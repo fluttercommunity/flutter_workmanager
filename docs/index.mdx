@@ -20,7 +20,8 @@ Execute Dart code in the background, even when your app is closed. Perfect for d
 | iOS | ✅ Full | Background Fetch + BGTaskScheduler APIs |
 | macOS | ⚠️ Partial | One-off + periodic tasks via NSBackgroundActivityScheduler while the app is running (not after quit) |
 | Web | ⚠️ Experimental | Service Worker + Web Worker based background execution (`workmanager_web`) — see [Web (experimental)](web) |
-| Windows/Linux | ❌ Not supported | No background task APIs |
+| Linux | ⚠️ Experimental | systemd user units based background execution (`workmanager_linux`) — see [Linux (experimental)](linux) |
+| Windows | ❌ Not supported | No background task APIs |
 
 ## Platform Capability Matrix
 

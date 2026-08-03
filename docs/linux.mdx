@@ -1,0 +1,145 @@
+---
+title: "Linux (experimental)"
+description: systemd-based background execution on Linux
+---
+
+Experimental Linux support is provided by a new `workmanager_linux` package.
+Unlike the web, Linux has a real OS scheduler, so tasks are scheduled with
+**systemd user units** and actually run when the app is closed. The package is
+pure Dart (no native code, no Pigeon): it drives `systemctl --user` /
+`systemd-run --user` through an injectable process runner.
+
+## How it works
+
+| Task type | Mechanism |
+|---|---|
+| One-off | Transient units via `systemd-run --user --unit=workmanager-<hash> --on-active=<delay>` (or `--no-block` for immediate runs). Transient units vanish after the task ran. |
+| Periodic | A `.timer`/`.service` unit pair in `~/.config/systemd/user/`. `OnUnitActiveSec` drives the frequency, `OnStartupSec` the initial delay, and `Persistent=true` provides WorkManager-style catch-up of runs missed while the system was off. |
+
+When a timer fires, the service launches your app binary with
+`--background-task <taskName> --payload <path>` in a headless mode. Your
+`main()` detects that invocation, runs the callback dispatcher, and exits
+instead of opening a window. The payload is the `inputData` JSON persisted at
+registration time under `$XDG_DATA_HOME/workmanager/payloads/` (Android-style
+on-disk payload).
+
+## Requirements
+
+- A systemd-based Linux distribution with a systemd **user session**.
+- Flatpak/Snap sandboxing is not supported (apps there cannot write user
+  units).
+
+## Setup
+
+### 1. Dependencies
+
+```yaml
+dependencies:
+  workmanager: ^0.10.0
+  workmanager_linux: ^0.1.0
+```
+
+The main `workmanager` package auto-delegates to `workmanager_linux` on
+Linux, so scheduling through `Workmanager()` just works:
+
+```dart
+Workmanager().initialize(callbackDispatcher);
+Workmanager().registerOneOffTask(
+  "task-id",
+  "sync",
+  initialDelay: Duration(minutes: 5),
+);
+Workmanager().registerPeriodicTask(
+  "periodic-id",
+  "sync",
+  frequency: Duration(hours: 1),
+);
+```
+
+### 2. Headless `main()`
+
+Your `main()` must check for the `--background-task` invocation before
+starting the UI:
+
+```dart
+import 'package:workmanager/workmanager.dart';
+import 'package:workmanager_linux/workmanager_linux.dart';
+
+Future<void> main(List<String> args) async {
+  if (await WorkmanagerLinux.maybeRunBackgroundTask(args, callbackDispatcher)) {
+    // Launched headless by systemd: the task ran, the result was logged and
+    // the process exited (0 = success, 1 = failure).
+    return;
+  }
+  runApp(const MyApp());
+}
+
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  WorkmanagerLinux.executeTask((taskName, inputData) async {
+    // Your background work here. Flutter plugins are allowed.
+    return true;
+  });
+}
+```
+
+Note the dispatcher registers with `WorkmanagerLinux.executeTask` — not
+`Workmanager().executeTask` — because the headless process has no native
+platform-channel counterpart to handshake with. This mirrors how
+`workmanager_web` uses its `WorkmanagerExecution` registry.
+
+### 3. Verify scheduling
+
+```bash
+systemctl --user list-timers            # workmanager-*.timer units appear
+journalctl --user -u 'workmanager-*'    # task runs and failures
+```
+
+## ⚠️ The `enable-linger` caveat
+
+systemd user units only run while the **user session is active**. When the
+app is launched from a normal desktop session this is a non-issue, but if
+you expect tasks to run while nobody is logged in graphically (or after
+logout), enable linger for the user:
+
+```bash
+sudo loginctl enable-linger $USER
+```
+
+Linger keeps the user's systemd manager (and its timers) running without a
+login session. On some desktops, user services additionally only start after
+the user's first graphical login of the machine.
+
+Also make sure the environment the app runs in can reach the user manager
+(`XDG_RUNTIME_DIR`/DBus). Desktop sessions set this up automatically.
+
+## Honest limitations
+
+- **Constraints are accepted but ignored** (`networkType`, `requiresCharging`,
+  ...). No battery/AC/network gating in v1.
+- **Backoff policy is accepted but ignored** — failed one-off tasks are not
+  retried; a failed periodic task just waits for the next interval.
+- **`existingWorkPolicy` is effectively `REPLACE`** — re-registering a unique
+  name overwrites the units; `KEEP` is not implemented.
+- **Tags are accepted but not tracked** — `cancelByTag` throws
+  `UnsupportedError` (cancel by unique name or `cancelAll` instead).
+- **Frequency is honored as-is** (no Android-style 15-minute floor; systemd
+  resolves to whole seconds).
+- **iOS-only task types** (`registerProcessingTask`, health research,
+  continued processing) throw `UnsupportedError`.
+- `isScheduledByUniqueName` maps to `systemctl is-active` on the task's
+  timer unit; `printScheduledTasks` returns the raw `systemctl list-timers`
+  lines for workmanager units.
+
+## Testing
+
+`workmanager_linux` is pure Dart with an injectable process runner, so the
+whole test suite runs anywhere — no systemd needed:
+
+```bash
+cd workmanager_linux
+dart test
+```
+
+See the [package README](../../workmanager_linux/README.md) and
+[DESIGN.md](../../workmanager_linux/DESIGN.md) for details.
