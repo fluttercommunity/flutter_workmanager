@@ -19,5 +19,6 @@ class DefaultProcessRunner implements ProcessRunner {
   const DefaultProcessRunner();
 
   @override
-  Future<ProcessResult> run(String executable, List<String> arguments) => Process.run(executable, arguments);
+  Future<ProcessResult> run(String executable, List<String> arguments) =>
+      Process.run(executable, arguments);
 }
