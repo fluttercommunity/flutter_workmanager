@@ -41,6 +41,7 @@ platform.
 | Constraints (network, charging, battery) | ✅ Supported | ❌ iOS applies its own system-level constraints | ❌ Not supported (ignored) | ❌ Not supported |
 | `cancelByUniqueName` / `cancelAll` | ✅ | ✅ Only cancels BGTaskScheduler requests (periodic/processing) | ✅ Invalidates scheduled activities | ✅ Removes tasks and unregisters periodic sync tags |
 | `cancelByTag` | ✅ | ❌ Not supported (no-op) | ❌ Not supported (no-op) | ✅ Supported |
+| `getWorkInfo` (status query) | ✅ Authoritative, from WorkManager | ⚠️ Best effort — from the plugin's own persisted state (BGTaskScheduler has no query API); `lastFinishedAt` set, `tags` empty | ⚠️ Best effort — same persisted-state store as iOS; `lastFinishedAt` set, `tags` empty | ⚠️ Always returns `null` (no queryable state) |
 | Task execution after app is killed | ✅ Yes (one-off/periodic) | ❌ No — iOS does not run tasks after the app is terminated | ❌ No — the app process must be alive | ⚠️ Only when the browser wakes the Service Worker (periodic sync for installed/engaged PWAs, push, or an intercepted fetch) |
 | Minimum run time budget | No hard limit, but WorkManager may defer work | ~30 seconds per task execution | No hard budget; the system may defer activities while the Mac is busy | Seconds — Service Worker wake-ups are short and browsers can terminate the worker at any time |
 

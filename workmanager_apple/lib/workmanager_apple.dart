@@ -176,4 +176,10 @@ class WorkmanagerApple extends WorkmanagerPlatform {
   Future<String> printScheduledTasks() async {
     return await _api.printScheduledTasks();
   }
+
+  @override
+  Future<WorkInfo?> getWorkInfo(String uniqueName) async {
+    final data = await _api.getWorkInfoByUniqueName(uniqueName);
+    return data == null ? null : WorkInfo.fromData(data);
+  }
 }

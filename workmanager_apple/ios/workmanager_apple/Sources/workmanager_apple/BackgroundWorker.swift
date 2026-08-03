@@ -120,11 +120,38 @@ class BackgroundWorker {
 
         let taskSessionStart = Date()
 
+        // Derive the identity of the task for the debug/status pipeline. The
+        // scheduler identifier is the uniqueName for BGTaskScheduler-delivered
+        // tasks; iOS one-off tasks execute under their registered taskName
+        // (resolved to the uniqueName by WorkInfoStore).
+        var taskUniqueName: String?
+        var taskName: String
+        switch backgroundMode {
+        case .backgroundFetch:
+            taskName = "iOSPerformFetch"
+        case let .backgroundPeriodicTask(identifier), let .backgroundProcessingTask(identifier), let .backgroundHealthResearchTask(identifier), let .backgroundContinuedProcessingTask(identifier):
+            taskUniqueName = identifier
+            taskName = identifier
+        case let .backgroundOneOffTask(identifier):
+            taskName = identifier
+#if os(iOS)
+            // iOS one-off tasks run under the registered taskName; the store
+            // resolves the uniqueName via the persisted registration record.
+#elseif os(macOS)
+            // On macOS the activity identifier (and the task name the Dart
+            // handler receives) is the uniqueName.
+            taskUniqueName = identifier
+#endif
+        }
+        let isPeriodic: Bool? = { if case .backgroundPeriodicTask = backgroundMode { return true } else { return false } }()
+
         let taskInfo = TaskDebugInfo(
-            taskName: "background_fetch",
+            taskName: taskName,
+            uniqueName: taskUniqueName,
             startTime: taskSessionStart.timeIntervalSince1970,
             callbackHandle: resolved.handle,
-            callbackInfo: resolved.entrypoint.name
+            callbackInfo: resolved.entrypoint.name,
+            isPeriodic: isPeriodic
         )
 
         WorkmanagerDebug.onTaskStatusUpdate(taskInfo: taskInfo, status: .started)

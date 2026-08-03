@@ -1,0 +1,116 @@
+---
+title: Work Status Observation
+description: Query the state of your background tasks with getWorkInfo
+---
+
+Query what your background tasks are doing right now with `getWorkInfo`.
+
+```dart
+final WorkInfo? info = await Workmanager().getWorkInfo('my-unique-task');
+
+if (info == null) {
+  print('No record of this task');
+} else {
+  print('${info.uniqueName} is ${info.state.name}');
+  print('Periodic: ${info.isPeriodic}');
+  print('Last finished at: ${info.lastFinishedAt}');
+}
+```
+
+## The WorkInfo model
+
+| Field | Type | Meaning |
+|---|---|---|
+| `uniqueName` | `String` | The unique name the task was registered with |
+| `state` | `WorkState` | `scheduled`, `running`, `succeeded`, `failed` or `cancelled` |
+| `isPeriodic` | `bool` | Whether the task was registered with `registerPeriodicTask` |
+| `taskName` | `String?` | The task name the work was registered with, when known |
+| `tags` | `List<String>` | WorkManager tags (Android only; always empty elsewhere) |
+| `lastFinishedAt` | `DateTime?` | When the plugin last observed the task finish (see below) |
+
+`getWorkInfo` returns `null` when the platform has no record of the task
+(never registered, cancelled-and-pruned on Android, or unknown to the plugin).
+
+The state mapping is deliberately small: it is the intersection of what
+Android WorkManager and the plugin's own Apple-side state can truthfully
+report. There is no `runAttemptCount` (the maintainer explicitly declined to
+surface it) and no streaming/observation API — this is a one-shot query.
+
+## Per-platform truthfulness
+
+Different platforms have very different abilities to answer "what is my task
+doing?". The plugin is honest about that instead of pretending they are the
+same.
+
+### Android — authoritative (WorkManager)
+
+The query is served by WorkManager itself
+(`getWorkInfosForUniqueWork`). `state` is authoritative:
+
+| `WorkInfo.state` | `WorkState` |
+|---|---|
+| `ENQUEUED` | `scheduled` |
+| `BLOCKED` | `scheduled` |
+| `RUNNING` | `running` |
+| `SUCCEEDED` | `succeeded` |
+| `FAILED` | `failed` |
+| `CANCELLED` | `cancelled` |
+
+`isPeriodic` comes from WorkManager's periodicity information, `tags` from the
+work's tags, and `taskName` is read back from the worker's input data.
+`lastFinishedAt` is **always `null` on Android**: WorkManager does not expose
+a finish timestamp. Use `isScheduledByUniqueName` if you only need the
+scheduled/running boolean.
+
+After `cancelByUniqueName`, WorkManager keeps the work around (until it is
+pruned), so a query returns `state == cancelled`.
+
+### iOS / macOS — best effort (plugin-persisted state)
+
+**BGTaskScheduler (iOS) and NSBackgroundActivityScheduler (macOS) have no
+query API.** There is no way to ask the system "what is the state of this
+task?". Instead of leaving the Flutter engineer with an Android-only feature,
+the plugin persists its own view of each task:
+
+- When a task is registered, the plugin records `{uniqueName, taskName,
+  isPeriodic, state: scheduled}` in `UserDefaults`.
+- Every transition the plugin observes through its existing task-status
+  pipeline (start → `running`, completion → `succeeded`, failure → `failed`,
+  cancellation → `cancelled`, a failed attempt that will be retried →
+  `scheduled` again) updates the record.
+- `getWorkInfo` reads that store.
+
+This makes the answer **best-effort: it reflects what the plugin knows**, not
+the system scheduler's view. In particular:
+
+- If iOS prunes a pending BGTaskScheduler request without informing the app,
+  the store still reports `scheduled`.
+- `lastFinishedAt` is only set for tasks the plugin saw finish (or get
+  cancelled) while it was running.
+- `tags` is always empty (Apple has no tag concept).
+- After `cancelByUniqueName`/`cancelAll` the store reports `cancelled`
+  (mirroring Android's behaviour).
+
+The persisted state survives app restarts (it lives in `UserDefaults`), so a
+query after a cold start still answers for tasks the plugin registered in a
+previous session.
+
+### Web — no-op
+
+Browsers have no queryable task state: the Service Worker runs the compiled
+dispatcher without the plugin's Dart code, so nothing is recorded.
+`getWorkInfo` always returns `null` (documented no-op).
+
+### Other platforms (desktop)
+
+`getWorkInfo` throws `UnsupportedError`, like every other platform API on
+unsupported platforms.
+
+## Compatibility
+
+`getWorkInfo` is **new API only** — no existing method changed behaviour or
+signature. Older versions of the platform packages simply don't implement it
+(the platform interface falls back to a default that throws
+`UnimplementedError`), so upgrading the `workmanager` package without
+upgrading a platform package fails loudly at the call site rather than
+silently returning wrong data.

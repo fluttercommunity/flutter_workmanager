@@ -52,6 +52,39 @@ void main() {
           )),
         );
       });
+
+      test('getWorkInfo returns null when the platform has no record',
+          () async {
+        _mockGetWorkInfoReply(<Object?>[null]);
+
+        expect(await workmanager.getWorkInfo('unknown-task'), isNull);
+      });
+
+      test('getWorkInfo maps the pigeon reply into a WorkInfo', () async {
+        _mockGetWorkInfoReply(<Object?>[
+          WorkInfoData(
+            uniqueName: 'com.example.task',
+            state: WorkState.succeeded,
+            isPeriodic: true,
+            taskName: 'dart-task',
+            tags: <String?>['tag-a', 'tag-b'],
+            lastFinishedAtMillis: 1700000000000,
+          ),
+        ]);
+
+        final info = await workmanager.getWorkInfo('com.example.task');
+
+        expect(info, isNotNull);
+        expect(info!.uniqueName, 'com.example.task');
+        expect(info.state, WorkState.succeeded);
+        expect(info.isPeriodic, isTrue);
+        expect(info.taskName, 'dart-task');
+        expect(info.tags, <String>['tag-a', 'tag-b']);
+        expect(
+          info.lastFinishedAt,
+          DateTime.fromMillisecondsSinceEpoch(1700000000000),
+        );
+      });
     });
 
     group('Android WorkManager constraints mapping', () {
@@ -469,4 +502,17 @@ void main() {
       });
     });
   });
+}
+
+/// Stubs the pigeon `getWorkInfoByUniqueName` channel with [reply] so the
+/// platform implementation's query plumbing can be exercised in tests.
+void _mockGetWorkInfoReply(List<Object?> reply) {
+  const channelName =
+      'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.getWorkInfoByUniqueName';
+  final channel = BasicMessageChannel<Object?>(
+    channelName,
+    WorkmanagerHostApi.pigeonChannelCodec,
+  );
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockDecodedMessageHandler<Object?>(channel, (message) async => reply);
 }

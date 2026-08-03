@@ -1,6 +1,7 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'pigeon/workmanager_api.g.dart';
+import 'work_info.dart';
 
 /// The interface that implementations of workmanager must implement.
 ///
@@ -188,6 +189,14 @@ abstract class WorkmanagerPlatform extends PlatformInterface {
   Future<String> printScheduledTasks() {
     throw UnimplementedError('printScheduledTasks() has not been implemented.');
   }
+
+  /// Queries the current state of the task registered under [uniqueName].
+  ///
+  /// Returns `null` when the platform has no record of the task. See [WorkInfo]
+  /// for the per-platform truthfulness of the result.
+  Future<WorkInfo?> getWorkInfo(String uniqueName) {
+    throw UnimplementedError('getWorkInfo() has not been implemented.');
+  }
 }
 
 /// Placeholder implementation that throws on all methods.
@@ -314,6 +323,13 @@ class _PlaceholderImplementation extends WorkmanagerPlatform {
 
   @override
   Future<String> printScheduledTasks() async {
+    throw UnimplementedError(
+      'No implementation found for workmanager on this platform.',
+    );
+  }
+
+  @override
+  Future<WorkInfo?> getWorkInfo(String uniqueName) async {
     throw UnimplementedError(
       'No implementation found for workmanager on this platform.',
     );

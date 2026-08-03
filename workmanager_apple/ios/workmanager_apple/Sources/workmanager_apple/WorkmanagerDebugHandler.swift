@@ -11,14 +11,27 @@ public struct TaskDebugInfo {
     public let startTime: TimeInterval
     public let callbackHandle: Int64?
     public let callbackInfo: String?
+    /// Whether the task was registered as periodic, when known. Only the
+    /// registration sites know this for certain; used by the persisted
+    /// work-info store.
+    public let isPeriodic: Bool?
 
-    public init(taskName: String, uniqueName: String? = nil, inputData: [String: Any]? = nil, startTime: TimeInterval, callbackHandle: Int64? = nil, callbackInfo: String? = nil) {
+    public init(
+        taskName: String,
+        uniqueName: String? = nil,
+        inputData: [String: Any]? = nil,
+        startTime: TimeInterval,
+        callbackHandle: Int64? = nil,
+        callbackInfo: String? = nil,
+        isPeriodic: Bool? = nil
+    ) {
         self.taskName = taskName
         self.uniqueName = uniqueName
         self.inputData = inputData
         self.startTime = startTime
         self.callbackHandle = callbackHandle
         self.callbackInfo = callbackInfo
+        self.isPeriodic = isPeriodic
     }
 }
 
@@ -75,6 +88,11 @@ public class WorkmanagerDebug {
     // Internal methods for the plugin to call
     internal static func onTaskStatusUpdate(taskInfo: TaskDebugInfo, status: TaskStatus, result: TaskResult? = nil) {
         current.onTaskStatusUpdate(taskInfo: taskInfo, status: status, result: result)
+        // Every status transition also updates the persisted work-info store
+        // (independent of the user-swappable debug handler above), so the
+        // `getWorkInfo` query can be served on platforms whose schedulers have
+        // no query API. See WorkInfoStore.
+        WorkInfoStore.record(taskInfo: taskInfo, status: status, result: result, isPeriodic: taskInfo.isPeriodic)
     }
 
     internal static func onExceptionEncountered(taskInfo: TaskDebugInfo?, exception: Error) {

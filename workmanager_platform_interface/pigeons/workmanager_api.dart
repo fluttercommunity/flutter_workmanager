@@ -149,6 +149,29 @@ enum OutOfQuotaPolicy {
   dropWorkRequest,
 }
 
+/// The lifecycle state of a background task as observed by the plugin.
+///
+/// This is the cross-platform subset of Android WorkManager's
+/// `WorkInfo.State` (ENQUEUED/RUNNING/SUCCEEDED/FAILED/CANCELLED/BLOCKED).
+/// On Apple platforms it reflects what the plugin itself has persisted from
+/// its task-status pipeline, because BGTaskScheduler has no query API.
+enum WorkState {
+  /// The task is registered and waiting to run (Android ENQUEUED/BLOCKED).
+  scheduled,
+
+  /// The task is currently executing.
+  running,
+
+  /// The task finished successfully.
+  succeeded,
+
+  /// The task failed permanently.
+  failed,
+
+  /// The task was cancelled before finishing.
+  cancelled,
+}
+
 /// Foreground service types supported for Android long-running workers.
 ///
 /// These map to the foreground service types introduced by Android 14
@@ -410,6 +433,40 @@ class ContinuedProcessingTaskRequest {
   Map<String?, Object?>? inputData;
 }
 
+/// Snapshot of the current state of a background task, as served by the
+/// native platform. This is the transport type for [WorkmanagerHostApi.getWorkInfoByUniqueName];
+/// the public, platform-agnostic model is `WorkInfo`.
+class WorkInfoData {
+  WorkInfoData({
+    required this.uniqueName,
+    required this.state,
+    required this.isPeriodic,
+    this.taskName,
+    this.tags,
+    this.lastFinishedAtMillis,
+  });
+
+  /// The unique name the task was registered with.
+  String uniqueName;
+
+  /// The task's current state.
+  WorkState state;
+
+  /// True when the task was registered as a periodic task.
+  bool isPeriodic;
+
+  /// The task name the work was registered with, when the platform exposes it.
+  String? taskName;
+
+  /// Tags the work was registered with (Android only; empty elsewhere).
+  List<String?>? tags;
+
+  /// When the plugin last observed the task finish (succeeded, failed or was
+  /// cancelled), as epoch milliseconds, when the platform exposes it.
+  /// Android WorkManager has no finish timestamp, so this is null there.
+  int? lastFinishedAtMillis;
+}
+
 // Host API (Flutter calls native)
 @HostApi()
 abstract class WorkmanagerHostApi {
@@ -445,6 +502,11 @@ abstract class WorkmanagerHostApi {
 
   @async
   String printScheduledTasks();
+
+  /// Returns the current state of the task registered under [uniqueName], or
+  /// null when the platform has no record of it.
+  @async
+  WorkInfoData? getWorkInfoByUniqueName(String uniqueName);
 }
 
 // Flutter API (Native calls Flutter)

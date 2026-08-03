@@ -13,6 +13,7 @@ import androidx.work.OutOfQuotaPolicy
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
 import dev.fluttercommunity.workmanager.pigeon.TaskStatus
+import dev.fluttercommunity.workmanager.pigeon.WorkState
 import java.util.concurrent.TimeUnit
 
 // Constants
@@ -84,6 +85,34 @@ internal fun createPeriodicWorkRequest(
             tag?.let(::addTag)
             // Note: outOfQuotaPolicy is not supported for periodic tasks
         }.build()
+}
+
+/**
+ * Maps a WorkManager [androidx.work.WorkInfo] to the Pigeon transport model
+ * for the query API.
+ *
+ * The state mapping is the cross-platform subset of `WorkInfo.State`;
+ * BLOCKED (waiting on prerequisites) is reported as [WorkState.SCHEDULED].
+ * `lastFinishedAtMillis` is always null on Android: WorkManager does not
+ * expose a finish timestamp.
+ */
+internal fun androidx.work.WorkInfo.toWorkInfoData(uniqueName: String): dev.fluttercommunity.workmanager.pigeon.WorkInfoData {
+    val workState =
+        when (state) {
+            androidx.work.WorkInfo.State.ENQUEUED, androidx.work.WorkInfo.State.BLOCKED -> WorkState.SCHEDULED
+            androidx.work.WorkInfo.State.RUNNING -> WorkState.RUNNING
+            androidx.work.WorkInfo.State.SUCCEEDED -> WorkState.SUCCEEDED
+            androidx.work.WorkInfo.State.FAILED -> WorkState.FAILED
+            androidx.work.WorkInfo.State.CANCELLED -> WorkState.CANCELLED
+        }
+    return dev.fluttercommunity.workmanager.pigeon.WorkInfoData(
+        uniqueName = uniqueName,
+        state = workState,
+        isPeriodic = periodicityInfo != null,
+        taskName = outputData.getString(BackgroundWorker.DART_TASK_KEY),
+        tags = tags.sorted().map { it as String? },
+        lastFinishedAtMillis = null,
+    )
 }
 
 // Extension functions to convert Pigeon types to Android WorkManager types

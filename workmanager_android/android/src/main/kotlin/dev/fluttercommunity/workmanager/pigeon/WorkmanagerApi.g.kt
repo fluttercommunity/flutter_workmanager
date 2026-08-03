@@ -377,6 +377,33 @@ enum class OutOfQuotaPolicy(val raw: Int) {
 }
 
 /**
+ * The lifecycle state of a background task as observed by the plugin.
+ *
+ * This is the cross-platform subset of Android WorkManager's
+ * `WorkInfo.State` (ENQUEUED/RUNNING/SUCCEEDED/FAILED/CANCELLED/BLOCKED).
+ * On Apple platforms it reflects what the plugin itself has persisted from
+ * its task-status pipeline, because BGTaskScheduler has no query API.
+ */
+enum class WorkState(val raw: Int) {
+  /** The task is registered and waiting to run (Android ENQUEUED/BLOCKED). */
+  SCHEDULED(0),
+  /** The task is currently executing. */
+  RUNNING(1),
+  /** The task finished successfully. */
+  SUCCEEDED(2),
+  /** The task failed permanently. */
+  FAILED(3),
+  /** The task was cancelled before finishing. */
+  CANCELLED(4);
+
+  companion object {
+    fun ofRaw(raw: Int): WorkState? {
+      return values().firstOrNull { it.raw == raw }
+    }
+  }
+}
+
+/**
  * Foreground service types supported for Android long-running workers.
  *
  * These map to the foreground service types introduced by Android 14
@@ -991,6 +1018,76 @@ data class ContinuedProcessingTaskRequest (
     return result
   }
 }
+
+/**
+ * Snapshot of the current state of a background task, as served by the
+ * native platform. This is the transport type for [WorkmanagerHostApi.getWorkInfoByUniqueName];
+ * the public, platform-agnostic model is `WorkInfo`.
+ *
+ * Generated class from Pigeon that represents data sent in messages.
+ */
+data class WorkInfoData (
+  /** The unique name the task was registered with. */
+  val uniqueName: String,
+  /** The task's current state. */
+  val state: WorkState,
+  /** True when the task was registered as a periodic task. */
+  val isPeriodic: Boolean,
+  /** The task name the work was registered with, when the platform exposes it. */
+  val taskName: String? = null,
+  /** Tags the work was registered with (Android only; empty elsewhere). */
+  val tags: List<String?>? = null,
+  /**
+   * When the plugin last observed the task finish (succeeded, failed or was
+   * cancelled), as epoch milliseconds, when the platform exposes it.
+   * Android WorkManager has no finish timestamp, so this is null there.
+   */
+  val lastFinishedAtMillis: Long? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): WorkInfoData {
+      val uniqueName = pigeonVar_list[0] as String
+      val state = pigeonVar_list[1] as WorkState
+      val isPeriodic = pigeonVar_list[2] as Boolean
+      val taskName = pigeonVar_list[3] as String?
+      val tags = pigeonVar_list[4] as List<String?>?
+      val lastFinishedAtMillis = pigeonVar_list[5] as Long?
+      return WorkInfoData(uniqueName, state, isPeriodic, taskName, tags, lastFinishedAtMillis)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      uniqueName,
+      state,
+      isPeriodic,
+      taskName,
+      tags,
+      lastFinishedAtMillis,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as WorkInfoData
+    return WorkmanagerApiPigeonUtils.deepEquals(this.uniqueName, other.uniqueName) && WorkmanagerApiPigeonUtils.deepEquals(this.state, other.state) && WorkmanagerApiPigeonUtils.deepEquals(this.isPeriodic, other.isPeriodic) && WorkmanagerApiPigeonUtils.deepEquals(this.taskName, other.taskName) && WorkmanagerApiPigeonUtils.deepEquals(this.tags, other.tags) && WorkmanagerApiPigeonUtils.deepEquals(this.lastFinishedAtMillis, other.lastFinishedAtMillis)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.uniqueName)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.state)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.isPeriodic)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.taskName)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.tags)
+    result = 31 * result + WorkmanagerApiPigeonUtils.deepHash(this.lastFinishedAtMillis)
+    return result
+  }
+}
 private open class WorkmanagerApiPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -1026,57 +1123,67 @@ private open class WorkmanagerApiPigeonCodec : StandardMessageCodec() {
       }
       135.toByte() -> {
         return (readValue(buffer) as Long?)?.let {
-          ForegroundServiceType.ofRaw(it.toInt())
+          WorkState.ofRaw(it.toInt())
         }
       }
       136.toByte() -> {
-        return (readValue(buffer) as? List<Any?>)?.let {
-          ForegroundServiceConfig.fromList(it)
+        return (readValue(buffer) as Long?)?.let {
+          ForegroundServiceType.ofRaw(it.toInt())
         }
       }
       137.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          Constraints.fromList(it)
+          ForegroundServiceConfig.fromList(it)
         }
       }
       138.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          ContentUriTrigger.fromList(it)
+          Constraints.fromList(it)
         }
       }
       139.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          BackoffPolicyConfig.fromList(it)
+          ContentUriTrigger.fromList(it)
         }
       }
       140.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          InitializeRequest.fromList(it)
+          BackoffPolicyConfig.fromList(it)
         }
       }
       141.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          OneOffTaskRequest.fromList(it)
+          InitializeRequest.fromList(it)
         }
       }
       142.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PeriodicTaskRequest.fromList(it)
+          OneOffTaskRequest.fromList(it)
         }
       }
       143.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          ProcessingTaskRequest.fromList(it)
+          PeriodicTaskRequest.fromList(it)
         }
       }
       144.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          HealthResearchTaskRequest.fromList(it)
+          ProcessingTaskRequest.fromList(it)
         }
       }
       145.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
+          HealthResearchTaskRequest.fromList(it)
+        }
+      }
+      146.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
           ContinuedProcessingTaskRequest.fromList(it)
+        }
+      }
+      147.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          WorkInfoData.fromList(it)
         }
       }
       else -> super.readValueOfType(type, buffer)
@@ -1108,48 +1215,56 @@ private open class WorkmanagerApiPigeonCodec : StandardMessageCodec() {
         stream.write(134)
         writeValue(stream, value.raw.toLong())
       }
-      is ForegroundServiceType -> {
+      is WorkState -> {
         stream.write(135)
         writeValue(stream, value.raw.toLong())
       }
-      is ForegroundServiceConfig -> {
+      is ForegroundServiceType -> {
         stream.write(136)
-        writeValue(stream, value.toList())
+        writeValue(stream, value.raw.toLong())
       }
-      is Constraints -> {
+      is ForegroundServiceConfig -> {
         stream.write(137)
         writeValue(stream, value.toList())
       }
-      is ContentUriTrigger -> {
+      is Constraints -> {
         stream.write(138)
         writeValue(stream, value.toList())
       }
-      is BackoffPolicyConfig -> {
+      is ContentUriTrigger -> {
         stream.write(139)
         writeValue(stream, value.toList())
       }
-      is InitializeRequest -> {
+      is BackoffPolicyConfig -> {
         stream.write(140)
         writeValue(stream, value.toList())
       }
-      is OneOffTaskRequest -> {
+      is InitializeRequest -> {
         stream.write(141)
         writeValue(stream, value.toList())
       }
-      is PeriodicTaskRequest -> {
+      is OneOffTaskRequest -> {
         stream.write(142)
         writeValue(stream, value.toList())
       }
-      is ProcessingTaskRequest -> {
+      is PeriodicTaskRequest -> {
         stream.write(143)
         writeValue(stream, value.toList())
       }
-      is HealthResearchTaskRequest -> {
+      is ProcessingTaskRequest -> {
         stream.write(144)
         writeValue(stream, value.toList())
       }
-      is ContinuedProcessingTaskRequest -> {
+      is HealthResearchTaskRequest -> {
         stream.write(145)
+        writeValue(stream, value.toList())
+      }
+      is ContinuedProcessingTaskRequest -> {
+        stream.write(146)
+        writeValue(stream, value.toList())
+      }
+      is WorkInfoData -> {
+        stream.write(147)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -1171,6 +1286,11 @@ interface WorkmanagerHostApi {
   fun cancelAll(callback: (Result<Unit>) -> Unit)
   fun isScheduledByUniqueName(uniqueName: String, callback: (Result<Boolean>) -> Unit)
   fun printScheduledTasks(callback: (Result<String>) -> Unit)
+  /**
+   * Returns the current state of the task registered under [uniqueName], or
+   * null when the platform has no record of it.
+   */
+  fun getWorkInfoByUniqueName(uniqueName: String, callback: (Result<WorkInfoData?>) -> Unit)
 
   companion object {
     /** The codec used by WorkmanagerHostApi. */
@@ -1375,6 +1495,26 @@ interface WorkmanagerHostApi {
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             api.printScheduledTasks{ result: Result<String> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(WorkmanagerApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(WorkmanagerApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.getWorkInfoByUniqueName$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val uniqueNameArg = args[0] as String
+            api.getWorkInfoByUniqueName(uniqueNameArg) { result: Result<WorkInfoData?> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(WorkmanagerApiPigeonUtils.wrapError(error))

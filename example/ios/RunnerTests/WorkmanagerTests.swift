@@ -181,4 +181,165 @@ class WorkmanagerTests: XCTestCase {
         XCTAssertTrue(UserDefaultsHelper.getScheduledTasks().isEmpty)
     }
 
+    // MARK: - WorkInfoStore (persisted task state for the query API)
+
+    func testPersistedWorkInfoRoundTrip() {
+        let uniqueName = "dev.fluttercommunity.test.workInfoRoundTrip"
+        let now = Date().timeIntervalSince1970
+
+        UserDefaultsHelper.storeWorkInfo(
+            PersistedWorkInfo(
+                state: "scheduled",
+                isPeriodic: true,
+                taskName: "dart-task",
+                lastFinishedAt: nil,
+                updatedAt: now
+            ),
+            forUniqueName: uniqueName
+        )
+
+        let stored = UserDefaultsHelper.getWorkInfo(forUniqueName: uniqueName)
+        XCTAssertNotNil(stored, "stored work info should be retrievable")
+        XCTAssertEqual(stored?.state, "scheduled")
+        XCTAssertEqual(stored?.isPeriodic, true)
+        XCTAssertEqual(stored?.taskName, "dart-task")
+        XCTAssertNil(stored?.lastFinishedAt)
+        XCTAssertEqual(stored?.updatedAt, now)
+    }
+
+    func testWorkInfoStoreTracksStatusTransitions() {
+        let uniqueName = "dev.fluttercommunity.test.transitions"
+
+        // Registration.
+        WorkInfoStore.record(
+            taskInfo: TaskDebugInfo(
+                taskName: "dart-task",
+                uniqueName: uniqueName,
+                startTime: Date().timeIntervalSince1970,
+                isPeriodic: true
+            ),
+            status: .scheduled,
+            result: nil,
+            isPeriodic: true
+        )
+        // Execution started.
+        WorkInfoStore.record(
+            taskInfo: TaskDebugInfo(
+                taskName: "dart-task",
+                uniqueName: uniqueName,
+                startTime: Date().timeIntervalSince1970
+            ),
+            status: .started,
+            result: nil,
+            isPeriodic: nil
+        )
+        // Completed successfully.
+        WorkInfoStore.record(
+            taskInfo: TaskDebugInfo(
+                taskName: "dart-task",
+                uniqueName: uniqueName,
+                startTime: Date().timeIntervalSince1970
+            ),
+            status: .completed,
+            result: TaskResult(success: true, duration: 100),
+            isPeriodic: nil
+        )
+
+        let data = WorkInfoStore.workInfoData(forUniqueName: uniqueName)
+        XCTAssertNotNil(data, "query should return a snapshot")
+        XCTAssertEqual(data?.uniqueName, uniqueName)
+        XCTAssertEqual(data?.state, .succeeded)
+        XCTAssertEqual(data?.isPeriodic, true, "isPeriodic survives execution updates")
+        XCTAssertEqual(data?.taskName, "dart-task", "taskName survives execution updates")
+        XCTAssertNotNil(data?.lastFinishedAtMillis)
+    }
+
+    func testWorkInfoStoreResolvesUniqueNameByTaskNameForOneOffTasks() {
+        // iOS one-off tasks execute under their registered taskName (the
+        // identifier); the store resolves the uniqueName via the persisted
+        // registration record.
+        let uniqueName = "dev.fluttercommunity.test.oneOffUnique"
+        WorkInfoStore.record(
+            taskInfo: TaskDebugInfo(
+                taskName: "one-off-task",
+                uniqueName: uniqueName,
+                startTime: Date().timeIntervalSince1970,
+                isPeriodic: false
+            ),
+            status: .scheduled,
+            result: nil,
+            isPeriodic: false
+        )
+        // Execution update carries only the taskName (the identifier).
+        WorkInfoStore.record(
+            taskInfo: TaskDebugInfo(
+                taskName: "one-off-task",
+                uniqueName: nil,
+                startTime: Date().timeIntervalSince1970
+            ),
+            status: .started,
+            result: nil,
+            isPeriodic: nil
+        )
+
+        let data = WorkInfoStore.workInfoData(forUniqueName: uniqueName)
+        XCTAssertEqual(data?.state, .running)
+    }
+
+    func testWorkInfoStoreRetryingMapsToScheduledWithFinishTime() {
+        let uniqueName = "dev.fluttercommunity.test.retry"
+        WorkInfoStore.record(
+            taskInfo: TaskDebugInfo(
+                taskName: "t",
+                uniqueName: uniqueName,
+                startTime: Date().timeIntervalSince1970,
+                isPeriodic: false
+            ),
+            status: .scheduled,
+            result: nil,
+            isPeriodic: false
+        )
+        WorkInfoStore.record(
+            taskInfo: TaskDebugInfo(
+                taskName: "t",
+                uniqueName: uniqueName,
+                startTime: Date().timeIntervalSince1970
+            ),
+            status: .retrying,
+            result: TaskResult(success: false, duration: 100),
+            isPeriodic: nil
+        )
+
+        let data = WorkInfoStore.workInfoData(forUniqueName: uniqueName)
+        XCTAssertEqual(data?.state, .scheduled)
+        XCTAssertNotNil(data?.lastFinishedAtMillis)
+    }
+
+    func testWorkInfoStoreCancellationMarksTheTaskCancelled() {
+        let uniqueName = "dev.fluttercommunity.test.cancel"
+        WorkInfoStore.record(
+            taskInfo: TaskDebugInfo(
+                taskName: "t",
+                uniqueName: uniqueName,
+                startTime: Date().timeIntervalSince1970,
+                isPeriodic: false
+            ),
+            status: .scheduled,
+            result: nil,
+            isPeriodic: false
+        )
+
+        WorkInfoStore.markCancelled(uniqueName: uniqueName)
+
+        let data = WorkInfoStore.workInfoData(forUniqueName: uniqueName)
+        XCTAssertEqual(data?.state, .cancelled)
+        XCTAssertNotNil(data?.lastFinishedAtMillis)
+    }
+
+    func testWorkInfoStoreUnknownTaskReturnsNil() {
+        XCTAssertNil(
+            WorkInfoStore.workInfoData(forUniqueName: "dev.fluttercommunity.test.unknown")
+        )
+    }
+
 }
