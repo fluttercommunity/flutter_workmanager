@@ -158,7 +158,6 @@ internal fun createOneTimeWorkRequest(
             // (see createOneOffWorkRequest); chains don't expose it yet.
         }.build()
 
-
 // Extension functions to convert Pigeon types to Android WorkManager types
 private fun dev.fluttercommunity.workmanager.pigeon.ExistingWorkPolicy.toAndroidWorkPolicy(): ExistingWorkPolicy =
     when (this) {
