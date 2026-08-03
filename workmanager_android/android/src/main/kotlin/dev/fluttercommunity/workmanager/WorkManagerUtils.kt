@@ -167,9 +167,7 @@ private fun Map<String?, Any?>.filterNotNullKeys(): Map<String, Any> =
             if (key != null && value != null) key to value else null
         }.toMap()
 
-internal fun createOneOffWorkRequest(
-    request: dev.fluttercommunity.workmanager.pigeon.OneOffTaskRequest,
-): OneTimeWorkRequest {
+internal fun createOneOffWorkRequest(request: dev.fluttercommunity.workmanager.pigeon.OneOffTaskRequest): OneTimeWorkRequest {
     val builder =
         OneTimeWorkRequest
             .Builder(BackgroundWorker::class.java)

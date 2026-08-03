@@ -13,13 +13,15 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [26])
 class ExpeditedWorkRequestTest {
-    private fun request(expedited: Boolean?, outOfQuotaPolicy: dev.fluttercommunity.workmanager.pigeon.OutOfQuotaPolicy? = null) =
-        OneOffTaskRequest(
-            uniqueName = "unique",
-            taskName = "task",
-            expedited = expedited,
-            outOfQuotaPolicy = outOfQuotaPolicy,
-        )
+    private fun request(
+        expedited: Boolean?,
+        outOfQuotaPolicy: dev.fluttercommunity.workmanager.pigeon.OutOfQuotaPolicy? = null,
+    ) = OneOffTaskRequest(
+        uniqueName = "unique",
+        taskName = "task",
+        expedited = expedited,
+        outOfQuotaPolicy = outOfQuotaPolicy,
+    )
 
     @Test
     fun `expedited request is scheduled as expedited with default policy`() {
