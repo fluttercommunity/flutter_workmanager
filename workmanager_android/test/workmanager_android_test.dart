@@ -53,7 +53,8 @@ void main() {
         );
       });
 
-      test('getWorkInfo returns null when the platform has no record', () async {
+      test('getWorkInfo returns null when the platform has no record',
+          () async {
         _mockGetWorkInfoReply(<Object?>[null]);
 
         expect(await workmanager.getWorkInfo('unknown-task'), isNull);

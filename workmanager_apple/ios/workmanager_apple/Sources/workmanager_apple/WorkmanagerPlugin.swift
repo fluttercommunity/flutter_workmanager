@@ -489,7 +489,7 @@ extension WorkmanagerPlugin {
     @available(iOS 13.0, *)
     public static func handlePeriodicTask(identifier: String, task: BGAppRefreshTask, earliestBeginInSeconds: NSNumber?, inputData: [String: Any]?) {
         guard let callbackHandle = UserDefaultsHelper.getStoredCallbackHandle(),
-              let _ = FlutterCallbackCache.lookupCallbackInformation(callbackHandle)
+              FlutterCallbackCache.lookupCallbackInformation(callbackHandle) != nil
         else {
             logError("[\(String(describing: self))] \(WMPError.workmanagerNotInitialized.message)")
             return
@@ -798,7 +798,8 @@ extension WorkmanagerPlugin {
             registerLaunchHandlerOnce(forTaskWithIdentifier: uniqueTaskIdentifier, earliestBeginInSeconds: nil)
         } catch {
             logInfo("Could not schedule BGProcessingTask identifier:\(uniqueTaskIdentifier) error:\(error.localizedDescription)")
-            logInfo("Possible issues can be: running on a simulator instead of a real device, or the task name is not registered")
+            logInfo("Possible issues can be: running on a simulator instead of a real device, "
+                + "or the task name is not registered")
         }
     }
 
@@ -812,7 +813,8 @@ extension WorkmanagerPlugin {
         let operationQueue = OperationQueue()
         // Deliver the inputData stored at registration time (mirroring the
         // periodic task path, keyed by task identifier).
-        let storedInputData = UserDefaultsHelper.getStoredPeriodicTaskInputData(forTaskIdentifier: task.identifier)
+        let storedInputData =
+                UserDefaultsHelper.getStoredPeriodicTaskInputData(forTaskIdentifier: task.identifier)
         let operation = createBackgroundOperation(
             identifier: task.identifier,
             inputData: storedInputData,
@@ -846,8 +848,10 @@ extension WorkmanagerPlugin {
             )
             registerLaunchHandlerOnce(forTaskWithIdentifier: uniqueTaskIdentifier, earliestBeginInSeconds: nil)
         } catch {
-            logInfo("Could not schedule BGHealthResearchTask identifier:\(uniqueTaskIdentifier) error:\(error.localizedDescription)")
-            logInfo("Possible issues: iOS 17+ required, or the app is missing the health research study entitlement / the user has not opted in")
+            logInfo("Could not schedule BGHealthResearchTask identifier:\(uniqueTaskIdentifier) "
+                + "error:\(error.localizedDescription)")
+            logInfo("Possible issues: iOS 17+ required, or the app is missing the health "
+                + "research study entitlement / the user has not opted in")
         }
     }
 
@@ -872,7 +876,8 @@ extension WorkmanagerPlugin {
         ) { task in
             if let task = task as? BGAppRefreshTask {
                 // Retrieve the stored inputData for this periodic task
-                let storedInputData = UserDefaultsHelper.getStoredPeriodicTaskInputData(forTaskIdentifier: task.identifier)
+                let storedInputData =
+                UserDefaultsHelper.getStoredPeriodicTaskInputData(forTaskIdentifier: task.identifier)
                 handlePeriodicTask(
                     identifier: identifier,
                     task: task,

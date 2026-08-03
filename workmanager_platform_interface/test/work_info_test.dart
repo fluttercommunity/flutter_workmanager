@@ -33,7 +33,8 @@ void main() {
       expect(info.isPeriodic, true);
       expect(info.taskName, 'dart-task');
       expect(info.tags, <String>['tag-a', 'tag-b']);
-      expect(info.lastFinishedAt, DateTime.fromMillisecondsSinceEpoch(1700000000000));
+      expect(info.lastFinishedAt,
+          DateTime.fromMillisecondsSinceEpoch(1700000000000));
     });
 
     test('fromData handles missing optional fields', () {
@@ -71,13 +72,20 @@ void main() {
 
       expect(build(), build());
       expect(build().hashCode, build().hashCode);
-      expect(build() == WorkInfo(uniqueName: 'other', state: WorkState.failed, isPeriodic: false), isFalse);
+      expect(
+          build() ==
+              WorkInfo(
+                  uniqueName: 'other',
+                  state: WorkState.failed,
+                  isPeriodic: false),
+          isFalse);
     });
   });
 
   group('WorkmanagerPlatform.getWorkInfo', () {
     test('delegates to the registered platform implementation', () async {
-      final expected = WorkInfo(uniqueName: 'u', state: WorkState.cancelled, isPeriodic: false);
+      final expected = WorkInfo(
+          uniqueName: 'u', state: WorkState.cancelled, isPeriodic: false);
       WorkmanagerPlatform.instance = _FakePlatform(expected);
 
       final result = await WorkmanagerPlatform.instance.getWorkInfo('u');

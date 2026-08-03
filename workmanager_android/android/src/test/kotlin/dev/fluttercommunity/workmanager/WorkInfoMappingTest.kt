@@ -12,7 +12,6 @@ import org.junit.Test
 import java.util.UUID
 
 class WorkInfoMappingTest {
-
     private fun workInfo(
         state: WorkInfo.State,
         tags: Set<String> = setOf("tag-b", "tag-a"),

@@ -150,6 +150,16 @@ class MockWorkmanager extends _i1.Mock implements _i2.Workmanager {
       ) as _i3.Future<bool>);
 
   @override
+  _i3.Future<_i4.WorkInfo?> getWorkInfo(String? uniqueName) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getWorkInfo,
+          [uniqueName],
+        ),
+        returnValue: _i3.Future<_i4.WorkInfo?>.value(),
+      ) as _i3.Future<_i4.WorkInfo?>);
+
+  @override
   _i3.Future<void> registerProcessingTask(
     String? uniqueName,
     String? taskName, {

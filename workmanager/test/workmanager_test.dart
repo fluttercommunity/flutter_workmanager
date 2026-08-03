@@ -51,8 +51,8 @@ void main() {
 
   group("getWorkInfo", () {
     test("delegates to the registered platform implementation", () async {
-      final expected =
-          WorkInfo(uniqueName: 'u', state: WorkState.running, isPeriodic: false);
+      final expected = WorkInfo(
+          uniqueName: 'u', state: WorkState.running, isPeriodic: false);
       var queried = <String>[];
       WorkmanagerPlatform.instance = _RecordingPlatform(
         onGetWorkInfo: (uniqueName) {
