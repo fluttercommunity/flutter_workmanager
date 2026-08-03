@@ -161,7 +161,7 @@ void callbackDispatcher() {
   Workmanager().executeTask(
     (taskName, inputData) async {
       // The task itself...
-      return true;
+      return BackgroundTaskResult.success;
     },
     onTaskStopped: (taskName, stopReason) async {
       // Persist progress or mark the task as cancelled before the engine
@@ -246,7 +246,7 @@ void callbackDispatcher() {
       "sync",
       initialDelay: Duration(hours: 1),
     );
-    return true;
+    return BackgroundTaskResult.success;
   });
 }
 ```

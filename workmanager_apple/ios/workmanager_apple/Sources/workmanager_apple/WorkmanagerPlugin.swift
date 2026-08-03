@@ -585,7 +585,7 @@ extension WorkmanagerPlugin {
         taskIdentifier: UIBackgroundTaskIdentifier,
         taskInfo: TaskDebugInfo,
         taskSessionStart: Date,
-        taskResult: Result<Bool, PigeonError>
+        taskResult: Result<BackgroundTaskResult, PigeonError>
     ) {
         UIApplication.shared.endBackgroundTask(taskIdentifier)
 
@@ -593,8 +593,15 @@ extension WorkmanagerPlugin {
         let status: TaskStatus
         let errorMessage: String?
         switch taskResult {
-        case .success:
-            status = .completed
+        case .success(let backgroundTaskResult):
+            switch backgroundTaskResult {
+            case .success:
+                status = .completed
+            case .retry:
+                status = .retrying
+            case .failure:
+                status = .failed
+            }
             errorMessage = nil
         case .failure(let error):
             status = .failed

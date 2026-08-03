@@ -215,15 +215,17 @@ void callbackDispatcher() {
     try {
       // Your task logic here
       final result = await performWork(task, inputData);
-      
+
       if (result.isSuccess) {
-        return true;  // ✅ Task succeeded
+        return BackgroundTaskResult.success;
       } else {
-        return false; // 🔄 Retry with backoff (Android) or manual reschedule (iOS)
+        // Transient failure: retry with backoff (Android) or manual
+        // reschedule (iOS).
+        return BackgroundTaskResult.retry;
       }
     } catch (e) {
-      // 🔥 Permanent failure - will not retry
-      throw Exception('Task failed: $e');
+      // Permanent failure - will not retry (Android `Result.failure()`).
+      return BackgroundTaskResult.failure;
     }
   });
 }
@@ -233,10 +235,10 @@ void callbackDispatcher() {
 
 | Error Type | Recommended Return | Result |
 |------------|-------------------|--------|
-| Network timeout | `return false` | Task will retry later |
-| Invalid data | `throw Exception()` | Task fails permanently |
-| Temporary server error | `return false` | Task will retry with backoff |
-| Authentication failure | `throw Exception()` | Task fails, needs user intervention |
+| Network timeout | `BackgroundTaskResult.retry` | Task will retry later |
+| Invalid data | `BackgroundTaskResult.failure` | Task fails permanently |
+| Temporary server error | `BackgroundTaskResult.retry` | Task will retry with backoff |
+| Authentication failure | `BackgroundTaskResult.failure` | Task fails, needs user intervention |
 
 ### Monitoring Task Health
 

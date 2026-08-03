@@ -9,20 +9,22 @@ import 'package:workmanager_apple/workmanager_apple.dart';
 import 'package:workmanager_web/workmanager_web.dart';
 
 /// Function that executes your background work.
-/// You should return whether the task ran successfully or not.
+/// You should return the [BackgroundTaskResult] describing the outcome.
 ///
 /// [taskName] Returns the value you provided when registering the task.
 /// iOS will pass [Workmanager.iOSBackgroundTask] (for background-fetch) or
 /// custom task IDs for BGTaskScheduler based tasks.
 ///
-/// The behavior for retries is different on each platform:
-/// - Android: return `false` from the this method will reschedule the work
-///   based on the policy given in [Workmanager.registerOneOffTask], for example
-/// - iOS: The return value is ignored, but if work has failed, you can schedule
-///   another attempt using [Workmanager.registerOneOffTask]. This depends on
+/// The behavior differs on each platform:
+/// - Android: [BackgroundTaskResult.retry] reschedules the work based on the
+///   policy given in [Workmanager.registerOneOffTask], while
+///   [BackgroundTaskResult.failure] stops the chain permanently.
+/// - iOS: [BackgroundTaskResult.retry] and [BackgroundTaskResult.failure] both
+///   report a failed fetch; there is no automatic retry, so schedule another
+///   attempt using [Workmanager.registerOneOffTask]. This depends on
 ///   BGTaskScheduler being set up correctly. Please follow the README for
 ///   instructions.
-typedef BackgroundTaskHandler = Future<bool> Function(
+typedef BackgroundTaskHandler = Future<BackgroundTaskResult> Function(
     String taskName, Map<String, dynamic>? inputData);
 
 /// Callback invoked when a running background task is stopped by the platform
@@ -196,7 +198,8 @@ class Workmanager {
   /// you registered the task with.
   /// The [inputData] will contain all the data you registered the task with.
   ///
-  /// You need to return a [Future<bool>] that will tell the OS if the task was successful or not.
+  /// You need to return a [Future<BackgroundTaskResult>] that tells the OS how
+  /// the task went: [BackgroundTaskResult.success], retry or failure.
   ///
   /// You can perfectly call other Flutter plugins inside this callback, as the callback is simply running within a Flutter background isolate.
   ///
@@ -569,12 +572,12 @@ class _WorkmanagerFlutterApiImpl extends WorkmanagerFlutterApi {
   }
 
   @override
-  Future<bool> executeTask(
+  Future<BackgroundTaskResult> executeTask(
       String taskName, Map<String?, Object?>? inputData) async {
     final convertedInputData = convertPigeonInputData(inputData);
     final result = await Workmanager._backgroundTaskHandler
         ?.call(taskName, convertedInputData);
-    return result ?? false;
+    return result ?? BackgroundTaskResult.retry;
   }
 
   @override

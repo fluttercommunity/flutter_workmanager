@@ -42,7 +42,7 @@ void main() {
       dispatcherRuns++;
       Workmanager().executeTask((taskName, inputData) async {
         executedTasks.add(taskName);
-        return true;
+        return BackgroundTaskResult.success;
       });
     }
 
@@ -84,7 +84,7 @@ void main() {
         <String?, Object?>{'foo': 'bar'},
       ],
     );
-    expect(taskReply, [true]);
+    expect(taskReply, [BackgroundTaskResult.success]);
     expect(executedTasks, ['dev.fluttercommunity.test.oneOff']);
 
     // A second task must not run the dispatcher again.

@@ -36,10 +36,10 @@ void callbackDispatcher() {
       var counterName = inputData!['counter_name'];
       final count = prefs.getInt(counterName) ?? 0;
       if (count == kMaxRetryAttempts) {
-        return Future.value(true);
+        return Future.value(BackgroundTaskResult.success);
       } else {
         await prefs.setInt(counterName, count + 1);
-        return Future.value(false);
+        return Future.value(BackgroundTaskResult.retry);
       }
     }
     if (task == dataTransferTaskName) {
@@ -70,7 +70,7 @@ void callbackDispatcher() {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString(inputData!['result_key'], task);
     }
-    return true;
+    return BackgroundTaskResult.success;
   });
 }
 

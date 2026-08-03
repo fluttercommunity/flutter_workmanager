@@ -50,7 +50,7 @@ void main() {
 
     void callbackDispatcher() {
       Workmanager().executeTask(
-        (taskName, inputData) async => true,
+        (taskName, inputData) async => BackgroundTaskResult.success,
         onTaskStopped: (taskName, stopReason) async {
           stopped.add((taskName, stopReason));
         },

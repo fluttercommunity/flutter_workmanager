@@ -246,10 +246,10 @@ void callbackDispatcher() {
       // Your task logic
       final result = await performTask();
       print('[iOS BG] Task completed successfully');
-      return true;
+      return BackgroundTaskResult.success;
     } catch (e) {
       print('[iOS BG] Task failed: $e');
-      return false;
+      return BackgroundTaskResult.failure;
     }
   });
 }
@@ -334,7 +334,7 @@ void callbackDispatcher() {
       print('❌ Task failed after ${duration.inSeconds}s: $e');
       print('📋 Stack trace: $stackTrace');
       
-      return false; // Retry
+      return BackgroundTaskResult.retry; // Retry
     }
   });
 }
