@@ -24,6 +24,10 @@ import 'package:workmanager_web/workmanager_web.dart';
 ///   attempt using [Workmanager.registerOneOffTask]. This depends on
 ///   BGTaskScheduler being set up correctly. Please follow the README for
 ///   instructions.
+///
+/// If the handler throws (or the returned Future completes with an error),
+/// the task is treated as a permanent failure on both platforms — Android
+/// `Result.failure()`, iOS a failed fetch — and is not retried.
 typedef BackgroundTaskHandler = Future<BackgroundTaskResult> Function(
     String taskName, Map<String, dynamic>? inputData);
 

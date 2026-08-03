@@ -239,6 +239,14 @@ void callbackDispatcher() {
 | Invalid data | `BackgroundTaskResult.failure` | Task fails permanently |
 | Temporary server error | `BackgroundTaskResult.retry` | Task will retry with backoff |
 | Authentication failure | `BackgroundTaskResult.failure` | Task fails, needs user intervention |
+| Unhandled exception in the handler | `throw` (or let it bubble) | Treated as permanent failure — no retry |
+
+> **Throwing vs returning:** if your handler throws (or its `Future` completes
+> with an error), the platform treats it as a permanent failure — Android
+> `Result.failure()`, iOS a failed fetch — and does **not** retry. Only
+> returning `BackgroundTaskResult.retry` triggers an Android backoff retry.
+> Catching and returning `BackgroundTaskResult.failure` is equivalent but
+> keeps the error path explicit.
 
 ### Monitoring Task Health
 
