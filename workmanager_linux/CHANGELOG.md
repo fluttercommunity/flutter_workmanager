@@ -1,3 +1,7 @@
+## 0.1.1
+
+ - **FEAT**(linux): workmanager_linux — systemd-based background execution (fixes #324) (#716).
+
 ## 0.1.0
 
 - Experimental Linux implementation of `workmanager` using systemd user

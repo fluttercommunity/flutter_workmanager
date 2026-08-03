@@ -15,6 +15,32 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`workmanager` - `v0.10.4`](#workmanager---v0104)
+ - [`workmanager_linux` - `v0.1.1`](#workmanager_linux---v011)
+
+---
+
+#### `workmanager` - `v0.10.4`
+
+ - **FEAT**(linux): workmanager_linux — systemd-based background execution (fixes #324) (#716).
+
+#### `workmanager_linux` - `v0.1.1`
+
+ - **FEAT**(linux): workmanager_linux — systemd-based background execution (fixes #324) (#716).
+
+
+## 2026-08-03
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`workmanager` - `v0.10.3`](#workmanager---v0103)
  - [`workmanager_android` - `v0.10.3`](#workmanager_android---v0103)
  - [`workmanager_apple` - `v0.9.9`](#workmanager_apple---v099)

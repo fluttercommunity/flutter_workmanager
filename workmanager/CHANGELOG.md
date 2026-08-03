@@ -1,3 +1,7 @@
+## 0.10.4
+
+ - **FEAT**(linux): workmanager_linux — systemd-based background execution (fixes #324) (#716).
+
 ## 0.10.3
 
  - **FEAT**: work status observation — getWorkInfo across platforms (fixes #194) (#719).
