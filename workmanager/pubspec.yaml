@@ -18,6 +18,9 @@ dependencies:
   workmanager_apple: ^0.9.9
   workmanager_web: ^0.1.3
   workmanager_linux: ^0.1.1
+  workmanager_windows:
+    path: ../workmanager_windows
+>>>>>>> d094a27 (feat(windows): add workmanager_windows Task Scheduler based background execution)
 
 dev_dependencies:
   test: ^1.25.15

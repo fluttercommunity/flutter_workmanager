@@ -1,0 +1,136 @@
+---
+title: "Windows (Task Scheduler)"
+description: Task Scheduler based background execution on Windows
+---
+
+Windows support is provided by the `workmanager_windows` package. Background
+tasks are registered as **per-user Task Scheduler tasks** via the `schtasks`
+command line; when a task fires, Windows launches your app executable with a
+`--background-task <taskName>` argument, the app runs the registered callback
+handler headless and exits. v1 is pure Dart — no COM, no C++ and no `win32`
+dependency.
+
+> ⚠️ **EXPERIMENTAL.** Read [Honest limitations](#honest-limitations) before
+> using this package.
+
+## Setup
+
+### 1. Add the dependency
+
+```yaml
+dependencies:
+  workmanager_windows: ^0.0.1
+```
+
+The main `workmanager` package delegates to this package on Windows, so
+`Workmanager()` works there too.
+
+### 2. Make `main()` headless-aware
+
+The Task Scheduler launches the app with `--background-task`, so `main()`
+must detect that argument and run the dispatcher instead of the UI:
+
+```dart
+import 'package:workmanager/workmanager.dart';
+import 'package:workmanager_windows/workmanager_windows.dart';
+
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  WorkmanagerWindows().executeTask((taskName, inputData) async {
+    // Do your background work here. The full Flutter engine is available,
+    // but no window is shown. Return true on success — the return value
+    // becomes the process exit code Task Scheduler records as the task's
+    // last result.
+    return true;
+  });
+}
+
+void main(List<String> args) {
+  if (WorkmanagerWindows.maybeRunBackgroundTask(args, callbackDispatcher)) {
+    return;
+  }
+  Workmanager().initialize(callbackDispatcher);
+  runApp(const MyApp());
+}
+```
+
+The headless path runs the dispatcher, invokes the registered handler with
+the persisted payload, logs the result and exits. The dispatcher must
+register its handler through `WorkmanagerWindows().executeTask(...)` (or
+`WorkmanagerExecution.instance.executeTask(...)`), not
+`Workmanager().executeTask(...)` — on Windows the handler runs in a separate
+process, so it is registered in the shared execution registry instead of the
+main package's in-process handler slot.
+
+### 3. Register tasks as usual
+
+```dart
+final workmanager = Workmanager();
+await workmanager.registerOneOffTask(
+  'unique-name',
+  'taskName',
+  inputData: {'key': 'value'},
+  initialDelay: const Duration(minutes: 5),
+);
+await workmanager.registerPeriodicTask(
+  'unique-name',
+  'taskName',
+  frequency: const Duration(minutes: 30),
+);
+```
+
+## Supported surface
+
+- **One-off tasks** — `schtasks /Create /SC ONCE` at `now + initialDelay`.
+- **Periodic tasks** — `schtasks /Create /SC DAILY /RI <minutes>`; the
+  frequency is clamped to 1 minute..416 days.
+- **`inputData`** — persisted as a JSON file under
+  `%LOCALAPPDATA%\workmanager_windows\payloads\<uniqueName>.json` and passed
+  to the headless process via `--payload-file`.
+- **`cancelByUniqueName` / `cancelAll`** — `schtasks /End` (running
+  instance) + `schtasks /Delete` + payload cleanup.
+- **`isScheduledByUniqueName`** — via `schtasks /Query`.
+- **`printScheduledTasks`** — JSON list of the plugin's tasks parsed from
+  `schtasks /Query /FO CSV`.
+
+iOS-only task types and `cancelByTag` throw `UnsupportedError`.
+
+## Honest limitations
+
+- **Per-user tasks, logged-on only.** Tasks run as the user who registered
+  them and only while that user is logged on. **"Run whether the user is
+  logged on or not" requires credentials or SYSTEM and therefore admin
+  rights** (`schtasks /Create /RU ... /RP ...` or `schtasks /Create /RU
+  SYSTEM`) — not exposed in the v1 API. An administrator can still edit the
+  registered task in Task Scheduler and enable it.
+- **Minute granularity.** There is no sub-minute scheduling. A zero
+  `initialDelay` is rounded up to the next minute so one-off tasks still run.
+- **Locale-sensitive CLI.** `schtasks` parses dates with the system regional
+  format; v1 emits `MM/DD/YYYY` and assumes an English (en-US) regional
+  setting.
+- **Constraints and backoff are accepted but ignored** (documented no-ops):
+  Task Scheduler does not expose `WakeToRun`, battery/AC, idle, network or
+  storage conditions through the `schtasks` CLI, and there is no WorkManager
+  style retry/backoff. `existingWorkPolicy` is not honored — re-registering a
+  `uniqueName` always replaces the task (`/F`).
+- No guarantee beyond the registered task itself: the app must be installed
+  in a way that lets Task Scheduler start it, and the machine must be on when
+  the task fires.
+- `printScheduledTasks` assumes the standard `/Query /FO CSV` columns (Task
+  Name, Next Run Time, Status).
+
+## Structure
+
+```
+workmanager_windows/
+  lib/
+    workmanager_windows.dart  # WorkmanagerWindows (WorkmanagerPlatform impl)
+    execution.dart            # Flutter-free handler registry + headless runner
+    src/
+      process_runner.dart     # injectable ProcessRunner (schtasks invocation)
+      schtasks.dart           # schtasks command-line builder (unit-tested)
+      payload_store.dart      # on-disk JSON payload persistence
+```
+
+See the [`workmanager_windows` README](../../workmanager_windows/README.md)
+for the full API reference.
