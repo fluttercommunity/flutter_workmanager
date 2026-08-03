@@ -1291,6 +1291,25 @@ interface WorkmanagerHostApi {
    * null when the platform has no record of it.
    */
   fun getWorkInfoByUniqueName(uniqueName: String, callback: (Result<WorkInfoData?>) -> Unit)
+  /**
+   * Reports progress for the task that is currently running (Android only).
+   *
+   * Must be called from inside the background task handler; the native side
+   * resolves the running task's unique name from the calling context, so the
+   * [progress] map is the only argument. On platforms without progress
+   * support (iOS/macOS/web/desktop) the call is a no-op.
+   */
+  fun reportProgress(progress: Map<String?, Any?>?, callback: (Result<Unit>) -> Unit)
+  /**
+   * Enables or disables forwarding of progress updates to the app (Android
+   * only).
+   *
+   * When [enabled] is true the native side starts forwarding progress events
+   * (delivered through [WorkmanagerFlutterApi.onProgressUpdate]) to the
+   * messenger of the engine that made this call. On platforms without
+   * progress support the call is a no-op.
+   */
+  fun setProgressListener(enabled: Boolean, callback: (Result<Unit>) -> Unit)
 
   companion object {
     /** The codec used by WorkmanagerHostApi. */
@@ -1528,6 +1547,44 @@ interface WorkmanagerHostApi {
           channel.setMessageHandler(null)
         }
       }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.reportProgress$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val progressArg = args[0] as Map<String?, Any?>?
+            api.reportProgress(progressArg) { result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(WorkmanagerApiPigeonUtils.wrapError(error))
+              } else {
+                reply.reply(WorkmanagerApiPigeonUtils.wrapResult(null))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.setProgressListener$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val enabledArg = args[0] as Boolean
+            api.setProgressListener(enabledArg) { result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(WorkmanagerApiPigeonUtils.wrapError(error))
+              } else {
+                reply.reply(WorkmanagerApiPigeonUtils.wrapResult(null))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
     }
   }
 }
@@ -1591,6 +1648,32 @@ class WorkmanagerFlutterApi(private val binaryMessenger: BinaryMessenger, privat
     val channelName = "dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerFlutterApi.onTaskStopped$separatedMessageChannelSuffix"
     val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
     channel.send(listOf(taskNameArg, stopReasonArg)) {
+      if (it is List<*>) {
+        if (it.size > 1) {
+          callback(Result.failure(FlutterError(it[0] as String, it[1] as String, it[2] as String?)))
+        } else {
+          callback(Result.success(Unit))
+        }
+      } else {
+        callback(Result.failure(WorkmanagerApiPigeonUtils.createConnectionError(channelName)))
+      } 
+    }
+  }
+  /**
+   * Delivers a progress update for a running task to the app (Android only).
+   *
+   * [uniqueName] is the unique name the task was registered with. [progress]
+   * is the progress map the task handler reported via
+   * [WorkmanagerHostApi.reportProgress]. This is only invoked when the app
+   * registered a progress listener (see `Workmanager().setProgressListener`);
+   * on platforms without progress support it is never invoked.
+   */
+  fun onProgressUpdate(uniqueNameArg: String, progressArg: Map<String?, Any?>?, callback: (Result<Unit>) -> Unit)
+{
+    val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+    val channelName = "dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerFlutterApi.onProgressUpdate$separatedMessageChannelSuffix"
+    val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
+    channel.send(listOf(uniqueNameArg, progressArg)) {
       if (it is List<*>) {
         if (it.size > 1) {
           callback(Result.failure(FlutterError(it[0] as String, it[1] as String, it[2] as String?)))

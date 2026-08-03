@@ -199,14 +199,14 @@ abstract class WorkmanagerPlatform extends PlatformInterface {
     throw UnimplementedError('printScheduledTasks() has not been implemented.');
   }
 
-<<<<<<< HEAD
   /// Queries the current state of the task registered under [uniqueName].
   ///
   /// Returns `null` when the platform has no record of the task. See [WorkInfo]
   /// for the per-platform truthfulness of the result.
   Future<WorkInfo?> getWorkInfo(String uniqueName) {
     throw UnimplementedError('getWorkInfo() has not been implemented.');
-=======
+  }
+
   /// Reports progress for the currently running task (Android only).
   ///
   /// Must be called from inside the background task handler; the platform
@@ -226,7 +226,6 @@ abstract class WorkmanagerPlatform extends PlatformInterface {
   /// support the listener is never invoked and this call is a no-op.
   Future<void> setProgressListener(ProgressListener? listener) async {
     // No-op: progress observation is Android-only.
->>>>>>> ab45b65 (feat(android): progress updates for long-running tasks)
   }
 }
 

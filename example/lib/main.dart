@@ -139,7 +139,8 @@ void callbackDispatcher() {
           });
           debugPrint("$progressTaskKey reported progress ${step / 10}");
           await Future<void>.delayed(const Duration(seconds: 1));
-        }        break;
+        }
+        break;
       default:
         return Future.value(false);
     }

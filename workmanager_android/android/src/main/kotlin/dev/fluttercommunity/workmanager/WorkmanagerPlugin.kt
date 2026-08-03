@@ -241,6 +241,8 @@ class WorkmanagerPlugin :
         } catch (e: Exception) {
             callback(Result.failure(e))
         }
+    }
+
     override fun reportProgress(
         progress: Map<String?, Any?>?,
         callback: (Result<Unit>) -> Unit,
@@ -267,5 +269,6 @@ class WorkmanagerPlugin :
         pluginBinding?.let {
             ProgressUpdateCoordinator.setAppMessenger(enabled = enabled, messenger = it.binaryMessenger)
         }
-        callback(Result.success(Unit))    }
+        callback(Result.success(Unit))
+    }
 }

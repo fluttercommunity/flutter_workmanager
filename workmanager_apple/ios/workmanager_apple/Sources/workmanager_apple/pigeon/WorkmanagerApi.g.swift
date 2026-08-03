@@ -1163,6 +1163,21 @@ protocol WorkmanagerHostApi {
   /// Returns the current state of the task registered under [uniqueName], or
   /// null when the platform has no record of it.
   func getWorkInfoByUniqueName(uniqueName: String, completion: @escaping (Result<WorkInfoData?, Error>) -> Void)
+  /// Reports progress for the task that is currently running (Android only).
+  ///
+  /// Must be called from inside the background task handler; the native side
+  /// resolves the running task's unique name from the calling context, so the
+  /// [progress] map is the only argument. On platforms without progress
+  /// support (iOS/macOS/web/desktop) the call is a no-op.
+  func reportProgress(progress: [String?: Any?]?, completion: @escaping (Result<Void, Error>) -> Void)
+  /// Enables or disables forwarding of progress updates to the app (Android
+  /// only).
+  ///
+  /// When [enabled] is true the native side starts forwarding progress events
+  /// (delivered through [WorkmanagerFlutterApi.onProgressUpdate]) to the
+  /// messenger of the engine that made this call. On platforms without
+  /// progress support the call is a no-op.
+  func setProgressListener(enabled: Bool, completion: @escaping (Result<Void, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -1373,6 +1388,53 @@ class WorkmanagerHostApiSetup {
     } else {
       getWorkInfoByUniqueNameChannel.setMessageHandler(nil)
     }
+    /// Reports progress for the task that is currently running (Android only).
+    ///
+    /// Must be called from inside the background task handler; the native side
+    /// resolves the running task's unique name from the calling context, so the
+    /// [progress] map is the only argument. On platforms without progress
+    /// support (iOS/macOS/web/desktop) the call is a no-op.
+    let reportProgressChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.reportProgress\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      reportProgressChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let progressArg: [String?: Any?]? = nilOrValue(args[0])
+        api.reportProgress(progress: progressArg) { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      reportProgressChannel.setMessageHandler(nil)
+    }
+    /// Enables or disables forwarding of progress updates to the app (Android
+    /// only).
+    ///
+    /// When [enabled] is true the native side starts forwarding progress events
+    /// (delivered through [WorkmanagerFlutterApi.onProgressUpdate]) to the
+    /// messenger of the engine that made this call. On platforms without
+    /// progress support the call is a no-op.
+    let setProgressListenerChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.setProgressListener\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      setProgressListenerChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let enabledArg = args[0] as! Bool
+        api.setProgressListener(enabled: enabledArg) { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      setProgressListenerChannel.setMessageHandler(nil)
+    }
   }
 }
 /// Generated protocol from Pigeon that represents Flutter messages that can be called from Swift.
@@ -1387,6 +1449,14 @@ protocol WorkmanagerFlutterApiProtocol {
   /// It is `0` (unknown) on Android versions before 12 (API 31) and on
   /// platforms without an equivalent concept.
   func onTaskStopped(taskName taskNameArg: String, stopReason stopReasonArg: Int64, completion: @escaping (Result<Void, PigeonError>) -> Void)
+  /// Delivers a progress update for a running task to the app (Android only).
+  ///
+  /// [uniqueName] is the unique name the task was registered with. [progress]
+  /// is the progress map the task handler reported via
+  /// [WorkmanagerHostApi.reportProgress]. This is only invoked when the app
+  /// registered a progress listener (see `Workmanager().setProgressListener`);
+  /// on platforms without progress support it is never invoked.
+  func onProgressUpdate(uniqueName uniqueNameArg: String, progress progressArg: [String?: Any?]?, completion: @escaping (Result<Void, PigeonError>) -> Void)
 }
 class WorkmanagerFlutterApi: WorkmanagerFlutterApiProtocol {
   private let binaryMessenger: FlutterBinaryMessenger
@@ -1448,6 +1518,31 @@ class WorkmanagerFlutterApi: WorkmanagerFlutterApiProtocol {
     let channelName: String = "dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerFlutterApi.onTaskStopped\(messageChannelSuffix)"
     let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
     channel.sendMessage([taskNameArg, stopReasonArg] as [Any?]) { response in
+      guard let listResponse = response as? [Any?] else {
+        completion(.failure(createConnectionError(withChannelName: channelName)))
+        return
+      }
+      if listResponse.count > 1 {
+        let code: String = listResponse[0] as! String
+        let message: String? = nilOrValue(listResponse[1])
+        let details: String? = nilOrValue(listResponse[2])
+        completion(.failure(PigeonError(code: code, message: message, details: details)))
+      } else {
+        completion(.success(()))
+      }
+    }
+  }
+  /// Delivers a progress update for a running task to the app (Android only).
+  ///
+  /// [uniqueName] is the unique name the task was registered with. [progress]
+  /// is the progress map the task handler reported via
+  /// [WorkmanagerHostApi.reportProgress]. This is only invoked when the app
+  /// registered a progress listener (see `Workmanager().setProgressListener`);
+  /// on platforms without progress support it is never invoked.
+  func onProgressUpdate(uniqueName uniqueNameArg: String, progress progressArg: [String?: Any?]?, completion: @escaping (Result<Void, PigeonError>) -> Void) {
+    let channelName: String = "dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerFlutterApi.onProgressUpdate\(messageChannelSuffix)"
+    let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
+    channel.sendMessage([uniqueNameArg, progressArg] as [Any?]) { response in
       guard let listResponse = response as? [Any?] else {
         completion(.failure(createConnectionError(withChannelName: channelName)))
         return

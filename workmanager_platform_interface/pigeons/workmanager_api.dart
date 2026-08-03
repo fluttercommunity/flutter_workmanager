@@ -503,12 +503,11 @@ abstract class WorkmanagerHostApi {
   @async
   String printScheduledTasks();
 
-<<<<<<< HEAD
   /// Returns the current state of the task registered under [uniqueName], or
   /// null when the platform has no record of it.
   @async
   WorkInfoData? getWorkInfoByUniqueName(String uniqueName);
-=======
+
   /// Reports progress for the task that is currently running (Android only).
   ///
   /// Must be called from inside the background task handler; the native side
@@ -527,7 +526,6 @@ abstract class WorkmanagerHostApi {
   /// progress support the call is a no-op.
   @async
   void setProgressListener(bool enabled);
->>>>>>> ab45b65 (feat(android): progress updates for long-running tasks)
 }
 
 // Flutter API (Native calls Flutter)
