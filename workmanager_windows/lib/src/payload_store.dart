@@ -24,9 +24,7 @@ class PayloadStore {
   /// with `_`) so a `uniqueName` can never escape [directory].
   File fileFor(String uniqueName) {
     final sanitized = uniqueName.replaceAll(RegExp(r'[^A-Za-z0-9_\-]'), '_');
-    return File(
-      '${directory.path}${Platform.pathSeparator}$sanitized.json',
-    );
+    return File('${directory.path}${Platform.pathSeparator}$sanitized.json');
   }
 
   /// Writes [inputData] for [uniqueName].
@@ -34,7 +32,10 @@ class PayloadStore {
   /// Returns the written file, or `null` when [inputData] is `null` (no
   /// payload file is created). Throws [ArgumentError] when [inputData] is not
   /// JSON-encodable.
-  Future<File?> write(String uniqueName, Map<String, dynamic>? inputData) async {
+  Future<File?> write(
+    String uniqueName,
+    Map<String, dynamic>? inputData,
+  ) async {
     if (inputData == null) {
       return null;
     }

@@ -13,7 +13,9 @@ void main() {
 
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('wm_windows_payload_');
-    store = PayloadStore(Directory('${tempDir.path}${Platform.pathSeparator}payloads'));
+    store = PayloadStore(
+      Directory('${tempDir.path}${Platform.pathSeparator}payloads'),
+    );
   });
 
   tearDown(() async {
@@ -30,7 +32,7 @@ void main() {
         'null': null,
         'list': <dynamic>[1, 'two', false],
         'nested': <String, dynamic>{
-          'deep': <String, dynamic>{'key': 1}
+          'deep': <String, dynamic>{'key': 1},
         },
       });
       expect(file, isNotNull);
@@ -42,17 +44,20 @@ void main() {
         'null': null,
         'list': <dynamic>[1, 'two', false],
         'nested': <String, dynamic>{
-          'deep': <String, dynamic>{'key': 1}
+          'deep': <String, dynamic>{'key': 1},
         },
       });
     });
 
-    test('write with null inputData creates no file and returns null', () async {
-      final file = await store.write('demo', null);
-      expect(file, isNull);
-      expect(await store.read('demo'), isNull);
-      expect(store.fileFor('demo').existsSync(), isFalse);
-    });
+    test(
+      'write with null inputData creates no file and returns null',
+      () async {
+        final file = await store.write('demo', null);
+        expect(file, isNull);
+        expect(await store.read('demo'), isNull);
+        expect(store.fileFor('demo').existsSync(), isFalse);
+      },
+    );
 
     test('read returns null for an unknown uniqueName', () async {
       expect(await store.read('missing'), isNull);

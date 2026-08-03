@@ -95,7 +95,12 @@ class Schtasks {
 
   /// Builds `schtasks /Delete` arguments, removing the task (including a
   /// running instance).
-  static List<String> delete(String taskId) => <String>['/Delete', '/TN', taskId, '/F'];
+  static List<String> delete(String taskId) => <String>[
+        '/Delete',
+        '/TN',
+        taskId,
+        '/F',
+      ];
 
   /// Builds `schtasks /Query` arguments for a single task.
   ///
@@ -109,7 +114,8 @@ class Schtasks {
   /// Maps a [frequency] to the `schtasks /RI` repetition interval in minutes:
   /// sub-minute frequencies are clamped to 1 minute, frequencies above
   /// [maxRepetitionMinutes] (416 days) are clamped to it.
-  static int repeatMinutesFor(Duration frequency) => frequency.inMinutes.clamp(1, maxRepetitionMinutes);
+  static int repeatMinutesFor(Duration frequency) =>
+      frequency.inMinutes.clamp(1, maxRepetitionMinutes);
 
   /// Formats [time] as `MM/DD/YYYY`.
   ///
@@ -131,7 +137,13 @@ class Schtasks {
   /// a zero `initialDelay` is rounded up to the next minute.
   static DateTime ensureFutureMinute(DateTime time, {DateTime? now}) {
     final reference = now ?? DateTime.now();
-    final truncated = DateTime(time.year, time.month, time.day, time.hour, time.minute);
+    final truncated = DateTime(
+      time.year,
+      time.month,
+      time.day,
+      time.hour,
+      time.minute,
+    );
     if (!truncated.isAfter(reference)) {
       return truncated.add(const Duration(minutes: 1));
     }

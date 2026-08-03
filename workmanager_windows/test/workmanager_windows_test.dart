@@ -51,7 +51,9 @@ void main() {
     runner = FakeProcessRunner();
     windows = WorkmanagerWindows(
       processRunner: runner,
-      payloadDirectory: Directory('${tempDir.path}${Platform.pathSeparator}payloads'),
+      payloadDirectory: Directory(
+        '${tempDir.path}${Platform.pathSeparator}payloads',
+      ),
     );
     WorkmanagerExecution.instance.taskHandler = null;
     WorkmanagerExecution.instance.callbackDispatcher = null;
@@ -62,64 +64,73 @@ void main() {
   });
 
   group('registration', () {
-    test('registerOneOffTask creates a /SC ONCE task with payload and action', () async {
-      await windows.registerOneOffTask(
-        'demo',
-        'demoTask',
-        inputData: <String, dynamic>{'key': 'value'},
-        initialDelay: const Duration(minutes: 5),
-      );
+    test(
+      'registerOneOffTask creates a /SC ONCE task with payload and action',
+      () async {
+        await windows.registerOneOffTask(
+          'demo',
+          'demoTask',
+          inputData: <String, dynamic>{'key': 'value'},
+          initialDelay: const Duration(minutes: 5),
+        );
 
-      expect(runner.calls, hasLength(1));
-      final args = runner.calls.single;
-      expect(args.sublist(0, 5), <String>[
-        '/Create',
-        '/TN',
-        'workmanager_demo',
-        '/TR',
-        '"${Platform.resolvedExecutable}" --background-task "demoTask" '
-            '--payload-file "${tempDir.path}${Platform.pathSeparator}'
-            'payloads${Platform.pathSeparator}demo.json"',
-      ]);
-      expect(args, containsAllInOrder(<String>['/SC', 'ONCE']));
-      expect(args, contains('/SD'));
-      expect(args, contains('/ST'));
-      expect(args, contains('/F'));
+        expect(runner.calls, hasLength(1));
+        final args = runner.calls.single;
+        expect(args.sublist(0, 5), <String>[
+          '/Create',
+          '/TN',
+          'workmanager_demo',
+          '/TR',
+          '"${Platform.resolvedExecutable}" --background-task "demoTask" '
+              '--payload-file "${tempDir.path}${Platform.pathSeparator}'
+              'payloads${Platform.pathSeparator}demo.json"',
+        ]);
+        expect(args, containsAllInOrder(<String>['/SC', 'ONCE']));
+        expect(args, contains('/SD'));
+        expect(args, contains('/ST'));
+        expect(args, contains('/F'));
 
-      // The payload file was persisted and round-trips.
-      final store = PayloadStore(
-        Directory('${tempDir.path}${Platform.pathSeparator}payloads'),
-      );
-      expect(await store.read('demo'), <String, dynamic>{'key': 'value'});
-    });
-
-    test('registerOneOffTask without inputData passes no --payload-file', () async {
-      await windows.registerOneOffTask('demo', 'demoTask');
-      final args = runner.calls.single;
-      final action = args[args.indexOf('/TR') + 1];
-      expect(action, isNot(contains('--payload-file')));
-      expect(
-        PayloadStore(
+        // The payload file was persisted and round-trips.
+        final store = PayloadStore(
           Directory('${tempDir.path}${Platform.pathSeparator}payloads'),
-        ).fileFor('demo').existsSync(),
-        isFalse,
-      );
-    });
+        );
+        expect(await store.read('demo'), <String, dynamic>{'key': 'value'});
+      },
+    );
 
-    test('registerOneOffTask rolls the payload back when schtasks fails', () async {
-      runner.exitCode = 2;
-      runner.stderr = 'ERROR: Access is denied.';
-      await expectLater(
-        windows.registerOneOffTask('demo', 'demoTask'),
-        throwsStateError,
-      );
-      expect(
-        PayloadStore(
-          Directory('${tempDir.path}${Platform.pathSeparator}payloads'),
-        ).fileFor('demo').existsSync(),
-        isFalse,
-      );
-    });
+    test(
+      'registerOneOffTask without inputData passes no --payload-file',
+      () async {
+        await windows.registerOneOffTask('demo', 'demoTask');
+        final args = runner.calls.single;
+        final action = args[args.indexOf('/TR') + 1];
+        expect(action, isNot(contains('--payload-file')));
+        expect(
+          PayloadStore(
+            Directory('${tempDir.path}${Platform.pathSeparator}payloads'),
+          ).fileFor('demo').existsSync(),
+          isFalse,
+        );
+      },
+    );
+
+    test(
+      'registerOneOffTask rolls the payload back when schtasks fails',
+      () async {
+        runner.exitCode = 2;
+        runner.stderr = 'ERROR: Access is denied.';
+        await expectLater(
+          windows.registerOneOffTask('demo', 'demoTask'),
+          throwsStateError,
+        );
+        expect(
+          PayloadStore(
+            Directory('${tempDir.path}${Platform.pathSeparator}payloads'),
+          ).fileFor('demo').existsSync(),
+          isFalse,
+        );
+      },
+    );
 
     test('registerOneOffTask rejects non-JSON-encodable inputData', () async {
       await expectLater(
@@ -140,7 +151,12 @@ void main() {
         frequency: const Duration(minutes: 30),
       );
       final args = runner.calls.single;
-      expect(args.sublist(0, 4), <String>['/Create', '/TN', 'workmanager_sync', '/TR']);
+      expect(args.sublist(0, 4), <String>[
+        '/Create',
+        '/TN',
+        'workmanager_sync',
+        '/TR',
+      ]);
       expect(args, containsAllInOrder(<String>['/SC', 'DAILY']));
       expect(args, containsAllInOrder(<String>['/RI', '30']));
     });
@@ -153,28 +169,33 @@ void main() {
   });
 
   group('cancellation', () {
-    test('cancelByUniqueName ends and deletes the task and its payload', () async {
-      await windows.registerOneOffTask(
-        'demo',
-        'demoTask',
-        inputData: <String, dynamic>{'key': 'value'},
-      );
-      runner.calls.clear();
-      final payloadFile = PayloadStore(
-        Directory('${tempDir.path}${Platform.pathSeparator}payloads'),
-      ).fileFor('demo');
-      expect(payloadFile.existsSync(), isTrue);
+    test(
+      'cancelByUniqueName ends and deletes the task and its payload',
+      () async {
+        await windows.registerOneOffTask(
+          'demo',
+          'demoTask',
+          inputData: <String, dynamic>{'key': 'value'},
+        );
+        runner.calls.clear();
+        final payloadFile = PayloadStore(
+          Directory('${tempDir.path}${Platform.pathSeparator}payloads'),
+        ).fileFor('demo');
+        expect(payloadFile.existsSync(), isTrue);
 
-      await windows.cancelByUniqueName('demo');
+        await windows.cancelByUniqueName('demo');
 
-      expect(runner.calls, hasLength(2));
-      expect(runner.calls[0], <String>['/End', '/TN', 'workmanager_demo']);
-      expect(
-        runner.calls[1],
-        <String>['/Delete', '/TN', 'workmanager_demo', '/F'],
-      );
-      expect(payloadFile.existsSync(), isFalse);
-    });
+        expect(runner.calls, hasLength(2));
+        expect(runner.calls[0], <String>['/End', '/TN', 'workmanager_demo']);
+        expect(runner.calls[1], <String>[
+          '/Delete',
+          '/TN',
+          'workmanager_demo',
+          '/F',
+        ]);
+        expect(payloadFile.existsSync(), isFalse);
+      },
+    );
 
     test('cancelByUniqueName is idempotent for a missing task', () async {
       runner.exitCode = 1;
@@ -215,15 +236,19 @@ void main() {
       expect(runner.calls, hasLength(5));
       expect(runner.calls[0], <String>['/Query', '/FO', 'CSV', '/NH']);
       expect(runner.calls[1], <String>['/End', '/TN', 'workmanager_one']);
-      expect(
-        runner.calls[2],
-        <String>['/Delete', '/TN', 'workmanager_one', '/F'],
-      );
+      expect(runner.calls[2], <String>[
+        '/Delete',
+        '/TN',
+        'workmanager_one',
+        '/F',
+      ]);
       expect(runner.calls[3], <String>['/End', '/TN', 'workmanager_two']);
-      expect(
-        runner.calls[4],
-        <String>['/Delete', '/TN', 'workmanager_two', '/F'],
-      );
+      expect(runner.calls[4], <String>[
+        '/Delete',
+        '/TN',
+        'workmanager_two',
+        '/F',
+      ]);
       expect(await store.read('one'), isNull);
       expect(await store.read('two'), isNull);
     });
@@ -232,10 +257,11 @@ void main() {
   group('queries', () {
     test('isScheduledByUniqueName is true when the task exists', () async {
       expect(await windows.isScheduledByUniqueName('demo'), isTrue);
-      expect(
-        runner.calls.single,
-        <String>['/Query', '/TN', 'workmanager_demo'],
-      );
+      expect(runner.calls.single, <String>[
+        '/Query',
+        '/TN',
+        'workmanager_demo',
+      ]);
     });
 
     test('isScheduledByUniqueName is false when the task is missing', () async {
@@ -243,24 +269,27 @@ void main() {
       expect(await windows.isScheduledByUniqueName('demo'), isFalse);
     });
 
-    test('printScheduledTasks returns only tasks owned by the plugin', () async {
-      runner.stdout = '"workmanager_demo","8/3/2026 11:15:00 AM","Ready"\n'
-          '"workmanager_sync","8/4/2026 9:00:00 AM","Running"\n'
-          '"SomeOtherTask","N/A","Disabled"';
-      final json = await windows.printScheduledTasks();
-      final decoded = jsonDecode(json) as List<dynamic>;
-      expect(decoded, hasLength(2));
-      expect(decoded[0], <String, String>{
-        'TaskName': 'workmanager_demo',
-        'NextRunTime': '8/3/2026 11:15:00 AM',
-        'Status': 'Ready',
-      });
-      expect(decoded[1], <String, String>{
-        'TaskName': 'workmanager_sync',
-        'NextRunTime': '8/4/2026 9:00:00 AM',
-        'Status': 'Running',
-      });
-    });
+    test(
+      'printScheduledTasks returns only tasks owned by the plugin',
+      () async {
+        runner.stdout = '"workmanager_demo","8/3/2026 11:15:00 AM","Ready"\n'
+            '"workmanager_sync","8/4/2026 9:00:00 AM","Running"\n'
+            '"SomeOtherTask","N/A","Disabled"';
+        final json = await windows.printScheduledTasks();
+        final decoded = jsonDecode(json) as List<dynamic>;
+        expect(decoded, hasLength(2));
+        expect(decoded[0], <String, String>{
+          'TaskName': 'workmanager_demo',
+          'NextRunTime': '8/3/2026 11:15:00 AM',
+          'Status': 'Ready',
+        });
+        expect(decoded[1], <String, String>{
+          'TaskName': 'workmanager_sync',
+          'NextRunTime': '8/4/2026 9:00:00 AM',
+          'Status': 'Running',
+        });
+      },
+    );
   });
 
   group('dispatcher wiring', () {
@@ -271,7 +300,11 @@ void main() {
     });
 
     test('executeTask registers the handler in the registry', () async {
-      Future<bool> handler(String taskName, Map<String, dynamic>? inputData) async => true;
+      Future<bool> handler(
+        String taskName,
+        Map<String, dynamic>? inputData,
+      ) async =>
+          true;
       windows.executeTask(handler);
       expect(WorkmanagerExecution.instance.taskHandler, handler);
     });

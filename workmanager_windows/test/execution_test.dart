@@ -49,10 +49,7 @@ void main() {
     });
 
     test('backgroundTaskNameFromArgs returns null when the flag is last', () {
-      expect(
-        backgroundTaskNameFromArgs(<String>['--background-task']),
-        isNull,
-      );
+      expect(backgroundTaskNameFromArgs(<String>['--background-task']), isNull);
     });
 
     test('payloadFilePathFromArgs returns the path', () {
@@ -100,7 +97,10 @@ void main() {
         'demo',
         payloadFilePath: payloadPath,
         callbackDispatcher: () {
-          WorkmanagerExecution.instance.executeTask((taskName, inputData) async {
+          WorkmanagerExecution.instance.executeTask((
+            taskName,
+            inputData,
+          ) async {
             ran = true;
             expect(taskName, 'demo');
             expect(inputData, <String, dynamic>{'n': 1});
@@ -117,7 +117,10 @@ void main() {
         'demo',
         payloadFilePath: null,
         callbackDispatcher: () {
-          WorkmanagerExecution.instance.executeTask((taskName, inputData) async {
+          WorkmanagerExecution.instance.executeTask((
+            taskName,
+            inputData,
+          ) async {
             expect(inputData, isNull);
             return true;
           });
@@ -131,7 +134,10 @@ void main() {
         'demo',
         payloadFilePath: '${tempDir.path}${Platform.pathSeparator}nope.json',
         callbackDispatcher: () {
-          WorkmanagerExecution.instance.executeTask((taskName, inputData) async {
+          WorkmanagerExecution.instance.executeTask((
+            taskName,
+            inputData,
+          ) async {
             expect(inputData, isNull);
             return true;
           });
@@ -145,7 +151,10 @@ void main() {
         'demo',
         payloadFilePath: null,
         callbackDispatcher: () {
-          WorkmanagerExecution.instance.executeTask((taskName, inputData) async {
+          WorkmanagerExecution.instance.executeTask((
+            taskName,
+            inputData,
+          ) async {
             return false;
           });
         },
@@ -158,7 +167,10 @@ void main() {
         'demo',
         payloadFilePath: null,
         callbackDispatcher: () {
-          WorkmanagerExecution.instance.executeTask((taskName, inputData) async {
+          WorkmanagerExecution.instance.executeTask((
+            taskName,
+            inputData,
+          ) async {
             throw StateError('boom');
           });
         },
