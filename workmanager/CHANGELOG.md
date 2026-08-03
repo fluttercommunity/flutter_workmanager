@@ -1,3 +1,7 @@
+## 0.10.3
+
+ - **FEAT**: work status observation — getWorkInfo across platforms (fixes #194) (#719).
+
 ## 0.10.2
 
  - **FEAT**(android): expedited work support (#715).

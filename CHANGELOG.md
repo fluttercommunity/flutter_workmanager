@@ -15,6 +15,47 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`workmanager` - `v0.10.3`](#workmanager---v0103)
+ - [`workmanager_android` - `v0.10.3`](#workmanager_android---v0103)
+ - [`workmanager_apple` - `v0.9.9`](#workmanager_apple---v099)
+ - [`workmanager_platform_interface` - `v0.10.3`](#workmanager_platform_interface---v0103)
+ - [`workmanager_web` - `v0.1.3`](#workmanager_web---v013)
+
+---
+
+#### `workmanager` - `v0.10.3`
+
+ - **FEAT**: work status observation — getWorkInfo across platforms (fixes #194) (#719).
+
+#### `workmanager_android` - `v0.10.3`
+
+ - **FEAT**: work status observation — getWorkInfo across platforms (fixes #194) (#719).
+
+#### `workmanager_apple` - `v0.9.9`
+
+ - **FEAT**: work status observation — getWorkInfo across platforms (fixes #194) (#719).
+
+#### `workmanager_platform_interface` - `v0.10.3`
+
+ - **FEAT**: work status observation — getWorkInfo across platforms (fixes #194) (#719).
+
+#### `workmanager_web` - `v0.1.3`
+
+ - **FEAT**: work status observation — getWorkInfo across platforms (fixes #194) (#719).
+
+
+## 2026-08-03
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`workmanager` - `v0.10.2`](#workmanager---v0102)
  - [`workmanager_android` - `v0.10.2`](#workmanager_android---v0102)
  - [`workmanager_apple` - `v0.9.8`](#workmanager_apple---v098)
