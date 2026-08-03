@@ -289,16 +289,6 @@ public class WorkmanagerPlugin: WorkmanagerPluginBase, FlutterPlugin, Workmanage
         }
     }
 
-    func reportProgress(progress: [String?: Any?]?, completion: @escaping (Result<Void, Error>) -> Void) {
-        // Progress updates are Android-only (WorkManager `setProgress`); there
-        // is no equivalent for BGTaskScheduler, so this is a documented no-op.
-        completion(.success(()))
-    }
-
-    func setProgressListener(enabled: Bool, completion: @escaping (Result<Void, Error>) -> Void) {
-        // Progress updates are Android-only; no-op on iOS (see reportProgress).
-        completion(.success(()))
-    }
     #endif
 
     // MARK: - Helper methods
@@ -458,17 +448,6 @@ extension WorkmanagerPlugin {
 
     func printScheduledTasks(completion: @escaping (Result<String, Error>) -> Void) {
         completion(.success(MacOSActivityScheduler.shared.printScheduledActivities()))
-    }
-
-    func reportProgress(progress: [String?: Any?]?, completion: @escaping (Result<Void, Error>) -> Void) {
-        // Progress updates are Android-only; no-op on macOS (see the iOS
-        // section for the reasoning).
-        completion(.success(()))
-    }
-
-    func setProgressListener(enabled: Bool, completion: @escaping (Result<Void, Error>) -> Void) {
-        // Progress updates are Android-only; no-op on macOS.
-        completion(.success(()))
     }
 }
 #endif
