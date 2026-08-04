@@ -158,12 +158,23 @@ class _WebDemoPageState extends State<WebDemoPage> {
       return;
     }
     setState(() => _events.insert(0, event));
-    if (event.state == 'executed' && _notificationsGranted) {
-      _showPageNotification(
-        'Workmanager demo',
-        '${event.taskName ?? 'Background task'} finished'
-        '${event.result == null ? '' : ' — result: $event.result'}.',
-      );
+    // The foreground stays in sync with background runs: every executed
+    // task also lands in the chat, including runs that happened while the
+    // page was closed (replayed from the IndexedDB queue on load).
+    if (event.state == 'executed') {
+      _chat.add(_ChatLine(
+        text: '↩️ background: ${event.taskName ?? 'task'} finished'
+            '${event.result == null ? '' : ' → result: $event.result'}'
+            ' (${event.source})',
+        fromWorker: true,
+      ));
+      if (_notificationsGranted) {
+        _showPageNotification(
+          'Workmanager demo',
+          '${event.taskName ?? 'Background task'} finished'
+          '${event.result == null ? '' : ' — result: $event.result'}.',
+        );
+      }
     }
   }
 
@@ -514,9 +525,10 @@ class _WebDemoPageState extends State<WebDemoPage> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           child: Text(
-            'Event states: executed = task ran · relayed = message routed · '
-            'missed/error = failure · warning = retried. Events from runs '
-            'while the page was closed are replayed here on load.',
+            'This log is the persistent background queue (single source of '
+            'truth): executed = task ran · relayed = message routed · '
+            'missed/error = failure · warning = retried. Runs from when the '
+            'page was closed are replayed here on load.',
             style: theme.textTheme.bodySmall,
           ),
         ),
@@ -566,7 +578,10 @@ class _WebDemoPageState extends State<WebDemoPage> {
             '2. Background tasks — one-off and periodic tasks execute off '
             'the page (Task log tab).\n'
             '3. Service Worker — with the app installed, tasks keep running '
-            'even when no tab is open, and notify you when they finish.',
+            'even when no tab is open, and notify you when they finish.\n'
+            '4. Single source of truth — every background run is recorded in '
+            'a persistent queue (Task log) and replayed when you reopen the '
+            'app, so the foreground always sees what the background did.',
             style: theme.textTheme.bodyMedium,
           ),
         ),
@@ -619,8 +634,26 @@ class _WebDemoPageState extends State<WebDemoPage> {
         const _GuideStep(
           number: '6',
           title: 'Reopen the app',
-          body: 'Results from closed-page runs are replayed from IndexedDB '
-              'into the Task log.',
+          body: 'Results from closed-page runs are replayed from the '
+              'persistent queue (IndexedDB) into the Task log — and the '
+              'chat shows a "background: …" line for each run, so the '
+              'foreground always reflects what the background did.',
+        ),
+        const SizedBox(height: 4),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFF3D6),
+            border: Border.all(color: const Color(0xFFB06000)),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(
+            'Developer note: when running via `flutter run -d chrome`, use a '
+            'full reload after code changes — hot restart is buggy on web '
+            '(can throw "disposed EngineFlutterView" errors; a page refresh '
+            'fixes it).',
+            style: theme.textTheme.bodySmall,
+          ),
         ),
       ],
     );
