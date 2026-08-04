@@ -74,6 +74,13 @@ class WebDemoApp extends StatelessWidget {
         color: Colors.white,
       ),
     ),
+    tabBarTheme: const TabBarThemeData(
+      labelColor: Colors.white,
+      unselectedLabelColor: Color(0xFFD3E3FD),
+      indicatorColor: Colors.white,
+      labelStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+      unselectedLabelStyle: TextStyle(fontSize: 14),
+    ),
     dividerTheme: const DividerThemeData(color: Color(0xFFB0B8BF)),
   );
 
