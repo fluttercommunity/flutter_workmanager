@@ -30,7 +30,7 @@ jobs:
 
       - name: Build web demo (GitHub Pages subpath)
         working-directory: example
-        run: flutter build web --release --base-href=/flutter_workmanager/
+        run: flutter build web --release --base-href=/flutter_workmanager/ --web-resources-cdn
 
       - name: Deploy to gh-pages
         working-directory: example
