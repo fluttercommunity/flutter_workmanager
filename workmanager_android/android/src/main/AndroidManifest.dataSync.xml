@@ -1,0 +1,24 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- Foreground service support for long-running workers. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <!-- Android 14+ requires a type-specific permission for each FGS type. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SHORT_SERVICE"/>
+
+    <!--
+        Opt-in variant of AndroidManifest.xml, swapped in when the app sets
+        `workmanager.enableDataSyncForegroundService=true` (see build.gradle).
+        Keep this file in sync with AndroidManifest.xml — the only differences
+        are the FOREGROUND_SERVICE_DATA_SYNC permission and the `dataSync`
+        service type. See #725.
+    -->
+    <application>
+        <service
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            android:foregroundServiceType="dataSync|shortService"
+            tools:node="merge"
+            tools:targetApi="34"/>
+    </application>
+</manifest>

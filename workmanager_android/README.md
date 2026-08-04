@@ -27,5 +27,24 @@ dependencies:
 
 For detailed setup instructions, usage examples, and API documentation, please refer to the main [`workmanager`][workmanager] package documentation.
 
+## Foreground service permissions
+
+Expedited work runs as a `shortService` foreground service, so the plugin
+always declares `FOREGROUND_SERVICE` and `FOREGROUND_SERVICE_SHORT_SERVICE`.
+
+`FOREGROUND_SERVICE_DATA_SYNC` (the `dataSync` foreground service type, for
+long-running workers) is **opt-in**: it is a Play Console "special type" that
+requires a declaration form and a demonstration video even when unused, so it
+is only added to your merged manifest when you enable it in your app's
+`gradle.properties` (or pass it on the command line):
+
+```properties
+workmanager.enableDataSyncForegroundService=true
+```
+
+Only set this if your app actually runs long-running workers with the
+`dataSync` foreground service type — see the `ForegroundServiceConfig` API
+in the main package. See [issue #725](https://github.com/fluttercommunity/flutter_workmanager/issues/725).
+
 [workmanager]: https://pub.dartlang.org/packages/workmanager
 [federated_plugin_docs]: https://flutter.dev/go/federated-plugins

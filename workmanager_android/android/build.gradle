@@ -32,6 +32,20 @@ android {
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
         test.java.srcDirs += 'src/test/kotlin'
+        // FOREGROUND_SERVICE_DATA_SYNC is a Play Console "special type" that
+        // requires a declaration + demonstration video even when unused, so it
+        // is opt-in (see AndroidManifest.xml). Apps that run long-running
+        // workers with the `dataSync` foreground service type must set
+        // `workmanager.enableDataSyncForegroundService=true` in their
+        // gradle.properties (or via -P). See #725.
+        def wmDataSyncEnabled =
+            project.findProperty('workmanager.enableDataSyncForegroundService')
+                ?.toString() == 'true'
+        if (wmDataSyncEnabled) {
+            // Swap in the opt-in manifest (adds the DATA_SYNC permission and
+            // the `dataSync` service type). See #725.
+            main.manifest.srcFile 'src/main/AndroidManifest.dataSync.xml'
+        }
     }
     defaultConfig {
         compileSdk 35
