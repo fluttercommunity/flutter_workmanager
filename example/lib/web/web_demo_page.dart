@@ -467,6 +467,15 @@ class _WebDemoPageState extends State<WebDemoPage> {
             ],
           ),
         ),
+        if (!InstallGlue.canPrompt)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
+            child: Text(
+              'Install button not shown by Chrome? Use the install icon (⊕) '
+              'in the address bar instead (needs localhost or HTTPS).',
+              style: theme.textTheme.bodySmall,
+            ),
+          ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           child: Text(
@@ -543,9 +552,11 @@ class _WebDemoPageState extends State<WebDemoPage> {
         ),
         const _GuideStep(
           number: '3',
-          title: 'Install the app',
-          body: 'Tap "Install app". Installed apps can run background tasks '
-              'without an open tab.',
+          title: 'Install the app (as a PWA)',
+          body: 'Installing adds the demo to your device like a native app '
+              '— that is what allows tasks to run with no tab open. Tap '
+              '"Install app" on the Task log tab, or use the install icon '
+              '(⊕) in Chrome\'s address bar.',
         ),
         const _GuideStep(
           number: '4',
