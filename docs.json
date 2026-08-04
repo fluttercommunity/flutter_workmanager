@@ -42,6 +42,14 @@
           "href": "/debugging"
         },
         {
+          "title": "Debugging (Android)",
+          "href": "/debugging-android"
+        },
+        {
+          "title": "Debugging (iOS)",
+          "href": "/debugging-ios"
+        },
+        {
           "title": "Web (experimental)",
           "href": "/web"
         },
