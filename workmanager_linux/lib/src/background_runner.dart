@@ -4,6 +4,8 @@
 
 import 'dart:io';
 
+import 'package:workmanager_platform_interface/workmanager_platform_interface.dart';
+
 import '../execution.dart';
 import 'payload_store.dart';
 
@@ -85,16 +87,43 @@ class BackgroundTaskRunner {
       );
       return false;
     }
+    final started = DateTime.now();
+    final taskInfo = TaskDebugInfo(
+      taskName: invocation.taskName,
+      inputData: inputData,
+      startTime: started,
+    );
+    WorkmanagerDebug.reportStatus(taskInfo, TaskStatus.started, null);
     try {
-      return await WorkmanagerExecution.instance.runTask(
+      final success = await WorkmanagerExecution.instance.runTask(
         invocation.taskName,
         inputData,
       );
+      WorkmanagerDebug.reportStatus(
+        taskInfo,
+        success ? TaskStatus.completed : TaskStatus.failed,
+        TaskResult(
+          success: success,
+          duration: DateTime.now().difference(started),
+          error: success ? null : 'handler returned false',
+        ),
+      );
+      return success;
     } on Object catch (error, stackTrace) {
       stderr.writeln(
         'workmanager_linux: background task "${invocation.taskName}" threw: '
         '$error\n$stackTrace',
       );
+      WorkmanagerDebug.reportStatus(
+        taskInfo,
+        TaskStatus.failed,
+        TaskResult(
+          success: false,
+          duration: DateTime.now().difference(started),
+          error: error.toString(),
+        ),
+      );
+      WorkmanagerDebug.reportException(taskInfo, error, stackTrace);
       return false;
     }
   }

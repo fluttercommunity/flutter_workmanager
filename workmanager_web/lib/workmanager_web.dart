@@ -601,6 +601,15 @@ class WorkmanagerWeb extends WorkmanagerPlatform {
       _tasks.remove(uniqueName);
     }
     final started = DateTime.now();
+    final taskInfo = TaskDebugInfo(
+      taskName: taskName,
+      uniqueName: uniqueName,
+      inputData: rawInputData is Map
+          ? Map<String, dynamic>.from(rawInputData)
+          : null,
+      startTime: started,
+    );
+    WorkmanagerDebug.reportStatus(taskInfo, TaskStatus.started, null);
     Object? result;
     String executedIn;
     String? errorMessage;
@@ -629,6 +638,14 @@ class WorkmanagerWeb extends WorkmanagerPlatform {
     }
     if (errorMessage == null) {
       final elapsed = DateTime.now().difference(started).inMilliseconds;
+      WorkmanagerDebug.reportStatus(
+        taskInfo,
+        TaskStatus.completed,
+        TaskResult(
+          success: true,
+          duration: Duration(milliseconds: elapsed),
+        ),
+      );
       _emit(
         'executed',
         'Task "$taskName" executed in ${elapsed}ms via $executedIn.',
@@ -636,6 +653,22 @@ class WorkmanagerWeb extends WorkmanagerPlatform {
         uniqueName: uniqueName,
         taskName: taskName,
         result: result,
+      );
+    } else {
+      final elapsed = DateTime.now().difference(started).inMilliseconds;
+      WorkmanagerDebug.reportStatus(
+        taskInfo,
+        TaskStatus.failed,
+        TaskResult(
+          success: false,
+          duration: Duration(milliseconds: elapsed),
+          error: errorMessage,
+        ),
+      );
+      WorkmanagerDebug.reportException(
+        taskInfo,
+        Exception(errorMessage),
+        null,
       );
     }
     await _notifyServiceWorkerExecuted(
