@@ -2,15 +2,13 @@
 // Use of this source code is governed by a MIT-style license that can be
 // found in the LICENSE file.
 
-import 'dart:js_interop';
-import 'dart:js_interop_unsafe';
-
 import 'package:flutter/material.dart';
 import 'package:workmanager_web/workmanager_web.dart';
 
 import 'app_theme.dart';
 import 'background_tasks.dart';
 import 'install_glue.dart';
+import 'web_glue.dart';
 
 const String _oneOffTask = 'dev.fluttercommunity.workmanagerExample.webOneOff';
 const String _periodicTask =
@@ -105,7 +103,7 @@ class _WebDemoPageState extends State<WebDemoPage> {
         _showPageNotification(
           'Workmanager demo',
           '${event.taskName ?? 'Background task'} finished'
-          '${event.result == null ? '' : ' — result: $event.result'}.',
+              '${event.result == null ? '' : ' — result: $event.result'}.',
         );
       }
     }
@@ -196,40 +194,18 @@ class _WebDemoPageState extends State<WebDemoPage> {
   /// Requests the Web Notifications permission (must be called from a user
   /// gesture in most browsers).
   Future<void> _requestNotifications() async {
-    final notification = globalContext['Notification'];
-    if (notification == null) {
-      return;
-    }
-    final notificationObj = notification as JSObject;
-    final permission = notificationObj['permission']?.dartify();
-    if (permission == 'granted') {
-      setState(() => _notificationsGranted = true);
-      return;
-    }
-    if (permission == 'denied') {
-      return;
-    }
-    final result = await (notificationObj
-            .callMethod('requestPermission'.toJS) as JSPromise<JSAny?>)
-        .toDart;
+    final granted = await requestNotificationPermission();
     if (!mounted) {
       return;
     }
-    setState(() => _notificationsGranted = result?.dartify() == 'granted');
+    setState(() => _notificationsGranted = granted);
   }
 
   /// Shows a page-side notification (only used when the page is open; the
-  /// Service Worker shows its own when the page is closed — see
-  /// `_notify` in `background_tasks.dart`).
+  /// Service Worker shows its own when the page is closed — see `_notify`
+  /// in `background_tasks.dart`).
   void _showPageNotification(String title, String body) {
-    final notification = globalContext['Notification'];
-    if (notification == null) {
-      return;
-    }
-    (notification as JSFunction).callAsConstructor<JSObject>(
-      title.toJS,
-      <String, Object?>{'body': body}.jsify(),
-    );
+    showPageNotification(title, body);
   }
 
   @override
@@ -679,7 +655,8 @@ class _NotificationStatus extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        const Icon(Icons.notifications_active, size: 18, color: AppTheme.okGreen),
+        const Icon(Icons.notifications_active,
+            size: 18, color: AppTheme.okGreen),
         const SizedBox(width: 6),
         Text('Notifications on', style: theme.textTheme.bodyMedium),
       ],
@@ -688,7 +665,8 @@ class _NotificationStatus extends StatelessWidget {
 }
 
 class _GuideStep extends StatelessWidget {
-  const _GuideStep({required this.number, required this.title, required this.body});
+  const _GuideStep(
+      {required this.number, required this.title, required this.body});
 
   final String number;
   final String title;
@@ -754,8 +732,9 @@ class _ChatBubble extends StatelessWidget {
     final fromWorker = line.fromWorker;
     final Color background =
         fromWorker ? Colors.white : theme.colorScheme.primaryContainer;
-    final Color foreground =
-        fromWorker ? AppTheme.textPrimary : theme.colorScheme.onPrimaryContainer;
+    final Color foreground = fromWorker
+        ? AppTheme.textPrimary
+        : theme.colorScheme.onPrimaryContainer;
     final BoxBorder border = Border.all(
       color: fromWorker ? AppTheme.borderGrey : Colors.transparent,
     );

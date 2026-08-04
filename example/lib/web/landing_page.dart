@@ -2,13 +2,11 @@
 // Use of this source code is governed by a MIT-style license that can be
 // found in the LICENSE file.
 
-import 'dart:js_interop';
-import 'dart:js_interop_unsafe';
-
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
 import 'web_demo_page.dart';
+import 'web_glue.dart';
 
 /// Intro page for the web demo site: what workmanager is, what the demo
 /// shows, and links to the upstream project (pub.dev, GitHub, docs).
@@ -24,10 +22,7 @@ class LandingPage extends StatelessWidget {
       'https://github.com/fluttercommunity/flutter_workmanager/issues';
 
   void _openUrl(String url) {
-    final window = globalContext['window'] as JSObject?;
-    if (window != null) {
-      window.callMethod('open'.toJS, url.toJS);
-    }
+    openUrl(url);
   }
 
   void _openDemo(BuildContext context) {
