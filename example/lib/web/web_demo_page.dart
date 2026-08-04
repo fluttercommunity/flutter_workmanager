@@ -108,11 +108,18 @@ class _WebDemoPageState extends State<WebDemoPage> {
   bool _initializing = true;
   bool _periodicRegistered = false;
   bool _notificationsGranted = false;
+  bool _appInstalled = false;
 
   @override
   void initState() {
     super.initState();
     InstallGlue.listen();
+    _appInstalled = InstallGlue.installed;
+    InstallGlue.onInstalled = () {
+      if (mounted) {
+        setState(() => _appInstalled = true);
+      }
+    };
     WorkmanagerWeb().backgroundEvents.listen(_onEvent);
     WorkmanagerWeb().workerMessages.listen(_onWorkerMessage);
     _initialize();
@@ -201,6 +208,41 @@ class _WebDemoPageState extends State<WebDemoPage> {
     if (mounted) {
       setState(() => _periodicRegistered = false);
     }
+  }
+
+  /// Installs the demo as a PWA. Shows the browser's install prompt when
+  /// available; otherwise explains how to install (address-bar icon).
+  Future<void> _installApp() async {
+    final installed = await InstallGlue.promptInstall();
+    if (installed) {
+      if (mounted) {
+        setState(() => _appInstalled = true);
+      }
+      return;
+    }
+    if (!mounted) {
+      return;
+    }
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('How to install the demo'),
+        content: const Text(
+          'Chrome hasn\'t offered the install prompt yet. You can:\n\n'
+          '• Tap the install icon (⊕) in the address bar.\n'
+          '• Use the demo for a moment, then tap "Install the app" again.\n'
+          '• Installation requires localhost or HTTPS.\n\n'
+          'Installing adds the app to your device like a native app — '
+          'that is what lets tasks run with no tab open.',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Got it'),
+          ),
+        ],
+      ),
+    );
   }
 
   /// Requests the Web Notifications permission (must be called from a user
@@ -458,24 +500,17 @@ class _WebDemoPageState extends State<WebDemoPage> {
                   icon: const Icon(Icons.notifications_active_outlined),
                   label: const Text('Allow notifications'),
                 ),
-              if (InstallGlue.canPrompt)
+              if (_appInstalled)
+                const _InstalledStatus()
+              else
                 FilledButton.icon(
-                  onPressed: InstallGlue.promptInstall,
+                  onPressed: _installApp,
                   icon: const Icon(Icons.download),
-                  label: const Text('Install app'),
+                  label: const Text('Install the app'),
                 ),
             ],
           ),
         ),
-        if (!InstallGlue.canPrompt)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
-            child: Text(
-              'Install button not shown by Chrome? Use the install icon (⊕) '
-              'in the address bar instead (needs localhost or HTTPS).',
-              style: theme.textTheme.bodySmall,
-            ),
-          ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           child: Text(
@@ -554,9 +589,19 @@ class _WebDemoPageState extends State<WebDemoPage> {
           number: '3',
           title: 'Install the app (as a PWA)',
           body: 'Installing adds the demo to your device like a native app '
-              '— that is what allows tasks to run with no tab open. Tap '
-              '"Install app" on the Task log tab, or use the install icon '
-              '(⊕) in Chrome\'s address bar.',
+              '— that is what allows tasks to run with no tab open. Use the '
+              'button below, or the install icon (⊕) in Chrome\'s address '
+              'bar.',
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 36, bottom: 8),
+          child: _appInstalled
+              ? const _InstalledStatus()
+              : FilledButton.icon(
+                  onPressed: _installApp,
+                  icon: const Icon(Icons.download),
+                  label: const Text('Install the app'),
+                ),
         ),
         const _GuideStep(
           number: '4',
@@ -636,6 +681,23 @@ class _WebDemoPageState extends State<WebDemoPage> {
       return input;
     }
     return input[0].toUpperCase() + input.substring(1);
+  }
+}
+
+class _InstalledStatus extends StatelessWidget {
+  const _InstalledStatus();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        const Icon(Icons.check_circle, size: 18, color: _okGreen),
+        const SizedBox(width: 6),
+        Text('App installed', style: theme.textTheme.bodyMedium),
+      ],
+    );
   }
 }
 

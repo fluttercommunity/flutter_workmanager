@@ -7,11 +7,18 @@
 class InstallGlue {
   InstallGlue._();
 
-  /// Listens for `beforeinstallprompt` (no-op on non-web platforms).
+  /// Listens for `beforeinstallprompt`/`appinstalled` (no-op on non-web
+  /// platforms).
   static void listen() {}
 
   /// Whether the browser fired `beforeinstallprompt`.
   static bool get canPrompt => false;
+
+  /// Whether the app is installed as a PWA (always false on non-web).
+  static bool installed = false;
+
+  /// Called whenever [installed] becomes true.
+  static void Function()? onInstalled;
 
   /// Shows the browser's PWA install prompt (no-op on non-web platforms).
   static Future<bool> promptInstall() async => false;
