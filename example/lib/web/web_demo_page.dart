@@ -8,19 +8,13 @@ import 'dart:js_interop_unsafe';
 import 'package:flutter/material.dart';
 import 'package:workmanager_web/workmanager_web.dart';
 
+import 'app_theme.dart';
 import 'background_tasks.dart';
 import 'install_glue.dart';
 
 const String _oneOffTask = 'dev.fluttercommunity.workmanagerExample.webOneOff';
 const String _periodicTask =
     'dev.fluttercommunity.workmanagerExample.webPeriodic';
-
-/// High-contrast status colors, readable on white.
-const Color _okGreen = Color(0xFF1E8E3E);
-const Color _alertRed = Color(0xFFC5221F);
-const Color _warnOrange = Color(0xFFB06000);
-const Color _infoBlue = Color(0xFF174EA6);
-const Color _mutedGrey = Color(0xFF5B6670);
 
 /// Web-only demo: registers tasks through [WorkmanagerWeb], shows a two-way
 /// "worker chat" (page <-> background worker via postMessage) and a task log
@@ -30,70 +24,6 @@ const Color _mutedGrey = Color(0xFF5B6670);
 /// watch a city, and the worker streams simulated temperatures, alerting when
 /// the temperature drops below a threshold. Simulated, so the demo needs no
 /// network and no API keys.
-class WebDemoApp extends StatelessWidget {
-  const WebDemoApp({super.key});
-
-  static final ThemeData _theme = ThemeData(
-    useMaterial3: true,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFF0B57D0),
-    ).copyWith(
-      primary: const Color(0xFF0B57D0),
-      onPrimary: Colors.white,
-      primaryContainer: const Color(0xFFD3E3FD),
-      onPrimaryContainer: const Color(0xFF001B3F),
-      surface: Colors.white,
-      onSurface: const Color(0xFF111111),
-      onSurfaceVariant: const Color(0xFF1F1F1F),
-      outline: _mutedGrey,
-      outlineVariant: const Color(0xFFB0B8BF),
-      surfaceContainerHighest: const Color(0xFFE1E5E8),
-    ),
-    textTheme: const TextTheme(
-      titleLarge: TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
-        color: Color(0xFF111111),
-      ),
-      titleSmall: TextStyle(
-        fontSize: 15,
-        fontWeight: FontWeight.w700,
-        color: Color(0xFF111111),
-      ),
-      bodyLarge: TextStyle(fontSize: 16, color: Color(0xFF111111)),
-      bodyMedium: TextStyle(fontSize: 15, color: Color(0xFF111111)),
-      bodySmall: TextStyle(fontSize: 14, color: Color(0xFF1F1F1F)),
-      labelLarge: TextStyle(fontSize: 14, color: Color(0xFF111111)),
-    ),
-    appBarTheme: const AppBarTheme(
-      backgroundColor: Color(0xFF0B57D0),
-      foregroundColor: Colors.white,
-      titleTextStyle: TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
-        color: Colors.white,
-      ),
-    ),
-    tabBarTheme: const TabBarThemeData(
-      labelColor: Colors.white,
-      unselectedLabelColor: Color(0xFFD3E3FD),
-      indicatorColor: Colors.white,
-      labelStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-      unselectedLabelStyle: TextStyle(fontSize: 14),
-    ),
-    dividerTheme: const DividerThemeData(color: Color(0xFFB0B8BF)),
-  );
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Workmanager Web Demo',
-      theme: _theme,
-      home: const WebDemoPage(),
-    );
-  }
-}
-
 class WebDemoPage extends StatefulWidget {
   const WebDemoPage({super.key});
 
@@ -362,7 +292,7 @@ class _WebDemoPageState extends State<WebDemoPage> {
           Icon(
             ready ? Icons.check_circle : Icons.hourglass_top,
             size: 18,
-            color: ready ? _okGreen : _mutedGrey,
+            color: ready ? AppTheme.okGreen : AppTheme.mutedGrey,
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -391,8 +321,8 @@ class _WebDemoPageState extends State<WebDemoPage> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFFF1F4F8),
-              border: Border.all(color: const Color(0xFFB0B8BF)),
+              color: AppTheme.cardFill,
+              border: Border.all(color: AppTheme.borderGrey),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
@@ -418,7 +348,7 @@ class _WebDemoPageState extends State<WebDemoPage> {
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                border: Border.all(color: const Color(0xFFB0B8BF)),
+                border: Border.all(color: AppTheme.borderGrey),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: _chat.isEmpty
@@ -589,8 +519,8 @@ class _WebDemoPageState extends State<WebDemoPage> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: const Color(0xFFF1F4F8),
-            border: Border.all(color: const Color(0xFFB0B8BF)),
+            color: AppTheme.cardFill,
+            border: Border.all(color: AppTheme.borderGrey),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text(
@@ -732,7 +662,7 @@ class _InstalledStatus extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        const Icon(Icons.check_circle, size: 18, color: _okGreen),
+        const Icon(Icons.check_circle, size: 18, color: AppTheme.okGreen),
         const SizedBox(width: 6),
         Text('App installed', style: theme.textTheme.bodyMedium),
       ],
@@ -749,7 +679,7 @@ class _NotificationStatus extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        const Icon(Icons.notifications_active, size: 18, color: _okGreen),
+        const Icon(Icons.notifications_active, size: 18, color: AppTheme.okGreen),
         const SizedBox(width: 6),
         Text('Notifications on', style: theme.textTheme.bodyMedium),
       ],
@@ -777,7 +707,7 @@ class _GuideStep extends StatelessWidget {
             height: 26,
             alignment: Alignment.center,
             decoration: const BoxDecoration(
-              color: Color(0xFF0B57D0),
+              color: AppTheme.primaryBlue,
               shape: BoxShape.circle,
             ),
             child: Text(
@@ -825,9 +755,9 @@ class _ChatBubble extends StatelessWidget {
     final Color background =
         fromWorker ? Colors.white : theme.colorScheme.primaryContainer;
     final Color foreground =
-        fromWorker ? const Color(0xFF111111) : theme.colorScheme.onPrimaryContainer;
+        fromWorker ? AppTheme.textPrimary : theme.colorScheme.onPrimaryContainer;
     final BoxBorder border = Border.all(
-      color: fromWorker ? const Color(0xFFB0B8BF) : Colors.transparent,
+      color: fromWorker ? AppTheme.borderGrey : Colors.transparent,
     );
     return Align(
       alignment: fromWorker ? Alignment.centerLeft : Alignment.centerRight,
@@ -894,16 +824,16 @@ class _EventTile extends StatelessWidget {
   Color _colorFor(String state) {
     switch (state) {
       case 'executed':
-        return _okGreen;
+        return AppTheme.okGreen;
       case 'relayed':
-        return _infoBlue;
+        return AppTheme.infoBlue;
       case 'missed':
       case 'error':
-        return _alertRed;
+        return AppTheme.alertRed;
       case 'warning':
-        return _warnOrange;
+        return AppTheme.warnOrange;
       default:
-        return _mutedGrey;
+        return AppTheme.mutedGrey;
     }
   }
 }
