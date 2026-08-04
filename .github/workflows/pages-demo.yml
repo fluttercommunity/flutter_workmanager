@@ -1,0 +1,49 @@
+name: pages-demo
+
+on:
+  push:
+    branches: [feat/web-worker-messaging]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages-demo
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: .fvmrc
+
+      - name: Bootstrap workspace (melos)
+        run: |
+          dart pub global activate melos
+          melos bootstrap
+
+      - name: Build web demo (GitHub Pages subpath)
+        working-directory: example
+        run: flutter build web --release --base-href=/flutter_workmanager/ --web-resources-cdn
+
+      - name: Deploy to gh-pages
+        working-directory: example
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # CanvasKit loads from gstatic (--web-resources-cdn); don't ship the
+          # 26MB local bundle to gh-pages.
+          rm -rf build/web/canvaskit
+          cd build/web
+          git init -q
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "deploy: web demo $(date -u +%Y%m%dT%H%M%SZ)"
+          git push -f "https://x-access-token:${GITHUB_TOKEN}@github.com/FlutterCommunity/flutter_workmanager.git" HEAD:gh-pages

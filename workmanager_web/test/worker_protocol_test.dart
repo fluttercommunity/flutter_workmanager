@@ -68,5 +68,60 @@ void main() {
       );
       expect(decoded!.error, 'boom');
     });
+
+    test('message encodes and decodes round-trip', () {
+      final encoded = WorkerProtocol.encodeMessage(<String, Object?>{
+        'op': 'watch',
+        'ticker': 'btc',
+      });
+      expect(encoded['type'], WorkerProtocol.typeMessage);
+      final decoded = WorkerProtocol.decodeMessage(
+        encoded.cast<Object?, Object?>(),
+      );
+      expect(
+        decoded,
+        <String, Object?>{'op': 'watch', 'ticker': 'btc'},
+      );
+    });
+
+    test('message round-trips a null payload', () {
+      final encoded = WorkerProtocol.encodeMessage(null);
+      final decoded = WorkerProtocol.decodeMessage(
+        encoded.cast<Object?, Object?>(),
+      );
+      expect(decoded, isNull);
+      // The type is still recognisable even when the payload is null.
+      expect(encoded['type'], WorkerProtocol.typeMessage);
+    });
+
+    test('workerMessage encodes and decodes round-trip', () {
+      final encoded = WorkerProtocol.encodeWorkerMessage(<String, Object?>{
+        'kind': 'tick',
+        'price': 59123.45,
+      });
+      expect(encoded['type'], WorkerProtocol.typeWorkerMessage);
+      final decoded = WorkerProtocol.decodeWorkerMessage(
+        encoded.cast<Object?, Object?>(),
+      );
+      expect(
+        decoded,
+        <String, Object?>{'kind': 'tick', 'price': 59123.45},
+      );
+    });
+
+    test('decodeMessage and decodeWorkerMessage reject other types', () {
+      expect(
+        WorkerProtocol.decodeMessage(<Object?, Object?>{
+          'type': WorkerProtocol.typeResult,
+        }),
+        isNull,
+      );
+      expect(
+        WorkerProtocol.decodeWorkerMessage(<Object?, Object?>{
+          'type': WorkerProtocol.typeExecuteTask,
+        }),
+        isNull,
+      );
+    });
   });
 }

@@ -61,3 +61,43 @@ The demo includes practical examples:
 ## Documentation
 
 For detailed guides and real-world use cases, visit: **[docs.page/fluttercommunity/flutter_workmanager →](https://docs.page/fluttercommunity/flutter_workmanager)**
+
+## Web Demo (experimental)
+
+Run `flutter run -d chrome` (or `flutter build web` and serve over HTTPS or
+localhost) to get the web-only demo. It demonstrates the experimental
+`workmanager_web` package with a simulated **weather watch** — no network
+and no API keys needed:
+
+- **Two-way worker messaging** — the page and the background worker talk
+  over `postMessage` (Chat tab). Tap "Watch Cardiff" and the worker
+  streams simulated temperatures, alerting when it drops below the
+  threshold; type any text and it echoes back. Page → worker via
+  `sendMessageToWorker()`, worker → page via `sendToPage()` (surfaced on
+  `WorkmanagerWeb.workerMessages`).
+- **Background tasks in a Web Worker** — register one-off / periodic tasks
+  and watch them execute off the main thread (the UI stays responsive while
+  the task's CPU loop runs). "Run check now" fires a one-off task; a
+  periodic temperature check is registered automatically every 15 minutes.
+  Results appear in the Task log tab.
+- **Service Worker execution + notifications** — install the PWA, allow
+  notifications, close the tab, trigger Periodic Background Sync from
+  DevTools and reopen: the task ran inside the Service Worker (compiled
+  Dart dispatcher) and showed a notification while the tab was closed; the
+  result is replayed from IndexedDB into the event log on the next load.
+
+The demo has a **Guide tab** that walks through all of this step by step.
+
+The background handler lives in `lib/web/background_tasks.dart` — a
+Flutter-free file compiled with plain `dart compile js` into
+`web/background.dart.js` (see `tool/build_web_background.sh`). Temperatures
+are simulated so the demo works offline; swap `_simulatedTemp()` for a real
+fetch to see the same pattern with live data.
+
+## Key Files
+
+- `lib/main.dart` - Main app with task scheduling UI
+- `lib/web/` - Web-only demo (Flutter-free dispatcher, worker chat, PWA install glue)
+- `lib/callback_dispatcher.dart` - Background task execution logic
+- `ios/Runner/AppDelegate.swift` - iOS background task registration
+- `ios/Runner/Info.plist` - iOS background modes configuration

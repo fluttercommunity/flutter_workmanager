@@ -46,6 +46,7 @@ class WorkmanagerWebWorker {
         }
       }).toJS,
     );
+    _wirePageMessaging();
     // The page waits for this message before routing work to the worker. It
     // is a harmless no-op inside a Service Worker global.
     self.callMethod(
@@ -54,7 +55,61 @@ class WorkmanagerWebWorker {
     );
   }
 
+  /// Wires `WorkmanagerExecution.sendToPage` so dispatcher code can push
+  /// messages back to the page from either execution context:
+  ///
+  /// * **Dedicated Web Worker**: `self.postMessage` delivers directly to the
+  ///   page that spawned the worker.
+  /// * **Service Worker global**: there is no `postMessage` on the SW global;
+  ///   messages are delivered to every open page via `clients.postMessage`.
+  ///   When no page is open they are dropped (persistent results still flow
+  ///   through the IndexedDB event log).
+  static void _wirePageMessaging() {
+    final self = globalContext;
+    final execution = WorkmanagerExecution.instance;
+    if (self.has('clients')) {
+      execution.sendToPage = (Object? payload) {
+        final message = WorkerProtocol.encodeWorkerMessage(payload).jsify();
+        final clients = self['clients'] as JSObject;
+        final promise = clients.callMethod(
+          'matchAll'.toJS,
+          <String, Object?>{
+            'type': 'window'.toJS,
+            'includeUncontrolled': true,
+          }.jsify(),
+        ) as JSPromise<JSAny?>;
+        promise.toDart.then((Object? result) {
+          if (result is! List) {
+            return;
+          }
+          for (final client in result) {
+            if (client is JSObject) {
+              client.callMethod('postMessage'.toJS, message);
+            }
+          }
+        });
+      };
+    } else {
+      execution.sendToPage = (Object? payload) {
+        self.callMethod(
+          'postMessage'.toJS,
+          WorkerProtocol.encodeWorkerMessage(payload).jsify(),
+        );
+      };
+    }
+  }
+
   static void _handleMessage(Map<Object?, Object?> raw) {
+    // Free-form page -> worker messages go to the dispatcher's message
+    // handler (when one is registered).
+    final message = WorkerProtocol.decodeMessage(raw);
+    if (message != null || raw['type'] == WorkerProtocol.typeMessage) {
+      final handler = WorkmanagerExecution.instance.messageHandler;
+      if (handler != null) {
+        handler(message);
+      }
+      return;
+    }
     final request = WorkerProtocol.decodeExecuteTask(raw);
     if (request == null) {
       return;

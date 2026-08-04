@@ -10,7 +10,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 
-import 'web/web_demo_page.dart';
+import 'web/web_app.dart';
 
 void main() {
   if (kIsWeb) {

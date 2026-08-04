@@ -106,6 +106,49 @@ The example app in this repository wires all of this up — see
 [`example/`](../../example) and its `web/` folder for a runnable reference,
 including the PWA manifest.
 
+### 5. Communicating with the background worker
+
+Task execution is request/response — the page asks the worker to run a task and
+gets the result back. For anything more interactive (progress updates, live
+data, "worker, do X now"), the worker also supports free-form two-way
+messaging over `postMessage`:
+
+```dart
+// Page side — send a message, listen for replies.
+WorkmanagerWeb().workerMessages.listen((payload) {
+  print('worker says: $payload');
+});
+WorkmanagerWeb().sendMessageToWorker({'op': 'watch', 'city': 'cardiff', 'threshold': 5.0});
+```
+
+```dart
+// Dispatcher side (Flutter-free bundle) — receive and reply.
+void callbackDispatcher() {
+  WorkmanagerExecution.instance.executeTask((taskName, inputData) async {
+    return true;
+  });
+  WorkmanagerExecution.instance.messageHandler = (payload) {
+    WorkmanagerExecution.instance.sendToPage?.call({'kind': 'ack'});
+  };
+}
+```
+
+How it maps to the browser:
+
+- **Page open** — messages travel between the page and the dedicated Web
+  Worker over `postMessage`, so the handler runs off the main thread.
+- **No Web Worker available** — the message is delivered directly to the
+  in-page dispatcher; replies surface on the same `workerMessages` stream.
+- **Service Worker execution (page closed)** — a `sendToPage` call is
+  delivered to every open page via `clients.postMessage`; when no page is
+  open it is dropped (persistent task results still arrive through
+  `backgroundEvents` on the next load).
+
+The example app demonstrates this with a live "worker chat" panel, a
+simulated weather-watch use case, and browser notifications when a
+background task finishes (including while the tab is closed, via the
+Service Worker).
+
 ## Testing it (what the maintainers verified)
 
 1. `flutter run -d chrome` (or `flutter build web` + serve over HTTPS or
@@ -162,6 +205,9 @@ including the PWA manifest.
 - `triggerTask(...)` — run a task now (demos/tests)
 - `backgroundEvents` — live stream of execution events, including events
   replayed from the Service Worker
+- `sendMessageToWorker(payload)` / `workerMessages` — free-form two-way
+  messaging with the background worker (see "Communicating with the
+  background worker")
 
 iOS-only task types (`registerProcessingTask`, `registerHealthResearchTask`,
 `registerContinuedProcessingTask`) throw `UnsupportedError` on web.
@@ -174,7 +220,7 @@ lib/
   execution.dart            # Flutter-free handler registry (used by the bundle)
   worker.dart               # WorkmanagerWebWorker — bundle entrypoint
   src/
-    worker_protocol.dart    # page <-> worker message contract (unit-tested)
+    worker_protocol.dart    # page <-> worker message contract incl. chat messages (unit-tested)
     browser_glue_*.dart     # js_interop bindings (web) + VM-safe stubs
 web/
   workmanager_service_worker.js   # the Service Worker (copy into your app)

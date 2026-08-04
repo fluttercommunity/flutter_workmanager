@@ -18,7 +18,16 @@ abstract final class WorkerProtocol {
   /// Worker -> page: task finished (or failed).
   static const String typeResult = 'result';
 
+  /// Page -> worker: a free-form message for the dispatcher's message
+  /// handler (`WorkmanagerExecution.messageHandler`).
+  static const String typeMessage = 'message';
+
+  /// Worker -> page: a free-form message sent by the dispatcher via
+  /// `WorkmanagerExecution.sendToPage`.
+  static const String typeWorkerMessage = 'workerMessage';
+
   static const String fieldRequestId = 'requestId';
+  static const String fieldPayload = 'payload';
   static const String fieldTaskName = 'taskName';
   static const String fieldInputData = 'inputData';
   static const String fieldResult = 'result';
@@ -69,6 +78,40 @@ abstract final class WorkerProtocol {
       fieldResult: result,
       fieldError: error,
     };
+  }
+
+  /// Builds a page -> worker `message` message.
+  static Map<String, Object?> encodeMessage(Object? payload) {
+    return <String, Object?>{
+      'type': typeMessage,
+      fieldPayload: payload,
+    };
+  }
+
+  /// Parses a page -> worker `message` message. Returns `null` when [raw] is
+  /// not of that type.
+  static Object? decodeMessage(Map<Object?, Object?> raw) {
+    if (raw['type'] != typeMessage) {
+      return null;
+    }
+    return raw[fieldPayload];
+  }
+
+  /// Builds a worker -> page `workerMessage` message.
+  static Map<String, Object?> encodeWorkerMessage(Object? payload) {
+    return <String, Object?>{
+      'type': typeWorkerMessage,
+      fieldPayload: payload,
+    };
+  }
+
+  /// Parses a worker -> page `workerMessage` message. Returns `null` when
+  /// [raw] is not of that type.
+  static Object? decodeWorkerMessage(Map<Object?, Object?> raw) {
+    if (raw['type'] != typeWorkerMessage) {
+      return null;
+    }
+    return raw[fieldPayload];
   }
 
   /// Parses a `result` message. Returns `null` when [raw] is malformed.
