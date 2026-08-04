@@ -1,3 +1,7 @@
+## 0.2.0
+
+ - **FEAT**(web): bidirectional message channel between page and background worker (#708).
+
 ## 0.1.3+1
 
  - Update a dependency to the latest release.

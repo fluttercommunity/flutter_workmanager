@@ -1,3 +1,8 @@
+## 0.10.6
+
+ - **FIX**(android): make FOREGROUND_SERVICE_DATA_SYNC opt-in (#725).
+ - **FEAT**(android): fail loudly when a foreground service permission is missing from the merged manifest.
+
 ## 0.10.5
 
  - **FIX**(android): build with AGP 9 and android.builtInKotlin=false (#722).

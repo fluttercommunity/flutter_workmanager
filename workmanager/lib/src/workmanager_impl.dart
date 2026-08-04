@@ -257,7 +257,11 @@ class Workmanager {
   ///   runs as an Android foreground service for the whole duration of the
   ///   task. This allows work to keep running beyond the usual background
   ///   execution limits, in exchange for a persistent notification. See
-  ///   [ForegroundServiceConfig] for the available options.
+  ///   [ForegroundServiceConfig] for the available options. Note: using the
+  ///   `dataSync` service type requires the
+  ///   `workmanager.enableDataSyncForegroundService=true` gradle property —
+  ///   see the troubleshooting guide:
+  ///   https://docs.page/fluttercommunity/flutter_workmanager/troubleshooting
   Future<void> registerOneOffTask(
     String uniqueName,
     String taskName, {

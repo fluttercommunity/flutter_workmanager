@@ -23,6 +23,34 @@ closed") is approximated as honestly as browsers allow.
 
 Results are replayed into the app's log on the next page load.
 
+## Messaging with the background worker
+
+Beyond task results, the page and the worker can exchange free-form messages
+while the page is open:
+
+```dart
+// Page side — send a message, listen for replies.
+WorkmanagerWeb().workerMessages.listen((payload) {
+  print('worker says: $payload');
+});
+WorkmanagerWeb().sendMessageToWorker({'op': 'watch', 'city': 'cardiff', 'threshold': 5.0});
+```
+
+```dart
+// Dispatcher side (Flutter-free bundle) — receive and reply.
+WorkmanagerExecution.instance.messageHandler = handleWorkerMessage;
+// …inside the handler, send back:
+WorkmanagerExecution.instance.sendToPage?.call(reply);
+```
+
+## Live demo
+
+A self-contained demo (landing page + worker chat + persistent background
+task queue + Service Worker notifications) is hosted at
+<https://fluttercommunity.github.io/flutter_workmanager/> and lives in the
+repo's `example/` folder. The demo's Guide tab walks through the "install the
+PWA, close the tab, trigger periodic sync, reopen" flow step by step.
+
 ## Honest limitations
 
 - **No exact scheduling** — there is no "run at 15:00" on the web.

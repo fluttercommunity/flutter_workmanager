@@ -2,7 +2,7 @@ name: pages-demo
 
 on:
   push:
-    branches: [feat/web-worker-messaging]
+    branches: [main]
   workflow_dispatch:
 
 permissions:

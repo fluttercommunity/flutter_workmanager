@@ -15,6 +15,46 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`workmanager` - `v0.10.7`](#workmanager---v0107)
+ - [`workmanager_android` - `v0.10.6`](#workmanager_android---v0106)
+ - [`workmanager_web` - `v0.2.0`](#workmanager_web---v020)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `workmanager` - `v0.10.7`
+
+---
+
+#### `workmanager` - `v0.10.7`
+
+ - **FEAT**(web): bidirectional message channel between page and background worker (#708).
+ - **FIX**(android): make FOREGROUND_SERVICE_DATA_SYNC opt-in (#725).
+
+#### `workmanager_android` - `v0.10.6`
+
+ - **FIX**(android): make FOREGROUND_SERVICE_DATA_SYNC opt-in (#725).
+ - **FEAT**(android): fail loudly when a foreground service permission is missing from the merged manifest.
+
+#### `workmanager_web` - `v0.2.0`
+
+ - **FEAT**(web): bidirectional message channel between page and background worker (#708).
+
+---
+
+## 2026-08-04
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`workmanager` - `v0.10.6`](#workmanager---v0106)
  - [`workmanager_android` - `v0.10.5`](#workmanager_android---v0105)
 
