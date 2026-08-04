@@ -37,6 +37,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # CanvasKit loads from gstatic (--web-resources-cdn); don't ship the
+          # 26MB local bundle to gh-pages.
+          rm -rf build/web/canvaskit
           cd build/web
           git init -q
           git config user.name "github-actions[bot]"
