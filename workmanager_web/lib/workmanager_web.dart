@@ -123,7 +123,7 @@ class WorkmanagerWeb extends WorkmanagerPlatform {
     WorkmanagerPlatform.instance = WorkmanagerWeb();
   }
 
-  /// Default Service Worker script URL, relative to the app origin.
+  /// Default Service Worker script URL, relative to the app's base path.
   ///
   /// Copy `workmanager_service_worker.js` from this package's `web/` folder
   /// into your app's `web/` folder so it is served from this path.
@@ -136,6 +136,20 @@ class WorkmanagerWeb extends WorkmanagerPlatform {
   /// `dart compile js -O2 web/background.dart -o web/background.dart.js` and
   /// commit the output next to your app's `web/` folder.
   static const String defaultDispatcherUrl = '/background.dart.js';
+
+  /// Resolves a user-supplied or default script URL against the app's base
+  /// URI, so deployments under a subpath (e.g. GitHub Pages project sites)
+  /// resolve the defaults correctly while root deployments keep working.
+  static String _resolveScriptUrl(String? url, String defaultUrl) {
+    if (url != null) {
+      return url;
+    }
+    var base = Uri.base;
+    if (!base.path.endsWith('/')) {
+      base = base.replace(path: '${base.path}/');
+    }
+    return base.resolve(defaultUrl.substring(1)).toString();
+  }
 
   /// Chrome's minimum Periodic Background Sync interval.
   ///
@@ -196,7 +210,8 @@ class WorkmanagerWeb extends WorkmanagerPlatform {
     _initialized = true;
     WorkmanagerExecution.instance.callbackDispatcher = callbackDispatcher;
 
-    final resolvedDispatcherUrl = dispatcherUrl ?? defaultDispatcherUrl;
+    final resolvedDispatcherUrl =
+        _resolveScriptUrl(dispatcherUrl, defaultDispatcherUrl);
     _emit(
       'info',
       'workmanager_web initialized. '
@@ -206,7 +221,7 @@ class WorkmanagerWeb extends WorkmanagerPlatform {
 
     if (BrowserGlue.supportsServiceWorker) {
       await _initializeServiceWorker(
-        serviceWorkerUrl ?? defaultServiceWorkerUrl,
+        _resolveScriptUrl(serviceWorkerUrl, defaultServiceWorkerUrl),
         resolvedDispatcherUrl,
       );
     } else {
