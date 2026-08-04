@@ -3,6 +3,7 @@ package dev.fluttercommunity.workmanager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.os.Build
 import androidx.core.app.NotificationCompat
@@ -75,6 +76,28 @@ private fun createNotificationChannel(
         .createNotificationChannel(channel)
 }
 
+/**
+ * Fails loudly when a foreground-service feature is used without the manifest
+ * declaration it needs (see issue #725). Normal permissions are granted at
+ * install when declared, so a missing declaration surfaces as DENIED here.
+ */
+internal fun requireForegroundServicePermission(
+    context: Context,
+    permission: String,
+    featureDescription: String,
+    fixHint: String,
+) {
+    val granted =
+        context.packageManager.checkPermission(permission, context.packageName) ==
+            PackageManager.PERMISSION_GRANTED
+    if (!granted) {
+        throw IllegalStateException(
+            "workmanager_android: $featureDescription requires the '$permission' permission " +
+                "in the merged manifest, but it is missing. $fixHint",
+        )
+    }
+}
+
 private fun resolveForegroundServiceType(
     context: Context,
     config: ForegroundServiceConfig,
@@ -87,19 +110,13 @@ private fun resolveForegroundServiceType(
             // declares FOREGROUND_SERVICE_DATA_SYNC when the app sets
             // workmanager.enableDataSyncForegroundService=true. Fail loudly
             // here instead of a cryptic SecurityException on Android 14+.
-            val granted =
-                context.packageManager.checkPermission(
-                        android.Manifest.permission.FOREGROUND_SERVICE_DATA_SYNC,
-                        context.packageName,
-                    ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-            if (!granted) {
-                throw IllegalStateException(
-                    "workmanager_android: foregroundServiceType=dataSync is used, but " +
-                        "FOREGROUND_SERVICE_DATA_SYNC is missing from the merged manifest. " +
-                        "Add 'workmanager.enableDataSyncForegroundService=true' to your " +
-                        "gradle.properties (see the workmanager_android README, issue #725).",
-                )
-            }
+            requireForegroundServicePermission(
+                context,
+                android.Manifest.permission.FOREGROUND_SERVICE_DATA_SYNC,
+                "foregroundServiceType=dataSync",
+                "Add 'workmanager.enableDataSyncForegroundService=true' to your " +
+                    "gradle.properties (see the workmanager_android README, issue #725).",
+            )
             ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
         }
     }
