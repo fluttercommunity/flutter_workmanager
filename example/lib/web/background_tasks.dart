@@ -8,6 +8,8 @@
 // the Service Worker, neither of which can run the Flutter engine.
 
 import 'dart:async';
+import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 
 import 'package:workmanager_web/execution.dart';
 
@@ -173,7 +175,38 @@ Future<bool> handleWebBackgroundTask(
     'tempC': tempC,
     'below': below,
   });
+  _notify(
+    below
+        ? '❄️ $city below the alert threshold'
+        : 'Temperature check: ${_capitalize(city)}',
+    '${tempC.toStringAsFixed(1)}°C — '
+        '${below ? 'below the alert threshold' : 'all good'}',
+  );
   // The task result itself stays a plain success/failure bool; the
   // temperature detail is delivered via the chat messages above.
   return true;
+}
+
+/// Shows a browser notification when a background task finishes inside the
+/// Service Worker (i.e. while the page is closed). The dedicated Web Worker
+/// has no `registration`, so there the page shows the notification instead.
+void _notify(String title, String body) {
+  final self = globalContext;
+  if (!self.has('registration')) {
+    return;
+  }
+  final registration = self['registration'] as JSObject;
+  final promise = registration.callMethod(
+    'showNotification'.toJS,
+    title.toJS,
+    <String, Object?>{'body': body, 'tag': 'workmanager-demo'}.jsify(),
+  ) as JSPromise<JSAny?>;
+  promise.toDart.catchError((Object _) => null);
+}
+
+String _capitalize(String input) {
+  if (input.isEmpty) {
+    return input;
+  }
+  return input[0].toUpperCase() + input.substring(1);
 }

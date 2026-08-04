@@ -144,8 +144,10 @@ How it maps to the browser:
   open it is dropped (persistent task results still arrive through
   `backgroundEvents` on the next load).
 
-The example app demonstrates this with a live "worker chat" panel and a
-simulated weather-watch use case.
+The example app demonstrates this with a live "worker chat" panel, a
+simulated weather-watch use case, and browser notifications when a
+background task finishes (including while the tab is closed, via the
+Service Worker).
 
 ## Testing it (what the maintainers verified)
 

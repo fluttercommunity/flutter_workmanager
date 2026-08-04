@@ -2,6 +2,9 @@
 // Use of this source code is governed by a MIT-style license that can be
 // found in the LICENSE file.
 
+import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
+
 import 'package:flutter/material.dart';
 import 'package:workmanager_web/workmanager_web.dart';
 
@@ -97,6 +100,7 @@ class _WebDemoPageState extends State<WebDemoPage> {
   final TextEditingController _messageController = TextEditingController();
   bool _initializing = true;
   bool _periodicRegistered = false;
+  bool _notificationsGranted = false;
 
   @override
   void initState() {
@@ -140,6 +144,13 @@ class _WebDemoPageState extends State<WebDemoPage> {
       return;
     }
     setState(() => _events.insert(0, event));
+    if (event.state == 'executed' && _notificationsGranted) {
+      _showPageNotification(
+        'Workmanager demo',
+        '${event.taskName ?? 'Background task'} finished'
+        '${event.result == null ? '' : ' — result: $event.result'}.',
+      );
+    }
   }
 
   void _onWorkerMessage(Object? payload) {
@@ -185,17 +196,57 @@ class _WebDemoPageState extends State<WebDemoPage> {
     }
   }
 
+  /// Requests the Web Notifications permission (must be called from a user
+  /// gesture in most browsers).
+  Future<void> _requestNotifications() async {
+    final notification = globalContext['Notification'];
+    if (notification == null) {
+      return;
+    }
+    final notificationObj = notification as JSObject;
+    final permission = notificationObj['permission']?.dartify();
+    if (permission == 'granted') {
+      setState(() => _notificationsGranted = true);
+      return;
+    }
+    if (permission == 'denied') {
+      return;
+    }
+    final result = await (notificationObj
+            .callMethod('requestPermission'.toJS) as JSPromise<JSAny?>)
+        .toDart;
+    if (!mounted) {
+      return;
+    }
+    setState(() => _notificationsGranted = result?.dartify() == 'granted');
+  }
+
+  /// Shows a page-side notification (only used when the page is open; the
+  /// Service Worker shows its own when the page is closed — see
+  /// `_notify` in `background_tasks.dart`).
+  void _showPageNotification(String title, String body) {
+    final notification = globalContext['Notification'];
+    if (notification == null) {
+      return;
+    }
+    (notification as JSFunction).callAsConstructor<JSObject>(
+      title.toJS,
+      <String, Object?>{'body': body}.jsify(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Workmanager Web Demo'),
           bottom: const TabBar(
             tabs: <Widget>[
-              Tab(icon: Icon(Icons.chat_bubble_outline), text: 'Worker chat'),
+              Tab(icon: Icon(Icons.chat_bubble_outline), text: 'Chat'),
               Tab(icon: Icon(Icons.receipt_long_outlined), text: 'Task log'),
+              Tab(icon: Icon(Icons.flag_outlined), text: 'Guide'),
             ],
           ),
           actions: <Widget>[
@@ -224,6 +275,7 @@ class _WebDemoPageState extends State<WebDemoPage> {
                 children: <Widget>[
                   _buildChatTab(context),
                   _buildTaskLogTab(context),
+                  _buildGuideTab(context),
                 ],
               ),
             ),
@@ -262,64 +314,26 @@ class _WebDemoPageState extends State<WebDemoPage> {
     );
   }
 
-  Widget _buildHowItWorksCard(BuildContext context) {
-    final theme = Theme.of(context);
-    return Card(
-      elevation: 0,
-      margin: EdgeInsets.zero,
-      color: const Color(0xFFF1F4F8),
-      shape: RoundedRectangleBorder(
-        side: const BorderSide(color: Color(0xFFB0B8BF)),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text('How this demo works', style: theme.textTheme.titleSmall),
-            const SizedBox(height: 8),
-            const _InfoLine(
-              icon: Icons.forum_outlined,
-              iconColor: _infoBlue,
-              text: 'Messaging — you talk to the background worker, which '
-                  'runs on its own thread; it replies via postMessage '
-                  '(this tab).',
-            ),
-            const SizedBox(height: 6),
-            const _InfoLine(
-              icon: Icons.play_circle_outline,
-              iconColor: _okGreen,
-              text: 'Background tasks — registered tasks run off the page: '
-                  '"Run check now" fires one immediately, and one runs every '
-                  '15 min. Results appear in the Task log tab.',
-            ),
-            const SizedBox(height: 6),
-            const _InfoLine(
-              icon: Icons.cloud_outlined,
-              iconColor: _warnOrange,
-              text: 'Service Worker — install the app as a PWA and tasks '
-                  'also run while the page is closed; their results are '
-                  'replayed into the Task log when you reopen the page.',
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Try it: tap "Watch Cardiff" below, type any message, or run '
-              'a check in the Task log tab. All data is simulated — no '
-              'network needed.',
-              style: theme.textTheme.bodySmall,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildChatTab(BuildContext context) {
+    final theme = Theme.of(context);
     return ListView(
       padding: const EdgeInsets.all(12),
       children: <Widget>[
-        _buildHowItWorksCard(context),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF1F4F8),
+            border: Border.all(color: const Color(0xFFB0B8BF)),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(
+            'This tab talks to the background worker, which runs on its own '
+            'thread — it replies via postMessage. Tap a chip below or type '
+            'any message. For the full walkthrough (notifications, closing '
+            'the tab, Service Worker), see the Guide tab.',
+            style: theme.textTheme.bodyMedium,
+          ),
+        ),
         const SizedBox(height: 12),
         Container(
           height: 220,
@@ -386,7 +400,7 @@ class _WebDemoPageState extends State<WebDemoPage> {
                   : () => _sendToWorker(<String, Object?>{
                         'op': 'watch',
                         'city': 'cardiff',
-                        'threshold': 5.0,
+                        'threshold': 10.9,
                       }),
             ),
             ActionChip(
@@ -397,7 +411,7 @@ class _WebDemoPageState extends State<WebDemoPage> {
                   : () => _sendToWorker(<String, Object?>{
                         'op': 'watch',
                         'city': 'taipei',
-                        'threshold': 20.0,
+                        'threshold': 24.0,
                       }),
             ),
             ActionChip(
@@ -429,6 +443,14 @@ class _WebDemoPageState extends State<WebDemoPage> {
                 icon: const Icon(Icons.play_arrow),
                 label: const Text('Run check now'),
               ),
+              if (_notificationsGranted)
+                const _NotificationStatus()
+              else
+                FilledButton.tonalIcon(
+                  onPressed: _requestNotifications,
+                  icon: const Icon(Icons.notifications_active_outlined),
+                  label: const Text('Allow notifications'),
+                ),
               if (InstallGlue.canPrompt)
                 FilledButton.icon(
                   onPressed: InstallGlue.promptInstall,
@@ -469,6 +491,73 @@ class _WebDemoPageState extends State<WebDemoPage> {
                     return _EventTile(event: _events[index]);
                   },
                 ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGuideTab(BuildContext context) {
+    final theme = Theme.of(context);
+    return ListView(
+      padding: const EdgeInsets.all(12),
+      children: <Widget>[
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF1F4F8),
+            border: Border.all(color: const Color(0xFFB0B8BF)),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(
+            'What this demo tests\n\n'
+            '1. Messaging — the page and the background worker talk over '
+            'postMessage (Chat tab).\n'
+            '2. Background tasks — one-off and periodic tasks execute off '
+            'the page (Task log tab).\n'
+            '3. Service Worker — with the app installed, tasks keep running '
+            'even when no tab is open, and notify you when they finish.',
+            style: theme.textTheme.bodyMedium,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text('Try it — step by step', style: theme.textTheme.titleSmall),
+        const SizedBox(height: 8),
+        const _GuideStep(
+          number: '1',
+          title: 'Talk to the worker',
+          body: 'Open the Chat tab and tap "Watch Cardiff", or type any '
+              'message. The worker answers from its own thread.',
+        ),
+        const _GuideStep(
+          number: '2',
+          title: 'Allow notifications',
+          body: 'Tap "Allow notifications" on the Task log tab. Finished '
+              'tasks will then ping you — even with the tab closed.',
+        ),
+        const _GuideStep(
+          number: '3',
+          title: 'Install the app',
+          body: 'Tap "Install app". Installed apps can run background tasks '
+              'without an open tab.',
+        ),
+        const _GuideStep(
+          number: '4',
+          title: 'Close this tab — yes, really',
+          body: 'Close the tab. The Service Worker keeps running your '
+              'registered tasks in the background.',
+        ),
+        const _GuideStep(
+          number: '5',
+          title: 'Trigger a background check',
+          body: 'In DevTools (F12) → Application → Periodic Background '
+              'Sync, select the task and press "Sync now". A notification '
+              'appears even though the tab is closed.',
+        ),
+        const _GuideStep(
+          number: '6',
+          title: 'Reopen the app',
+          body: 'Results from closed-page runs are replayed from IndexedDB '
+              'into the Task log.',
         ),
       ],
     );
@@ -532,28 +621,68 @@ class _WebDemoPageState extends State<WebDemoPage> {
   }
 }
 
-class _InfoLine extends StatelessWidget {
-  const _InfoLine({required this.icon, required this.iconColor, required this.text});
-
-  final IconData icon;
-  final Color iconColor;
-  final String text;
+class _NotificationStatus extends StatelessWidget {
+  const _NotificationStatus();
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.only(top: 2),
-          child: Icon(icon, size: 18, color: iconColor),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(text, style: theme.textTheme.bodyMedium),
-        ),
+        const Icon(Icons.notifications_active, size: 18, color: _okGreen),
+        const SizedBox(width: 6),
+        Text('Notifications on', style: theme.textTheme.bodyMedium),
       ],
+    );
+  }
+}
+
+class _GuideStep extends StatelessWidget {
+  const _GuideStep({required this.number, required this.title, required this.body});
+
+  final String number;
+  final String title;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Container(
+            width: 26,
+            height: 26,
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(
+              color: Color(0xFF0B57D0),
+              shape: BoxShape.circle,
+            ),
+            child: Text(
+              number,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(title, style: theme.textTheme.titleSmall),
+                const SizedBox(height: 2),
+                Text(body, style: theme.textTheme.bodyMedium),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

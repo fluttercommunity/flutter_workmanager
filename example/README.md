@@ -70,7 +70,7 @@ localhost) to get the web-only demo. It demonstrates the experimental
 and no API keys needed:
 
 - **Two-way worker messaging** — the page and the background worker talk
-  over `postMessage` (Worker chat tab). Tap "Watch Cardiff" and the worker
+  over `postMessage` (Chat tab). Tap "Watch Cardiff" and the worker
   streams simulated temperatures, alerting when it drops below the
   threshold; type any text and it echoes back. Page → worker via
   `sendMessageToWorker()`, worker → page via `sendToPage()` (surfaced on
@@ -80,10 +80,13 @@ and no API keys needed:
   the task's CPU loop runs). "Run check now" fires a one-off task; a
   periodic temperature check is registered automatically every 15 minutes.
   Results appear in the Task log tab.
-- **Service Worker execution** — install the PWA, trigger Periodic Background
-  Sync from DevTools, close the page, trigger it again and reopen: the task
-  ran inside the Service Worker (compiled Dart dispatcher) and the result is
-  replayed from IndexedDB into the event log.
+- **Service Worker execution + notifications** — install the PWA, allow
+  notifications, close the tab, trigger Periodic Background Sync from
+  DevTools and reopen: the task ran inside the Service Worker (compiled
+  Dart dispatcher) and showed a notification while the tab was closed; the
+  result is replayed from IndexedDB into the event log on the next load.
+
+The demo has a **Guide tab** that walks through all of this step by step.
 
 The background handler lives in `lib/web/background_tasks.dart` — a
 Flutter-free file compiled with plain `dart compile js` into
