@@ -242,6 +242,21 @@ class WorkManagerWrapper(
 
     fun enqueueOneOffTask(request: dev.fluttercommunity.workmanager.pigeon.OneOffTaskRequest) {
         try {
+            if (request.expedited == true) {
+                // Expedited work runs as a shortService FGS on Android 14+.
+                // The plugin declares the permission by default; if the app
+                // stripped it from the merged manifest, fail loudly now.
+                requireForegroundServicePermission(
+                    context,
+                    // No Manifest.permission constant exists for this one in
+                    // the SDK stubs; the manifest uses the literal string.
+                    "android.permission.FOREGROUND_SERVICE_SHORT_SERVICE",
+                    "expedited work (setExpedited)",
+                    "FOREGROUND_SERVICE_SHORT_SERVICE is declared by the plugin by default; " +
+                        "keep it if you use expedited work (see the workmanager_android " +
+                        "README, issue #725).",
+                )
+            }
             val oneOffTaskRequest = createOneOffWorkRequest(request)
             workManager.enqueueUniqueWork(
                 request.uniqueName,
