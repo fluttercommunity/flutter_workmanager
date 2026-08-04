@@ -66,15 +66,20 @@ For detailed guides and real-world use cases, visit: **[docs.page/fluttercommuni
 
 Run `flutter run -d chrome` (or `flutter build web` and serve over HTTPS or
 localhost) to get the web-only demo. It demonstrates the experimental
-`workmanager_web` package:
+`workmanager_web` package with a simulated **weather watch** — no network
+and no API keys needed:
 
+- **Two-way worker messaging** — the page and the background worker talk
+  over `postMessage` (Worker chat tab). Tap "Watch Cardiff" and the worker
+  streams simulated temperatures, alerting when it drops below the
+  threshold; type any text and it echoes back. Page → worker via
+  `sendMessageToWorker()`, worker → page via `sendToPage()` (surfaced on
+  `WorkmanagerWeb.workerMessages`).
 - **Background tasks in a Web Worker** — register one-off / periodic tasks
   and watch them execute off the main thread (the UI stays responsive while
-  the task's CPU loop runs).
-- **Worker chat** — a two-way `postMessage` conversation between the page and
-  the background worker (suggestions: watch a simulated BTC/ETH price, stop
-  the watch, or run an on-demand background check). Replies arrive on
-  `WorkmanagerWeb.workerMessages`; the same pattern applies to real data.
+  the task's CPU loop runs). "Run check now" fires a one-off task; a
+  periodic temperature check is registered automatically every 15 minutes.
+  Results appear in the Task log tab.
 - **Service Worker execution** — install the PWA, trigger Periodic Background
   Sync from DevTools, close the page, trigger it again and reopen: the task
   ran inside the Service Worker (compiled Dart dispatcher) and the result is
@@ -82,8 +87,8 @@ localhost) to get the web-only demo. It demonstrates the experimental
 
 The background handler lives in `lib/web/background_tasks.dart` — a
 Flutter-free file compiled with plain `dart compile js` into
-`web/background.dart.js` (see `tool/build_web_background.sh`). Prices in the
-demo are simulated so it works offline; swap `_simulatedPrice()` for a real
+`web/background.dart.js` (see `tool/build_web_background.sh`). Temperatures
+are simulated so the demo works offline; swap `_simulatedTemp()` for a real
 fetch to see the same pattern with live data.
 
 ## Key Files

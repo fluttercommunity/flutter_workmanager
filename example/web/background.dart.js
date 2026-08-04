@@ -1776,14 +1776,14 @@ s.a=t.e.a(A.i7())
 s.saM(A.i8())},
 ij(a){var s,r,q,p,o,n=null,m="threshold"
 if(!t.f.b(a))return
-switch(a.j(0,"op")){case"watch":s=A.cl(a.j(0,"ticker"))
+switch(a.j(0,"op")){case"watch":s=A.cl(a.j(0,"city"))
 r=s==null?n:s.toLowerCase()
-if(r==null)r="btc"
+if(r==null)r="cardiff"
 q=A.ck(a.j(0,m))
 if(q==null)q=n
 s=$.bx
 if(s!=null)s.Y()
-A.ab(A.C(["kind","watching","ticker",r,"threshold",q],t.N,t.X))
+A.ab(A.C(["kind","watching","city",r,"threshold",q],t.N,t.X))
 A.eZ(r,q)
 $.bx=A.fT(B.r,new A.dw(r,q))
 break
@@ -1792,28 +1792,28 @@ if(s!=null)s.Y()
 $.bx=null
 A.ab(A.C(["kind","stopped"],t.N,t.X))
 break
-case"check":s=A.cl(a.j(0,"ticker"))
+case"check":s=A.cl(a.j(0,"city"))
 r=s==null?n:s.toLowerCase()
-if(r==null)r="btc"
+if(r==null)r="cardiff"
 q=A.ck(a.j(0,m))
 if(q==null)q=n
 s=t.N
 p=t.X
-A.ab(A.C(["kind","task-start","ticker",r],s,p))
+A.ab(A.C(["kind","task-start","city",r],s,p))
 o=A.e3(r)
-A.ab(A.C(["kind","task-done","ticker",r,"price",o,"below",q!=null&&o<q],s,p))
+A.ab(A.C(["kind","task-done","city",r,"tempC",o,"below",q!=null&&o<q],s,p))
 break
 case"text":A.ab(A.C(["kind","echo","text",a.j(0,"text")],t.N,t.X))
 break}},
 eZ(a,b){var s,r=A.e3(a),q=b!=null&&r<b
-A.ab(A.C(["kind",q?"alert":"tick","ticker",a,"price",r,"threshold",b],t.N,t.X))
+A.ab(A.C(["kind",q?"alert":"tick","city",a,"tempC",r,"threshold",b],t.N,t.X))
 if(q){s=$.bx
 if(s!=null)s.Y()
 $.bx=null}},
 ab(a){var s=$.aG().c
 if(s!=null)s.$1(a)},
 e3(a){var s=B.x.j(0,a)
-if(s==null)s=100
+if(s==null)s=15
 return s*(1+(B.c.al(A.hB(a+":"+B.c.X(Date.now(),3e4)),1000)/1000*0.1-0.05))},
 hB(a){var s,r,q,p
 for(s=new A.aK(a),r=t.V,s=new A.R(s,s.gl(0),r.h("R<f.E>")),r=r.h("f.E"),q=0;s.m();){p=s.d
@@ -1825,17 +1825,17 @@ var $async$e8=A.dp(function(c,d){if(c===1)return A.df(d,r)
 for(;;)switch(s){case 0:j=b==null
 if(!j&&J.P(b.j(0,"fail"),!0)){q=!1
 s=1
-break}p=A.cl(j?null:b.j(0,"ticker"))
+break}p=A.cl(j?null:b.j(0,"city"))
 o=p==null?null:p.toLowerCase()
-if(o==null)o="btc"
+if(o==null)o="cardiff"
 n=A.ck(j?null:b.j(0,"threshold"))
 if(n==null)n=null
 for(m=0,l=0;l<2e6;++l)m+=l
 j=t.N
 p=t.X
-A.ab(A.C(["kind","task-start","ticker",o,"threshold",n],j,p))
+A.ab(A.C(["kind","task-start","city",o,"threshold",n],j,p))
 k=A.e3(o)
-A.ab(A.C(["kind","task-done","ticker",o,"price",k,"below",n!=null&&k<n],j,p))
+A.ab(A.C(["kind","task-done","city",o,"tempC",k,"below",n!=null&&k<n],j,p))
 q=!0
 s=1
 break
@@ -3328,8 +3328,8 @@ B.d=new A.cD()
 B.b=new A.ch()
 B.e=new A.cj()
 B.r=new A.bG(3e6)
-B.y={btc:0,eth:1,ada:2}
-B.x=new A.aM(B.y,[6e4,2500,0.6],A.dv("aM<u,h>"))
+B.y={cardiff:0,taipei:1}
+B.x=new A.aM(B.y,[11,26],A.dv("aM<u,h>"))
 B.z=A.L("dK")
 B.A=A.L("dL")
 B.B=A.L("cs")

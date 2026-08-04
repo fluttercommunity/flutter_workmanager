@@ -118,7 +118,7 @@ messaging over `postMessage`:
 WorkmanagerWeb().workerMessages.listen((payload) {
   print('worker says: $payload');
 });
-WorkmanagerWeb().sendMessageToWorker({'op': 'watch', 'ticker': 'btc'});
+WorkmanagerWeb().sendMessageToWorker({'op': 'watch', 'city': 'cardiff', 'threshold': 5.0});
 ```
 
 ```dart
@@ -145,7 +145,7 @@ How it maps to the browser:
   `backgroundEvents` on the next load).
 
 The example app demonstrates this with a live "worker chat" panel and a
-simulated price-watch use case.
+simulated weather-watch use case.
 
 ## Testing it (what the maintainers verified)
 
