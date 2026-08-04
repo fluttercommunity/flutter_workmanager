@@ -162,12 +162,15 @@ class _WebDemoPageState extends State<WebDemoPage> {
     // task also lands in the chat, including runs that happened while the
     // page was closed (replayed from the IndexedDB queue on load).
     if (event.state == 'executed') {
-      _chat.add(_ChatLine(
-        text: '↩️ background: ${event.taskName ?? 'task'} finished'
-            '${event.result == null ? '' : ' → result: $event.result'}'
-            ' (${event.source})',
-        fromWorker: true,
-      ));
+      _chat.insert(
+        0,
+        _ChatLine(
+          text: '↩️ background: ${event.taskName ?? 'task'} finished'
+              '${event.result == null ? '' : ' → result: $event.result'}'
+              ' (${event.source})',
+          fromWorker: true,
+        ),
+      );
       if (_notificationsGranted) {
         _showPageNotification(
           'Workmanager demo',
@@ -183,8 +186,10 @@ class _WebDemoPageState extends State<WebDemoPage> {
       return;
     }
     setState(() {
-      _chat.add(
-          _ChatLine(text: _formatWorkerMessage(payload), fromWorker: true));
+      _chat.insert(
+        0,
+        _ChatLine(text: _formatWorkerMessage(payload), fromWorker: true),
+      );
     });
   }
 
@@ -192,8 +197,10 @@ class _WebDemoPageState extends State<WebDemoPage> {
   /// `handleWorkerMessage` in `background_tasks.dart`).
   void _sendToWorker(Map<String, Object?> message) {
     setState(() {
-      _chat
-          .add(_ChatLine(text: _formatSentMessage(message), fromWorker: false));
+      _chat.insert(
+        0,
+        _ChatLine(text: _formatSentMessage(message), fromWorker: false),
+      );
     });
     WorkmanagerWeb().sendMessageToWorker(message);
   }
@@ -376,114 +383,118 @@ class _WebDemoPageState extends State<WebDemoPage> {
 
   Widget _buildChatTab(BuildContext context) {
     final theme = Theme.of(context);
-    return ListView(
+    return Padding(
       padding: const EdgeInsets.all(12),
-      children: <Widget>[
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF1F4F8),
-            border: Border.all(color: const Color(0xFFB0B8BF)),
-            borderRadius: BorderRadius.circular(10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1F4F8),
+              border: Border.all(color: const Color(0xFFB0B8BF)),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              'This tab talks to the background worker, which runs on its own '
+              'thread — it replies via postMessage. Tap a chip below or type '
+              'any message. For the full walkthrough (notifications, closing '
+              'the tab, Service Worker), see the Guide tab.',
+              style: theme.textTheme.bodyMedium,
+            ),
           ),
-          child: Text(
-            'This tab talks to the background worker, which runs on its own '
-            'thread — it replies via postMessage. Tap a chip below or type '
-            'any message. For the full walkthrough (notifications, closing '
-            'the tab, Service Worker), see the Guide tab.',
-            style: theme.textTheme.bodyMedium,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Container(
-          height: 220,
-          decoration: BoxDecoration(
-            border: Border.all(color: const Color(0xFFB0B8BF)),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: _chat.isEmpty
-              ? const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text(
-                      'Messages appear here — yours and the worker\'s '
-                      'replies.\n\nTap "Watch Cardiff" to see a live '
-                      'conversation, or just type anything.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 14, height: 1.4),
+          const SizedBox(height: 12),
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color(0xFFB0B8BF)),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: _chat.isEmpty
+                  ? const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Text(
+                          'Messages appear here — yours and the worker\'s '
+                          'replies.\n\nTap "Watch Cardiff" to see a live '
+                          'conversation, or just type anything.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 14, height: 1.4),
+                        ),
+                      ),
+                    )
+                  : ListView.builder(
+                      reverse: true,
+                      padding: const EdgeInsets.all(8),
+                      itemCount: _chat.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return _ChatBubble(line: _chat[index]);
+                      },
                     ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: TextField(
+                  controller: _messageController,
+                  onSubmitted: _sendFreeText,
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    hintText: 'Message the worker…',
+                    border: OutlineInputBorder(),
                   ),
-                )
-              : ListView.builder(
-                  reverse: true,
-                  padding: const EdgeInsets.all(8),
-                  itemCount: _chat.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return _ChatBubble(line: _chat[index]);
-                  },
-                ),
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: <Widget>[
-            Expanded(
-              child: TextField(
-                controller: _messageController,
-                onSubmitted: _sendFreeText,
-                decoration: const InputDecoration(
-                  isDense: true,
-                  hintText: 'Message the worker…',
-                  border: OutlineInputBorder(),
                 ),
               ),
-            ),
-            const SizedBox(width: 8),
-            IconButton.filled(
-              onPressed: _initializing
-                  ? null
-                  : () => _sendFreeText(_messageController.text),
-              icon: const Icon(Icons.send),
-              tooltip: 'Send to worker',
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: <Widget>[
-            ActionChip(
-              avatar: const Icon(Icons.thermostat, size: 18),
-              label: const Text('Watch Cardiff'),
-              onPressed: _initializing
-                  ? null
-                  : () => _sendToWorker(<String, Object?>{
-                        'op': 'watch',
-                        'city': 'cardiff',
-                        'threshold': 10.9,
-                      }),
-            ),
-            ActionChip(
-              avatar: const Icon(Icons.thermostat, size: 18),
-              label: const Text('Watch Taipei'),
-              onPressed: _initializing
-                  ? null
-                  : () => _sendToWorker(<String, Object?>{
-                        'op': 'watch',
-                        'city': 'taipei',
-                        'threshold': 24.0,
-                      }),
-            ),
-            ActionChip(
-              avatar: const Icon(Icons.stop, size: 18),
-              label: const Text('Stop'),
-              onPressed: _initializing
-                  ? null
-                  : () => _sendToWorker(<String, Object?>{'op': 'stop'}),
-            ),
-          ],
-        ),
-      ],
+              const SizedBox(width: 8),
+              IconButton.filled(
+                onPressed: _initializing
+                    ? null
+                    : () => _sendFreeText(_messageController.text),
+                icon: const Icon(Icons.send),
+                tooltip: 'Send to worker',
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: <Widget>[
+              ActionChip(
+                avatar: const Icon(Icons.thermostat, size: 18),
+                label: const Text('Watch Cardiff'),
+                onPressed: _initializing
+                    ? null
+                    : () => _sendToWorker(<String, Object?>{
+                          'op': 'watch',
+                          'city': 'cardiff',
+                          'threshold': 10.9,
+                        }),
+              ),
+              ActionChip(
+                avatar: const Icon(Icons.thermostat, size: 18),
+                label: const Text('Watch Taipei'),
+                onPressed: _initializing
+                    ? null
+                    : () => _sendToWorker(<String, Object?>{
+                          'op': 'watch',
+                          'city': 'taipei',
+                          'threshold': 24.0,
+                        }),
+              ),
+              ActionChip(
+                avatar: const Icon(Icons.stop, size: 18),
+                label: const Text('Stop'),
+                onPressed: _initializing
+                    ? null
+                    : () => _sendToWorker(<String, Object?>{'op': 'stop'}),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
