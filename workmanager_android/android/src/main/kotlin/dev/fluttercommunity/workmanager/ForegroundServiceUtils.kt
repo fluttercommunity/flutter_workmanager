@@ -46,7 +46,7 @@ fun createForegroundInfo(
         ForegroundInfo(
             config.notificationId?.toInt() ?: DEFAULT_NOTIFICATION_ID,
             notification,
-            resolveForegroundServiceType(config),
+            resolveForegroundServiceType(context, config),
         )
     } else {
         ForegroundInfo(config.notificationId?.toInt() ?: DEFAULT_NOTIFICATION_ID, notification)
@@ -75,12 +75,33 @@ private fun createNotificationChannel(
         .createNotificationChannel(channel)
 }
 
-private fun resolveForegroundServiceType(config: ForegroundServiceConfig): Int =
+private fun resolveForegroundServiceType(
+    context: Context,
+    config: ForegroundServiceConfig,
+): Int =
     when (config.foregroundServiceType) {
         ForegroundServiceType.SHORT_SERVICE ->
             ServiceInfo.FOREGROUND_SERVICE_TYPE_SHORT_SERVICE
-        else ->
+        else -> {
+            // dataSync is opt-in (see README, issue #725): the manifest only
+            // declares FOREGROUND_SERVICE_DATA_SYNC when the app sets
+            // workmanager.enableDataSyncForegroundService=true. Fail loudly
+            // here instead of a cryptic SecurityException on Android 14+.
+            val granted =
+                context.packageManager.checkPermission(
+                        android.Manifest.permission.FOREGROUND_SERVICE_DATA_SYNC,
+                        context.packageName,
+                    ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            if (!granted) {
+                throw IllegalStateException(
+                    "workmanager_android: foregroundServiceType=dataSync is used, but " +
+                        "FOREGROUND_SERVICE_DATA_SYNC is missing from the merged manifest. " +
+                        "Add 'workmanager.enableDataSyncForegroundService=true' to your " +
+                        "gradle.properties (see the workmanager_android README, issue #725).",
+                )
+            }
             ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+        }
     }
 
 /**
