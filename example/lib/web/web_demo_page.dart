@@ -403,7 +403,18 @@ class _WebDemoPageState extends State<WebDemoPage> {
               style: theme.textTheme.bodyMedium,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: _appInstalled
+                ? const _InstalledStatus()
+                : FilledButton.icon(
+                    onPressed: _installApp,
+                    icon: const Icon(Icons.download),
+                    label: const Text('Install the app'),
+                  ),
+          ),
+          const SizedBox(height: 10),
           Expanded(
             child: Container(
               decoration: BoxDecoration(
