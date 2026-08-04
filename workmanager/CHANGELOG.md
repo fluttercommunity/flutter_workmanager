@@ -1,3 +1,7 @@
+## 0.10.6
+
+ - **FIX**(android): build with AGP 9 and android.builtInKotlin=false (#722).
+
 ## 0.10.5
 
  - **FEAT**(android): progress updates for long-running tasks (#720).
