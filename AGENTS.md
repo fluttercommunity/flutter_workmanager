@@ -3,6 +3,8 @@
 Operational notes for maintaining this monorepo. Keep this file short — the durable gotchas only.
 Code & test conventions (previously in `CLAUDE.md`) are consolidated in the last section.
 
+**All changes to main go through PRs** — no direct pushes to main, including docs and release commits (owner rule, 2026-08-04).
+
 ## Tooling
 - melos (independent versioning) drives version bumps and publishing. Conventional commit types drive release bumps: `feat` → minor, `fix` → patch. PR titles matter — they become CHANGELOG entries.
 
@@ -15,7 +17,7 @@ Code & test conventions (previously in `CLAUDE.md`) are consolidated in the last
 - When building the plugin through the example app, the FGP relocates the plugin's build dir: unit test results land in `example/build/workmanager_android/`, **not** `workmanager_android/android/build/`. `./gradlew :workmanager_android:testDebugUnitTest` currently runs 50 tests.
 
 ## Release process
-- Release commits go directly on main: `chore(release): publish packages` followed by a ` - pkg@version` list.
+- Release bumps go through a PR like everything else: branch with the pubspec + CHANGELOG bumps → PR → merge. Then tag the **merged** commit (squash merges change the SHA), push tags, publish, create the GitHub Release.
 - Tags: per-package (`workmanager_android-v0.10.5`, `workmanager-v0.10.6`, …) plus root `v0.x.y` (= workmanager version).
 - `melos version` is interactive and proposes versions from commit analysis; it bumps dependency-only packages with build metadata (`0.1.1` → `0.1.1+1`). For the root package prefer a clean patch bump: edit pubspecs + CHANGELOGs manually, mirroring melos's exact format (root CHANGELOG date section with anchors, per-package CHANGELOG entries, dependent constraint bumps). This is the one sanctioned exception to the repo's "don't hand-edit CHANGELOGs" rule.
 - **main is force-push protected** (server-side hook). Never rewrite main history; bump manually or accept melos's proposal.
