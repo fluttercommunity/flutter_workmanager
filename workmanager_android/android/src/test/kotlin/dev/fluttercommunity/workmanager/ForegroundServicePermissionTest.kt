@@ -1,7 +1,6 @@
 package dev.fluttercommunity.workmanager
 
 import android.content.pm.ServiceInfo
-import org.robolectric.RuntimeEnvironment
 import dev.fluttercommunity.workmanager.pigeon.ForegroundServiceConfig
 import dev.fluttercommunity.workmanager.pigeon.ForegroundServiceType
 import org.junit.Assert.assertEquals
@@ -9,6 +8,7 @@ import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
