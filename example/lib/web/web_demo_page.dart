@@ -650,22 +650,6 @@ class _WebDemoPageState extends State<WebDemoPage> {
               'chat shows a "background: …" line for each run, so the '
               'foreground always reflects what the background did.',
         ),
-        const SizedBox(height: 4),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFF3D6),
-            border: Border.all(color: const Color(0xFFB06000)),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            'Developer note: when running via `flutter run -d chrome`, use a '
-            'full reload after code changes — hot restart is buggy on web '
-            '(can throw "disposed EngineFlutterView" errors; a page refresh '
-            'fixes it).',
-            style: theme.textTheme.bodySmall,
-          ),
-        ),
       ],
     );
   }
