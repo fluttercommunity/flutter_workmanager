@@ -21,6 +21,7 @@ Code & test conventions (previously in `CLAUDE.md`) are consolidated in the last
 - **main is force-push protected** (server-side hook). Never rewrite main history; bump manually or accept melos's proposal.
 - Ship fixes as patch bumps: `^0.10.x` consumers only get patch releases automatically via `flutter pub upgrade`.
 - Publish: `dart pub publish --dry-run` per package, then `melos publish --no-dry-run` (interactive — answer `y`). Verify afterwards: `https://pub.dev/api/packages/<name>`.
+- **pub.dev publish ≠ GitHub Release.** After publishing + pushing tags, create the GitHub Release from the root tag — users watch the Releases tab, and "Latest" on GitHub tracks it (missed this for v0.10.6, v0.10.5 had one). Mirror the previous release's notes format: `gh release create v0.x.y --title "workmanager v0.x.y — <summary>" --notes "..."`.
 - Known dry-run noise (pre-existing, not release blockers): 1 warning/1 hint on workmanager_android, 1 warning/4 hints on workmanager. The `pubspec_overrides.yaml` warning during publish is a melos workspace artifact, harmless.
 
 ## GitHub ops
