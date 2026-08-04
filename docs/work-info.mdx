@@ -33,8 +33,8 @@ if (info == null) {
 
 The state mapping is deliberately small: it is the intersection of what
 Android WorkManager and the plugin's own Apple-side state can truthfully
-report. There is no `runAttemptCount` (the maintainer explicitly declined to
-surface it) and no streaming/observation API — this is a one-shot query.
+report. There is deliberately no `runAttemptCount` and no
+streaming/observation API — this is a one-shot query.
 
 ## Per-platform truthfulness
 

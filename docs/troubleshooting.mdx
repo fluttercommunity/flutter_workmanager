@@ -165,6 +165,29 @@ Make sure the basics are right before debugging further:
 - Prefer processing tasks for work that needs minutes; one-off and refresh
   tasks get only seconds of budget.
 
+## Android: Play Console asks for FOREGROUND_SERVICE_DATA_SYNC
+
+If Play Console demands a **foreground-service declaration** and a
+demonstration video for `FOREGROUND_SERVICE_DATA_SYNC` (or the type
+`dataSync`), even though your app only runs plain periodic background tasks:
+
+- The plugin only declares `FOREGROUND_SERVICE_DATA_SYNC` when you opt in.
+  It is a Play Console "special type" with a declaration + video requirement,
+  so the default merged manifest deliberately leaves it out.
+- **You did not opt in** → the merged manifest has no `dataSync` permission.
+  Nothing to do; if Play still lists it, check your own manifest or other
+  dependencies.
+- **You did opt in** → you set `workmanager.enableDataSyncForegroundService=true`
+  in `gradle.properties` (or `-P` on the CLI) to run long-running workers
+  with the `dataSync` foreground service type. Play then asks for the
+  declaration + video — that is expected; complete them.
+
+If your worker requests `foregroundServiceType=dataSync` without the opt-in
+property, the plugin **throws at registration** with instructions (instead of
+failing silently later). The `shortService` type used by expedited work is
+always declared and needs no Play declaration. See
+[issue #725](https://github.com/fluttercommunity/flutter_workmanager/issues/725).
+
 ## Reporting a genuine bug
 
 If you believe the plugin itself is broken, the issue must include:
