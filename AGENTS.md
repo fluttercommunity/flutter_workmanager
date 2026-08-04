@@ -1,7 +1,7 @@
 # AGENTS.md — Maintainer & Agent Notes
 
 Operational notes for maintaining this monorepo. Keep this file short — the durable gotchas only.
-Code quality, pre-commit checks, codegen and changelog-writing rules live in `CLAUDE.md`; follow both.
+Code & test conventions (previously in `CLAUDE.md`) are consolidated in the last section.
 
 ## Tooling
 - melos (independent versioning) drives version bumps and publishing. Conventional commit types drive release bumps: `feat` → minor, `fix` → patch. PR titles matter — they become CHANGELOG entries.
@@ -17,7 +17,7 @@ Code quality, pre-commit checks, codegen and changelog-writing rules live in `CL
 ## Release process
 - Release commits go directly on main: `chore(release): publish packages` followed by a ` - pkg@version` list.
 - Tags: per-package (`workmanager_android-v0.10.5`, `workmanager-v0.10.6`, …) plus root `v0.x.y` (= workmanager version).
-- `melos version` is interactive and proposes versions from commit analysis; it bumps dependency-only packages with build metadata (`0.1.1` → `0.1.1+1`). For the root package prefer a clean patch bump: edit pubspecs + CHANGELOGs manually, mirroring melos's exact format (root CHANGELOG date section with anchors, per-package CHANGELOG entries, dependent constraint bumps). This is the one sanctioned exception to CLAUDE.md's "don't hand-edit CHANGELOGs" rule.
+- `melos version` is interactive and proposes versions from commit analysis; it bumps dependency-only packages with build metadata (`0.1.1` → `0.1.1+1`). For the root package prefer a clean patch bump: edit pubspecs + CHANGELOGs manually, mirroring melos's exact format (root CHANGELOG date section with anchors, per-package CHANGELOG entries, dependent constraint bumps). This is the one sanctioned exception to the repo's "don't hand-edit CHANGELOGs" rule.
 - **main is force-push protected** (server-side hook). Never rewrite main history; bump manually or accept melos's proposal.
 - Ship fixes as patch bumps: `^0.10.x` consumers only get patch releases automatically via `flutter pub upgrade`.
 - Publish: `dart pub publish --dry-run` per package, then `melos publish --no-dry-run` (interactive — answer `y`). Verify afterwards: `https://pub.dev/api/packages/<name>`.
@@ -28,3 +28,11 @@ Code quality, pre-commit checks, codegen and changelog-writing rules live in `CL
 - Contributor PRs: check `maintainer_can_modify` (`gh api repos/.../pulls/N`). If true, you can push fixup commits to their branch.
 - When a contributor's PR is equivalent to yours: adopt theirs (give credit), close yours as superseded.
 - CI: `gh pr checks N`; merge with `gh pr merge N --squash --delete-branch`. Validate PR title is a required check — keep titles conventional.
+
+## Code & test conventions
+- Pre-commit, from repo root: `dart analyze`, `ktlint -F .`, `swiftlint --fix`, `dart format` (non-generated files), `flutter test`, `cd example/android && ./gradlew :workmanager_android:test`, `cd example && flutter build apk --debug` + `flutter build ios --debug --no-codesign`.
+- Codegen via melos (`melos run generate:pigeon`, `melos run generate:dart`); never hand-edit `*.g.dart`/generated mocks — regenerate from source.
+- Tests must exercise real logic — no `assert(true)`/compile-only tests; cover edge cases. `BackgroundWorker` is not unit-testable (Flutter engine deps) — integration tests only.
+- Changelog entries are user-focused: end-user impact, not internal/build details (e.g. "fixed periodic tasks not respecting frequency changes", not "fixed Kotlin null-safety with androidx.work 2.10.2").
+- PR descriptions: short Summary + `Fixes #N`; Breaking Changes section (before/after) only when applicable.
+- docs.page: use `<TabItem>` (always with `label` + `value` props), not `<Tab>`.
