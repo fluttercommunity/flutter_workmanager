@@ -1,3 +1,8 @@
+## 0.10.7
+
+ - **FEAT**(web): bidirectional message channel between page and background worker (#708).
+ - **FIX**(android): make FOREGROUND_SERVICE_DATA_SYNC opt-in (#725).
+
 ## 0.10.6
 
  - **FIX**(android): build with AGP 9 and android.builtInKotlin=false (#722).
