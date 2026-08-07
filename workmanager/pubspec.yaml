@@ -18,6 +18,8 @@ dependencies:
   workmanager_apple: ^0.9.10
   workmanager_web: ^0.2.0
   workmanager_linux: ^0.1.1
+  workmanager_windows:
+    path: ../workmanager_windows
 
 dev_dependencies:
   test: ^1.25.15

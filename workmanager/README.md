@@ -71,7 +71,7 @@ This plugin uses a federated architecture with platform-specific implementations
 - **workmanager_apple**: iOS implementation using BGTaskScheduler + macOS implementation using NSBackgroundActivityScheduler
 - **workmanager_web**: Web implementation using Service Worker + Web Worker (experimental)
 - **workmanager_linux**: Linux implementation using systemd user units (experimental)
-
+- **workmanager_windows**: Windows implementation using the Task Scheduler (experimental, see [docs](../docs/windows.mdx))
 ## 🐛 Support & Issues
 
 - **Documentation**: [docs.page/fluttercommunity/flutter_workmanager](https://docs.page/fluttercommunity/flutter_workmanager)
