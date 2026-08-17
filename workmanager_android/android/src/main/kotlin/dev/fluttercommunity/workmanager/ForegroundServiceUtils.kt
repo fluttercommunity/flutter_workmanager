@@ -78,19 +78,28 @@ private fun createNotificationChannel(
 
 /**
  * Fails loudly when a foreground-service feature is used without the manifest
- * declaration it needs (see issue #725). Normal permissions are granted at
- * install when declared, so a missing declaration surfaces as DENIED here.
+ * declaration it needs (see issues #725 and #731).
+ *
+ * The merged manifest declaration is the contract to check: on Android 16+ a
+ * foreground-service permission can be revoked or denied at runtime even when
+ * it is declared, so [PackageManager.checkPermission] (which reports the
+ * runtime grant state) false-positives and rejects valid declarations. See
+ * #731.
  */
+@Suppress("DEPRECATION") // GET_PERMISSIONS is deprecated on API 33+; the PackageInfoFlags overload needs API 33 at runtime (minSdk 23).
 internal fun requireForegroundServicePermission(
     context: Context,
     permission: String,
     featureDescription: String,
     fixHint: String,
 ) {
-    val granted =
-        context.packageManager.checkPermission(permission, context.packageName) ==
-            PackageManager.PERMISSION_GRANTED
-    if (!granted) {
+    val declared =
+        context
+            .packageManager
+            .getPackageInfo(context.packageName, PackageManager.GET_PERMISSIONS)
+            .requestedPermissions
+            ?.contains(permission) == true
+    if (!declared) {
         throw IllegalStateException(
             "workmanager_android: $featureDescription requires the '$permission' permission " +
                 "in the merged manifest, but it is missing. $fixHint",
