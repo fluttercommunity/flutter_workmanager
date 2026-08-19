@@ -1,3 +1,7 @@
+## 0.10.7
+
+ - **FIX**(android): expedited work no longer fails when Android 16 revokes a foreground-service permission at runtime (#731).
+
 ## 0.10.6
 
  - **FIX**(android): make FOREGROUND_SERVICE_DATA_SYNC opt-in (#725).

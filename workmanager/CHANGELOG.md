@@ -1,3 +1,7 @@
+## 0.10.8
+
+ - **FIX**(android): expedited work no longer fails when Android 16 revokes a foreground-service permission at runtime (#731).
+
 ## 0.10.7
 
  - **FEAT**(web): bidirectional message channel between page and background worker (#708).

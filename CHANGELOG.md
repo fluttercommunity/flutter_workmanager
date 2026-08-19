@@ -3,6 +3,39 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-08-19
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`workmanager` - `v0.10.8`](#workmanager---v0108)
+ - [`workmanager_android` - `v0.10.7`](#workmanager_android---v0107)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `workmanager` - `v0.10.8`
+
+---
+
+#### `workmanager` - `v0.10.8`
+
+ - **FIX**(android): expedited work no longer fails when Android 16 revokes a foreground-service permission at runtime (#731).
+
+#### `workmanager_android` - `v0.10.7`
+
+ - **FIX**(android): expedited work no longer fails when Android 16 revokes a foreground-service permission at runtime (#731).
+
+---
+
 ## 2026-08-04
 
 ### Changes
