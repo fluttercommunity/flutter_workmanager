@@ -34,6 +34,17 @@ class BackgroundWorker(
     companion object {
         const val PAYLOAD_KEY = "dev.fluttercommunity.workmanager.INPUT_DATA"
         const val DART_TASK_KEY = "dev.fluttercommunity.workmanager.DART_TASK"
+
+        /**
+         * How long the Dart engine may take to acknowledge the background
+         * channel initialization after the worker started. A cold engine
+         * start takes well under a second on release builds and a few seconds
+         * on debug builds, so this is generous; its purpose is to turn a dead
+         * Dart engine (failed isolate start, lost acknowledgement) into a
+         * visible worker failure instead of a task stuck in the RUNNING state
+         * forever (see #732).
+         */
+        const val DART_INITIALIZATION_TIMEOUT_MILLIS = 30_000L
     }
 
     private val payload
@@ -52,7 +63,20 @@ class BackgroundWorker(
 
     private val runAttemptCount = workerParams.runAttemptCount
     private val randomThreadIdentifier = SecureRandom().nextInt()
+
+    /**
+     * All interaction with the Flutter engine (channel sends included) must
+     * happen on the main thread: engine methods are annotated `@UiThread` and
+     * throw on any other thread. WorkManager may invoke [onStopped] from one
+     * of its executor threads, so this handler is used to hop back to the
+     * main looper.
+     */
+    private val mainHandler = Handler(Looper.getMainLooper())
+
+    @Volatile
     private var engine: FlutterEngine? = null
+
+    private var initializationWatchdog: DartInitializationWatchdog? = null
 
     /**
      * The plugin instance attached to this worker's engine. The Dart task
@@ -152,9 +176,34 @@ class BackgroundWorker(
                     ),
                 )
 
+                // The worker's result future is only resolved once the Dart
+                // side acknowledges the initialized background channel. If
+                // the engine fails to start the Dart isolate, or the
+                // acknowledgement is lost, the worker would otherwise stay
+                // in the RUNNING state forever (see #732). Arm a watchdog
+                // that fails the worker when the acknowledgement does not
+                // arrive in time; it is disarmed on acknowledgement and on
+                // stop.
+                val watchdog =
+                    DartInitializationWatchdog(
+                        handler = mainHandler,
+                        timeoutMillis = DART_INITIALIZATION_TIMEOUT_MILLIS,
+                    ) {
+                        if (!isStopped) {
+                            stopEngine(
+                                Result.failure(),
+                                "Dart engine did not initialize the background channel " +
+                                    "within $DART_INITIALIZATION_TIMEOUT_MILLIS ms",
+                            )
+                        }
+                    }
+                initializationWatchdog = watchdog
+                watchdog.arm()
+
                 // Initialize the background channel
                 flutterApi.backgroundChannelInitialized {
                     // Channel is initialized, now execute the task
+                    watchdog.disarm()
                     executeBackgroundTask()
                 }
             }
@@ -201,28 +250,37 @@ class BackgroundWorker(
         val localDartTask = dartTask
         val stopReason = workerStopReason()
 
-        // Notify the running Dart callback that WorkManager stopped the worker
-        // (cancelled, timed out, preempted, ...) so it can persist state or
-        // release resources before the engine is torn down.
-        if (localDartTask != null && ::flutterApi.isInitialized && engine != null) {
-            try {
-                flutterApi.onTaskStopped(localDartTask, stopReason.toLong()) {
-                    stopEngine(null, stopReason = stopReason)
+        // WorkManager invokes onStopped() from one of its executor threads
+        // (e.g. "WM.task-N"), and the Flutter engine only allows @UiThread
+        // methods (channel sends included) on the main thread — calling the
+        // Pigeon API directly here throws IllegalStateException on modern
+        // engines (see #732). Notify the Dart callback that WorkManager
+        // stopped the worker (cancelled, timed out, preempted, ...) so it can
+        // persist state or release resources before the engine is torn down;
+        // onStopped() itself returns immediately.
+        mainHandler.post {
+            initializationWatchdog?.disarm()
+
+            if (localDartTask != null && ::flutterApi.isInitialized && engine != null) {
+                try {
+                    flutterApi.onTaskStopped(localDartTask, stopReason.toLong()) {
+                        stopEngine(null, stopReason = stopReason)
+                    }
+                    return@post
+                } catch (e: Exception) {
+                    WorkmanagerDebug.onExceptionEncountered(
+                        applicationContext,
+                        TaskDebugInfo(
+                            taskName = localDartTask,
+                            inputData = payload,
+                            startTime = startTime,
+                        ),
+                        e,
+                    )
                 }
-                return
-            } catch (e: Exception) {
-                WorkmanagerDebug.onExceptionEncountered(
-                    applicationContext,
-                    TaskDebugInfo(
-                        taskName = localDartTask,
-                        inputData = payload,
-                        startTime = startTime,
-                    ),
-                    e,
-                )
             }
+            stopEngine(null, stopReason = stopReason)
         }
-        stopEngine(null, stopReason = stopReason)
     }
 
     /**
@@ -304,10 +362,15 @@ class BackgroundWorker(
         boundPlugin?.unbindWorker(this)
         boundPlugin = null
 
-        // If stopEngine is called from `onStopped`, it may not be from the main thread.
-        Handler(Looper.getMainLooper()).post {
-            engine?.destroy()
-            engine = null
+        // Teardown is idempotent: engine is cleared synchronously (stopEngine
+        // may be invoked from the watchdog, the task result callback and the
+        // stop path) and destroyed on the main thread.
+        val engineToDestroy = engine
+        engine = null
+        if (engineToDestroy != null) {
+            mainHandler.post {
+                engineToDestroy.destroy()
+            }
         }
     }
 
