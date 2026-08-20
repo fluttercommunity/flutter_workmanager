@@ -26,6 +26,7 @@ runs:
             - 'docs/**'
             - 'README.md'
             - '**/*.md'
+            - '!**/CHANGELOG.md'
           android:
             - 'workmanager_android/**'
             - 'example/android/**'
@@ -36,6 +37,8 @@ runs:
             - 'pubspec.yaml'
             - '.github/workflows/**'
             - '.github/actions/**'
+            - '!**/CHANGELOG.md'
+            - '!**/pubspec.yaml'
           ios:
             - 'workmanager_apple/**'
             - 'example/ios/**'
@@ -46,3 +49,5 @@ runs:
             - 'pubspec.yaml'
             - '.github/workflows/**'
             - '.github/actions/**'
+            - '!**/CHANGELOG.md'
+            - '!**/pubspec.yaml'
