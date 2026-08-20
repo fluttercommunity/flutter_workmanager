@@ -3,6 +3,39 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-08-20
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`workmanager` - `v0.10.9`](#workmanager---v0109)
+ - [`workmanager_android` - `v0.10.8`](#workmanager_android---v0108)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `workmanager` - `v0.10.9`
+
+---
+
+#### `workmanager` - `v0.10.9`
+
+ - **FIX**(android): one-off work no longer stays RUNNING forever on Android 16 when the app is backgrounded during task execution (#732).
+
+#### `workmanager_android` - `v0.10.8`
+
+ - **FIX**(android): one-off work no longer stays RUNNING forever on Android 16 when the app is backgrounded during task execution (#732).
+
+---
+
 ## 2026-08-19
 
 ### Changes

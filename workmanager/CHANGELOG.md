@@ -1,3 +1,7 @@
+## 0.10.9
+
+ - **FIX**(android): one-off work no longer stays RUNNING forever on Android 16 when the app is backgrounded during task execution (#732).
+
 ## 0.10.8
 
  - **FIX**(android): expedited work no longer fails when Android 16 revokes a foreground-service permission at runtime (#731).
