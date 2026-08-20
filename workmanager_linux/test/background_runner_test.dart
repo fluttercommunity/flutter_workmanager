@@ -7,6 +7,7 @@ import 'dart:io';
 import 'package:test/test.dart';
 import 'package:workmanager_linux/execution.dart';
 import 'package:workmanager_linux/src/background_runner.dart';
+import 'package:workmanager_platform_interface/workmanager_platform_interface.dart';
 
 void main() {
   group('BackgroundTaskInvocation.tryParse', () {
@@ -147,5 +148,74 @@ void main() {
       );
       expect(result, isFalse);
     });
+
+    test('reports a throwing handler through the debug handler', () async {
+      final statuses = <(TaskDebugInfo, TaskStatus, TaskResult?)>[];
+      final exceptions = <(TaskDebugInfo?, Object, StackTrace?)>[];
+      WorkmanagerDebug.setCurrent(_RecordingHandler(statuses, exceptions));
+      addTearDown(WorkmanagerDebug.reset);
+
+      WorkmanagerExecution.instance.taskHandler = (taskName, inputData) async {
+        throw StateError('boom');
+      };
+      addTearDown(() => WorkmanagerExecution.instance.taskHandler = null);
+
+      final result = await BackgroundTaskRunner().run(
+        const BackgroundTaskInvocation(taskName: 'sync'),
+        () {},
+      );
+
+      expect(result, isFalse);
+      expect(
+          statuses.map((e) => e.$2), [TaskStatus.started, TaskStatus.failed]);
+      expect(statuses[1].$3?.error, contains('boom'));
+      expect(exceptions, hasLength(1));
+      expect(exceptions[0].$1?.taskName, 'sync');
+      expect(exceptions[0].$2, isA<StateError>());
+    });
+
+    test('reports a throwing dispatcher through the debug handler', () async {
+      final statuses = <(TaskDebugInfo, TaskStatus, TaskResult?)>[];
+      final exceptions = <(TaskDebugInfo?, Object, StackTrace?)>[];
+      WorkmanagerDebug.setCurrent(_RecordingHandler(statuses, exceptions));
+      addTearDown(WorkmanagerDebug.reset);
+
+      final result = await BackgroundTaskRunner().run(
+        const BackgroundTaskInvocation(taskName: 'sync'),
+        () => throw StateError('bad dispatcher'),
+      );
+
+      expect(result, isFalse);
+      expect(
+          statuses.map((e) => e.$2), [TaskStatus.started, TaskStatus.failed]);
+      expect(exceptions, hasLength(1));
+      expect(exceptions[0].$1?.taskName, 'sync');
+      expect(exceptions[0].$2, isA<StateError>());
+    });
   });
+}
+
+class _RecordingHandler extends WorkmanagerDebug {
+  _RecordingHandler(this.statuses, this.exceptions);
+
+  final List<(TaskDebugInfo, TaskStatus, TaskResult?)> statuses;
+  final List<(TaskDebugInfo?, Object, StackTrace?)> exceptions;
+
+  @override
+  void onTaskStatusUpdate(
+    TaskDebugInfo taskInfo,
+    TaskStatus status,
+    TaskResult? result,
+  ) {
+    statuses.add((taskInfo, status, result));
+  }
+
+  @override
+  void onExceptionEncountered(
+    TaskDebugInfo? taskInfo,
+    Object exception,
+    StackTrace? stackTrace,
+  ) {
+    exceptions.add((taskInfo, exception, stackTrace));
+  }
 }

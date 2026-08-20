@@ -78,15 +78,6 @@ class BackgroundTaskRunner {
     final inputData = invocation.payloadPath == null
         ? null
         : await _payloadStore.load(invocation.payloadPath!);
-    try {
-      callbackDispatcher();
-    } on Object catch (error, stackTrace) {
-      stderr.writeln(
-        'workmanager_linux: callback dispatcher threw for task '
-        '"${invocation.taskName}": $error\n$stackTrace',
-      );
-      return false;
-    }
     final started = DateTime.now();
     final taskInfo = TaskDebugInfo(
       taskName: invocation.taskName,
@@ -95,6 +86,7 @@ class BackgroundTaskRunner {
     );
     WorkmanagerDebug.reportStatus(taskInfo, TaskStatus.started, null);
     try {
+      callbackDispatcher();
       final success = await WorkmanagerExecution.instance.runTask(
         invocation.taskName,
         inputData,
@@ -110,10 +102,6 @@ class BackgroundTaskRunner {
       );
       return success;
     } on Object catch (error, stackTrace) {
-      stderr.writeln(
-        'workmanager_linux: background task "${invocation.taskName}" threw: '
-        '$error\n$stackTrace',
-      );
       WorkmanagerDebug.reportStatus(
         taskInfo,
         TaskStatus.failed,
