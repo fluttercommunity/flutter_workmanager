@@ -604,9 +604,8 @@ class WorkmanagerWeb extends WorkmanagerPlatform {
     final taskInfo = TaskDebugInfo(
       taskName: taskName,
       uniqueName: uniqueName,
-      inputData: rawInputData is Map
-          ? Map<String, dynamic>.from(rawInputData)
-          : null,
+      inputData:
+          rawInputData is Map ? Map<String, dynamic>.from(rawInputData) : null,
       startTime: started,
     );
     WorkmanagerDebug.reportStatus(taskInfo, TaskStatus.started, null);
