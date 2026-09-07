@@ -1420,6 +1420,38 @@ class WorkmanagerHostApi {
     )
     ;
   }
+
+  /// Signals the native side that the background isolate's task handlers are
+  /// registered on this engine's messenger.
+  ///
+  /// Called from Dart by `Workmanager().executeTask`, after
+  /// [WorkmanagerFlutterApi]'s handlers have been set up. Native background
+  /// workers wait for this signal before invoking
+  /// [WorkmanagerFlutterApi.executeTask]; because the signal is sent from
+  /// Dart only after setUp completed, the follow-up `executeTask` call can
+  /// never race isolate startup (regression introduced by the Pigeon
+  /// migration, which flipped the handshake to native-initiated — see
+  /// #732/#738).
+  ///
+  /// Platforms and engines that never execute a Dart background task (the app
+  /// engine on Android, web) may ignore the call.
+  Future<void> notifyBackgroundChannelInitialized() async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.notifyBackgroundChannelInitialized$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: true,
+    )
+    ;
+  }
 }
 
 abstract class WorkmanagerFlutterApi {

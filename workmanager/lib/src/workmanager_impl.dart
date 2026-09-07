@@ -143,6 +143,12 @@ class Workmanager {
   static ProgressListener? _progressListener;
   static late final WorkmanagerFlutterApi _flutterApi;
 
+  /// Dart→native API proxy used by background isolates to signal readiness
+  /// (see [executeTask]). Constructed lazily so the messenger is captured on
+  /// the isolate that actually runs a background task, after
+  /// [WidgetsFlutterBinding.ensureInitialized] bound it to the engine.
+  static late final WorkmanagerHostApi _hostApi = WorkmanagerHostApi();
+
   /// The callback dispatcher registered via [initialize], kept so in-process
   /// (main-engine) one-off tasks can lazily register their task handler on
   /// first execution without spawning a second Flutter engine.
@@ -225,7 +231,22 @@ class Workmanager {
     _flutterApi = _WorkmanagerFlutterApiImpl();
     WorkmanagerFlutterApi.setUp(_flutterApi);
 
-    await _flutterApi.backgroundChannelInitialized();
+    // Signal the native worker running this isolate that the task handlers
+    // are now registered on this engine's messenger. The native side waits
+    // for this signal before invoking [WorkmanagerFlutterApi.executeTask];
+    // because the signal is sent from Dart *after* setUp, the follow-up
+    // executeTask call can never race isolate startup (a regression
+    // introduced by the Pigeon migration, which flipped the handshake to
+    // native-initiated — see #732/#738).
+    //
+    // Deliberately not awaited: engines without a native receiver for this
+    // call (web, desktop headless) never answer, and the worker must not
+    // depend on the reply. Errors are swallowed for the same reason.
+    unawaited(
+      _hostApi
+          .notifyBackgroundChannelInitialized()
+          .then((_) {}, onError: (Object _) {}),
+    );
   }
 
   /// Schedule a one-off task.
