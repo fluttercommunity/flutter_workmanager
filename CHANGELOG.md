@@ -3,6 +3,49 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-09-07
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`workmanager` - `v0.10.10`](#workmanager---v01010)
+ - [`workmanager_android` - `v0.10.9`](#workmanager_android---v0109)
+ - [`workmanager_apple` - `v0.9.11`](#workmanager_apple---v0911)
+ - [`workmanager_platform_interface` - `v0.10.5`](#workmanager_platform_interface---v0105)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `workmanager` - `v0.10.10`
+
+---
+
+#### `workmanager` - `v0.10.10`
+
+ - **FIX**(android): background tasks no longer fail ~30 seconds after start on Android 16 when the Dart isolate boots slowly — the background handshake is Dart-initiated again (#738).
+
+#### `workmanager_android` - `v0.10.9`
+
+ - **FIX**(android): background tasks no longer fail ~30 seconds after start on Android 16 when the Dart isolate boots slowly — the worker now waits for a Dart readiness signal instead of sending the task before the isolate is ready (#738).
+
+#### `workmanager_apple` - `v0.9.11`
+
+ - **FIX**: the plugin accepts the new Dart background-channel readiness signal (parity with the Android handshake fix, #738); no user-facing behavior change yet.
+
+#### `workmanager_platform_interface` - `v0.10.5`
+
+ - **FIX**: added the `notifyBackgroundChannelInitialized` host signal backing the Android handshake fix (#738).
+
+---
+
 ## 2026-08-20
 
 ### Changes

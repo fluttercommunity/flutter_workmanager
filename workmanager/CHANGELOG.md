@@ -1,3 +1,7 @@
+## 0.10.10
+
+ - **FIX**(android): background tasks no longer fail ~30 seconds after start on Android 16 when the Dart isolate boots slowly — the background handshake is Dart-initiated again (#738).
+
 ## 0.10.9
 
  - **FIX**(android): one-off work no longer stays RUNNING forever on Android 16 when the app is backgrounded during task execution (#732).
