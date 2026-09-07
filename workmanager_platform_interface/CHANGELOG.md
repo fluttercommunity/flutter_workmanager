@@ -1,3 +1,7 @@
+## 0.10.5
+
+ - **FIX**: added the `notifyBackgroundChannelInitialized` host signal backing the Android handshake fix (#738).
+
 ## 0.10.4
 
  - **FEAT**(android): progress updates for long-running tasks (#720).

@@ -1,3 +1,7 @@
+## 0.9.11
+
+ - **FIX**: the plugin accepts the new Dart background-channel readiness signal (parity with the Android handshake fix, #738); no user-facing behavior change yet.
+
 ## 0.9.10
 
  - **FEAT**(android): progress updates for long-running tasks (#720).
