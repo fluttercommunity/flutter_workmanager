@@ -1178,6 +1178,21 @@ protocol WorkmanagerHostApi {
   /// messenger of the engine that made this call. On platforms without
   /// progress support the call is a no-op.
   func setProgressListener(enabled: Bool, completion: @escaping (Result<Void, Error>) -> Void)
+  /// Signals the native side that the background isolate's task handlers are
+  /// registered on this engine's messenger.
+  ///
+  /// Called from Dart by `Workmanager().executeTask`, after
+  /// [WorkmanagerFlutterApi]'s handlers have been set up. Native background
+  /// workers wait for this signal before invoking
+  /// [WorkmanagerFlutterApi.executeTask]; because the signal is sent from
+  /// Dart only after setUp completed, the follow-up `executeTask` call can
+  /// never race isolate startup (regression introduced by the Pigeon
+  /// migration, which flipped the handshake to native-initiated — see
+  /// #732/#738).
+  ///
+  /// Platforms and engines that never execute a Dart background task (the app
+  /// engine on Android, web) may ignore the call.
+  func notifyBackgroundChannelInitialized(completion: @escaping (Result<Void, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -1434,6 +1449,35 @@ class WorkmanagerHostApiSetup {
       }
     } else {
       setProgressListenerChannel.setMessageHandler(nil)
+    }
+    /// Signals the native side that the background isolate's task handlers are
+    /// registered on this engine's messenger.
+    ///
+    /// Called from Dart by `Workmanager().executeTask`, after
+    /// [WorkmanagerFlutterApi]'s handlers have been set up. Native background
+    /// workers wait for this signal before invoking
+    /// [WorkmanagerFlutterApi.executeTask]; because the signal is sent from
+    /// Dart only after setUp completed, the follow-up `executeTask` call can
+    /// never race isolate startup (regression introduced by the Pigeon
+    /// migration, which flipped the handshake to native-initiated — see
+    /// #732/#738).
+    ///
+    /// Platforms and engines that never execute a Dart background task (the app
+    /// engine on Android, web) may ignore the call.
+    let notifyBackgroundChannelInitializedChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.workmanager_platform_interface.WorkmanagerHostApi.notifyBackgroundChannelInitialized\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      notifyBackgroundChannelInitializedChannel.setMessageHandler { _, reply in
+        api.notifyBackgroundChannelInitialized { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      notifyBackgroundChannelInitializedChannel.setMessageHandler(nil)
     }
   }
 }

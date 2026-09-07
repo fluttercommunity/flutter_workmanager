@@ -79,6 +79,13 @@ class BackgroundWorker(
     private var initializationWatchdog: DartInitializationWatchdog? = null
 
     /**
+     * Guards [executeBackgroundTask] against duplicate Dart readiness signals
+     * (the Dart side could call notifyBackgroundChannelInitialized more than
+     * once, e.g. when executeTask runs twice in the same isolate).
+     */
+    private val taskStarted = AtomicBoolean(false)
+
+    /**
      * The plugin instance attached to this worker's engine. The Dart task
      * runs on that engine, so its `reportProgress` calls arrive at this
      * plugin; binding the worker lets the plugin route them to us.
@@ -177,13 +184,15 @@ class BackgroundWorker(
                 )
 
                 // The worker's result future is only resolved once the Dart
-                // side acknowledges the initialized background channel. If
-                // the engine fails to start the Dart isolate, or the
-                // acknowledgement is lost, the worker would otherwise stay
-                // in the RUNNING state forever (see #732). Arm a watchdog
-                // that fails the worker when the acknowledgement does not
-                // arrive in time; it is disarmed on acknowledgement and on
-                // stop.
+                // side signals that its background-channel handlers are
+                // registered. That signal is a Dart→native call
+                // (WorkmanagerHostApi.notifyBackgroundChannelInitialized),
+                // routed here by the plugin bound to this worker's engine. If
+                // the engine fails to start the Dart isolate, or the signal is
+                // lost, the worker would otherwise stay in the RUNNING state
+                // forever (see #732). Arm a watchdog that fails the worker
+                // when the signal does not arrive in time; it is disarmed on
+                // the signal and on stop.
                 val watchdog =
                     DartInitializationWatchdog(
                         handler = mainHandler,
@@ -200,12 +209,14 @@ class BackgroundWorker(
                 initializationWatchdog = watchdog
                 watchdog.arm()
 
-                // Initialize the background channel
-                flutterApi.backgroundChannelInitialized {
-                    // Channel is initialized, now execute the task
-                    watchdog.disarm()
-                    executeBackgroundTask()
-                }
+                // The Dart isolate runs the callback dispatcher as its entry
+                // point; once its task handlers are set up it calls
+                // notifyBackgroundChannelInitialized, which lands in
+                // [onDartBackgroundChannelInitialized] and kicks off
+                // execution. Nothing is sent to Dart from here: a native→Dart
+                // message sent before the isolate registered its handlers is
+                // silently lost, which is what left workers stuck in RUNNING
+                // (pre-0.10.9) or failing the watchdog (0.10.9, #738).
             }
         }
 
@@ -386,6 +397,30 @@ class BackgroundWorker(
         } else {
             StopReasonUtils.STOP_REASON_UNKNOWN
         }
+
+    /**
+     * Called by the plugin attached to this worker's engine when the Dart
+     * isolate signals that its task handlers are registered (the Dart side
+     * calls `WorkmanagerHostApi.notifyBackgroundChannelInitialized` from
+     * `Workmanager().executeTask`, after `WorkmanagerFlutterApi.setUp`).
+     *
+     * Only now is the task sent down to Dart: because the signal originates
+     * from Dart, its handlers are guaranteed to be registered when the
+     * follow-up [WorkmanagerFlutterApi.executeTask] call arrives — the
+     * handshake can never race isolate startup (see #732/#738).
+     */
+    fun onDartBackgroundChannelInitialized() {
+        if (isStopped) return
+        mainHandler.post {
+            // A stopped or torn-down worker (watchdog fired, WM stop) must
+            // ignore a late signal.
+            if (isStopped || engine == null) return@post
+            if (taskStarted.compareAndSet(false, true)) {
+                initializationWatchdog?.disarm()
+                executeBackgroundTask()
+            }
+        }
+    }
 
     private fun executeBackgroundTask() {
         // Convert payload to the format expected by Pigeon (Map<String?, Object?>)

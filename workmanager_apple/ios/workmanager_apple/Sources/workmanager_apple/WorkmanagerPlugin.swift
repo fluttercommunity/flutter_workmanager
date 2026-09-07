@@ -85,6 +85,20 @@ public class WorkmanagerPlugin: WorkmanagerPluginBase, FlutterPlugin, Workmanage
         completion(.success(WorkInfoStore.workInfoData(forUniqueName: uniqueName)))
     }
 
+    func notifyBackgroundChannelInitialized(completion: @escaping (Result<Void, Error>) -> Void) {
+        // Dart-side readiness signal introduced with the re-inverted handshake
+        // (see the pigeon definition): the background isolate calls this from
+        // Workmanager().executeTask after registering its task handlers.
+        //
+        // Apple workers still gate task execution on the reply of the legacy
+        // native-initiated `backgroundChannelInitialized` call (the kick that
+        // lazily runs the callbackDispatcher on the main engine), so there is
+        // nothing to do here yet. Aligning the Apple headless-engine flow with
+        // the Dart-initiated handshake (mirroring the Android fix for
+        // #732/#738) is tracked as a follow-up.
+        completion(.success(()))
+    }
+
     // MARK: - WorkmanagerHostApi implementation (iOS)
 
     #if os(iOS)

@@ -6,11 +6,12 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**
  * Bounds the Dart engine initialization handshake of a [BackgroundWorker].
  *
- * The worker's result future is only resolved once the Dart side acknowledges
- * `backgroundChannelInitialized`. If the engine fails to start the Dart
- * isolate, or the acknowledgement is lost, the worker would otherwise stay in
- * the RUNNING state forever (see #732). This watchdog fires [timeoutAction]
- * when the acknowledgement does not arrive within [timeoutMillis].
+ * The worker's result future is only resolved once the Dart side signals
+ * that its background-channel handlers are registered
+ * (`WorkmanagerHostApi.notifyBackgroundChannelInitialized`). If the engine
+ * fails to start the Dart isolate, or the signal is lost, the worker would
+ * otherwise stay in the RUNNING state forever (see #732). This watchdog fires
+ * [timeoutAction] when the signal does not arrive within [timeoutMillis].
  *
  * [arm] and [disarm] are idempotent and safe to call from any thread: the
  * action fires at most once, and only while the watchdog is armed.

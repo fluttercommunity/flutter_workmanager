@@ -526,6 +526,23 @@ abstract class WorkmanagerHostApi {
   /// progress support the call is a no-op.
   @async
   void setProgressListener(bool enabled);
+
+  /// Signals the native side that the background isolate's task handlers are
+  /// registered on this engine's messenger.
+  ///
+  /// Called from Dart by `Workmanager().executeTask`, after
+  /// [WorkmanagerFlutterApi]'s handlers have been set up. Native background
+  /// workers wait for this signal before invoking
+  /// [WorkmanagerFlutterApi.executeTask]; because the signal is sent from
+  /// Dart only after setUp completed, the follow-up `executeTask` call can
+  /// never race isolate startup (regression introduced by the Pigeon
+  /// migration, which flipped the handshake to native-initiated — see
+  /// #732/#738).
+  ///
+  /// Platforms and engines that never execute a Dart background task (the app
+  /// engine on Android, web) may ignore the call.
+  @async
+  void notifyBackgroundChannelInitialized();
 }
 
 // Flutter API (Native calls Flutter)

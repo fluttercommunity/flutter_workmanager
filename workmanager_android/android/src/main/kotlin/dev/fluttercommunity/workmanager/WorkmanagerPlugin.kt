@@ -260,6 +260,18 @@ class WorkmanagerPlugin :
         callback(Result.success(Unit))
     }
 
+    override fun notifyBackgroundChannelInitialized(callback: (Result<Unit>) -> Unit) {
+        val worker = boundWorker
+        if (worker != null) {
+            // The signal originates from the Dart isolate running on this
+            // plugin's engine, which is the engine of the bound worker (or of
+            // a worker that has not bound itself yet — then there is nothing
+            // to execute and the signal is ignored).
+            worker.onDartBackgroundChannelInitialized()
+        }
+        callback(Result.success(Unit))
+    }
+
     override fun setProgressListener(
         enabled: Boolean,
         callback: (Result<Unit>) -> Unit,
