@@ -1,0 +1,84 @@
+---
+title: iOS Debugging
+description: Debug background tasks on iOS — console logging, Xcode, BGTaskScheduler, common issues
+---
+
+Deep-dive debugging for iOS/macOS. For the debug handlers (logging / notification)
+and custom handlers, see [Debugging Background Tasks](debugging).
+
+## Console Logging
+
+iOS background tasks have limited execution time. Add detailed logging:
+
+```dart
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    print('[iOS BG] Task started: $task at ${DateTime.now()}');
+
+    try {
+      // Your task logic
+      final result = await performTask();
+      print('[iOS BG] Task completed successfully');
+      return true;
+    } catch (e) {
+      print('[iOS BG] Task failed: $e');
+      return false;
+    }
+  });
+}
+```
+
+## Xcode Debugging
+
+**For Background Fetch tasks:**
+Use **Debug → Perform Fetch** from the Xcode run menu while your app is running.
+
+**For BGTaskScheduler tasks (processing/periodic):**
+Use Xcode's console to trigger tasks manually:
+
+```objc
+// Trigger specific BGTaskScheduler task
+e -l objc -- (void)[[BGTaskScheduler sharedScheduler]
+  _simulateLaunchForTaskWithIdentifier:@"com.yourapp.task.identifier"]
+```
+
+## Monitor Scheduled Tasks
+
+Check what tasks iOS has scheduled:
+
+```dart
+// iOS 13+ only
+if (Platform.isIOS) {
+  final tasks = await Workmanager().printScheduledTasks();
+  print('Scheduled tasks: $tasks');
+}
+```
+
+This prints output like:
+```
+[BGTaskScheduler] Task Identifier: your.task.id earliestBeginDate: 2023.10.10 PM 11:10:12
+[BGTaskScheduler] There are no scheduled tasks
+```
+
+## Common iOS Issues
+
+**Background App Refresh disabled:**
+- Check iOS Settings → General → Background App Refresh
+- See [Apple's Background App Refresh Guide](https://support.apple.com/en-us/102425)
+
+**Tasks never run:**
+- App hasn't been used recently (iOS learning algorithm) — [iOS Power Management](https://developer.apple.com/library/archive/documentation/Performance/Conceptual/power_efficiency_guidelines_osx/PrioritizeWorkAtTheTaskLevel.html)
+- Task identifiers don't match between Info.plist and AppDelegate — [check iOS setup](quickstart#option-b-processing-tasks-for-complex-operations)
+- Missing BGTaskSchedulerPermittedIdentifiers in Info.plist — [review iOS configuration](quickstart#ios)
+
+**Tasks stop working:**
+- iOS battery optimization kicked in — [WWDC 2020: Background execution demystified](https://developer.apple.com/videos/play/wwdc2020/10063/)
+- App removed from recent apps too often
+- User disabled background refresh — [check Background Fetch setup](quickstart#option-a-periodic-tasks-recommended-for-most-use-cases)
+- Task taking longer than 30 seconds — [BGTaskScheduler Documentation](https://developer.apple.com/documentation/backgroundtasks/bgtaskscheduler)
+
+**Tasks run but don't complete:**
+- Hitting 30-second execution limit — [Background Tasks Best Practices](https://developer.apple.com/documentation/backgroundtasks/bgtask)
+- Network requests timing out
+- Heavy processing blocking the thread — [WWDC 2019: Advances in App Background Execution](https://developer.apple.com/videos/play/wwdc2019/707/)
