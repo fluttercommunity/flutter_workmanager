@@ -6,6 +6,7 @@ packages:
   - workmanager_apple
   - workmanager_linux
   - workmanager_web
+  - workmanager_windows
   - example
 scripts:
   get: melos exec -- dart pub get

@@ -48,7 +48,8 @@
         {
           "title": "Linux (experimental)",
           "href": "/linux"
-        },
+          "title": "Windows (Task Scheduler)",
+          "href": "/windows"        },
         {
           "title": "Troubleshooting",
           "href": "/troubleshooting"

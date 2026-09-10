@@ -8,6 +8,7 @@ import 'package:workmanager_android/workmanager_android.dart';
 import 'package:workmanager_apple/workmanager_apple.dart';
 import 'package:workmanager_linux/workmanager_linux.dart';
 import 'package:workmanager_web/workmanager_web.dart';
+import 'package:workmanager_windows/workmanager_windows.dart';
 
 /// Function that executes your background work.
 /// You should return whether the task ran successfully or not.
@@ -109,13 +110,17 @@ class Workmanager {
       return;
     }
     if (WorkmanagerPlatform.instance is! WorkmanagerAndroid &&
-        WorkmanagerPlatform.instance is! WorkmanagerApple) {
+        WorkmanagerPlatform.instance is! WorkmanagerApple &&
+        WorkmanagerPlatform.instance is! WorkmanagerLinux &&
+        WorkmanagerPlatform.instance is! WorkmanagerWindows) {
       if (Platform.isAndroid) {
         WorkmanagerPlatform.instance = WorkmanagerAndroid();
       } else if (Platform.isIOS || Platform.isMacOS) {
         WorkmanagerPlatform.instance = WorkmanagerApple();
       } else if (Platform.isLinux) {
         WorkmanagerPlatform.instance = WorkmanagerLinux();
+      } else if (Platform.isWindows) {
+        WorkmanagerPlatform.instance = WorkmanagerWindows();
       }
     }
   }
