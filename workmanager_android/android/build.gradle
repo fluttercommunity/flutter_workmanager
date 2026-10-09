@@ -10,19 +10,6 @@ rootProject.allprojects {
 
 apply plugin: 'com.android.library'
 
-// AGP 9+ ships built-in Kotlin support and enables it by default; older
-// versions need the Kotlin Gradle Plugin (KGP) applied explicitly. Flutter
-// apps set `android.builtInKotlin=false` in gradle.properties
-// (flutter/flutter#183910) to keep the legacy KGP path working for
-// unmigrated plugins, so this module must apply KGP itself unless built-in
-// Kotlin is active. See #710 and #722.
-def agpMajor = com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION.tokenize('.')[0] as int
-def builtInKotlin = agpMajor >= 9 &&
-    project.findProperty('android.builtInKotlin')?.toString() != 'false'
-if (!builtInKotlin) {
-    apply plugin: 'kotlin-android'
-}
-
 android {
     // Conditional for compatibility with AGP <4.2.
     if (project.android.hasProperty("namespace")) {
@@ -59,24 +46,16 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-
-    if (agpMajor < 9) {
-        kotlinOptions {
-            tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-                kotlinOptions.jvmTarget = "1.8"
-            }
-        }
-    }
 }
 
-// AGP 9: `kotlinOptions` inside `android {}` was removed. Configure the Kotlin
-// compiler via the `kotlin` extension (provided by built-in Kotlin, or by KGP
-// 2.0+ on the legacy path). Kept in sync with compileOptions above.
-if (agpMajor >= 9) {
-    kotlin {
-        compilerOptions {
-            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
-        }
+// Built-in Kotlin: this module does not apply the Kotlin Gradle Plugin (KGP).
+// AGP 9 compiles Kotlin itself; when built-in Kotlin is off (AGP < 9, or
+// `android.builtInKotlin=false`), the Flutter Gradle Plugin (Flutter 3.44+)
+// applies KGP to plugins that do not. See #743.
+// Kept in sync with compileOptions above.
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
     }
 }
 

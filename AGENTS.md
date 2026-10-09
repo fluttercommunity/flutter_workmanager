@@ -10,9 +10,9 @@ Code & test conventions (previously in `CLAUDE.md`) are consolidated in the last
 
 ## Android / AGP facts
 - AGP 9 enables built-in Kotlin **by default**; Flutter apps write `android.builtInKotlin=false` + `android.newDsl=false` in gradle.properties (flutter/flutter#183910).
-- The module must apply `kotlin-android` whenever built-in Kotlin is NOT active. Correct guard (same pattern as flutter_timezone):
-  `def builtInKotlin = agpMajor >= 9 && project.findProperty('android.builtInKotlin')?.toString() != 'false'`
-  Do NOT "simplify" this to `== 'true'`: an absent flag means built-in Kotlin is ON (AGP default), and applying KGP then throws.
+- The module never applies `kotlin-android`, not even behind a guard (built-in Kotlin migration, #743). When built-in Kotlin is NOT active, the Flutter Gradle Plugin applies KGP to plugins whose build file does not mention it. It decides that by regex over the build file text, so any `apply plugin: 'kotlin-android'` line, guarded or not, counts as "applies KGP": Flutter then skips its own apply and lists the plugin in its KGP warning (flutter/flutter#189770).
+  Configure the compiler only through the top-level `kotlin { compilerOptions { ... } }` block (works with built-in Kotlin and with KGP 2.0+).
+- The pubspec floor is Flutter 3.47.0, not the guide's 3.44: on every 3.44.x the FGP auto-apply ignores `android.builtInKotlin`, so with `android.builtInKotlin=true` it applies KGP to this module and AGP 9 fails the build ("The 'org.jetbrains.kotlin.android' plugin is no longer required for Kotlin support since AGP 9.0"). 3.47.0 is the first release that skips the auto-apply when built-in Kotlin is on. Apps on 3.44.x keep resolving 0.10.9.
 - `workmanager_android`'s build.gradle has no Flutter embedding dependency — the module can be built standalone (no Flutter SDK) to repro build issues. In real Flutter builds the FGP injects `io.flutter:flutter_embedding_debug`; `download.flutter.io` has a TLS cert mismatch (artifact only resolvable from the local Gradle cache), so standalone repros use `compileOnly` on the local engine `flutter.jar` + `androidx.core:core-ktx`, wired via an init script.
 - When building the plugin through the example app, the FGP relocates the plugin's build dir: unit test results land in `example/build/workmanager_android/`, **not** `workmanager_android/android/build/`. `./gradlew :workmanager_android:testDebugUnitTest` currently runs 50 tests.
 
