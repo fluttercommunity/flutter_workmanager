@@ -85,6 +85,19 @@ import workmanager_apple
 }
 ```
 
+Background engines create their own `FlutterDartProject` by default. If your
+app needs them to use the same project as the main engine (for example when a
+code push tool resolves the newest downloaded patch each time a project is
+created), create one project at launch, pass it to your engine, and call
+`WorkmanagerPlugin.setDartProject(_:)` with it before any task runs:
+
+```swift
+let project = FlutterDartProject()
+WorkmanagerPlugin.setDartProject(project)
+```
+
+When the call is omitted, behavior is unchanged.
+
 <Info>
 **UIScene lifecycle:** Apple requires UIKit apps to adopt the UIScene lifecycle
 from the release following iOS 26. After migration, call
