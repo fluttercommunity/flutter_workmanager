@@ -158,7 +158,7 @@ class BackgroundWorker {
 
         var flutterEngine: FlutterEngine? = FlutterEngine(
             name: backgroundMode.flutterThreadlabelPrefix,
-            project: nil,
+            project: WorkmanagerPlugin.dartProject,
             allowHeadlessExecution: true
         )
 

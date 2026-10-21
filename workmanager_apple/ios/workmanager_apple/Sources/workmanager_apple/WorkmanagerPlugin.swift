@@ -45,6 +45,22 @@ public class WorkmanagerPlugin: WorkmanagerPluginBase, FlutterPlugin, Workmanage
     /// (fluttercommunity/flutter_workmanager#653).
     static var mainBinaryMessenger: FlutterBinaryMessenger?
 
+    static var dartProject: FlutterDartProject?
+
+    /// Sets the `FlutterDartProject` used by the background engines.
+    ///
+    /// Without this call each background engine creates its own project. Apps
+    /// whose project settings change while the app runs (for example code push
+    /// tools that resolve the newest downloaded patch when a project is
+    /// created) should create one project at launch and share it with the main
+    /// engine and with this plugin.
+    ///
+    /// - Parameter project: The project the host app created at launch
+    @objc
+    public static func setDartProject(_ project: FlutterDartProject) {
+        dartProject = project
+    }
+
     /// Sets the plugin registrant callback for background task execution.
     ///
     /// This callback is used to register additional plugins when background tasks
